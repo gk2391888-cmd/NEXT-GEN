@@ -1,6 +1,9 @@
-// Checks every content/weeks/<subject>.json against the shape the app expects, and that
+// Checks content/programmes.json (every programme's levels point at real subjects), every
+// content/weeks/<subject>.json against the shape the app expects, and that
 // content/weeks-en/<subject>.json has an English version of every question. Then checks the
 // qualifier mocks: content/qualifier/qualifiers.json and content/qualifier/mocks{,-en}/<mock>.json.
+// A subject in content/subjects.json can be marked "status": "partial" (weeks 1..n written, n < 12)
+// or "planned" (no notes yet); without a status it needs all 12 weeks.
 // Usage: node scripts/validate-content.mjs [subjectId ... | qualifier]
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -8,13 +11,14 @@ import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const subjects = JSON.parse(readFileSync(join(root, 'content/subjects.json'), 'utf8'));
+const { programmes } = JSON.parse(readFileSync(join(root, 'content/programmes.json'), 'utf8'));
 const WEEKS = 12;
+const STATUSES = new Set(['partial', 'planned']);
 const QUESTIONS_PER_WEEK = 6;
 const DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
 const EN_FIELDS = ['question', 'options', 'explanation'];
 
 const requested = process.argv.slice(2);
-const targets = requested.length ? requested.filter((r) => r !== 'qualifier') : subjects.map((s) => s.id);
 const checkQualifiers = !requested.length || requested.includes('qualifier');
 // Qualifier mocks: questions per section, and the limits of test_attempts (test_id ≤ 20 characters, ≤ 100 questions).
 const QUALIFIER_SECTION_QUESTIONS = [5, 25];
@@ -70,6 +74,60 @@ const bunched = (counts) => {
   return total > 0 && counts.some((c) => c < total * 0.15);
 };
 
+/* ---------------- Subjects and programmes ---------------- */
+{
+  const errors = [];
+  const ids = new Set();
+  for (const s of subjects) {
+    // Question ids are "<subject>-w<week>-q<n>", parsed back with /^([a-z0-9]+)-w/, so no dashes.
+    if (!/^[a-z0-9]+$/.test(s.id ?? '')) errors.push(`subject id "${s.id}" must be lowercase letters and digits only`);
+    if (ids.has(s.id)) errors.push(`subject "${s.id}" is listed twice`);
+    ids.add(s.id);
+    for (const f of ['code', 'name', 'short', 'icon']) if (!isText(s[f])) errors.push(`subject "${s.id}": ${f} missing`);
+    if (s.status !== undefined && !STATUSES.has(s.status)) errors.push(`subject "${s.id}": status must be "partial" or "planned"`);
+  }
+  const inProgramme = new Set();
+  const programmeIds = new Set();
+  if (!Array.isArray(programmes) || !programmes.length) errors.push('content/programmes.json: needs at least one programme');
+  for (const p of programmes ?? []) {
+    if (!/^[a-z0-9]+$/.test(p.id ?? '')) errors.push(`programme id "${p.id}" must be lowercase letters and digits only`);
+    if (programmeIds.has(p.id)) errors.push(`programme "${p.id}" is listed twice`);
+    programmeIds.add(p.id);
+    if (!isText(p.name) || !isText(p.short)) errors.push(`programme "${p.id}": name and short are needed`);
+    if (!Array.isArray(p.levels) || !p.levels.length) errors.push(`programme "${p.id}": needs at least one level`);
+    for (const [id, code] of Object.entries(p.codes ?? {})) {
+      if (!p.levels?.some((l) => l.subjects?.includes(id))) errors.push(`programme "${p.id}": codes has "${id}", which isn't one of its subjects`);
+      if (!isText(code)) errors.push(`programme "${p.id}": code for "${id}" missing`);
+    }
+    for (const l of p.levels ?? []) {
+      if (!isText(l.id) || !isText(l.name)) errors.push(`programme "${p.id}": every level needs an id and a name`);
+      if (!Array.isArray(l.subjects) || !l.subjects.length) errors.push(`programme "${p.id}" level "${l.id}": needs subjects`);
+      for (const id of l.subjects ?? []) {
+        if (!ids.has(id)) errors.push(`programme "${p.id}" level "${l.id}": unknown subject "${id}" (add it to content/subjects.json)`);
+        inProgramme.add(id);
+      }
+    }
+  }
+  for (const id of ids) if (!inProgramme.has(id)) errors.push(`subject "${id}" isn't in any programme in content/programmes.json`);
+  if (errors.length) {
+    failures++;
+    console.log(`✗ programmes: ${errors.length} problem(s)`);
+    errors.forEach((e) => console.log(`   - ${e}`));
+  } else {
+    for (const p of programmes) {
+      const levels = p.levels.map((l) => {
+        const list = l.subjects.map((id) => subjects.find((s) => s.id === id));
+        const ready = list.filter((s) => !s.status).length;
+        const partial = list.filter((s) => s.status === 'partial').length;
+        return `${l.name} ${ready}/${list.length} complete${partial ? `, ${partial} partial` : ''}`;
+      });
+      console.log(`✓ programme ${p.id} (${p.short}): ${levels.join(' · ')}`);
+    }
+  }
+}
+
+const targets = requested.length ? requested.filter((r) => r !== 'qualifier') : subjects.filter((s) => s.status !== 'planned').map((s) => s.id);
+
 function readJson(file, label, err) {
   try {
     return JSON.parse(readFileSync(file, 'utf8'));
@@ -86,7 +144,11 @@ for (const id of targets) {
   const file = join(root, 'content/weeks', `${id}.json`);
   const enFile = join(root, 'content/weeks-en', `${id}.json`);
 
-  if (!subjects.some((s) => s.id === id)) err(`unknown subject id "${id}"`);
+  const subject = subjects.find((s) => s.id === id);
+  if (!subject) err(`unknown subject id "${id}"`);
+  // A planned subject is only checked when named on the command line, while its weeks are being written.
+  const planned = subject?.status === 'planned';
+  const partial = subject?.status === 'partial';
   if (!existsSync(file)) {
     console.log(`✗ ${id}: missing content/weeks/${id}.json`);
     failures++;
@@ -109,7 +171,10 @@ for (const id of targets) {
   const english = en?.questions && typeof en.questions === 'object' ? en.questions : {};
 
   if (data.subjectId !== id) err(`subjectId should be "${id}"`);
-  if (!Array.isArray(data.weeks) || data.weeks.length !== WEEKS) err(`expected ${WEEKS} weeks`);
+  // A partial subject has weeks 1..n; the week numbers themselves are checked below.
+  if (!Array.isArray(data.weeks) || (planned ? data.weeks.length < 1 || data.weeks.length > WEEKS : partial ? data.weeks.length < 1 || data.weeks.length >= WEEKS : data.weeks.length !== WEEKS)) {
+    err(partial ? `"partial" subjects need 1–${WEEKS - 1} weeks; with all ${WEEKS}, remove "status" from content/subjects.json` : `expected ${WEEKS} weeks`);
+  }
 
   const ids = new Set();
   const answerCounts = [0, 0, 0, 0];
@@ -148,7 +213,7 @@ for (const id of targets) {
     console.log(`✗ ${id}: ${errors.length} problem(s)`);
     errors.slice(0, 40).forEach((e) => console.log(`   - ${e}`));
   } else {
-    console.log(`✓ ${id}: ${data.weeks.length} weeks, ${total} questions in Hinglish and English`);
+    console.log(`✓ ${id}: ${data.weeks.length}${partial || planned ? ` of ${WEEKS}` : ''} weeks, ${total} questions in Hinglish and English`);
   }
   // Not errors: a translation may write a number as a word. Listed so a person can check them.
   if (warnings.length) {

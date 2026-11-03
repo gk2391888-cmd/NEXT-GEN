@@ -4,6 +4,21 @@ export type Subject = {
   name: string;
   short: string;
   icon: string;
+  /** Unset when all 12 weeks are written; `partial` while some weeks are still to come; `planned` before any notes exist. */
+  status?: 'partial' | 'planned';
+};
+
+/** A stage of a programme (Foundation, a Diploma, the Degree), with its subjects in catalogue order. */
+export type ProgrammeLevel = { id: string; name: string; subjects: string[] };
+
+/** An IITM BS programme. Subjects are shared by id, so a course in two programmes keeps one set of progress. */
+export type Programme = {
+  id: string;
+  name: string;
+  short: string;
+  /** Course codes this programme uses for shared subjects, e.g. English I is HS1101 in Electronic Systems. */
+  codes?: Record<string, string>;
+  levels: ProgrammeLevel[];
 };
 
 export type Difficulty = 'easy' | 'medium' | 'hard';

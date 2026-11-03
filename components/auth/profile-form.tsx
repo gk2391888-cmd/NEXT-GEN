@@ -4,15 +4,21 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import { progress, useProgress } from '@/lib/progress/store';
+import { useChoice } from '@/lib/programme-choice';
+import { choiceInProfile, termSubjects, withChoice } from '@/lib/programmes';
 import type { Subject } from '@/lib/types';
 import { PageHead } from '@/components/ui';
 import { useConfirm } from '@/components/confirm-dialog';
+import { ProgrammeSwitch } from '@/components/programme-switch';
 import { useAuth } from './auth-provider';
 
-export function ProfileForm({ subjects }: { subjects: Subject[] }) {
+export function ProfileForm({ subjects: allSubjects }: { subjects: Subject[] }) {
   const { user, ready, loaded, signOut } = useAuth();
   const { confirm, dialog } = useConfirm();
   const state = useProgress();
+  // Every subject in the chosen level, including ones whose notes are still to come.
+  const programmeIds = useChoice().level.subjects;
+  const subjects = allSubjects.filter((s) => programmeIds.includes(s.id)).sort((a, b) => programmeIds.indexOf(a.id) - programmeIds.indexOf(b.id));
   const [name, setName] = useState('');
   const [chosen, setChosen] = useState<string[]>([]);
   const [message, setMessage] = useState('');
@@ -23,7 +29,7 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
   useEffect(() => {
     if (!loaded || !user) return;
     setName(state.profile?.fullName || user.user_metadata?.full_name || user.user_metadata?.name || '');
-    setChosen(state.profile?.subjects ?? []);
+    setChosen(termSubjects(state.profile?.subjects));
   }, [loaded, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- fill once, don't overwrite edits
 
   if (!ready) return null;
@@ -51,7 +57,10 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
       return;
     }
     setError('');
-    progress.updateProfile({ fullName, subjects: subjects.map((s) => s.id).filter((id) => chosen.includes(id)) });
+    // Subjects from another programme stay chosen, so switching programme and back doesn't lose them.
+    const ids = allSubjects.map((s) => s.id).filter((id) => chosen.includes(id));
+    const saved = choiceInProfile(state.profile?.subjects);
+    progress.updateProfile({ fullName, subjects: saved ? withChoice(ids, saved) : ids });
     setMessage('Changes saved.');
   }
 
@@ -89,6 +98,10 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
             <label className="field-label" htmlFor="email">Email</label>
             <input id="email" className="input" value={user.email ?? ''} disabled />
           </div>
+        </div>
+
+        <div className="mb-lg">
+          <ProgrammeSwitch variant="field" />
         </div>
 
         <fieldset className="fieldset">

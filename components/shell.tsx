@@ -7,6 +7,8 @@ import { AccountMenu } from './auth/account-menu';
 import { useAuth } from './auth/auth-provider';
 import { PRICING, usePlan } from '@/lib/plan';
 import { RenewBanner } from './renew-banner';
+import { ProgrammeSwitch } from './programme-switch';
+import { ProgrammePrompt } from './programme-prompt';
 
 const NAV = [
   { href: '/', label: 'Overview', icon: '◈' },
@@ -56,6 +58,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <span className="brand-sub">STUDENT LEARNING HUB</span>
           </span>
         </Link>
+        <ProgrammeSwitch />
         <div className="side-eyebrow">WORKSPACE</div>
         <nav>
           {NAV.map((item) => {
@@ -118,6 +121,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <main className="content" id="content">
           <RenewBanner />
           {children}
+          <ProgrammePrompt />
         </main>
         <footer className="footer">
           <span>© {new Date().getFullYear()} NEXT GEN · A THE TECH HUB initiative</span>

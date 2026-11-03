@@ -1,0 +1,1515 @@
+{
+  "subjectId": "linux",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "The Shell and the Filesystem Tree",
+      "summary": "Is week aap seekhoge ki electronics ke kaam mein command line kyun zaroori hai, Linux ka filesystem tree kaise bana hai, aur `pwd`, `ls`, `cd`, `mkdir`, `cp`, `mv`, `rm`, `cat`, `man` jaise basic commands kaise chalte hain.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Shell kyun?** Embedded boards (Raspberry Pi, BeagleBone), lab servers aur simulation tools zyada tar Linux pe chalte hain, aur aksar unpe GUI hota hi nahi. Shell (jaise `bash`) ek program hai jo aapki typed command padhta hai, use chalata hai aur output dikhata hai. Ek baar command likh li to use script bana kar baar-baar chala sakte ho, jo GUI mein mushkil hai.",
+        "**Linux setup**: Windows ya Mac pe Linux seekhne ke liye VirtualBox jaisa VM, WSL, ya dual boot use kar sakte ho. VM mein galti hui to bas VM reset karo, asli machine safe rehti hai. Terminal kholne par prompt dikhta hai, jaise `asha@lab:~$`, jahan `~` aapki home directory hai aur `$` normal user batata hai (`#` root ke liye).",
+        "**Filesystem tree**: Linux mein sab kuch ek hi tree mein hai jiska root `/` hai. Drive letters (C:, D:) nahi hote. Kuch important directories: `/home` (users ka data), `/etc` (config files), `/bin` aur `/usr/bin` (programs), `/tmp` (temporary files), `/dev` (devices, jaise `/dev/ttyUSB0` serial port).",
+        "**Absolute vs relative path**: Absolute path hamesha `/` se shuru hota hai, jaise `/home/asha/notes.txt`, aur kahin se bhi same jagah pahunchata hai. Relative path current directory se chalta hai. `.` matlab current directory, `..` matlab parent directory, `~` matlab home directory.",
+        "**Navigation commands**: `pwd` current directory ka absolute path print karta hai. `cd dir` directory badalta hai; sirf `cd` likhne se home pe wapas. `ls` files list karta hai; `ls -l` long format (permissions, size, date) aur `ls -a` hidden files (jo `.` se shuru hoti hain) bhi dikhata hai.",
+        "**Files banana aur badalna**: `mkdir dir` directory banata hai, `mkdir -p a/b/c` beech wali missing directories bhi bana deta hai. `touch f` khaali file banata hai. `cp src dst` copy karta hai (directory ke liye `cp -r`). `mv` move bhi karta hai aur rename bhi. `cat f` file ka content dikhata hai.",
+        "**rm sambhal ke**: `rm f` file ko turant delete karta hai, koi recycle bin nahi. Directory ke liye `rm -r dir` chahiye ya khaali directory ke liye `rmdir dir`. `rm -i` har file pe confirm poochta hai.",
+        "**man pages**: `man ls` kisi bhi command ka manual kholta hai. Andar `/word` se search karo, `q` se bahar aao. Jaldi help ke liye zyada tar commands `--help` bhi samajhte hain."
+      ],
+      "example": {
+        "problem": "Aap `/home/asha` mein ho. Ye commands chalane ke baad `pwd` aur `ls` kya dikhayenge?",
+        "code": "mkdir -p lab/week1\ncd lab/week1\npwd\ncd ..\nls",
+        "steps": [
+          "`mkdir -p lab/week1` pehle `lab` banata hai (kyunki woh nahi hai), phir uske andar `week1`.",
+          "`cd lab/week1` relative path hai, to ab hum `/home/asha/lab/week1` mein hain.",
+          "`pwd` hamesha absolute path print karta hai: `/home/asha/lab/week1`.",
+          "`cd ..` ek level upar le jaata hai, yaani `/home/asha/lab`.",
+          "`lab` ke andar sirf ek directory hai, isliye `ls` dikhayega `week1`.",
+          "Answer: **pwd → /home/asha/lab/week1, ls → week1**."
+        ]
+      },
+      "mistakes": [
+        "`cd /lab` aur `cd lab` ko same samajhna. `/lab` root ke andar dhoondta hai, `lab` current directory ke andar. Path `/` se shuru ho to woh absolute hai.",
+        "Directory ko `rm folder` se delete karne ki koshish karna. Error aata hai `Is a directory`; `rm -r folder` ya (khaali ho to) `rmdir folder` use karo, aur chalane se pehle `ls` se check kar lo.",
+        "Spaces wale naam bina quotes ke likhna: `cd my notes` do alag arguments ban jaate hain. `cd \"my notes\"` ya `cd my\\ notes` likho."
+      ],
+      "revision": [
+        "Root `/` se sab shuru hota hai; absolute path `/` se, relative path current directory se.",
+        "`.` = current, `..` = parent, `~` = home.",
+        "`mkdir -p` beech ki directories bhi banata hai.",
+        "`mv` = move ya rename; `cp -r` = directory copy.",
+        "`rm` ka koi undo nahi; directory ke liye `-r` chahiye.",
+        "Atak jao to `man command` ya `command --help`."
+      ],
+      "questions": [
+        {
+          "id": "linux-w1-q1",
+          "question": "Inmein se kaunsa path **absolute** hai?",
+          "options": [
+            "`docs/notes.txt`",
+            "`./notes.txt`",
+            "`/home/asha/notes.txt`",
+            "`../notes.txt`"
+          ],
+          "answer": 2,
+          "explanation": "Absolute path hamesha root `/` se shuru hota hai, isliye `/home/asha/notes.txt` kisi bhi current directory se same file batata hai. `./notes.txt` mein bhi slash hai, par woh `.` (current directory) se shuru hota hai, isliye relative hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w1-q2",
+          "question": "In commands ke baad `pwd` kya print karega?",
+          "code": "cd /usr/share\ncd ../lib\npwd",
+          "options": [
+            "/usr/share/lib",
+            "/usr/lib",
+            "/lib",
+            "/usr/share/../lib"
+          ],
+          "answer": 1,
+          "explanation": "`cd ../lib` pehle `..` se `/usr/share` ka parent `/usr` pakadta hai, phir uske andar `lib`, yaani `/usr/lib`. `pwd` saaf absolute path print karta hai, `..` wala raw path nahi. Trap: `..` ko ignore karke `/usr/share/lib` bolna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w1-q3",
+          "question": "Ek khaali directory mein ye commands chalaye gaye. Aakhri `ls` kya dikhayega?",
+          "code": "mkdir -p proj/src\ncd proj\ntouch a.txt\ncp a.txt src/\nmv a.txt b.txt\nls",
+          "options": [
+            "b.txt aur src",
+            "a.txt, b.txt aur src",
+            "a.txt aur src",
+            "Sirf src"
+          ],
+          "answer": 0,
+          "explanation": "`cp a.txt src/` copy ko `src` ke andar daalta hai, original `a.txt` wahin rehta hai. Phir `mv a.txt b.txt` usi file ko rename karta hai, to `proj` mein ab `a.txt` nahi bachi. Isliye `ls` dikhata hai `b.txt` aur `src`. Trap: `mv` ko copy samajh kar `a.txt` bhi gin lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w1-q4",
+          "question": "Ye do commands chalane par kya hoga?",
+          "code": "mkdir data\nrm data",
+          "options": [
+            "`data` directory delete ho jaayegi",
+            "`data` trash folder mein chali jaayegi",
+            "Shell pehle confirm poochega, phir delete karega",
+            "Error aayega kyunki `rm` bina `-r` ke directory delete nahi karta"
+          ],
+          "answer": 3,
+          "explanation": "Bina option ke `rm` sirf files hataata hai. Directory dene par woh `rm: cannot remove 'data': Is a directory` error deta hai aur kuch delete nahi karta. `rm -r data` ya khaali directory ke liye `rmdir data` chahiye. Trap: Windows jaisa trash ya confirmation expect karna; `rm` mein dono nahi hote.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w1-q5",
+          "question": "Maan lo ye saari directories maujood hain. Aakhri `pwd` kya print karega?",
+          "code": "cd /home/ravi/projects\ncd ./../../asha\npwd",
+          "options": [
+            "/home/ravi/asha",
+            "/home/ravi/projects/asha",
+            "/home/asha",
+            "/asha"
+          ],
+          "answer": 2,
+          "explanation": "`/home/ravi/projects` se `.` wahin rehta hai, pehla `..` le jaata hai `/home/ravi`, doosra `..` le jaata hai `/home`, aur phir `asha`. Result `/home/asha`. Trap: sirf ek `..` ginna (to `/home/ravi/asha` aata) ya `.` ko bhi ek level upar samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w1-q6",
+          "question": "Ek khaali directory mein ye commands chalaye gaye. Aakhri `ls dst` kya dikhayega?",
+          "code": "mkdir src\ntouch src/f.txt\ncp -r src dst\ncp -r src dst\nls dst",
+          "options": [
+            "f.txt",
+            "f.txt aur src",
+            "Sirf src",
+            "Error, kyunki dst pehle se hai"
+          ],
+          "answer": 1,
+          "explanation": "Pehli baar `dst` exist nahi karti, to `cp -r src dst` ek nayi `dst` banata hai jo `src` ki copy hai (andar `f.txt`). Doosri baar `dst` pehle se hai, to `cp` poori `src` ko `dst` ke andar copy karta hai, yaani `dst/src` ban jaata hai. Isliye `ls dst` dikhata hai `f.txt` aur `src`. Trap: sochna ki doosri copy pehli ko overwrite karegi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Editors, Networking and Remote Login",
+      "summary": "Is week aap terminal ke andar files edit karna (`nano` aur `vim`), network check karna (`ping`, `ip`, `curl`, `wget`) aur `ssh`/`scp` se doosri machine pe kaam karna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**nano**: sabse aasaan terminal editor. `nano file.txt` kholo, seedha type karo. Neeche shortcuts likhe hote hain jahan `^` matlab Ctrl: `Ctrl+O` save (write out), `Ctrl+X` exit, `Ctrl+W` search.",
+        "**vim ke modes**: vim mein typing seedhe text nahi banti. **Normal mode** (shuru mein yahi) mein keys commands hain; `i` dabao to **Insert mode** mein text likh sakte ho; `Esc` se wapas Normal mode. `:` se command-line mode khulta hai.",
+        "**vim commands**: `:w` save, `:q` quit, `:wq` save karke quit, `:q!` bina save kiye quit. Normal mode mein `dd` line cut karta hai, `yy` line copy, `p` cursor wali line ke neeche paste, `u` undo, `G` last line pe, `gg` pehli line pe. Count lagao to `3dd` teen lines cut karta hai.",
+        "**ping**: `ping host` network pe chhote packets (ICMP echo) bhejta hai aur reply ka time (ms) dikhata hai. Linux pe ye khud nahi rukta, `Ctrl+C` se rokna padta hai; `ping -c 4 host` sirf 4 packets bhej kar ruk jaata hai.",
+        "**IP address dekhna**: `ip addr` (purane systems pe `ifconfig`) har interface (`lo`, `eth0`, `wlan0`) ka IP dikhata hai, jaise `inet 192.168.1.23/24`. `/24` ka matlab hai pehle 24 bits network ke hain, yaani netmask 255.255.255.0. `127.0.0.1` hamesha apni hi machine (loopback) hai.",
+        "**curl aur wget**: dono URL se data laate hain. `curl URL` content seedha terminal pe print karta hai; save karna ho to `curl -o naam URL` ya `curl -O URL`. `wget URL` default mein file ko disk pe uske remote naam se save karta hai.",
+        "**ssh**: `ssh user@host` doosri machine (jaise Raspberry Pi) pe secure shell kholta hai. Pehli baar host ka fingerprint confirm karna padta hai. `exit` se wapas apni machine pe. Port alag ho to `ssh -p 2222 user@host`.",
+        "**scp**: ssh ke upar file copy. Format `scp source destination`, aur remote side hamesha `user@host:path` likhte hain (colon zaroori). Directory ke liye `scp -r`."
+      ],
+      "example": {
+        "problem": "Aapke laptop se Raspberry Pi (192.168.1.50, user `pi`) pe login karke CPU info dekhni hai, phir Pi ki `/home/pi/log.txt` laptop ki current directory mein laani hai. Commands ka sahi kram kya hoga?",
+        "code": "ssh pi@192.168.1.50\ncat /proc/cpuinfo\nexit\nscp pi@192.168.1.50:/home/pi/log.txt .",
+        "steps": [
+          "`ssh pi@192.168.1.50` se Pi pe shell khulta hai; ab prompt Pi ka hai.",
+          "`cat /proc/cpuinfo` Pi pe chalta hai aur Pi ke processor ki details dikhata hai.",
+          "`exit` se ssh session band, prompt wapas laptop ka.",
+          "File laptop pe laani hai, isliye `scp` laptop pe chalao: source remote (`pi@192.168.1.50:/home/pi/log.txt`), destination local (`.`).",
+          "Dhyaan do: scp ko Pi ke andar se chalaate to source/destination ulte likhne padte.",
+          "Answer: **ssh → cat → exit, phir laptop se `scp pi@192.168.1.50:/home/pi/log.txt .`**"
+        ]
+      },
+      "mistakes": [
+        "vim mein Normal mode mein hi type karne lagna, jisse letters commands ban jaate hain (jaise `d`, `x` text delete kar dete hain). Pehle `i` dabao, likhne ke baad `Esc`, phir `:wq`.",
+        "scp mein colon bhool jaana: `scp f.txt pi@192.168.1.50/home/pi` ek local file copy ban jaata hai. Remote path hamesha `user@host:path` hota hai.",
+        "`curl URL` chala kar sochna ki file save ho gayi. curl default mein sirf print karta hai; `-o` ya `-O` lagao, ya `wget` use karo."
+      ],
+      "revision": [
+        "nano: `Ctrl+O` save, `Ctrl+X` exit.",
+        "vim: `i` insert, `Esc` normal, `:wq` save+quit, `:q!` discard.",
+        "vim: `dd` cut line, `p` neeche paste, `u` undo, `G` last line.",
+        "`ping -c N` N packets ke baad rukta hai.",
+        "`/24` = netmask 255.255.255.0.",
+        "scp remote path: `user@host:path`."
+      ],
+      "questions": [
+        {
+          "id": "linux-w2-q1",
+          "question": "vim mein file edit karne ke baad (Normal mode mein) changes **save karke** bahar nikalne ke liye kya type karoge?",
+          "options": [
+            "`:q!`",
+            "`Ctrl+X`",
+            "`:w`",
+            "`:wq`"
+          ],
+          "answer": 3,
+          "explanation": "`:wq` pehle write (save) karta hai, phir quit. `:q!` bina save kiye bahar nikalta hai aur changes kho jaate hain. `:w` sirf save karta hai, vim khula rehta hai. `Ctrl+X` nano ka exit hai, vim ka nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w2-q2",
+          "question": "Linux pe `ping -c 4 192.168.1.1` chalane par kya hota hai?",
+          "options": [
+            "4 echo packets bhej kar ping khud ruk jaata hai",
+            "Ping 4 second ke liye chalta hai, phir rukta hai",
+            "Ping 4 alag-alag IP addresses ko check karta hai",
+            "Ping tab tak chalta hai jab tak Ctrl+C na dabao, par har 4 second mein ek packet bhejta hai"
+          ],
+          "answer": 0,
+          "explanation": "`-c` matlab count: itne echo request bhejo aur phir summary dikha kar ruk jaao. Bina `-c` ke Linux ka ping hamesha chalta rehta hai. Packets ke beech ka gap `-i` se badalta hai, aur time limit `-w` se lagti hai, isliye 'har 4 second' aur '4 second tak' dono galat hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w2-q3",
+          "question": "Laptop pe rakhi `firmware.bin` ko Raspberry Pi (user `pi`, IP 192.168.1.50) ki `/home/pi/fw/` directory mein copy karna hai. Laptop pe kaunsi command chalaoge?",
+          "options": [
+            "`scp pi@192.168.1.50:/home/pi/fw/ firmware.bin`",
+            "`scp firmware.bin pi@192.168.1.50/home/pi/fw/`",
+            "`scp firmware.bin pi@192.168.1.50:/home/pi/fw/`",
+            "`ssh firmware.bin pi@192.168.1.50:/home/pi/fw/`"
+          ],
+          "answer": 2,
+          "explanation": "scp ka format hai `scp source destination`. Source local file `firmware.bin` hai aur destination remote, jo `user@host:path` likha jaata hai. Colon ke bina (`pi@192.168.1.50/home/pi/fw/`) scp use local path samajhta hai. Pehla option ulti direction hai, aur `ssh` file copy nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w2-q4",
+          "question": "Ek board ka web server `http://192.168.1.50/status.txt` deta hai. Aap sirf `curl http://192.168.1.50/status.txt` chalate ho. Kya hoga?",
+          "options": [
+            "`status.txt` current directory mein save ho jaayegi",
+            "File ka content terminal pe print hoga, koi file save nahi hogi",
+            "`status.txt` home directory mein save ho jaayegi",
+            "Error aayega kyunki curl ko output file ka naam chahiye"
+          ],
+          "answer": 1,
+          "explanation": "curl default mein downloaded data standard output (terminal) pe likhta hai. File save karni ho to `curl -O URL` (remote naam se) ya `curl -o naam URL` chahiye. Trap: wget jaisa behaviour expect karna; `wget URL` hi default mein file save karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w2-q5",
+          "question": "`ip addr` ke output mein ek line hai `inet 10.21.4.17/16`. Is interface ka netmask kya hai?",
+          "options": [
+            "255.255.255.0",
+            "255.255.0.0",
+            "255.0.0.0",
+            "255.255.255.16"
+          ],
+          "answer": 1,
+          "explanation": "`/16` ka matlab pehle 16 bits 1 hain: 11111111.11111111.00000000.00000000, yaani 255.255.0.0. `/24` hota to 255.255.255.0 aata. Trap: `/16` ko last octet mein 16 likh dena; ye bits ki ginti hai, octet ki value nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w2-q6",
+          "question": "vim mein ye 5 lines wali file khuli hai aur cursor line `l2` pe hai (Normal mode). Aap `2dd`, phir `G`, phir `p` dabate ho. File ab kaisi dikhegi (upar se neeche)?",
+          "code": "l1\nl2\nl3\nl4\nl5",
+          "options": [
+            "l1 l4 l5 l2 l3",
+            "l1 l4 l2 l3 l5",
+            "l1 l3 l4 l5 l2",
+            "l2 l3 l1 l4 l5"
+          ],
+          "answer": 0,
+          "explanation": "`2dd` cursor wali line se 2 lines (`l2`, `l3`) cut karta hai; bacha `l1 l4 l5`. `G` last line `l5` pe le jaata hai. `p` cut ki hui lines cursor line ke **neeche** paste karta hai, to result `l1 l4 l5 l2 l3`. Trap: `2dd` ko sirf ek line samajhna (`l1 l3 l4 l5 l2`) ya `p` ko upar paste maanna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Pipes, Permissions and Processes",
+      "summary": "Is week aap commands ko pipe (`|`) se jodna, output/error ko files mein redirect karna, file permissions (`chmod`) samajhna, `apt` se software install karna aur processes ko `ps`, `kill`, `jobs`, `fg`, `bg` se control karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Teen standard streams**: har command ke paas stdin (0, input), stdout (1, normal output) aur stderr (2, error messages) hote hain. Default mein stdin keyboard se aata hai aur stdout/stderr dono terminal pe jaate hain.",
+        "**Redirection**: `cmd > f` stdout ko file mein likhta hai (file pehle khaali ho jaati hai), `cmd >> f` file ke end mein jodta hai, `cmd < f` file ko stdin banata hai, `cmd 2> f` sirf errors file mein bhejta hai. `cmd > f 2>&1` dono streams ek hi file mein bhejta hai.",
+        "**Order matters in 2>&1**: redirections left se right lagte hain. `2>&1` ka matlab hai 'stderr ko wahin bhejo jahan abhi stdout ja raha hai'. Isliye `> f 2>&1` dono ko file mein bhejta hai, par `2>&1 > f` mein stderr terminal pe hi reh jaata hai.",
+        "**Pipe**: `cmd1 | cmd2` cmd1 ka stdout cmd2 ka stdin bana deta hai. Sirf stdout pipe hota hai, stderr nahi. Chhote tools jod kar bada kaam karna hi Unix ka tareeka hai, jaise `ls /dev | grep tty`.",
+        "**Permissions**: `ls -l` mein `-rwxr-xr--` jaisa string aata hai. Pehla character type (`-` file, `d` directory), phir 3-3 ke group: user (owner), group, others. r=4, w=2, x=1, to `rwx`=7, `r-x`=5, `r--`=4, yaani `754`.",
+        "**chmod**: numeric `chmod 755 run.sh` teeno groups ek saath set karta hai. Symbolic `chmod u+x f` (owner ko execute do), `g-w` (group se write hatao), `o=r` (others ko sirf read). Script chalane ke liye `x` permission chahiye; directory mein `cd` karne ke liye bhi `x` chahiye.",
+        "**apt (Debian/Ubuntu)**: `sudo apt update` sirf package list refresh karta hai, kuch install nahi karta. `sudo apt install gtkwave` install karta hai, `sudo apt upgrade` installed packages ko naye version pe le jaata hai, `apt remove` hataata hai. `sudo` admin (root) rights deta hai.",
+        "**Processes**: `ps` (ya `ps aux`) chal rahe processes aur unke PID dikhata hai, `top` live view deta hai. `cmd &` command ko background mein chalata hai. `jobs` background jobs dikhata hai, `fg %1` use foreground mein laata hai, `Ctrl+Z` foreground job ko pause karta hai aur `bg` use background mein chalu karta hai. `kill PID` default SIGTERM (15) bhejta hai; na ruke to `kill -9 PID` (SIGKILL)."
+      ],
+      "example": {
+        "problem": "`log.txt` mein 4 lines hain. Neeche ki teesri line ke baad `errors.txt` aur `grep_errors.txt` mein kya hoga, aur terminal pe kya dikhega?",
+        "code": "printf 'ok\\nERROR adc timeout\\nok\\nERROR i2c nack\\n' > log.txt\ngrep ERROR log.txt | sort > errors.txt 2> grep_errors.txt\ncat errors.txt",
+        "steps": [
+          "`printf` 4 lines `log.txt` mein likhta hai: ok, ERROR adc timeout, ok, ERROR i2c nack.",
+          "`grep ERROR log.txt` sirf woh 2 lines nikaalta hai jinmein ERROR hai, aur unhe stdout pe bhejta hai.",
+          "Pipe us stdout ko `sort` ke stdin mein daalta hai; alphabetically `adc` pehle aata hai `i2c` se.",
+          "`> errors.txt` sort ka output file mein likhta hai, isliye terminal pe kuch nahi aata.",
+          "`2> grep_errors.txt` sort ke errors pakadta hai; koi error nahi hua, to ye file khaali bani.",
+          "Answer: **errors.txt mein 'ERROR adc timeout' aur 'ERROR i2c nack', grep_errors.txt khaali**; `cat` ye 2 lines dikhata hai."
+        ]
+      },
+      "mistakes": [
+        "`sort data.txt > data.txt` likhna. Shell pehle `data.txt` ko khaali karta hai, phir sort chalta hai, to data gaya. Output naye naam se likho, phir `mv` karo.",
+        "`2>&1 > f` likh kar sochna ki errors bhi file mein gaye. Order ulta hai; sahi hai `> f 2>&1`.",
+        "Script ko `chmod 777` de dena 'taaki chal jaaye'. Isse sab log usse badal sakte hain. Owner ke liye `chmod u+x` ya `755` kaafi hai."
+      ],
+      "revision": [
+        "`>` overwrite, `>>` append, `<` input, `2>` errors.",
+        "`> f 2>&1` = dono streams file mein; order zaroori.",
+        "Pipe sirf stdout aage bhejta hai.",
+        "r=4, w=2, x=1; `754` = `rwxr-xr--`.",
+        "`apt update` list refresh, `apt upgrade` packages update.",
+        "`kill PID` = SIGTERM (15), `kill -9` = SIGKILL."
+      ],
+      "questions": [
+        {
+          "id": "linux-w3-q1",
+          "question": "Ek khaali directory mein ye commands chalaye. `cat f.txt` kya dikhayega?",
+          "code": "echo one > f.txt\necho two > f.txt\necho three >> f.txt\ncat f.txt",
+          "options": [
+            "one / two / three (teen lines)",
+            "three",
+            "two / three (do lines)",
+            "one / three (do lines)"
+          ],
+          "answer": 2,
+          "explanation": "Pehla `>` file mein 'one' likhta hai. Doosra `>` file ko pehle khaali karta hai, phir 'two' likhta hai, to 'one' chala gaya. `>>` end mein 'three' jodta hai. Result: two, three. Trap: `>` ko bhi append samajhna, jisse teeno lines aa jaati.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w3-q2",
+          "question": "`chmod 754 run.sh` ke baad `ls -l` mein permission string kya dikhega?",
+          "options": [
+            "`-rwxr-xr--`",
+            "`-rwxrw-r--`",
+            "`-rw-r-xr--`",
+            "`-rwxr--r-x`"
+          ],
+          "answer": 0,
+          "explanation": "Har digit ek group hai, r=4, w=2, x=1. 7 = 4+2+1 = `rwx` (owner), 5 = 4+1 = `r-x` (group), 4 = `r--` (others). Isliye `-rwxr-xr--`. Trap: 5 ko 4+1 ki jagah `rw-` (jo 6 hota) padh lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w3-q3",
+          "question": "Ubuntu pe `sudo apt update` chalane se kya hota hai?",
+          "options": [
+            "Saare installed packages naye version pe upgrade ho jaate hain",
+            "Ubuntu ka naya release install ho jaata hai",
+            "apt khud ka naya version download karta hai",
+            "Repositories se available packages ki list refresh hoti hai, kuch install ya upgrade nahi hota"
+          ],
+          "answer": 3,
+          "explanation": "`apt update` sirf package index (kaunse packages, kaunse versions available hain) download karta hai. Asli upgrade `sudo apt upgrade` karta hai, aur naya package `sudo apt install naam`. Naam 'update' se lagta hai sab update hoga, yahi sabse common trap hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w3-q4",
+          "question": "File `f` ki permissions abhi `-rw-r--r--` hain. `chmod u+x,g-r,o=w f` ke baad permission string kya hoga?",
+          "code": "ls -l f\n# -rw-r--r-- 1 asha asha 0 Mar  3 10:00 f\nchmod u+x,g-r,o=w f",
+          "options": [
+            "`-rwxr---w-`",
+            "`-rwx---rw-`",
+            "`-rwx---w--`",
+            "`-rwx---w-`"
+          ],
+          "answer": 3,
+          "explanation": "Teeno parts alag lagte hain. `u+x`: owner `rw-` se `rwx`. `g-r`: group `r--` se `---`. `o=w`: `=` purani permissions hata kar exactly sirf w deta hai, to others `-w-`. Result `-rwx---w-`. Trap: `o=w` ko `o+w` samajh lena, jisse others `rw-` ban jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w3-q5",
+          "question": "Ek program PID 2345 pe chal raha hai. `kill 2345` (bina signal number ke) kaunsa signal bhejta hai?",
+          "options": [
+            "SIGKILL (9)",
+            "SIGTERM (15)",
+            "SIGINT (2)",
+            "SIGSTOP (19)"
+          ],
+          "answer": 1,
+          "explanation": "`kill` ka default signal SIGTERM (15) hai, jo program ko politely band hone ko kehta hai; program cleanup kar sakta hai ya ise ignore bhi kar sakta hai. SIGKILL (9) tab bhejte ho jab `kill -9` likho; use roka nahi ja sakta. SIGINT (2) woh hai jo Ctrl+C bhejta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w3-q6",
+          "question": "Directory mein `good.txt` hai par `nofile` nahi hai. Ye commands chalane par terminal pe kya dikhega, aur `out.txt` mein kya hoga?",
+          "code": "touch good.txt\nls good.txt nofile 2>&1 > out.txt",
+          "options": [
+            "Terminal pe kuch nahi; `out.txt` mein `good.txt` aur 'No such file' error dono",
+            "Terminal pe 'No such file' error; `out.txt` mein `good.txt`",
+            "Terminal pe `good.txt`; `out.txt` mein 'No such file' error",
+            "Terminal pe dono; `out.txt` khaali"
+          ],
+          "answer": 1,
+          "explanation": "Redirections left se right lagte hain. `2>&1` ke waqt stdout abhi terminal pe hai, to stderr bhi terminal se jud jaata hai. Uske baad `> out.txt` sirf stdout ko file mein bhejta hai. Isliye error terminal pe aur `good.txt` file mein. Dono file mein chahiye to `> out.txt 2>&1` likho; pehla option usi ka result hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Globs and Regular Expressions",
+      "summary": "Is week aap filenames ke liye shell globbing (`*`, `?`, `[ ]`) aur text ke liye regular expressions (`grep`, `grep -E`) mein farak samjhoge, aur anchors, character classes aur repetition se patterns likhna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Globbing (wildcards)**: ye shell karta hai, command chalne se pehle. `*` koi bhi characters (zero ya zyada), `?` exactly ek character, `[abc]` ya `[0-9]` ek character us set se, `[!a]` ek character jo `a` nahi hai. `ls *.c` mein shell pehle `*.c` ko matching filenames se replace karta hai, phir `ls` chalta hai.",
+        "**Glob ka khaas behaviour**: glob sirf **existing** files se match karta hai. Koi match na mile to bash pattern ko waise ka waisa chhod deta hai (jaise `*.xyz` literally). Brace expansion `{1..3}` ya `{a,b}` glob nahi hai; woh bina files dekhe naam bana deta hai.",
+        "**Regular expressions**: ye text ke andar patterns ke liye hain, aur `grep`, `sed`, `awk` inhe samajhte hain. Yahan `.` matlab koi bhi ek character, aur `*` matlab **pichhla item** zero ya zyada baar. Isliye glob `*` aur regex `*` alag cheezein hain: regex mein 'kuch bhi' likhna ho to `.*`.",
+        "**Anchors aur classes**: `^` line ki shuruaat, `$` line ka end. `^#` = line `#` se shuru, `^$` = khaali line. `[0-9]` ek digit, `[A-Za-z]` ek letter, `[^0-9]` koi bhi non-digit (bracket ke andar `^` matlab NOT). POSIX classes bhi hain: `[[:digit:]]`, `[[:space:]]`, `[[:upper:]]`.",
+        "**grep options**: `grep pattern file` matching lines print karta hai. `-i` case ignore, `-v` ulta (jo match NA kare), `-c` matching lines ki ginti, `-n` line number, `-o` sirf matched hissa, `-r` directory ke andar recursively. Pattern ko hamesha single quotes mein likho taaki shell use glob na samjhe.",
+        "**Basic vs Extended regex**: plain `grep` Basic RE (BRE) use karta hai, jahan `+`, `?`, `|`, `( )`, `{ }` normal characters hain (GNU grep mein unhe `\\+` jaise likhna padta hai). `grep -E` (purana naam `egrep`) Extended RE use karta hai jahan ye seedhe kaam karte hain: `a+` (ek ya zyada), `colou?r`, `cat|dog`, `(ab)+`, `[0-9]{3}`.",
+        "**Repetition counts (ERE)**: `{n}` exactly n baar, `{n,}` kam se kam n, `{n,m}` n se m baar. Jaise `^[0-9]{6}$` sirf 6-digit PIN code wali line match karega. Literal dot chahiye to `\\.` likho."
+      ],
+      "example": {
+        "problem": "Multimeter ki readings `meter.txt` mein hain. Woh voltage lines nikaalni hain jinmein exactly 2 decimal places hain. Kaunsi lines print hongi?",
+        "code": "printf 'V=3.30\\nV=3.3\\nI=0.25\\nV=12.0\\nV=5\\n' > meter.txt\ngrep -E '^V=[0-9]+\\.[0-9]{2}$' meter.txt",
+        "steps": [
+          "Pattern `^V=` kehta hai line `V=` se shuru honi chahiye, to `I=0.25` bahar.",
+          "`[0-9]+` ek ya zyada digits, phir `\\.` ek literal dot. `V=5` mein dot hi nahi hai, bahar.",
+          "`[0-9]{2}$` kehta hai dot ke baad exactly 2 digits aur phir line khatam.",
+          "`V=3.3` mein dot ke baad sirf 1 digit, bahar. `V=12.0` mein bhi 1 digit, bahar.",
+          "`V=3.30` mein 3, dot, phir `30` aur line end, to match.",
+          "Answer: sirf **V=3.30** print hogi."
+        ]
+      },
+      "mistakes": [
+        "`grep *.txt file` jaisa pattern bina quotes ke likhna. Shell pehle `*.txt` ko filenames mein badal deta hai aur grep ko galat pattern milta hai. Pattern ko `'single quotes'` mein rakho.",
+        "Regex mein `*` ko glob jaisa 'kuch bhi' samajhna. `ab*c` ka matlab 'a, phir zero ya zyada b, phir c' hai; 'a se shuru, c pe khatam' ke liye `^a.*c$` likho.",
+        "Plain `grep` mein `+` ya `{3}` use karke sochna ki ye kaam karenge. Ye ERE ke hain; `grep -E` use karo."
+      ],
+      "revision": [
+        "Glob = filenames (shell), regex = text ke andar (grep/sed/awk).",
+        "Glob `*` = kuch bhi; regex `*` = pichhla item 0+ baar; regex 'kuch bhi' = `.*`.",
+        "`^` start, `$` end, `[^...]` NOT set.",
+        "`grep -c` count, `-v` invert, `-i` ignore case, `-o` only match.",
+        "`+ ? | ( ) {n}` ke liye `grep -E`."
+      ],
+      "questions": [
+        {
+          "id": "linux-w4-q1",
+          "question": "Directory mein `a1.txt`, `a2.txt`, `a10.txt`, `b1.txt` aur `notes.md` hain. `ls a?.txt` kya dikhayega?",
+          "code": "touch a1.txt a2.txt a10.txt b1.txt notes.md\nls a?.txt",
+          "options": [
+            "a1.txt a2.txt a10.txt",
+            "a1.txt a10.txt",
+            "a1.txt a2.txt a10.txt b1.txt",
+            "a1.txt a2.txt"
+          ],
+          "answer": 3,
+          "explanation": "Glob mein `?` exactly ek character match karta hai. `a1.txt` aur `a2.txt` mein `a` ke baad ek hi character hai. `a10.txt` mein do characters (`10`) hain, isliye match nahi. Trap: `?` ko `*` jaisa 'kitne bhi characters' samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w4-q2",
+          "question": "Is command ka output kya hoga?",
+          "code": "printf 'gain=5\\n# comment\\nmode=fast # fast\\n\\n#end\\n' > cfg\ngrep -c '^#' cfg",
+          "options": [
+            "2",
+            "3",
+            "1",
+            "5"
+          ],
+          "answer": 0,
+          "explanation": "`^#` sirf woh lines match karta hai jo `#` se **shuru** hoti hain: '# comment' aur '#end', to count 2. 'mode=fast # fast' mein `#` beech mein hai, isliye anchor `^` ki wajah se ginti mein nahi aata. Trap: `^` ko ignore karke `#` wali har line ginna (3).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w4-q3",
+          "question": "`words.txt` mein 5 lines hain. `grep -c 'ab*c' words.txt` kya print karega?",
+          "code": "printf 'abc\\nac\\nabbc\\na.c\\naxc\\n' > words.txt\ngrep -c 'ab*c' words.txt",
+          "options": [
+            "2",
+            "5",
+            "3",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "Regex mein `b*` matlab 'b zero ya zyada baar'. Isliye `abc` (ek b), `ac` (zero b) aur `abbc` (do b) match karte hain: 3. `a.c` aur `axc` mein a ke baad b ya c nahi hai. Trap: glob ki tarah `*` ko 'kuch bhi' samajhna; tab `ac` chhoot jaata aur answer 2 lagta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w4-q4",
+          "question": "Ek bill-of-materials file mein ye lines hain. Command kya print karega?",
+          "code": "printf 'R1 10k\\nR22 4k7\\nC3 100n\\nR105 1M\\nR7 220\\n' > bom.txt\ngrep -cE '^R[0-9]{2,} ' bom.txt",
+          "options": [
+            "3",
+            "2",
+            "4",
+            "1"
+          ],
+          "answer": 1,
+          "explanation": "`^R[0-9]{2,} ` ka matlab: line R se shuru, phir **kam se kam 2** digits, phir ek space. `R22` (2 digits) aur `R105` (3 digits) match karte hain, to 2. `R1` aur `R7` mein sirf 1 digit hai aur `C3` R se shuru hi nahi hota. Trap: `{2,}` ko 'exactly 2' samajhna, jisse R105 chhoot jaata (1).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w4-q5",
+          "question": "`t.txt` mein teen lines hain: `aab`, `a+b`, `ab`. Dono commands kya print karenge (upar se neeche)?",
+          "code": "printf 'aab\\na+b\\nab\\n' > t.txt\ngrep -c 'a+b' t.txt\ngrep -cE 'a+b' t.txt",
+          "options": [
+            "1 aur 2",
+            "2 aur 2",
+            "2 aur 1",
+            "1 aur 1"
+          ],
+          "answer": 0,
+          "explanation": "Plain `grep` Basic RE use karta hai jismein `+` ek normal character hai, to `'a+b'` sirf literal text `a+b` dhoondta hai: 1 line. `grep -E` mein `+` ka matlab 'ek ya zyada', to `a+b` = ek ya zyada a ke baad b: `aab` aur `ab` match (2). `a+b` wali line mein `a` ke turant baad `b` nahi hai. Trap: BRE mein bhi `+` ko special maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w4-q6",
+          "question": "Ek khaali directory mein ye commands chalaye gaye. Dono `echo` kya print karenge?",
+          "code": "touch file1.txt file3.txt\necho file[1-3].txt\necho file{1..3}.txt",
+          "options": [
+            "Dono baar `file1.txt file2.txt file3.txt`",
+            "Dono baar `file1.txt file3.txt`",
+            "Pehle `file1.txt file3.txt`, phir `file1.txt file2.txt file3.txt`",
+            "Pehle `file[1-3].txt`, phir `file1.txt file2.txt file3.txt`"
+          ],
+          "answer": 2,
+          "explanation": "`file[1-3].txt` ek glob hai, jo sirf existing files se match karta hai: `file1.txt` aur `file3.txt` (file2 bani hi nahi). `file{1..3}.txt` brace expansion hai, jo files dekhe bina teeno naam bana deta hai. Glob tabhi literal rehta jab koi bhi file match na karti, jo yahan nahi hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Shell Variables, Quoting and Arithmetic",
+      "summary": "Is week aap shell variables banana aur use karna, single/double quotes aur backslash ka farak, environment variables aur `export`, `PATH`, command substitution `$( )` aur arithmetic `$(( ))` seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Variable assignment**: `name=value` likhte hain, `=` ke dono taraf **koi space nahi**. Value padhne ke liye `$name` ya `${name}`. Shell variables mein sab kuch string hai; koi type declare nahi hota.",
+        "**Single quotes** `'...'` ke andar kuch bhi special nahi rehta: `$`, `*`, `\\` sab literal. **Double quotes** `\"...\"` ke andar `$var` aur `$( )` expand hote hain, par globbing aur word splitting nahi hoti. **Backslash** `\\` sirf agle ek character ko literal banata hai, jaise `\\$`.",
+        "**Braces kab zaroori**: `$v_V` shell ke liye variable `v_V` hai (underscore naam ka hissa hai). Variable ke turant baad letter, digit ya `_` likhna ho to `${v}_V` likho. Jo variable set nahi hai, woh khaali string ban jaata hai, error nahi deta.",
+        "**Word splitting**: bina quotes ke `$var` ki value spaces/newlines pe tukdon mein toot jaati hai aur extra spaces gayab ho jaate hain. `\"$var\"` value ko bilkul waisa hi rakhta hai. Isliye filenames ya multi-line data wale variables hamesha double quotes mein likho.",
+        "**Environment variables aur export**: normal variable sirf current shell mein rehta hai. `export VAR` ya `export VAR=value` use child processes (scripts, `bash -c`, programs) tak pahunchata hai. `env` ya `printenv` saare environment variables dikhata hai; `HOME`, `USER`, `SHELL`, `PATH` jaise variables pehle se set hote hain.",
+        "**PATH**: colon se alag directories ki list, jaise `/usr/local/bin:/usr/bin:/bin`. Command type karne par shell inhi directories mein left se right dhoondta hai. Isliye current directory ka script `./run.sh` likh kar chalate ho. Apna folder jodna ho: `export PATH=\"$PATH:$HOME/bin\"`.",
+        "**Command substitution**: `$(command)` command ka output (end ki newlines hata kar) us jagah rakh deta hai, jaise `today=$(date +%F)`. Purana form backticks bhi hai, par `$( )` padhna aur nest karna aasaan hai.",
+        "**Arithmetic**: `$(( ))` ke andar integer maths hota hai: `+ - * / %` aur `**` (power). Andar variables ke saath `$` lagana zaroori nahi. Division integer hai: `$((7 / 2))` = 3. Bahar `n=$n+1` sirf string jodta hai, gina nahi jaata."
+      ],
+      "example": {
+        "problem": "4700 Ω resistor mein 2 mA current hai. Script voltage mV mein nikaalti hai. Teeno `echo` kya print karenge?",
+        "code": "R=4700\nI_mA=2\nV_mV=$((R * I_mA))\necho \"V = $V_mV mV\"\necho \"Integer volts: $((V_mV / 1000))\"\necho 'Literal: $V_mV'",
+        "steps": [
+          "`R=4700` aur `I_mA=2` do string variables hain jinmein digits hain.",
+          "`$((R * I_mA))` integer multiplication karta hai: 4700 × 2 = 9400, to `V_mV=9400`.",
+          "Pehla echo double quotes mein hai, `$V_mV` expand hota hai: `V = 9400 mV`.",
+          "Doosra echo `$((V_mV / 1000))` integer division hai: 9400 / 1000 = 9 (decimal hissa kat jaata hai).",
+          "Teesra echo single quotes mein hai, to `$V_mV` literally print hota hai.",
+          "Answer: **V = 9400 mV, Integer volts: 9, Literal: $V_mV**."
+        ]
+      },
+      "mistakes": [
+        "`count = 5` likhna. Shell `count` ko command samajhta hai aur `= 5` ko uske arguments, to `count: command not found` aata hai. Spaces hatao: `count=5`.",
+        "Variable ko quotes ke bina use karna jab value mein space ho, jaise `rm $file` jahan `file='my data.txt'`. Ye do files `my` aur `data.txt` maangta hai. Hamesha `rm \"$file\"` likho.",
+        "`export` ke bina variable set karke ummeed karna ki script use dekhegi. Child process ko sirf exported variables milte hain."
+      ],
+      "revision": [
+        "`var=value`, `=` ke aas-paas space nahi.",
+        "`'...'` sab literal; `\"...\"` mein `$var` expand hota hai.",
+        "`${v}_x` jab naam ke baad letter/digit/underscore aaye.",
+        "`export` = child processes tak variable pahunchao.",
+        "`$(cmd)` = output; `$((expr))` = integer maths, `/` integer division.",
+        "PATH left se right search hota hai."
+      ],
+      "questions": [
+        {
+          "id": "linux-w5-q1",
+          "question": "Is script ka output kya hoga?",
+          "code": "name=Asha\necho 'Hi $name'\necho \"Hi $name\"",
+          "options": [
+            "Hi Asha / Hi Asha",
+            "Hi $name / Hi Asha",
+            "Hi Asha / Hi $name",
+            "Hi $name / Hi $name"
+          ],
+          "answer": 1,
+          "explanation": "Single quotes ke andar `$` special nahi hota, isliye pehli line literally `Hi $name` print karti hai. Double quotes ke andar variable expand hota hai, to doosri line `Hi Asha`. Trap: dono quotes ko same samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w5-q2",
+          "question": "Ye line terminal pe chalane par kya hoga?",
+          "code": "count = 5",
+          "options": [
+            "Variable `count` ki value 5 ho jaayegi",
+            "Variable `count` ki value ' 5' (space ke saath) ho jaayegi",
+            "Kuch nahi hoga, line ignore ho jaayegi",
+            "Error `count: command not found`, kyunki shell `count` ko command samajhta hai"
+          ],
+          "answer": 3,
+          "explanation": "Spaces ki wajah se shell is line ko teen words mein todta hai: `count`, `=`, `5`. Pehla word command maana jaata hai, aur `count` naam ka koi command nahi hai, to error aata hai. Assignment ke liye `count=5` likho, bina spaces ke.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w5-q3",
+          "question": "Is script ka output kya hoga?",
+          "code": "a=7\nb=2\necho $((a / b)) $((a % b))\nn=$a+1\necho $n",
+          "options": [
+            "3.5 1 / 8",
+            "3 1 / 8",
+            "3 1 / 7+1",
+            "3.5 1 / 7+1"
+          ],
+          "answer": 2,
+          "explanation": "`$(( ))` integer maths karta hai: 7 / 2 = 3 (decimal kat jaata hai) aur 7 % 2 = 1. Lekin `n=$a+1` arithmetic context nahi hai; `$a` ki jagah 7 rakh kar bas string `7+1` banti hai. Gina jaana chahiye to `n=$((a + 1))` likho. Trap: `/` ko decimal division ya `$a+1` ko addition samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w5-q4",
+          "question": "Is script ka output kya hoga?",
+          "code": "x=10\nexport y=20\nbash -c 'echo \"x=$x y=$y\"'",
+          "options": [
+            "x=10 y=20",
+            "x= y=",
+            "x= y=20",
+            "x=10 y="
+          ],
+          "answer": 2,
+          "explanation": "`bash -c` ek nayi child shell chalata hai. Child ko sirf exported variables milte hain. `y` export hua hai, to `y=20` dikhta hai; `x` sirf parent shell ka normal variable hai, child mein woh khaali hai. Single quotes ki wajah se `$x` aur `$y` parent mein expand nahi hote, child mein hote hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w5-q5",
+          "question": "Is script ka output kya hoga? (`printf` 'a', teen spaces, 'b', newline, 'c' banata hai.)",
+          "code": "files=$(printf 'a   b\\nc\\n')\necho $files\necho \"$files\"",
+          "options": [
+            "Pehle `a b c` ek line mein; phir `a   b` aur `c` do lines mein (spaces bache)",
+            "Dono baar `a   b` aur `c` do lines mein",
+            "Dono baar `a b c` ek line mein",
+            "Pehle `a   b` aur `c` do lines mein; phir `a b c` ek line mein"
+          ],
+          "answer": 0,
+          "explanation": "Bina quotes ke `$files` word splitting se teen words `a`, `b`, `c` mein toot jaata hai; extra spaces aur newline gayab, aur echo unhe ek-ek space se jodta hai: `a b c`. `\"$files\"` value ko waisa hi rakhta hai, to teen spaces aur newline dono bache rehte hain. Trap: ulta samajhna ki quotes hi spaces hata dete hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w5-q6",
+          "question": "Is script ka output kya hoga?",
+          "code": "v=5\necho \"[$v_V]\" \"[${v}_V]\" \"[$v]V\"",
+          "options": [
+            "[5_V] [5_V] [5]V",
+            "[] [5_V] [5]V",
+            "[5] [5_V] [5V]",
+            "[] [5_V] [5V]"
+          ],
+          "answer": 1,
+          "explanation": "`$v_V` mein shell poora `v_V` ko variable naam maanta hai (underscore naam mein allowed hai). Woh set nahi hai, to khaali: `[]`. `${v}_V` mein braces naam ko `v` pe rok dete hain: `[5_V]`. `\"[$v]V\"` mein `]` naam ka hissa nahi ho sakta, to `$v` = 5 aur `V` bahar hi likha hai: `[5]V`. Trap: `$v_V` ko `5_V` padh lena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Text Utilities and Your First Scripts",
+      "summary": "Is week aap `cut`, `sort`, `uniq`, `wc`, `head`, `tail`, `tr`, `find`, `xargs` jaise chhote tools jodna seekhoge, aur pehli bash script likhoge: shebang, `chmod +x`, aur arguments `$1`, `$#`, `$@`.",
+      "readMinutes": 16,
+      "concepts": [
+        "**head aur tail**: `head -n 5 f` pehli 5 lines, `tail -n 5 f` aakhri 5 lines (default 10). `tail -n +2 f` line 2 se end tak deta hai, yaani CSV ka header hata deta hai. `tail -f log` file badhte hue live dikhata hai, serial logs dekhne ke liye kaam ka.",
+        "**wc aur cut**: `wc -l` lines, `wc -w` words, `wc -c` bytes ginta hai. `cut -d, -f2` har line ko `,` pe tod kar doosra field deta hai; `-f1,3` do fields, `-f2-` field 2 se end tak. `cut -c1-4` characters ke hisaab se kaatta hai.",
+        "**sort**: default mein text ki tarah (character by character) sort karta hai, isliye `100` `25` se pehle aata hai. Numbers ke liye `sort -n`, ulta order `-r`, column chunna ho to `-t, -k3` (comma separator, field 3), duplicates hatao `-u`.",
+        "**uniq**: sirf **lagataar (adjacent)** duplicate lines ko ek banata hai. Isliye pehle `sort` karo: `sort | uniq`. `uniq -c` har line ke aage ginti lagata hai, aur `sort | uniq -c | sort -rn` sabse zyada aane wali cheez upar le aata hai.",
+        "**tr**: characters badalta ya hataata hai, sirf stdin se padhta hai. `tr 'a-z' 'A-Z'` uppercase, `tr ',' '\\n'` comma ko newline, `tr -d '\\r'` Windows wale carriage return hataata hai, `tr -s ' '` repeated spaces ko ek karta hai.",
+        "**find aur xargs**: `find . -name '*.v'` current directory ke neeche saari `.v` files dhoondta hai; `-type f` sirf files, `-type d` sirf directories, `-size +1M`, `-mtime -1` (pichhle 1 din mein badli). `xargs` stdin ki lines ko kisi command ke arguments bana deta hai: `find . -name '*.o' | xargs rm`.",
+        "**Script banana**: file ki pehli line shebang `#!/bin/bash` batati hai ki kaunsa interpreter chalayega. `chmod +x run.sh` se execute permission do, phir `./run.sh` se chalao (ya bina permission ke `bash run.sh`). `#` se shuru hone wali baaki lines comments hain.",
+        "**Arguments**: `./run.sh a b c` mein `$0` script ka naam, `$1`, `$2`... arguments, `$#` arguments ki ginti. `\"$@\"` har argument ko alag word rakhta hai (spaces wale bhi), jabki `\"$*\"` sabko ek single string bana deta hai. Quote mein likha `\"light blue\"` ek hi argument hai."
+      ],
+      "example": {
+        "problem": "`marks.csv` mein header ke baad 5 students hain. Kaunsi branch ke sabse zyada students hain? Pipeline ka output kya hoga?",
+        "code": "cat > marks.csv << 'EOF'\nroll,branch,marks\n101,ece,78\n102,cse,91\n103,ece,85\n104,me,67\n105,ece,91\nEOF\ntail -n +2 marks.csv | cut -d, -f2 | sort | uniq -c | sort -rn | head -1",
+        "steps": [
+          "`tail -n +2` header line `roll,branch,marks` hata deta hai; 5 data lines bachti hain.",
+          "`cut -d, -f2` har line ka doosra field deta hai: ece, cse, ece, me, ece.",
+          "`sort` same values ko saath laata hai: cse, ece, ece, ece, me.",
+          "`uniq -c` gin kar likhta hai: 1 cse, 3 ece, 1 me.",
+          "`sort -rn` ginti ke hisaab se bade se chhota karta hai, aur `head -1` pehli line leta hai.",
+          "Answer: **3 ece** (uniq -c ginti ke aage kuch spaces lagata hai)."
+        ]
+      },
+      "mistakes": [
+        "Bina sort kiye `uniq` lagana aur sochna ki saare duplicates hat gaye. `uniq` sirf lagataar repeat hatata hai; pehle `sort` karo.",
+        "Numbers pe plain `sort` chalana. Text order mein `9` `10` ke baad aata hai; `sort -n` use karo.",
+        "Script ko `run.sh` likh kar chalana aur `command not found` paana. Current directory PATH mein nahi hoti; `./run.sh` likho aur `chmod +x` yaad rakho."
+      ],
+      "revision": [
+        "`tail -n +2` = header hatao; `head -n N` = pehli N lines.",
+        "`cut -d, -f2` = comma se alag doosra field.",
+        "`sort -n` numeric, `-r` reverse, `-k` column.",
+        "`uniq` sirf adjacent duplicates; pehle `sort`.",
+        "Shebang `#!/bin/bash`, phir `chmod +x`, phir `./script`.",
+        "`$#` count, `$1` pehla argument, `\"$@\"` sab alag-alag."
+      ],
+      "questions": [
+        {
+          "id": "linux-w6-q1",
+          "question": "Is pipeline ka output kya hoga? (`seq 10` 1 se 10 tak numbers, har ek alag line mein, deta hai.)",
+          "code": "seq 10 | head -7 | tail -3",
+          "options": [
+            "8 9 10",
+            "7 8 9",
+            "5 6 7",
+            "1 2 3"
+          ],
+          "answer": 2,
+          "explanation": "`head -7` pehli 7 lines deta hai: 1 se 7. Unmein se `tail -3` aakhri 3 leta hai: 5, 6, 7 (har ek alag line mein). Trap: `tail -3` ko poori `seq 10` pe lagana (8 9 10).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w6-q2",
+          "question": "Script `s.sh` (executable) ko `./s.sh red green \"light blue\"` se chalaya. Output kya hoga?",
+          "code": "#!/bin/bash\necho \"$# $1 $3\"",
+          "options": [
+            "4 red light",
+            "3 red light blue",
+            "3 s.sh green",
+            "4 red blue"
+          ],
+          "answer": 1,
+          "explanation": "Quotes mein likha `\"light blue\"` ek hi argument hai, to `$#` = 3. `$1` = red aur `$3` = light blue. Trap: space dekh kar 4 arguments ginna, jisse `$3` sirf 'light' lagta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w6-q3",
+          "question": "Is script ka output kya hoga?",
+          "code": "printf '10\\n9\\n100\\n25\\n' > n.txt\nsort n.txt | head -1\nsort -n n.txt | tail -1",
+          "options": [
+            "9 / 100",
+            "10 / 100",
+            "9 / 25",
+            "10 / 25"
+          ],
+          "answer": 1,
+          "explanation": "Plain `sort` text ki tarah pehla character compare karta hai: '1' < '2' < '9', aur `10` aur `100` mein `10` chhota prefix hai, to order 10, 100, 25, 9 aur `head -1` = 10. `sort -n` numbers ki tarah: 9, 10, 25, 100, to `tail -1` = 100. Trap: plain sort ko bhi numeric maan kar 9 bolna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w6-q4",
+          "question": "Is script ka output kya hoga?",
+          "code": "printf 'ece\\ncse\\nece\\nece\\nme\\ncse\\n' > b.txt\nuniq b.txt | wc -l\nsort b.txt | uniq | wc -l",
+          "options": [
+            "3 / 3",
+            "6 / 3",
+            "4 / 3",
+            "5 / 3"
+          ],
+          "answer": 3,
+          "explanation": "`uniq` sirf lagataar duplicates hataata hai. File ka order hai ece, cse, ece, ece, me, cse; sirf beech ke do `ece` ek bante hain, to 5 lines bachti hain. Sort ke baad same values saath aa jaati hain, to `uniq` 3 unique lines deta hai. Trap: sochna ki `uniq` akela hi saare duplicates hata dega (3 / 3).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w6-q5",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo \"R1:10k:0.25W\" | cut -d: -f2-",
+          "options": [
+            "10k:0.25W",
+            "10k",
+            "R1:10k",
+            "0.25W"
+          ],
+          "answer": 0,
+          "explanation": "`-d:` separator colon hai, to fields hain R1, 10k, 0.25W. `-f2-` ka matlab field 2 se **end tak**, aur cut beech mein separator bhi rakhta hai: `10k:0.25W`. Trap: `-f2-` ko `-f2` padhna (sirf 10k).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w6-q6",
+          "question": "Do executable scripts hain. `./wrap.sh a \"b c\"` chalane par teen lines kya print hongi?",
+          "code": "# count.sh\n#!/bin/bash\necho $#\n\n# wrap.sh\n#!/bin/bash\n./count.sh \"$@\"\n./count.sh \"$*\"\n./count.sh $@",
+          "options": [
+            "2 / 2 / 2",
+            "3 / 1 / 3",
+            "2 / 1 / 2",
+            "2 / 1 / 3"
+          ],
+          "answer": 3,
+          "explanation": "`wrap.sh` ko do arguments mile: `a` aur `b c`. `\"$@\"` dono ko alag aur saabut rakhta hai: 2. `\"$*\"` sabko ek string `a b c` bana deta hai: 1. Bina quotes ke `$@` word splitting ke baad `a`, `b`, `c` ban jaata hai: 3. Trap: unquoted `$@` ko bhi `\"$@\"` jaisa samajhna (2 / 1 / 2).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Decisions, Loops and Functions in Bash",
+      "summary": "Is week aap exit status samajh kar `if`, `test`/`[ ]`, `[[ ]]` aur `(( ))` se decisions lena, `case` se pattern matching, `for`/`while` loops aur functions likhna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Exit status**: har command khatam hokar ek number deta hai: `0` matlab success, koi bhi non-zero matlab failure. Pichhli command ka status `$?` mein hota hai. Bash mein `if` isi status ko dekhta hai, true/false value ko nahi.",
+        "**test aur [ ]**: `[ condition ]` asal mein `test` command hai, isliye brackets ke andar spaces zaroori hain. Numbers ke liye `-eq -ne -lt -le -gt -ge`, strings ke liye `=` aur `!=`, `-z \"$s\"` (khaali string), files ke liye `-f` (file hai), `-d` (directory hai), `-e` (exists).",
+        "**[[ ]] aur (( ))**: `[[ ]]` bash ka behtar test hai: variables quote na karo to bhi safe, `&&` `||` andar chalte hain, aur `==` ke saath glob pattern (`[[ $f == *.v ]]`). Dhyaan do, `[[ ]]` mein `<` `>` **string** comparison hain. Numbers ke liye `(( a > b ))` use karo, jo C jaisa arithmetic test hai.",
+        "**if/elif/else**: `if cmd; then ...; elif cmd2; then ...; else ...; fi`. `&&` aur `||` chhote if hain: `cmd1 && cmd2` (cmd1 success ho to cmd2), `cmd1 || cmd2` (cmd1 fail ho to cmd2).",
+        "**case**: ek value ko kai glob patterns se match karta hai, upar se neeche, aur pehle match pe ruk jaata hai. `pat1|pat2)` ek se zyada patterns, har block `;;` se khatam, `*)` default. Pattern poori value pe lagta hai, jaise `*.v` sirf `.v` se khatam hone wale naam.",
+        "**for loop**: `for x in list; do ...; done` list ke har word pe chalta hai; list `$(seq 1 5)`, `*.csv` ya `\"$@\"` ho sakti hai. C-style: `for ((i=0; i<5; i++)); do ...; done`.",
+        "**while loop**: `while condition; do ...; done` jab tak condition ka exit status 0 hai. File line by line padhne ka standard tareeka: `while read -r line; do ...; done < file`. `break` loop se bahar, `continue` agla round.",
+        "**Functions**: `name() { commands; }` define karo aur `name arg1 arg2` se call karo. Andar arguments `$1`, `$2`, `$#` function ke apne hote hain. Variables default mein global hain; `local v` se function tak seemit. `return n` exit status deta hai; na likho to aakhri command ka status function ka status ban jaata hai. Value lautani ho to `echo` karo aur `$(name)` se pakdo."
+      ],
+      "example": {
+        "problem": "ADC readings ko classify karne wali script ka output kya hoga?",
+        "code": "classify() {\n    local v=$1\n    if [ \"$v\" -ge 300 ]; then\n        echo \"$v HIGH\"\n    elif [ \"$v\" -ge 100 ]; then\n        echo \"$v OK\"\n    else\n        echo \"$v LOW\"\n    fi\n}\nfor r in 512 87 300; do\n    classify \"$r\"\ndone",
+        "steps": [
+          "`classify` ek function hai; `local v=$1` pehla argument leta hai.",
+          "r = 512: `512 -ge 300` true, to `512 HIGH`.",
+          "r = 87: `87 -ge 300` false, `87 -ge 100` bhi false, to else: `87 LOW`.",
+          "r = 300: `-ge` matlab 'greater or equal', to `300 -ge 300` true: `300 HIGH`.",
+          "Loop list ke order mein chalta hai, sort nahi karta.",
+          "Answer: **512 HIGH, 87 LOW, 300 HIGH** (teen alag lines)."
+        ]
+      },
+      "mistakes": [
+        "`[$a -gt 5]` likhna (brackets ke paas space nahi). `[` ek command hai, to `[ $a -gt 5 ]` likho, har cheez ke beech space.",
+        "Numbers ko `[[ $a > $b ]]` ya `[ $a > $b ]` se compare karna. Pehla string comparison hai (`10` < `9`), doosra to `>` ko redirection bana kar `$b` naam ki file bana deta hai. Numbers ke liye `-gt` ya `(( a > b ))`.",
+        "Function ka result `return` se lautana, jaise `return 300`. `return` sirf 0–255 exit status ke liye hai; data lautana ho to `echo` karo aur `result=$(func)` likho."
+      ],
+      "revision": [
+        "Exit status 0 = success; `$?` pichhla status.",
+        "`[ ]` ke andar spaces; numbers `-eq -lt -gt`, strings `=`.",
+        "`[[ a > b ]]` string compare; `(( a > b ))` numeric.",
+        "`case` pehle matching pattern pe rukta hai, `;;` zaroori.",
+        "`while read -r line; do ...; done < file`.",
+        "Function status = `return n` ya aakhri command ka status; `local` se scope chhota."
+      ],
+      "questions": [
+        {
+          "id": "linux-w7-q1",
+          "question": "Is script ka output kya hoga?",
+          "code": "for f in a b c; do\n    echo -n \"$f-\"\ndone\necho",
+          "options": [
+            "a b c",
+            "a-b-c-",
+            "-a-b-c",
+            "a-b-c"
+          ],
+          "answer": 1,
+          "explanation": "Loop teen baar chalta hai aur har baar `echo -n` (bina newline) `a-`, `b-`, `c-` likhta hai, sab ek hi line mein. Aakhri `echo` sirf newline deta hai. Har word ke **baad** dash lagta hai, isliye end mein bhi dash hai: `a-b-c-`. Trap: aakhri dash bhool jaana.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w7-q2",
+          "question": "Is script ka output kya hoga (do lines)?",
+          "code": "[ 5 -lt 3 ]\necho $?\n[ \"abc\" = \"abc\" ]\necho $?",
+          "options": [
+            "0 / 1",
+            "1 / 1",
+            "0 / 0",
+            "1 / 0"
+          ],
+          "answer": 3,
+          "explanation": "5 < 3 false hai, to `[ ]` failure deta hai: exit status 1. \"abc\" = \"abc\" true hai: exit status 0. Shell mein 0 success hai aur non-zero failure, jo C/Python ke true=1 se ulta hai. Isi ulte convention ki wajah se log 0 / 1 chun lete hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w7-q3",
+          "question": "Is script ka output kya hoga?",
+          "code": "f=notes.v.bak\ncase $f in\n    *.c|*.h) echo \"C source\" ;;\n    *.v)     echo \"Verilog\" ;;\n    *.bak)   echo \"backup\" ;;\n    *)       echo \"other\" ;;\nesac",
+          "options": [
+            "Verilog",
+            "Verilog / backup (do lines)",
+            "backup",
+            "other"
+          ],
+          "answer": 2,
+          "explanation": "`case` ka pattern **poori** value pe lagta hai. `notes.v.bak` `.bak` pe khatam hota hai, `.v` pe nahi, isliye `*.v` match nahi karta. Agla pattern `*.bak` match karta hai, to `backup`. `case` ek hi block chalata hai, isliye do lines kabhi nahi aati. Trap: naam mein `.v` dekh kar Verilog bolna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w7-q4",
+          "question": "Is script ka output kya hoga?",
+          "code": "n=1\nsum=0\nwhile [ $n -le 5 ]; do\n    sum=$((sum + n))\n    n=$((n + 2))\ndone\necho \"$sum $n\"",
+          "options": [
+            "9 7",
+            "15 6",
+            "9 5",
+            "4 5"
+          ],
+          "answer": 0,
+          "explanation": "n = 1, 3, 5 pe loop chalta hai (n 2 se badhta hai): sum = 1 + 3 + 5 = 9. Teesre round ke baad n = 7 ho jaata hai, `7 -le 5` false, loop khatam. Isliye `9 7`. Trap: loop ke baad n ko 5 maan lena; n ek baar aur badh chuka hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w7-q5",
+          "question": "Is script ka output kya hoga?",
+          "code": "check() {\n    count=$((count + 1))\n    [ \"$1\" -gt 50 ]\n}\ncount=0\ncheck 80 && echo \"high\"\ncheck 20 || echo \"low\"\ncheck 10 && echo \"maybe\"\necho $count",
+          "options": [
+            "high / low / 2",
+            "high / low / maybe / 3",
+            "high / 3",
+            "high / low / 3"
+          ],
+          "answer": 3,
+          "explanation": "Function ka exit status aakhri command `[ \"$1\" -gt 50 ]` ka status hai. `check 80` success, to `&&` ke baad `high`. `check 20` fail, to `||` ke baad `low`. `check 10` fail, to `&&` wala `maybe` nahi chalta. Teeno calls mein `count` badhta hai aur woh global hai, to 3. Trap: sochna ki fail hone wali call count nahi badhati (2).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w7-q6",
+          "question": "Is script ka output kya hoga (teen lines)?",
+          "code": "a=10\nb=9\nif [[ $a > $b ]]; then echo \"A\"; else echo \"B\"; fi\nif (( a > b )); then echo \"C\"; else echo \"D\"; fi\nif [ $a -gt $b ]; then echo \"E\"; else echo \"F\"; fi",
+          "options": [
+            "A / C / E",
+            "B / C / E",
+            "A / D / F",
+            "B / D / E"
+          ],
+          "answer": 1,
+          "explanation": "`[[ $a > $b ]]` mein `>` **string** comparison hai: pehla character '1' < '9', to \"10\" chhota maana jaata hai, false, `B`. `(( a > b ))` arithmetic hai: 10 > 9 true, `C`. `[ $a -gt $b ]` numeric test hai, true, `E`. Trap: `[[ ]]` ke `>` ko numeric maan kar A / C / E chunna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Scheduling with cron and Editing Streams with sed",
+      "summary": "Is week aap `crontab` se kaam ko time pe apne aap chalana, aur `sed` se text ko bina editor khole badalna seekhoge: `s///`, addresses, `-n` ke saath `p`, `d`, aur `-i` se file mein hi change.",
+      "readMinutes": 15,
+      "concepts": [
+        "**cron**: ek background service jo tay time pe commands chalati hai, jaise har ghante sensor reading log karna ya raat ko backup. `crontab -e` apni cron table edit karta hai, `crontab -l` dikhata hai.",
+        "**crontab line ke 5 fields**: `minute hour day-of-month month day-of-week command`. Ranges: minute 0–59, hour 0–23, day 1–31, month 1–12, weekday 0–7 (0 aur 7 dono Sunday, 1 Monday). `*` = har value, `1-5` = range, `1,15` = list, `*/10` = har 10 ke step pe.",
+        "**cron ke udaharan**: `0 * * * *` har ghante ke shuru mein; `30 2 * * *` roz raat 2:30; `*/5 * * * *` har 5 minute; `0 9 * * 1-5` weekdays subah 9 baje. Cron ka environment chhota hota hai (PATH kam), isliye scripts aur files ke **absolute paths** likho aur output ko `>> /home/pi/cron.log 2>&1` se log karo.",
+        "**sed ka model**: `sed` input ko line by line padhta hai, har line pe commands lagata hai, aur result stdout pe print karta hai. Original file tab tak nahi badalti jab tak `-i` na lagao. Commands ke aage address laga sakte ho: line number (`3`), range (`2,5`), last line (`$`), ya regex (`/ERROR/`).",
+        "**Substitute s///**: `s/old/new/` har line mein **pehla** match badalta hai; `g` flag se saare matches (`s/old/new/g`). `&` matched text ko represent karta hai, jaise `s/[0-9]*/<&>/`. Separator koi bhi character ho sakta hai, paths ke liye `s|/usr|/opt|` aasaan hai.",
+        "**-n aur p, d**: sed default mein har line print karta hai. `p` command line ko ek baar aur print karta hai, isliye `sed '2p'` line 2 do baar dikhata hai. `-n` automatic printing band karta hai, to `sed -n '3,5p'` sirf lines 3–5 deta hai. `d` line delete karta hai, jaise `sed '/^#/d'` saare comments hataata hai.",
+        "**Extended regex aur groups**: `sed -E` mein `+`, `?`, `( )` seedhe chalte hain. `( )` se group pakdo aur replacement mein `\\1`, `\\2` se wapas likho, jaise `s/([0-9]+)-([0-9]+)/\\2-\\1/` do numbers ki jagah badal deta hai. Kai commands `;` ya alag `-e` se do; woh order mein lagti hain.",
+        "**-i (in-place)**: `sed -i 's/9600/115200/' config.txt` file ko seedha badal deta hai. GNU sed mein `-i.bak` pehle backup `config.txt.bak` bana leta hai. `-i` chalane se pehle bina `-i` ke output dekh lo."
+      ],
+      "example": {
+        "problem": "`cfg.txt` mein frequency settings hain. Command sirf badli hui lines kyun aur kaise print karti hai? Output kya hoga?",
+        "code": "printf 'freq=100\\n# baud=9600\\nfreq=250\\n' > cfg.txt\nsed -n 's/^freq=/FREQ=/p' cfg.txt",
+        "steps": [
+          "`-n` default printing band karta hai, to koi line apne aap print nahi hogi.",
+          "`s/^freq=/FREQ=/` sirf un lines pe kaam karta hai jo `freq=` se shuru hoti hain.",
+          "`p` flag kehta hai: agar substitution hua to line print karo.",
+          "Line 1 `freq=100` badal kar `FREQ=100`, print.",
+          "Line 2 `# baud=9600` mein match nahi, kuch nahi hua, aur `-n` ki wajah se print bhi nahi.",
+          "Line 3 `freq=250` badal kar `FREQ=250`, print.",
+          "Answer: **FREQ=100 aur FREQ=250**; `cfg.txt` khud nahi badli kyunki `-i` nahi tha."
+        ]
+      },
+      "mistakes": [
+        "`sed '2p'` likh kar sirf line 2 expect karna. Bina `-n` ke har line print hoti hai aur `p` line 2 ko dobara print karta hai. Sirf ek line chahiye to `sed -n '2p'`.",
+        "`s/a/b/` se saari occurrences badalne ki ummeed. Ye har line mein sirf pehla match badalta hai; saare ke liye `g` lagao.",
+        "Cron mein relative paths ya `~` likhna. Cron aapki interactive shell ki tarah setup nahi hota; `/home/pi/scripts/log.sh` jaisa poora path do."
+      ],
+      "revision": [
+        "Crontab: minute hour day month weekday command.",
+        "`*/15` = har 15; `1-5` = Monday–Friday.",
+        "`s/x/y/` pehla match, `s/x/y/g` saare.",
+        "`-n` + `p` = sirf chuni hui lines; `d` = delete.",
+        "`sed -E` mein groups `( )` aur `\\1`.",
+        "`-i` file badalta hai; pehle bina `-i` test karo."
+      ],
+      "questions": [
+        {
+          "id": "linux-w8-q1",
+          "question": "Crontab ki ye line script kab chalayegi?",
+          "code": "30 2 * * 1 /home/pi/backup.sh",
+          "options": [
+            "Har mahine ki 1 tareekh ko 02:30 baje",
+            "Roz 02:30 baje",
+            "Har Monday 02:30 baje",
+            "Har Monday 30 minute past every hour"
+          ],
+          "answer": 2,
+          "explanation": "Fields hain minute=30, hour=2, day-of-month=*, month=*, day-of-week=1. Weekday 1 Monday hai, to har Monday 02:30. Trap: aakhri field `1` ko month ki tareekh samajhna; tareekh teesra field hai, jo yahan `*` hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w8-q2",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo \"on off on off\" | sed 's/on/1/'",
+          "options": [
+            "1 off on off",
+            "1 off 1 off",
+            "on off 1 off",
+            "on off on off"
+          ],
+          "answer": 0,
+          "explanation": "`g` flag ke bina `s` har line mein sirf **pehla** match badalta hai. Ye ek hi line hai, to sirf pehla `on` `1` banta hai. Saare badalne ke liye `s/on/1/g` likhna padta. Trap: `s` ko find-and-replace-all samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w8-q3",
+          "question": "Is command ka output kya hoga? (`seq 4` 1 se 4 tak numbers alag lines mein deta hai.)",
+          "code": "seq 4 | sed '2p'",
+          "options": [
+            "2",
+            "1 / 3 / 4",
+            "1 / 2 / 3 / 4",
+            "1 / 2 / 2 / 3 / 4"
+          ],
+          "answer": 3,
+          "explanation": "Bina `-n` ke sed har line ko end mein print karta hi hai. `2p` line 2 pe ek extra print karta hai, to 2 do baar aata hai: 1, 2, 2, 3, 4. Sirf line 2 chahiye to `sed -n '2p'` likho. Trap: `p` ko 'sirf ye line dikhao' samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w8-q4",
+          "question": "Ye crontab entry ek din (Monday) mein script ko kitni baar chalayegi?",
+          "code": "*/15 9-17 * * 1-5 /home/pi/read_sensor.sh",
+          "options": [
+            "32",
+            "36",
+            "9",
+            "40"
+          ],
+          "answer": 1,
+          "explanation": "`*/15` minute field mein 0, 15, 30, 45: har ghante 4 baar. `9-17` hours 9, 10, ..., 17 hain, yaani 9 ghante (dono ends shaamil). Monday `1-5` mein aata hai. Total 9 × 4 = 36. Trap: 17 − 9 = 8 ghante gin kar 32 bolna; range mein 17 bhi shaamil hai, aakhri run 17:45 pe hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w8-q5",
+          "question": "Is script ka output kya hoga?",
+          "code": "printf 'gain=5\\n# note\\n\\nmode=2\\n' > cfg\nsed -e '/^#/d' -e 's/=/: /' cfg",
+          "options": [
+            "gain: 5 / mode: 2 (do lines)",
+            "gain: 5 / # note / mode: 2",
+            "gain: 5 / (khaali line) / mode: 2",
+            "gain=5 / (khaali line) / mode=2"
+          ],
+          "answer": 2,
+          "explanation": "`/^#/d` sirf `#` se shuru hone wali line hataata hai, to `# note` gaya. Khaali line `#` se shuru nahi hoti, isliye woh bachi rehti hai. `s/=/: /` har bachi line mein pehla `=` badalta hai. Result: `gain: 5`, khaali line, `mode: 2`. Trap: maan lena ki khaali line bhi apne aap hat jaayegi; uske liye `/^$/d` chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w8-q6",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo \"temp=25C time=14:05\" | sed -E 's/([0-9]+):([0-9]+)/\\2m\\1h/; s/[0-9]+/X/'",
+          "options": [
+            "temp=XC time=05m14h",
+            "temp=25C time=Xm14h",
+            "temp=XC time=Xm14h",
+            "temp=XC time=14m05h"
+          ],
+          "answer": 0,
+          "explanation": "Pehla `s` `14:05` pakadta hai: group 1 = 14, group 2 = 05, aur replacement `\\2m\\1h` likhta hai `05m14h`. Phir doosra `s` line mein **pehla** digits ka run dhoondta hai, jo `25` hai (line ke shuru mein), aur sirf use `X` banata hai. Trap: sochna ki doosra `s` naye text `05` ko pakdega, ya `g` ke bina bhi saare numbers badlenge.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "AWK for Column Data",
+      "summary": "Is week aap `awk` se column wala data padhna seekhoge: fields `$1`, `$2`, `$NF`, pattern { action } rules, `BEGIN`/`END` blocks, built-in variables `NR`, `NF`, `FS`, aur chhoti reports banana.",
+      "readMinutes": 15,
+      "concepts": [
+        "**awk ka model**: awk input ko line by line (har line ek **record**) padhta hai aur har line ko whitespace pe **fields** mein todta hai: `$1`, `$2`, ..., aur `$0` poori line. Program ka roop hai `pattern { action }`: jis line pe pattern sach ho, us pe action chalta hai.",
+        "**Pattern ya action chhod sakte ho**: sirf action (`{print $1}`) har line pe chalta hai. Sirf pattern (`$3 > 50`) matching lines ko poora print karta hai. Pattern regex bhi ho sakta hai (`/ERROR/`), comparison (`$2 >= 3.3`), ya `&&`, `||` se joda hua.",
+        "**Built-in variables**: `NR` ab tak padhi lines ka number (record number), `NF` current line mein fields ki ginti, isliye `$NF` aakhri field hai. `FS` input field separator (default whitespace), `OFS` output separator (default ek space).",
+        "**Separator badalna**: CSV ke liye `awk -F, '...'` ya `BEGIN {FS=\",\"}`. Dhyaan do, `-F/` ke saath `/home/asha` ka pehla field khaali string hai, kyunki line `/` se hi shuru hoti hai.",
+        "**print vs printf**: `print $1, $2` beech mein OFS (space) lagata hai; `print $1 $2` bina space ke jod deta hai. `printf \"%-6s %.2f\\n\", $1, $2` C jaisa formatted output deta hai, par newline khud likhna padta hai.",
+        "**BEGIN aur END**: `BEGIN { }` koi bhi line padhne se pehle ek baar chalta hai (headers, FS set karna). `END { }` saari lines ke baad ek baar chalta hai (totals, averages). Variables pehle use pe khud 0 (ya khaali string) hote hain, to `sum += $2` seedha likh sakte ho.",
+        "**Numbers aur strings**: awk field ko context ke hisaab se number ya string maanta hai. `$1 == \"ch1\"` string compare hai, `$2 > 3` numeric. Header line jaise `marks` text hai, isliye calculations se pehle `NR > 1` se use skip karo.",
+        "**Field badalna aur arrays**: kisi field ko assign karo (`$2 = \"X\"`) to awk `$0` ko OFS se dobara jodta hai. Associative arrays se grouping hoti hai: `{count[$1]++} END {for (k in count) print k, count[k]}`; `for (k in ...)` ka order fixed nahi hota."
+      ],
+      "example": {
+        "problem": "`power.csv` mein teen boards ka voltage aur current hai. Har board ki power (P = V × I) aur total nikaalne wali awk report ka output kya hoga?",
+        "code": "cat > power.csv << 'EOF'\nboard,volts,amps\nesp32,3.3,0.24\nrpi4,5.0,1.20\nnano,5.0,0.05\nEOF\nawk -F, 'NR > 1 {p = $2 * $3; total += p; printf \"%-6s %.2f W\\n\", $1, p}\n         END {printf \"TOTAL  %.2f W\\n\", total}' power.csv",
+        "steps": [
+          "`-F,` comma ko separator banata hai; `NR > 1` header line chhod deta hai.",
+          "esp32: p = 3.3 × 0.24 = 0.792, `%.2f` se `0.79 W`.",
+          "rpi4: p = 5.0 × 1.20 = 6.00 W; nano: p = 5.0 × 0.05 = 0.25 W.",
+          "`%-6s` naam ko 6 characters mein left-align karta hai, isliye columns seedhe dikhte hain.",
+          "Har line pe `total += p` chalta hai: 0.792 + 6 + 0.25 = 7.042.",
+          "`END` block ek baar chalta hai aur `TOTAL  7.04 W` print karta hai.",
+          "Answer: **esp32 0.79 W, rpi4 6.00 W, nano 0.25 W, TOTAL 7.04 W**."
+        ]
+      },
+      "mistakes": [
+        "awk program ko double quotes mein likhna: `awk \"{print $1}\"`. Shell `$1` ko pehle hi (khaali) bana deta hai. awk program hamesha single quotes mein likho.",
+        "CSV pe bina `-F,` ke awk chalana. Default separator whitespace hai, to poori line `$1` ban jaati hai aur `$2` khaali.",
+        "Header line ko calculation mein shaamil kar dena. Text `marks` bhi comparisons mein aata hai aur averages bigaad deta hai; `NR > 1` lagao."
+      ],
+      "revision": [
+        "Program = `pattern { action }`, har line pe.",
+        "`$0` poori line, `$1`... fields, `$NF` aakhri field.",
+        "`NR` line number, `NF` field count, `-F,` CSV ke liye.",
+        "`BEGIN` pehle ek baar, `END` aakhir mein ek baar.",
+        "`print a, b` space ke saath; `print a b` jod ke.",
+        "Field assign karne par `$0` OFS se dobara banta hai."
+      ],
+      "questions": [
+        {
+          "id": "linux-w9-q1",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo \"R1 10k 0.25W\" | awk '{print $2, $1}'",
+          "options": [
+            "R1 10k",
+            "10k R1",
+            "10kR1",
+            "10k 0.25W"
+          ],
+          "answer": 1,
+          "explanation": "Whitespace pe fields hain: `$1` = R1, `$2` = 10k, `$3` = 0.25W. `print $2, $1` pehle 10k phir R1 likhta hai, aur comma ki wajah se beech mein ek space (OFS) aata hai. Bina comma ke `10kR1` aata.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w9-q2",
+          "question": "Is command ka output kya hoga (do lines)?",
+          "code": "printf 'a b c\\nd e\\n' | awk '{print NR, NF}'",
+          "options": [
+            "3 1 / 2 2",
+            "1 2 / 2 3",
+            "0 3 / 1 2",
+            "1 3 / 2 2"
+          ],
+          "answer": 3,
+          "explanation": "`NR` record (line) number hai jo 1 se shuru hota hai, aur `NF` us line ke fields ki ginti. Line 1 `a b c` mein 3 fields: `1 3`. Line 2 `d e` mein 2 fields: `2 2`. Trap: NR ko 0 se shuru maanna ya NR aur NF ki jagah badal dena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w9-q3",
+          "question": "Is script ka output kya hoga?",
+          "code": "cat > v.txt << 'EOF'\nch1 3.3\nch2 5.0\nch1 3.1\nch3 12.0\nch1 3.2\nEOF\nawk '$1 == \"ch1\" {s += $2; n++} END {print n, s/n}' v.txt",
+          "options": [
+            "3 3.2",
+            "5 5.32",
+            "3 9.6",
+            "1 3.3"
+          ],
+          "answer": 0,
+          "explanation": "Action sirf un lines pe chalta hai jahan `$1` \"ch1\" hai: 3.3, 3.1, 3.2. To n = 3 aur s = 9.6. `END` mein `s/n` = 9.6 / 3 = 3.2. Trap: pattern ko bhool kar saari 5 lines ka average lena (5.32), ya END mein sirf sum print karna (9.6).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w9-q4",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo \"/home/asha/lab/run.sh\" | awk -F/ '{print NF, $NF, $2}'",
+          "options": [
+            "4 run.sh home",
+            "4 run.sh asha",
+            "5 run.sh home",
+            "5 lab home"
+          ],
+          "answer": 2,
+          "explanation": "Line `/` se shuru hoti hai, to `/` pe todne par pehla field khaali hai: \"\", home, asha, lab, run.sh. Isliye NF = 5, `$NF` = run.sh, aur `$2` = home. Trap: khaali pehla field na ginna, jisse NF = 4 lagta aur `$2` asha lagta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w9-q5",
+          "question": "`marks.csv` mein header aur 4 students hain. Script kya print karegi?",
+          "code": "cat > marks.csv << 'EOF'\nroll,name,marks\n101,asha,78\n102,ravi,91\n103,meena,80\n104,john,65\nEOF\nawk -F, 'NR > 1 && $3 >= 80 {c++} END {print c}' marks.csv",
+          "options": [
+            "3",
+            "2",
+            "1",
+            "4"
+          ],
+          "answer": 1,
+          "explanation": "`NR > 1` header chhod deta hai. Bache students mein `$3 >= 80` sirf ravi (91) aur meena (80) ke liye sach hai, to c = 2. 80 bhi shaamil hai kyunki `>=` hai. Trap: `NR > 1` ke bina header ka text `marks` string comparison mein 80 se 'bada' nikalta aur count 3 ho jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w9-q6",
+          "question": "Is command ka output kya hoga (do lines)?",
+          "code": "echo \"a,b,c\" | awk -F, '{print $0; $2 = \"X\"; print $0}'",
+          "options": [
+            "a,b,c / a,X,c",
+            "a,b,c / a,b,c",
+            "a b c / a X c",
+            "a,b,c / a X c"
+          ],
+          "answer": 3,
+          "explanation": "Pehla `print $0` original line deta hai: `a,b,c`. Jaise hi `$2 = \"X\"` assign hota hai, awk `$0` ko fields se dobara banata hai aur beech mein OFS lagata hai, jo default ek space hai, comma nahi. Isliye `a X c`. `-F,` sirf input separator badalta hai; output mein comma chahiye to `BEGIN {OFS=\",\"}` likho.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Git Basics, Your Hardware and Storage",
+      "summary": "Is week aap `git` se code ka version control (init, add, commit, log, branch, merge) seekhoge, `lscpu`, `lsblk`, `free`, `df` se machine ko pehchanoge, `PS1` se prompt badaloge, aur `mount` aur `du` se storage samjhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Git kyun**: firmware ya Verilog code mein har badlav ka record rakhna, purane working version pe wapas jaana aur team ke saath kaam karna. `git init` current folder mein ek repository (`.git` folder) banata hai.",
+        "**Teen jagah**: working directory (jo files aap edit karte ho), staging area (`git add` se chuni hui changes) aur repository (`git commit` se save hue snapshots). Commit wahi save karta hai jo **stage** hua tha; add ke baad file phir badli to woh nayi change commit mein nahi jaati.",
+        "**Roz ke commands**: `git status` (kya badla, kya staged hai), `git add file` (stage karo), `git commit -m \"message\"` (snapshot), `git log --oneline` (history, ek line per commit), `git diff` (unstaged changes). `git commit -a` already-tracked files ki changes ko seedha stage karke commit karta hai, nayi files ko nahi.",
+        "**Branches aur merge**: branch ek alag line of work hai. `git branch name` banata hai, `git switch name` (ya `git checkout name`) us pe jaata hai, `git switch -c name` dono ek saath. `git merge feature` feature ki commits current branch mein laata hai; dono taraf nayi commits hon to ek naya **merge commit** banta hai. Same lines dono taraf badli hon to conflict aata hai jo haath se theek karna padta hai.",
+        "**Hardware pehchaano**: `lscpu` CPU architecture, cores, model (x86_64 ya ARM); `lsblk` disks aur partitions ka tree (sda, sda1, mmcblk0 SD card); `free -h` RAM aur swap; `uname -a` kernel version. `-h` ka matlab human-readable (K, M, G).",
+        "**free ko sahi padho**: `free` column abhi bilkul unused RAM hai, par Linux khaali RAM ko disk cache (`buff/cache`) mein laga deta hai jo zaroorat padne par chhoda ja sakta hai. Naye programs ke liye kitni memory mil sakti hai, ye `available` column batata hai.",
+        "**Storage**: `df -h` har mounted filesystem ka size, used aur free space dikhata hai. `du -sh dir` batata hai ki ek directory kitni jagah le rahi hai. `mount /dev/sdb1 /mnt/usb` ek device ko directory pe jodta hai (us directory ke through files dikhti hain), `umount /mnt/usb` hataata hai; pendrive nikaalne se pehle umount zaroori hai.",
+        "**PS1 prompt**: prompt ka format `PS1` variable mein hota hai. Escapes: `\\u` username, `\\h` hostname, `\\w` poori current directory (home ko `~` dikha kar), `\\W` sirf aakhri folder ka naam, `\\$` normal user ke liye `$` aur root ke liye `#`. Permanent banana ho to line `~/.bashrc` mein likho."
+      ],
+      "example": {
+        "problem": "Ek nayi repository mein LED blink code ke do commits banaye gaye. `git status --short` aur aakhri line kya print karenge?",
+        "code": "git init -q -b main blink\ncd blink\necho \"int led = 13;\" > blink.c\ngit add blink.c\ngit commit -q -m \"Add LED pin\"\necho \"int delay_ms = 500;\" >> blink.c\ngit status --short\ngit add blink.c\ngit commit -q -m \"Add delay\"\ngit log --oneline | wc -l",
+        "steps": [
+          "`git init -q -b main blink` repository banata hai (branch ka naam main).",
+          "Pehli line `blink.c` mein likhi, `git add` se stage ki aur commit 1 bana.",
+          "`>>` se doosri line jodi; file tracked hai par nayi change abhi stage nahi hui.",
+          "`git status --short` aisi file ko ` M blink.c` dikhata hai (M = modified, staged nahi).",
+          "Phir add + commit se commit 2 bana.",
+          "`git log --oneline` mein 2 lines hain, to `wc -l` 2 deta hai.",
+          "Answer: **` M blink.c` aur phir `2`**."
+        ]
+      },
+      "mistakes": [
+        "`git add` ke baad file edit karke seedha commit karna aur sochna ki latest version save ho gaya. Commit sirf staged version leta hai; commit se pehle dobara `git add` karo ya `git status` dekh lo.",
+        "`free` column kam dekh kar maan lena ki RAM khatam ho gayi. Linux cache ke liye RAM use karta hai; asli andaza `available` column se lo.",
+        "Pendrive ko bina `umount` ke nikaal dena. Writes cache mein atke reh sakte hain aur files kharab ho sakti hain; pehle `umount` (ya `sync`) karo."
+      ],
+      "revision": [
+        "Working dir → `git add` → staging → `git commit` → repo.",
+        "`git log --oneline` history; `git switch -c` nayi branch.",
+        "Dono branches mein commits ho to merge commit banta hai.",
+        "`df -h` filesystem space, `du -sh` directory size, `free -h` RAM.",
+        "Naye programs ke liye memory = `available` column.",
+        "PS1: `\\u` user, `\\h` host, `\\w` path, `\\W` folder."
+      ],
+      "questions": [
+        {
+          "id": "linux-w10-q1",
+          "question": "Aapne tracked file `main.c` edit ki hai. Is change ko repository mein ek naye snapshot ke roop mein save karne ka sahi kram kya hai?",
+          "options": [
+            "`git commit -m \"msg\"`, phir `git add main.c`",
+            "`git init`, phir `git commit -m \"msg\"`",
+            "`git add main.c`, phir `git commit -m \"msg\"`",
+            "`git log`, phir `git add main.c`"
+          ],
+          "answer": 2,
+          "explanation": "Pehle `git add` change ko staging area mein daalta hai, phir `git commit` staged changes ka snapshot banata hai. Ulta karoge to commit ke waqt kuch staged nahi hoga (ya purana staged hissa jaayega). `git init` naya repo banata hai aur `git log` sirf history dikhata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w10-q2",
+          "question": "Raspberry Pi ke SD card ke root filesystem `/` pe kitni jagah khaali hai, ye dekhne ke liye sabse sahi command kaunsi hai?",
+          "options": [
+            "`free -h`",
+            "`df -h /`",
+            "`du -sh /`",
+            "`lscpu`"
+          ],
+          "answer": 1,
+          "explanation": "`df -h` mounted filesystems ka size, used aur available space dikhata hai. `du -sh /` saari files ka size jodne mein bahut der lagata hai aur khaali jagah nahi batata. `free -h` RAM ke baare mein hai, disk ke nahi; ye sabse common trap hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w10-q3",
+          "question": "Is script ki aakhri do commands kya print karengi?",
+          "code": "git init -q demo\ncd demo\necho v1 > a.txt\ngit add a.txt\necho v2 > a.txt\ngit commit -q -m \"first\"\ngit show HEAD:a.txt\ncat a.txt",
+          "options": [
+            "v2 / v2",
+            "v1 / v1",
+            "Error, kyunki file commit ke baad badli",
+            "v1 / v2"
+          ],
+          "answer": 3,
+          "explanation": "`git add` ne us waqt ka content `v1` stage kiya. Uske baad file `v2` ho gayi par dobara add nahi hui, to commit mein `v1` gaya: `git show HEAD:a.txt` → v1. Working directory ki file abhi bhi `v2` hai, to `cat` → v2. Trap: sochna ki commit hamesha disk pe jo hai wahi leta hai (v2 / v2).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w10-q4",
+          "question": "User `asha` machine `lab` pe `/home/asha/proj` directory mein hai (home `/home/asha`). `PS1='\\u@\\h:\\w\\$ '` set karne ke baad prompt kaisa dikhega?",
+          "options": [
+            "`asha@lab:~/proj$`",
+            "`asha@lab:/home/asha/proj$`",
+            "`asha@lab:proj$`",
+            "`lab@asha:~/proj#`"
+          ],
+          "answer": 0,
+          "explanation": "`\\u` = asha, `\\h` = lab, `\\w` poora path deta hai par home ko `~` se chhota karta hai: `~/proj`. `\\$` normal user ke liye `$` hai. Sirf `proj` tab aata jab `\\W` hota. Trap: `\\w` ko hamesha poora absolute path samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w10-q5",
+          "question": "`free -h` ka ye output hai. Bina swap use kiye naye programs ko lagbhag kitni RAM mil sakti hai?",
+          "code": "               total        used        free      shared  buff/cache   available\nMem:           7.6Gi       2.1Gi       3.0Gi       0.2Gi       2.5Gi       5.1Gi\nSwap:          2.0Gi          0B       2.0Gi",
+          "options": [
+            "3.0Gi",
+            "7.6Gi",
+            "2.5Gi",
+            "5.1Gi"
+          ],
+          "answer": 3,
+          "explanation": "`available` column andaza deta hai ki naye programs ko kitni memory mil sakti hai: isme free RAM ke saath woh cache bhi shaamil hai jo kernel zaroorat padne par chhod deta hai. Isliye 5.1Gi. `free` (3.0Gi) sirf bilkul unused RAM hai, jo asli capacity se kam batata hai; yahi sabse common trap hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w10-q6",
+          "question": "Is script ki aakhri do commands kya print karengi?",
+          "code": "git init -q -b main proj\ncd proj\necho base > f.txt\ngit add f.txt\ngit commit -q -m \"base\"\ngit switch -q -c feature\necho new > g.txt\ngit add g.txt\ngit commit -q -m \"add g\"\ngit switch -q main\necho fix >> f.txt\ngit commit -q -a -m \"fix f\"\ngit merge -q -m \"merge feature\" feature\ngit log --oneline | wc -l\nls",
+          "options": [
+            "3 / f.txt g.txt",
+            "3 / f.txt",
+            "4 / f.txt g.txt",
+            "4 / f.txt"
+          ],
+          "answer": 2,
+          "explanation": "Commits: `base`, phir feature pe `add g`, phir main pe `fix f`. Dono branches mein alag nayi commits hain, to merge fast-forward nahi ho sakta aur ek naya merge commit banta hai. History: base, add g, fix f, merge = 4. Merge ke baad main pe `g.txt` bhi aa jaati hai. Trap: merge commit na ginna (3).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Writing Robust Scripts",
+      "summary": "Is revision week mein aap ab tak ki saari cheezein jod kar aisi scripts likhna seekhoge jo galat input, missing files aur spaces wale naamon pe bhi sahi chalein: quoting, argument checks, exit codes, `set -e`, `set -u`, `pipefail` aur default values.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Hamesha quote karo**: `\"$var\"`, `\"$1\"`, `\"$@\"`. Bina quotes ke spaces wala filename kai words mein toot jaata hai aur `*` jaise characters glob ban jaate hain. Robust script ka pehla niyam: jab tak splitting jaan-boojh kar na chahiye, variables double quotes mein.",
+        "**Input check karo**: script ke shuru mein `$#` dekho aur galat ho to usage message dikhao. Files ke liye `[ -f \"$f\" ]`, directories ke liye `[ -d \"$d\" ]`, readable ke liye `-r`. Galti mile to turant `exit` karo, aage galat data pe kaam mat karo.",
+        "**Errors stderr pe, sahi exit code**: error messages `echo \"msg\" >&2` se stderr pe bhejo, taaki pipe ya `> file` mein normal output ke saath na milein. Success pe `exit 0`, failure pe non-zero (jaise usage galti ke liye 2). Doosri scripts aur cron isi code se samajhte hain ki kaam hua ya nahi.",
+        "**set -e**: koi bhi command fail ho to script wahin ruk jaati hai, aage galat state mein nahi chalti. Exceptions yaad rakho: `if` ki condition, `while` ki condition, aur `&&` / `||` list mein aakhri command se pehle fail hone wali command script ko nahi rokti, kyunki wahan failure ko aap khud handle kar rahe ho.",
+        "**set -u aur pipefail**: `set -u` unset variable use karne par error deta hai (typo `$fiel` pakad leta hai). Pipeline ka exit status normally sirf **aakhri** command ka hota hai; `set -o pipefail` ke saath koi bhi command fail ho to pipeline fail maani jaati hai. Teeno ek saath: `set -euo pipefail`.",
+        "**Default values**: `${var:-default}` var khaali ya unset ho to default deta hai (var nahi badalta). `${var:=default}` default ko var mein assign bhi kar deta hai. Jaise `port=${1:-/dev/ttyUSB0}`: argument na mile to default serial port.",
+        "**Aur achhi aadatein**: temporary files ke liye `tmp=$(mktemp)` aur `trap 'rm -f \"$tmp\"' EXIT` taaki script kaise bhi khatam ho, safai ho jaaye. `cd dir || exit 1` likho taaki galat directory mein `rm` na chale. `bash -n script.sh` syntax check karta hai, `bash -x script.sh` har command chalate hue dikhata hai (debugging)."
+      ],
+      "example": {
+        "problem": "Ye `backup.sh` script ek directory ka tar backup banati hai. Teen runs ka output aur exit status kya hoga: (1) `./backup.sh \"lab data\"` (directory maujood hai), (2) `./backup.sh nofolder`, (3) `./backup.sh`?",
+        "code": "#!/bin/bash\nset -euo pipefail\n\nif [ $# -ne 1 ]; then\n    echo \"usage: $0 <dir>\" >&2\n    exit 2\nfi\nsrc=$1\nif [ ! -d \"$src\" ]; then\n    echo \"error: '$src' is not a directory\" >&2\n    exit 1\nfi\nout=\"backup_$(basename \"$src\").tar.gz\"\ntar -czf \"$out\" \"$src\"\necho \"saved $out\"",
+        "steps": [
+          "Run 1: `$#` = 1 (quotes ki wajah se `lab data` ek argument). `-d` check pass. Har jagah `\"$src\"` quoted hai, to space se kuch nahi toot-ta.",
+          "`basename` `lab data` deta hai, to file `backup_lab data.tar.gz` banti hai aur `saved backup_lab data.tar.gz` print hota hai; exit status 0.",
+          "Run 2: argument ek hai par `nofolder` directory nahi, to stderr pe `error: 'nofolder' is not a directory` aur `exit 1`.",
+          "Run 3: koi argument nahi, `$#` = 0, to stderr pe usage message aur `exit 2`.",
+          "Dhyaan do, argument check `src=$1` se pehle hai; ulta hota to `set -u` run 3 mein unbound variable error deta.",
+          "Answer: **status 0, 1 aur 2**; dono error messages stderr pe jaate hain."
+        ]
+      },
+      "mistakes": [
+        "`rm $f` ya `cp $1 $2` bina quotes ke likhna. Spaces wale naam pe galat files delete ya copy ho sakti hain; `rm \"$f\"` likho.",
+        "`set -e` ko poori suraksha maan lena. `if`, `&&`, `||` ke andar failures script nahi rokte, aur pipeline mein beech ki failure `pipefail` ke bina chhup jaati hai. Zaroori jagah pe khud check bhi karo.",
+        "Error message stdout pe dena aur success exit code (0) ke saath khatam karna. Cron ya doosri script ko lagega sab theek hai; `>&2` aur non-zero `exit` use karo."
+      ],
+      "revision": [
+        "Variables hamesha `\"$var\"` mein.",
+        "Shuru mein `$#` aur `-f`/`-d` check; galti pe `exit` non-zero.",
+        "Errors `>&2` pe.",
+        "`set -euo pipefail`: fail pe ruko, unset var error, pipeline ki har failure gino.",
+        "`${var:-default}` default value deta hai.",
+        "`trap '...' EXIT` safai ke liye, `bash -x` debugging ke liye."
+      ],
+      "questions": [
+        {
+          "id": "linux-w11-q1",
+          "question": "Is script ka output kya hoga?",
+          "code": "unset name\necho \"Hello ${name:-guest}\"\nname=asha\necho \"Hello ${name:-guest}\"",
+          "options": [
+            "Hello guest / Hello asha",
+            "Hello guest / Hello guest",
+            "Hello / Hello asha",
+            "Hello ${name:-guest} / Hello asha"
+          ],
+          "answer": 0,
+          "explanation": "`${name:-guest}` ka matlab: `name` unset ya khaali ho to 'guest', warna `name` ki value. Pehli baar name unset hai: `Hello guest`. Doosri baar name = asha: `Hello asha`. Double quotes ke andar ye expansion hota hai, isliye literal text nahi chhapta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w11-q2",
+          "question": "Ye script `cp2.sh` (executable) `./cp2.sh a.txt` se chalayi gayi. Kya hoga?",
+          "code": "#!/bin/bash\nif [ $# -ne 2 ]; then\n    echo \"usage: $0 src dst\" >&2\n    exit 1\nfi\necho \"copying $1 to $2\"",
+          "options": [
+            "`copying a.txt to` print hoga aur exit status 0",
+            "Kuch print nahi hoga aur exit status 0",
+            "Usage message stderr pe aayega aur exit status 1",
+            "Usage message stdout pe aayega aur exit status 2"
+          ],
+          "answer": 2,
+          "explanation": "Ek hi argument diya, to `$#` = 1, jo 2 ke barabar nahi. `if` andar jaata hai, `>&2` ki wajah se usage message stderr pe jaata hai, aur `exit 1` script ko wahin rok deta hai; `copying` wali line kabhi nahi chalti. Trap: argument check ko ignore karke aakhri echo chalne ki ummeed.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w11-q3",
+          "question": "Is script ka output kya hoga?",
+          "code": "set -e\necho start\nfalse\necho end",
+          "options": [
+            "start / end",
+            "start",
+            "Kuch nahi",
+            "start / false / end"
+          ],
+          "answer": 1,
+          "explanation": "`set -e` ke saath jo bhi simple command fail ho (non-zero status), script turant ruk jaati hai. `false` hamesha status 1 deta hai, isliye `echo end` tak pahunchte hi nahi; script status 1 ke saath khatam hoti hai. `false` kuch print nahi karta. Trap: `set -e` ke bina wala behaviour (start / end) sochna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w11-q4",
+          "question": "Is script ka output kya hoga? (`/dev/null` hamesha khaali hoti hai.)",
+          "code": "set -e\ngrep -q xyz /dev/null || echo \"not found\"\nif false; then echo \"A\"; fi\necho \"done\"",
+          "options": [
+            "Kuch nahi, `grep` fail hote hi script ruk jaati hai",
+            "not found",
+            "not found / A / done",
+            "not found / done"
+          ],
+          "answer": 3,
+          "explanation": "`grep -q` ko khaali file mein `xyz` nahi milta, status 1. Par woh `||` list ka hissa hai, to `set -e` script nahi rokta aur `not found` chhapta hai. `if false` ki condition fail hona bhi `set -e` ko trigger nahi karta; bas `A` nahi chhapta. Phir `done`. Trap: maanna ki `set -e` har failure pe rok deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w11-q5",
+          "question": "Ek khaali directory mein ye script chali. Aakhri `ls` kya dikhayega?",
+          "code": "f=\"my file.txt\"\ntouch \"$f\"\nrm $f\nls",
+          "options": [
+            "Kuch nahi, file delete ho gayi",
+            "`my` aur `file.txt` do files",
+            "`my file.txt` (file bachi rahi)",
+            "`file.txt`"
+          ],
+          "answer": 2,
+          "explanation": "`touch \"$f\"` quoted hai, to ek file `my file.txt` banti hai. `rm $f` bina quotes ke hai, to word splitting se `rm` ko do arguments milte hain: `my` aur `file.txt`. Dono naam ki koi file nahi, to do errors aate hain aur asli file bach jaati hai. Sahi tareeka `rm \"$f\"` hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w11-q6",
+          "question": "Is script ka output kya hoga (do lines)?",
+          "code": "set -o pipefail\nfalse | true\necho $?\nset +o pipefail\nfalse | true\necho $?",
+          "options": [
+            "0 / 0",
+            "1 / 0",
+            "1 / 1",
+            "0 / 1"
+          ],
+          "answer": 1,
+          "explanation": "Normally pipeline ka status sirf aakhri command ka hota hai: `false | true` → 0. `pipefail` on hone par agar koi bhi command fail ho to pipeline ka status us failure ka (yahan 1) hota hai. Pehli baar pipefail on hai: 1. `set +o pipefail` use band karta hai: 0. Trap: `+o` ko 'on' samajhna, ya pipeline ko pehli command ka status dena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Text Pipelines on Logs and CSV Data",
+      "summary": "Is aakhri revision week mein aap `grep`, `cut`, `sort`, `uniq`, `tr`, `sed` aur `awk` ko jod kar sensor logs aur CSV data se jawab nikaalna practice karoge, aur seekhoge ki kaunse kaam ke liye kaunsa tool sabse seedha hai.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Pipeline socho, ek-ek step**: bada sawaal chhote steps mein todo: pehle sahi lines chuno (`grep`), phir sahi column nikaalo (`cut` ya `awk`), phir saaf karo (`tr`, `sed`), phir gino ya sort karo (`sort`, `uniq -c`, `wc -l`). Har `|` ke baad output dekh kar agla step jodo.",
+        "**Kaunsa tool kab**: lines filter karni hon to `grep`; fixed separator wala ek column chahiye to `cut`; text badalna ho to `sed`; columns pe condition, maths, totals ya grouping ho to `awk`. Jo kaam ek tool se ho jaaye, use ek hi mein karo, jaise `grep X f | wc -l` ki jagah `grep -c X f`.",
+        "**Log files**: aam taur pe har line mein date, time, level (INFO/WARN/ERROR) aur message hota hai. Level whitespace se alag field hai, to `awk '$3 == \"ERROR\"'` ya `cut -d' ' -f3` se pakda ja sakta hai. Time range ke liye `sed -n '/start/,/end/p'` ya awk mein string comparison (`$2 >= \"10:02\"`) kaam aata hai.",
+        "**sed ke range**: `/A/,/B/` pehli A wali line se shuru hota hai aur uske **baad** pehli B wali line pe khatam (dono lines shaamil). Range ke beech mein dobara A aaye to naya range shuru nahi hota. Range khatam hone ke baad sed agli A ka intezaar karta hai.",
+        "**CSV data**: header ko `NR > 1` (awk) ya `tail -n +2` se hatao, separator `-F,` ya `cut -d,` se do. Windows se aayi files mein line ke end pe `\\r` ho sakta hai jo comparisons tod deta hai; `tr -d '\\r'` se saaf karo.",
+        "**Grouping aur counting**: `sort | uniq -c | sort -rn` sabse common values deta hai. awk mein `count[$3]++` aur `sum[$2] += $3` se per-group ginti aur total ek hi pass mein ban jaate hain. Jo key kabhi aayi hi nahi, uski value khaali string hoti hai; number chahiye to `+ 0` lagao.",
+        "**Units aur suffix hatana**: `71C` jaisi values pe numeric sort ya maths se pehle suffix hatao: `tr -d 'C'`, `sed 's/C$//'`, ya awk mein `$5 + 0` (awk shuru ke digits padh kar baaki chhod deta hai). `sort -n` bhi shuru ke number pe sort karta hai, par saaf data se galti kam hoti hai."
+      ],
+      "example": {
+        "problem": "`sensor.log` mein 7 lines hain. Kitne ERROR hain, aur har ERROR ka time aur message `time -> message` format mein kaise nikaaloge?",
+        "code": "$ cat sensor.log\n2026-03-01 10:00:01 INFO boot ok\n2026-03-01 10:00:05 WARN temp 71C\n2026-03-01 10:01:10 ERROR i2c timeout\n2026-03-01 10:02:00 INFO sample 512\n2026-03-01 10:03:30 ERROR adc overflow\n2026-03-01 10:04:00 INFO sample 498\n2026-03-01 10:04:45 WARN temp 74C\n$ grep -c ERROR sensor.log\n$ grep ERROR sensor.log | sed -E 's/^[0-9-]+ ([0-9:]+) ERROR (.*)$/\\1 -> \\2/'",
+        "steps": [
+          "`grep -c ERROR sensor.log` sirf ERROR wali lines ginta hai: line 3 aur line 5, to `2`.",
+          "Doosri pipeline mein `grep ERROR` wahi 2 lines deta hai.",
+          "`sed -E` ka pattern: shuru mein date `[0-9-]+`, space, phir time `([0-9:]+)` group 1, phir ` ERROR `, phir baaki message `(.*)` group 2.",
+          "Replacement `\\1 -> \\2` time aur message ko arrow se jodta hai; date aur level hat jaate hain.",
+          "Pehli line `10:01:10 -> i2c timeout`, doosri `10:03:30 -> adc overflow`.",
+          "Answer: **2 errors; 10:01:10 -> i2c timeout aur 10:03:30 -> adc overflow**."
+        ]
+      },
+      "mistakes": [
+        "`grep ERROR` ko level column ka filter samajhna. Ye poori line mein kahin bhi ERROR dhoondta hai, message mein bhi. Sirf level column chahiye to `awk '$3 == \"ERROR\"'` likho.",
+        "Units ke saath numbers sort karna, jaise `9V`, `12V`, `5V` ko plain `sort` se. Text order mein `12V` sabse pehle aata hai; suffix hata kar `sort -n` lagao.",
+        "sed range `/A/,/B/` ko 'sirf A aur B wali lines' samajhna. Range beech ki saari lines bhi deta hai; sirf A aur B chahiye to `grep -E 'A|B'`."
+      ],
+      "revision": [
+        "Filter (`grep`) → column (`cut`/`awk`) → clean (`tr`/`sed`) → count/sort.",
+        "`grep -c` = matching lines ki ginti; `grep -v` = ulta.",
+        "`sed -n '/A/,/B/p'` = A se agli B tak, dono shaamil.",
+        "awk arrays: `c[$3]++`, missing key ke liye `+ 0`.",
+        "CSV: `NR > 1`, `-F,`, aur `\\r` ka dhyaan."
+      ],
+      "questions": [
+        {
+          "id": "linux-w12-q1",
+          "question": "Is command ka output kya hoga?",
+          "code": "$ cat sensor.log\n2026-03-01 10:00:01 INFO boot ok\n2026-03-01 10:00:05 WARN temp 71C\n2026-03-01 10:01:10 ERROR i2c timeout\n2026-03-01 10:02:00 INFO sample 512\n2026-03-01 10:03:30 ERROR adc overflow\n2026-03-01 10:04:00 INFO sample 498\n2026-03-01 10:04:45 WARN temp 74C\n$ grep -v INFO sensor.log | wc -l",
+          "options": [
+            "3",
+            "7",
+            "2",
+            "4"
+          ],
+          "answer": 3,
+          "explanation": "`grep -v INFO` woh lines deta hai jinmein INFO **nahi** hai: do WARN aur do ERROR, yaani 4. `wc -l` unhe ginta hai. Trap: `-v` ko bhool kar INFO lines ginna (3), ya poori file ginna (7).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w12-q2",
+          "question": "Is command ka output kya hoga?",
+          "code": "$ cat sensor.log\n2026-03-01 10:00:01 INFO boot ok\n2026-03-01 10:00:05 WARN temp 71C\n2026-03-01 10:01:10 ERROR i2c timeout\n2026-03-01 10:02:00 INFO sample 512\n2026-03-01 10:03:30 ERROR adc overflow\n2026-03-01 10:04:00 INFO sample 498\n2026-03-01 10:04:45 WARN temp 74C\n$ cut -d' ' -f3 sensor.log | sort -u",
+          "options": [
+            "INFO / WARN / ERROR",
+            "ERROR / INFO / WARN",
+            "ERROR / WARN",
+            "Saare times, jaise 10:00:01 / 10:00:05 / ..."
+          ],
+          "answer": 1,
+          "explanation": "Space se todne par field 1 date, field 2 time aur field 3 level hai. `sort -u` levels ko alphabetical order mein sort karke duplicates hataata hai: ERROR, INFO, WARN. Trap: file mein pehli baar aane ka order (INFO, WARN, ERROR) bolna, ya fields ko 0 se ginna aur times chun lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "linux-w12-q3",
+          "question": "Is pipeline ka output kya hoga?",
+          "code": "$ cat sensor.log\n2026-03-01 10:00:01 INFO boot ok\n2026-03-01 10:00:05 WARN temp 71C\n2026-03-01 10:01:10 ERROR i2c timeout\n2026-03-01 10:02:00 INFO sample 512\n2026-03-01 10:03:30 ERROR adc overflow\n2026-03-01 10:04:00 INFO sample 498\n2026-03-01 10:04:45 WARN temp 74C\n$ grep WARN sensor.log | awk '{print $5}' | tr -d 'C' | sort -n | tail -1",
+          "options": [
+            "74",
+            "71",
+            "74C",
+            "512"
+          ],
+          "answer": 0,
+          "explanation": "`grep WARN` do lines deta hai. Unka 5th field `71C` aur `74C` hai. `tr -d 'C'` C hata deta hai: 71, 74. `sort -n` chhote se bada, aur `tail -1` sabse bada: 74. Trap: `tr` ko bhool kar `74C` likhna, ya `tail` ki jagah pehli value (71) lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w12-q4",
+          "question": "`readings.csv` pe ye awk command kya print karegi?",
+          "code": "$ cat readings.csv\nid,sensor,value\n1,temp,48\n2,hum,61\n3,temp,52\n4,temp,47\n5,hum,58\n$ awk -F, 'NR > 1 && $2 == \"temp\" {s += $3; n++} END {printf \"%.1f\\n\", s/n}' readings.csv",
+          "options": [
+            "53.2",
+            "49",
+            "49.0",
+            "147.0"
+          ],
+          "answer": 2,
+          "explanation": "`NR > 1` header hataata hai aur `$2 == \"temp\"` sirf temp rows rakhta hai: 48, 52, 47. s = 147, n = 3, average 49. `%.1f` ek decimal place ke saath likhta hai: `49.0`. Trap: saari 5 readings ka average (53.2), ya format bhool kar `49` likhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w12-q5",
+          "question": "Is awk command ka output kya hoga?",
+          "code": "$ cat sensor.log\n2026-03-01 10:00:01 INFO boot ok\n2026-03-01 10:00:05 WARN temp 71C\n2026-03-01 10:01:10 ERROR i2c timeout\n2026-03-01 10:02:00 INFO sample 512\n2026-03-01 10:03:30 ERROR adc overflow\n2026-03-01 10:04:00 INFO sample 498\n2026-03-01 10:04:45 WARN temp 74C\n$ awk '{c[$3]++} END {print c[\"ERROR\"], c[\"INFO\"], c[\"DEBUG\"] + 0}' sensor.log",
+          "options": [
+            "2 3 0",
+            "2 3",
+            "3 2 0",
+            "2 3 1"
+          ],
+          "answer": 0,
+          "explanation": "`c[$3]++` har level ki ginti rakhta hai: ERROR 2, INFO 3, WARN 2. DEBUG kabhi aaya hi nahi, to `c[\"DEBUG\"]` khaali string hai, par `+ 0` use number 0 bana deta hai. Isliye `2 3 0`. Trap: `+ 0` ko ignore karke teesri value gayab maan lena, ya ERROR aur INFO ki ginti ulat dena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "linux-w12-q6",
+          "question": "Is command ka output kya hoga?",
+          "code": "$ cat sensor.log\n2026-03-01 10:00:01 INFO boot ok\n2026-03-01 10:00:05 WARN temp 71C\n2026-03-01 10:01:10 ERROR i2c timeout\n2026-03-01 10:02:00 INFO sample 512\n2026-03-01 10:03:30 ERROR adc overflow\n2026-03-01 10:04:00 INFO sample 498\n2026-03-01 10:04:45 WARN temp 74C\n$ sed -n '/ERROR/,/WARN/p' sensor.log | wc -l",
+          "options": [
+            "2",
+            "5",
+            "4",
+            "7"
+          ],
+          "answer": 1,
+          "explanation": "Range pehli ERROR line (10:01:10) se shuru hota hai aur uske baad pehli WARN line pe khatam hota hai, jo aakhri line (10:04:45) hai. Beech ki doosri ERROR naya range shuru nahi karti, bas range ka hissa hai. Lines 3 se 7 tak, dono ends shaamil: 5. Trap: sirf ERROR lines ginna (2), ya end wali WARN line ko chhod dena (4).",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

@@ -4,10 +4,10 @@ A walkthrough of the whole project for a developer taking it over: what it is, h
 
 ## 1. What the product is
 
-NEXT GEN ("by THE TECH HUB") is a study site for **IIT Madras BS Foundation students**. It isn't affiliated with IITM. It covers 8 subjects × 12 weeks, and every week has:
+NEXT GEN ("by THE TECH HUB") is a study site for **IIT Madras online BS students**. It isn't affiliated with IITM. Each student picks a programme (Data Science, Electronic Systems, Aeronautics, Management & Data Science) and sees its subjects; every subject has 12 weeks, and every week has:
 
 - **Hinglish notes** (concept, solved example, common mistakes, quick revision)
-- **6 MCQs** (576 in total), in English and Hinglish
+- **6 MCQs**, in English and Hinglish
 
 It also has a **Qualifier Prep** section for people preparing for the IITM BS qualifier exam, who aren't students yet.
 
@@ -78,7 +78,8 @@ next-gen/
 │   ├── pro-content.ts        ← fetchProContent() / useProContent(): the browser side of /api/pro/*
 │   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, upi.ts, pro.ts (adds 30 days), pro-access.ts (requirePro), supabase.ts (service role)
 ├── content/                  ← ★ All study material
-│   ├── subjects.json         ← The 8 subjects (id, code, name, icon); colours live in tokens
+│   ├── programmes.json       ← Programme → levels → subject ids, plus per-programme course codes
+│   ├── subjects.json         ← Every subject once (id, code, name, icon, status); colours live in tokens
 │   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week (Hinglish)
 │   ├── weeks-en/<subject>.json ← English text of every question, by id
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
@@ -95,7 +96,7 @@ next-gen/
 └── legacy/                   ← The original single-file prototype (reference only)
 ```
 
-## 4. Architecture: the 4 ideas that explain everything
+## 4. Architecture: the 5 ideas that explain everything
 
 **A. Content is static and built at deploy time.**
 
@@ -125,6 +126,13 @@ next-gen/
 - AI limits are counted atomically by the SQL function `consume_ai_quota()`. Only the server can call it, using the limits in `lib/ai/features.ts`.
 - Only server routes that hold `SUPABASE_SERVICE_ROLE_KEY` can grant Pro.
 - Pro **content** (OPPE problems, End-term pools) is only sent by `/api/pro/*`, after `requirePro()` ([lib/server/pro-access.ts](lib/server/pro-access.ts)) has checked the access token and asked `public.is_pro()` as that student. The plan in localStorage only decides what the UI shows.
+
+**E. Programmes filter the lists, not the pages.**
+
+- `content/programmes.json` maps programme → levels → subject ids. Subjects are shared by id (English I/II are in Data Science and Electronic Systems), so progress never depends on the programme.
+- Each student chooses a level (`ds/foundation`, `es/foundation`, `ds/diploma-programming`, …) or `qualifier`, asked once by [programme-prompt.tsx](components/programme-prompt.tsx) after sign-up.
+- Pages are still pre-rendered for every subject. Components that list subjects call `useChoiceSubjects(subjects)` ([lib/programme-choice.ts](lib/programme-choice.ts)) to show only the chosen level's, with its programme's course codes.
+- The choice is a `programme:<choice>` entry in the profile's `subjects` for logged-in students (anything reading `subjects` as subject ids goes through `termSubjects()`), and localStorage `nextgen-programme` for guests. Default: Data Science Foundation.
 
 ```
 Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, test_attempts, coding_attempts, week_status,
@@ -218,7 +226,7 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
    - At the bottom: **Mark as done**, **Practice week N →**, and previous/next week links.
    - Opening the page records `lastVisited`.
 4. `/library/[subject]/formulas` puts every week's revision points on one printable page.
-5. `/search` is a client-side keyword search across all 96 weeks, plus matching practice questions (loaded from `/api/content/questions` once you type). The `?q=` parameter in the URL stays in sync.
+5. `/search` is a client-side keyword search across the chosen programme's weeks, plus matching practice questions (loaded from `/api/content/questions` once you type). The `?q=` parameter in the URL stays in sync.
 
 ### Practice (`/practice` → `/practice/[subject]/[week]`)
 
@@ -356,7 +364,7 @@ Attempts are a `coding` `SyncOp` and sync to `coding_attempts` (migration 0007) 
 
 ### Profile (`/profile`)
 
-- Name, your subjects this term (these sort first everywhere), and **Delete account**: you type DELETE, it calls the `delete_my_account()` RPC, and rows cascade away.
+- Name, programme (same as the sidebar switch), your subjects this term from that programme (these sort first everywhere), and **Delete account**: you type DELETE, it calls the `delete_my_account()` RPC, and rows cascade away.
 
 ### Grade Calculator (`/grades`)
 

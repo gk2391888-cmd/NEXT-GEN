@@ -19,7 +19,7 @@ export default function SearchPage() {
   );
   return (
     <>
-      <PageHead kicker="Find anything" title="Search" description="Search all 96 weeks of notes and practice questions by topic, formula or keyword." />
+      <PageHead kicker="Find anything" title="Search" description="Search your programme’s notes and practice questions by topic, formula or keyword." />
       <Suspense>
         <NotesSearch entries={entries} />
       </Suspense>

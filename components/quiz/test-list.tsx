@@ -5,13 +5,19 @@ import { useProgress } from '@/lib/progress/store';
 import { percent } from '@/lib/progress/insights';
 import { testKey, type MockTest } from '@/lib/tests';
 import { orderSubjects } from '@/lib/subjects';
-import type { Subject } from '@/lib/types';
+import { useChoiceSubjects } from '@/lib/programme-choice';
+import { termSubjects } from '@/lib/programmes';
+import type { Subject, WeekRef } from '@/lib/types';
 import { accuracyTone, SubjectIcon } from '@/components/ui';
 import { ProTag } from '@/components/pro-lock';
 
-export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]; tests: MockTest[] }) {
+export function TestList({ subjects: allSubjects, catalog, tests }: { subjects: Subject[]; catalog: Record<string, WeekRef[]>; tests: MockTest[] }) {
   const state = useProgress();
-  const subjects = orderSubjects(allSubjects, state.profile?.subjects);
+  // Only subjects with notes, and only the tests whose weeks are written (a subject still being written may have weeks 1–4 only).
+  const subjects = orderSubjects(useChoiceSubjects(allSubjects), termSubjects(state.profile?.subjects)).filter((s) => (catalog[s.id] ?? []).length > 0);
+  const testsFor = (subjectId: string) => tests.filter((t) => (catalog[subjectId] ?? []).some((w) => w.week >= t.fromWeek && w.week <= t.toWeek));
+
+  if (subjects.length === 0) return <div className="card empty"><div className="empty-icon">◷</div>Mock tests for your programme are coming soon.</div>;
 
   return (
     <div className="stack">
@@ -25,7 +31,7 @@ export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]
             </div>
           </div>
           <div className="grid grid-3">
-            {tests.map((t) => {
+            {testsFor(s.id).map((t) => {
               const attempts = state.tests.filter((a) => a.subjectId === s.id && a.testId === t.id);
               const best = attempts.reduce((m, a) => Math.max(m, percent(a.correct, a.total)), 0);
               const inProgress = Boolean(state.active[testKey(s.id, t.id)]);

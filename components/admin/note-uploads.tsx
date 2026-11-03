@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import { fileSize, MAX_NOTE_BYTES, NOTES_BUCKET, useNoteFiles, type NoteFile } from '@/lib/notes';
+import { PROGRAMMES } from '@/lib/programmes';
 import type { Subject, WeekRef } from '@/lib/types';
 import { useConfirm } from '@/components/confirm-dialog';
 import { NoteLink } from '@/components/library/note-files';
@@ -11,6 +12,17 @@ import { NoteLink } from '@/components/library/note-files';
 const DEFAULT_WEEKS = 12;
 
 const titleFromName = (name: string) => name.replace(/\.pdf$/i, '').replace(/[_-]+/g, ' ').trim().slice(0, 120);
+/** Every subject once, grouped by programme and level, so admins can upload for any programme. */
+function subjectGroups(subjects: Subject[]) {
+  const seen = new Set<string>();
+  return PROGRAMMES.flatMap((p) =>
+    p.levels.map((l) => ({
+      label: `${p.short} · ${l.name}`,
+      subjects: l.subjects.flatMap((id) => (seen.has(id) ? [] : (seen.add(id), subjects.filter((s) => s.id === id)))),
+    })),
+  ).filter((g) => g.subjects.length);
+}
+
 const slug = (name: string) => titleFromName(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'notes';
 
 /** Upload PDF notes, papers and formula sheets; students see them on the Study Library and week pages. */
@@ -103,7 +115,11 @@ export function NoteUploads({ subjects, catalog, userId }: { subjects: Subject[]
         <div className="field">
           <label className="field-label" htmlFor="nf-subject">Subject</label>
           <select id="nf-subject" className="input" value={subjectId} onChange={(e) => { setSubjectId(e.target.value); setWeek(''); }}>
-            {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {subjectGroups(subjects).map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </optgroup>
+            ))}
           </select>
         </div>
         <div className="field">

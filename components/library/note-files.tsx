@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { fileSize, useNoteFiles, useNoteLink, type NoteFile } from '@/lib/notes';
 import { usePlan } from '@/lib/plan';
+import { useChoice } from '@/lib/programme-choice';
 import type { Subject } from '@/lib/types';
 
 const weekLabel = (f: NoteFile) => (f.week ? `Week ${f.week}` : 'All weeks');
@@ -61,10 +62,14 @@ export function WeekNoteFiles({ subjectId, week }: { subjectId: string; week: nu
 
 /** Every uploaded PDF, grouped by subject, for the Study Library page. */
 export function AllNoteFiles({ subjects }: { subjects: Subject[] }) {
-  const { files } = useNoteFiles();
+  const { files: allFiles } = useNoteFiles();
+  // The chosen level's subjects, including ones whose written notes aren't in yet.
+  const ids = new Set(useChoice().level.subjects);
+  const files = allFiles?.filter((f) => ids.has(f.subject_id));
   if (!files?.length) return null;
 
   const groups = subjects
+    .filter((s) => ids.has(s.id))
     .map((s) => ({ subject: s, list: files.filter((f) => f.subject_id === s.id).sort((a, b) => (a.week ?? 0) - (b.week ?? 0)) }))
     .filter((g) => g.list.length);
 

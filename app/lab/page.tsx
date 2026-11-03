@@ -4,6 +4,7 @@ import { OPPE_SETS, PROBLEMS, summaryOf } from '@/lib/coding';
 import { PageHead } from '@/components/ui';
 import { LabCard } from '@/components/lab-card';
 import { ProblemList } from '@/components/coding/problem-list';
+import { LabProgrammeNote } from '@/components/coding/lab-programme-note';
 
 export const metadata: Metadata = { title: 'Coding Lab' };
 
@@ -16,6 +17,7 @@ export default function LabPage() {
         title="Python Coding Lab"
         description="Write Python right in your browser and check it against test cases instantly. Practice problems are free; OPPE-style sets with hidden tests and a timed exam mode are part of Pro."
       />
+      <LabProgrammeNote />
       <ProblemList problems={summary} sets={OPPE_SETS} />
 
       <h2 className="section-heading mb-xs">Predict the output</h2>

@@ -1,0 +1,1430 @@
+{
+  "subjectId": "eec",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Phasors and impedance",
+      "summary": "Is week aap seekhoge ki sinusoid ko phasor (complex number) me kaise badalte hain, R, L, C ki impedance kya hoti hai, aur AC circuit ko DC jaise KVL/KCL se kaise solve karte hain.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Sinusoid**: v(t) = Vm cos(ωt + φ). Vm = amplitude (peak), ω = 2πf angular frequency (rad/s), φ = phase. Ek hi ω wale saare voltages/currents ka sirf amplitude aur phase badalta hai, isliye unhe ek complex number se represent kar sakte hain.",
+        "**Phasor**: Vm cos(ωt + φ) ↔ V = Vm∠φ = Vm(cos φ + j sin φ). Hum hamesha cosine ko reference maante hain. Sine ho to pehle convert karo: sin(ωt + φ) = cos(ωt + φ − 90°). Wapas time domain me jaana ho to bas ∠ ko cos(ωt + ...) bana do.",
+        "**Impedance Z = V/I** (phasor ratio, unit Ω). Resistor: Z = R (V aur I in-phase). Inductor: Z = jωL (current 90° lag karta hai). Capacitor: Z = 1/(jωC) = −j/(ωC) (current 90° lead karta hai). Yaad rakhne ka trick: ELI the ICE man — L me E (voltage) pehle, C me I pehle.",
+        "**Reactance**: Z = R + jX me X reactance hai. XL = ωL positive hota hai, XC = −1/(ωC) negative. Frequency badhao to inductor ki impedance badhti hai aur capacitor ki ghatti hai; DC (ω = 0) par inductor short aur capacitor open.",
+        "**Series aur parallel**: impedances bilkul resistors jaise combine hoti hain. Series: Z = Z1 + Z2. Parallel: Z = Z1Z2/(Z1 + Z2). Admittance Y = 1/Z (unit S) parallel me seedha add hota hai.",
+        "**Complex arithmetic**: add/subtract rectangular form (a + jb) me easy hai, multiply/divide polar form me: magnitudes multiply/divide, angles add/subtract. 1/j = −j aur j² = −1 yaad rakho.",
+        "**AC analysis steps**: (1) har source ko phasor banao, (2) har element ko impedance banao, (3) KVL, KCL, voltage/current divider, nodal — sab DC jaisa lagao, (4) result phasor ko wapas cos(ωt + φ) me likho. Saare sources ki frequency same honi chahiye."
+      ],
+      "example": {
+        "problem": "v(t) = 10 cos(1000t) V ek series circuit pe laga hai jisme R = 3 Ω aur L = 4 mH hai. Current i(t) nikaalo.",
+        "steps": [
+          "Source phasor: V = 10∠0° V, ω = 1000 rad/s.",
+          "Inductor ki impedance: jωL = j(1000)(4 × 10⁻³) = j4 Ω.",
+          "Series me total: Z = 3 + j4 Ω = 5∠53.13° Ω (|Z| = √(9 + 16) = 5, angle = tan⁻¹(4/3)).",
+          "I = V/Z = 10∠0° / 5∠53.13° = 2∠−53.13° A.",
+          "Angle negative hai, matlab current voltage se 53.13° lag karta hai — inductive circuit me yahi expected hai.",
+          "Answer: **i(t) = 2 cos(1000t − 53.13°) A**."
+        ]
+      },
+      "mistakes": [
+        "Sine ko seedha phasor bana dena. 5 sin(ωt) ka phasor 5∠0° nahi, 5∠−90° hai, kyunki reference cosine hai.",
+        "Capacitor ki impedance ko +j/(ωC) likhna. Sahi hai 1/(jωC) = −j/(ωC); sign galat hua to poora phase ulta aayega.",
+        "Magnitudes ko seedha add karna, jaise |3 + j4| ko 3 + 4 = 7 maan lena. Pehle complex sum karo, phir magnitude: √(3² + 4²) = 5."
+      ],
+      "revision": [
+        "Vm cos(ωt + φ) ↔ Vm∠φ; sin ko pehle cos(… − 90°) banao.",
+        "ZR = R, ZL = jωL, ZC = −j/(ωC).",
+        "Inductor: current lag; capacitor: current lead (ELI the ICE man).",
+        "Series Z add, parallel Z1Z2/(Z1 + Z2), admittances parallel me add.",
+        "Multiply/divide polar me, add/subtract rectangular me."
+      ],
+      "questions": [
+        {
+          "id": "eec-w1-q1",
+          "question": "v(t) = 20 sin(100t + 30°) V ka phasor (cosine reference) kya hoga?",
+          "options": [
+            "20∠30° V",
+            "20∠−60° V",
+            "20∠120° V",
+            "14.14∠−60° V"
+          ],
+          "answer": 1,
+          "explanation": "sin(θ) = cos(θ − 90°), to 20 sin(100t + 30°) = 20 cos(100t − 60°), phasor 20∠−60° V. 20∠30° sine ko seedha cosine maan lene se aata hai, aur 14.14 tab jab bina wajah RMS le liya (sawaal amplitude phasor ka hai).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w1-q2",
+          "question": "ω = 1000 rad/s par 10 μF capacitor ki impedance kya hai?",
+          "options": [
+            "j100 Ω",
+            "−j0.01 Ω",
+            "−j10 Ω",
+            "−j100 Ω"
+          ],
+          "answer": 3,
+          "explanation": "ZC = 1/(jωC) = 1/(j × 1000 × 10 × 10⁻⁶) = 1/(j0.01) = −j100 Ω. j100 me sign galat hai (1/j = −j bhoolna), aur −j0.01 sirf ωC hai, uska reciprocal lena bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w1-q3",
+          "question": "Series circuit: R = 6 Ω, L = 20 mH, C = 500 μF, source v(t) = 120 cos(500t) V. Current i(t) kya hai?",
+          "options": [
+            "14.14 cos(500t − 45°) A",
+            "14.14 cos(500t + 45°) A",
+            "20 cos(500t) A",
+            "8.49 cos(500t − 45°) A"
+          ],
+          "answer": 0,
+          "explanation": "XL = 500 × 0.02 = 10 Ω, XC = 1/(500 × 500 × 10⁻⁶) = 4 Ω. Z = 6 + j(10 − 4) = 6 + j6 = 8.49∠45° Ω. I = 120/8.49∠45° = 14.14∠−45° A. Net reactance inductive hai, isliye current lag karega; +45° capacitor ka sign ulta lene se aata hai, aur 20 A sirf R se divide karne par.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w1-q4",
+          "question": "10 Ω resistor ek inductor (jωL = j10 Ω) ke parallel me hai. Equivalent impedance kya hai?",
+          "options": [
+            "10 + j10 Ω",
+            "5 − j5 Ω",
+            "5 + j5 Ω",
+            "7.07 Ω"
+          ],
+          "answer": 2,
+          "explanation": "Z = (10)(j10)/(10 + j10) = j100/(10 + j10) = j100(10 − j10)/200 = 5 + j5 Ω. 10 + j10 series ka answer hai. 7.07 Ω sirf magnitude ko resistor jaisa treat karne se aata hai; parallel RL ka angle +45° hi rahta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w1-q5",
+          "question": "3 cos(ωt) + 4 sin(ωt) ko ek single sinusoid A cos(ωt + φ) me likho.",
+          "options": [
+            "5 cos(ωt − 53.13°)",
+            "7 cos(ωt − 53.13°)",
+            "5 cos(ωt + 53.13°)",
+            "5 cos(ωt − 36.87°)"
+          ],
+          "answer": 0,
+          "explanation": "Phasors: 3∠0° aur 4∠−90° = −j4. Sum = 3 − j4 = 5∠−53.13°. Isliye 5 cos(ωt − 53.13°). +53.13° sine ko +90° maanne se aata hai, aur 7 amplitudes ko seedha jodne se — phasors vector ki tarah judte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w1-q6",
+          "question": "Source V = 100∠0° V ek 8 Ω resistor ke through ek parallel combination ko feed karta hai, jisme j12 Ω (inductor) aur −j6 Ω (capacitor) parallel hain. Source current kya hai?",
+          "options": [
+            "10∠−36.87° A",
+            "6.93∠−56.31° A",
+            "12.5∠0° A",
+            "6.93∠56.31° A"
+          ],
+          "answer": 3,
+          "explanation": "Parallel: (j12)(−j6)/(j12 − j6) = 72/(j6) = −j12 Ω — parallel LC ka result capacitive hai kyunki chhoti reactance (capacitor) dominate karti hai. Total Z = 8 − j12 = 14.42∠−56.31° Ω, I = 100/Z = 6.93∠56.31° A (leading). 10∠−36.87° j12 aur −j6 ko series me jodne (j6) se aata hai, aur 6.93∠−56.31° parallel result ka sign ulta lene se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "AC power and power factor",
+      "summary": "Is week aap seekhoge ki AC circuit me instantaneous aur average power kaise nikalte hain, RMS ka matlab kya hai, complex power S = P + jQ, aur power factor ko capacitor laga ke kaise sudhaarte hain.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Instantaneous power** p(t) = v(t)·i(t). Agar v = Vm cos(ωt + θv) aur i = Im cos(ωt + θi), to p(t) me ek constant part aur ek 2ω frequency wala part hota hai. Constant part hi average power hai.",
+        "**Average (real) power**: P = ½·Vm·Im·cos(θv − θi) watt. Resistor ke liye θv = θi, to P = ½VmIm. Pure L ya C ke liye angle difference 90°, isliye P = 0 — ye energy store karke wapas kar dete hain.",
+        "**RMS value**: wo DC value jo resistor me same average power de. Sinusoid ke liye Vrms = Vm/√2 ≈ 0.707Vm. RMS use karo to P = Vrms·Irms·cos θ, bina ½ ke. Ghar ka 230 V supply RMS hai, peak ≈ 325 V.",
+        "**Complex power**: S = Vrms·Irms* (current ka conjugate) = P + jQ. |S| apparent power (VA), P real power (W), Q reactive power (VAR). Load Z = R + jX ke liye P = Irms²R aur Q = Irms²X.",
+        "**Q ka sign**: inductive load me Q > 0 (VAR absorb karta hai), capacitive load me Q < 0 (VAR supply karta hai). Isi power triangle me tan θ = Q/P.",
+        "**Power factor** pf = cos θ = P/|S|, jahan θ = θv − θi. Current lag kare (inductive) to lagging pf, current lead kare (capacitive) to leading pf. pf kam ho to same P ke liye zyada current lagta hai, line losses badhte hain.",
+        "**Power factor correction**: load ke parallel capacitor lagao. Real power P same rehta hai, sirf Q ghatta hai. Zaroori capacitor VAR: Qc = P(tan θ1 − tan θ2), aur C = Qc/(ω·Vrms²)."
+      ],
+      "example": {
+        "problem": "Ek load 230 V (rms), 50 Hz par 10 kW leta hai, pf 0.8 lagging. pf ko 0.95 lagging banane ke liye parallel capacitor kitna chahiye?",
+        "steps": [
+          "θ1 = cos⁻¹(0.8) = 36.87°, tan θ1 = 0.75. Q1 = P tan θ1 = 10 × 0.75 = 7.5 kVAR.",
+          "θ2 = cos⁻¹(0.95) = 18.19°, tan θ2 = 0.3287. Q2 = 10 × 0.3287 = 3.287 kVAR.",
+          "Capacitor ko dena hai Qc = Q1 − Q2 = 4.213 kVAR (P same rahega).",
+          "Capacitor ka Q = Vrms²·ωC, to C = Qc/(ω·Vrms²).",
+          "ω = 2π × 50 = 314.16 rad/s, Vrms² = 230² = 52900.",
+          "C = 4213/(314.16 × 52900) ≈ 253.5 × 10⁻⁶ F.",
+          "Answer: **C ≈ 253.5 μF**."
+        ]
+      },
+      "mistakes": [
+        "Peak values ke saath P = Vm·Im·cos θ likh dena (½ bhool jaana). Peak use karo to ½ lagao, RMS use karo to mat lagao.",
+        "S = V·I likhna, conjugate ke bina. S = V·I* hi sahi hai; bina conjugate ke Q ka sign ulta aata hai.",
+        "PF correction me capacitor ka formula P se lagana. C real power nahi, sirf reactive power (Q1 − Q2) badalta hai."
+      ],
+      "revision": [
+        "P = ½VmIm cos θ = Vrms Irms cos θ.",
+        "Vrms = Vm/√2 (sinusoid ke liye).",
+        "S = Vrms·Irms* = P + jQ, |S| in VA.",
+        "Inductive: Q > 0, lagging pf; capacitive: Q < 0, leading pf.",
+        "Qc = P(tan θ1 − tan θ2), C = Qc/(ωVrms²)."
+      ],
+      "questions": [
+        {
+          "id": "eec-w2-q1",
+          "question": "Ek sinusoidal voltage ki peak value 311 V hai. Uski RMS value lagbhag kitni hai?",
+          "options": [
+            "311 V",
+            "440 V",
+            "220 V",
+            "155.5 V"
+          ],
+          "answer": 2,
+          "explanation": "Vrms = Vm/√2 = 311/1.414 ≈ 220 V. 155.5 V peak ko 2 se divide karne par aata hai (wo average jaisa galat shortcut hai), aur 440 V √2 se multiply karne par.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w2-q2",
+          "question": "v(t) = 100 cos(ωt + 20°) V aur i(t) = 10 cos(ωt − 40°) A. Load ki average power kya hai?",
+          "options": [
+            "250 W",
+            "500 W",
+            "433 W",
+            "866 W"
+          ],
+          "answer": 0,
+          "explanation": "θ = θv − θi = 20° − (−40°) = 60°. P = ½ × 100 × 10 × cos 60° = 250 W. 500 W ½ bhoolne se aata hai, aur 433 W cos ki jagah sin lene se — wo reactive power Q hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w2-q3",
+          "question": "Ek load par Vrms = 120∠0° V aur Irms = 5∠−30° A hai. Complex power S kya hai?",
+          "options": [
+            "519.6 − j300 VA",
+            "300 + j519.6 VA",
+            "1039 + j600 VA",
+            "519.6 + j300 VA"
+          ],
+          "answer": 3,
+          "explanation": "S = V·I* = 120∠0° × 5∠+30° = 600∠30° = 519.6 + j300 VA. Current lag kar raha hai, to load inductive hai aur Q positive hona chahiye. 519.6 − j300 conjugate na lene se aata hai, aur 1039 + j600 RMS values me bhi 2 se multiply karne se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w2-q4",
+          "question": "Load Z = 30 + j40 Ω ek 200 V (rms) supply par laga hai. Load kitni real power leta hai?",
+          "options": [
+            "800 W",
+            "480 W",
+            "640 W",
+            "240 W"
+          ],
+          "answer": 1,
+          "explanation": "|Z| = 50 Ω, Irms = 200/50 = 4 A. P = Irms²·R = 16 × 30 = 480 W (Q = 16 × 40 = 640 VAR, pf = 0.6 lagging). 800 W = Vrms·Irms apparent power hai, 640 VAR ko power samajhna galat hai, aur 240 W tab aata jab 200 V ko peak maan ke ½ lagaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w2-q5",
+          "question": "Ek load ka current, voltage se 25° lead karta hai. Kaunsa statement sahi hai?",
+          "options": [
+            "Load inductive hai aur Q > 0",
+            "pf = cos 25° lagging, Q > 0",
+            "Load capacitive hai, pf leading aur Q < 0",
+            "Load pure resistive hai kyunki pf 1 ke paas hai"
+          ],
+          "answer": 2,
+          "explanation": "Current lead kare to θ = θv − θi = −25°, yaani load capacitive hai: pf = cos 25° ≈ 0.906 leading aur Q = |S| sin(−25°) < 0 (load VAR supply karta hai). Lead/lag ko voltage ki taraf se padh lene par log ise inductive bol dete hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w2-q6",
+          "question": "Ek motor 200 V (rms), 50 Hz par 4 kW leti hai, pf 0.8 lagging. pf ko 1 (unity) banane ke liye parallel capacitor kitna chahiye?",
+          "options": [
+            "318.3 μF",
+            "477.5 μF",
+            "1500 μF",
+            "238.7 μF"
+          ],
+          "answer": 3,
+          "explanation": "Q1 = P tan(cos⁻¹ 0.8) = 4000 × 0.75 = 3000 VAR; unity pf ke liye Qc = 3000 VAR. C = Qc/(ωVrms²) = 3000/(2π × 50 × 200²) ≈ 238.7 μF. 318.3 μF Q ki jagah P (4000) lagane se aata hai, 477.5 μF 200 V ko peak maan ke Vrms² = 20000 lene se, aur 1500 μF ω = 50 (f ko hi ω) lene se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Thevenin, Norton and maximum power",
+      "summary": "Is week aap seekhoge ki kisi bhi linear circuit ko do terminals se dekhne par ek source aur ek impedance me kaise ghataate hain (Thevenin/Norton), source transformation, aur load ko maximum power kab milti hai — DC aur AC dono me.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Thevenin theorem**: terminals a-b se dekha jaaye to koi bhi linear circuit = ek voltage source Vth series me Rth (AC me Zth). Vth = open-circuit voltage Voc, yaani load hata ke a-b ke beech voltage.",
+        "**Rth kaise nikaalein**: (1) sirf independent sources ho to unhe off karo — voltage source short, current source open — aur a-b se equivalent resistance dekho. (2) Dependent source ho to use kabhi off mat karo; a-b par test source lagao aur Rth = Vtest/Itest lo. (3) Ya Rth = Voc/Isc.",
+        "**Norton theorem**: wahi circuit = current source In parallel me Rn. In = short-circuit current Isc, aur Rn = Rth. Thevenin ↔ Norton: In = Vth/Rth.",
+        "**Source transformation**: voltage source Vs series R ⇔ current source Vs/R parallel R. Ye circuit simplify karne ka quick tool hai; bas arrow ki direction source ke + terminal ki taraf rakhna.",
+        "**Maximum power transfer (DC)**: load RL ko max power tab milti hai jab RL = Rth. Tab Pmax = Vth²/(4Rth). Is point par efficiency sirf 50% hoti hai — aadhi power Rth me jaati hai.",
+        "**Maximum power transfer (AC)**: agar load kuch bhi ho sakta hai to ZL = Zth* (conjugate), yaani reactance cancel ho jaaye. Pmax = |Vth|²/(4Rth) jab Vth rms ho (peak ho to 8Rth). Agar load sirf resistor ho sakta hai, to RL = |Zth|.",
+        "**Linearity aur superposition** in theorems ki buniyaad hai: circuit me R, L, C, independent aur linear dependent sources ho to ye sab lagte hain. Diode jaise non-linear element pe directly nahi."
+      ],
+      "example": {
+        "problem": "12 V source ke series me 4 Ω hai, uske baad 12 Ω ground pe shunt, aur phir 2 Ω series me terminals a-b tak. Thevenin equivalent nikaalo aur batao kaunsa RL max power lega aur kitni.",
+        "steps": [
+          "Open circuit par 2 Ω me current nahi, to Vth = 12 Ω ke across voltage = 12 × 12/(4 + 12) = 9 V.",
+          "Source short karo: a-b se dekho to 2 Ω series me (4 ∥ 12).",
+          "4 ∥ 12 = 48/16 = 3 Ω, to Rth = 3 + 2 = 5 Ω.",
+          "Max power ke liye RL = Rth = 5 Ω.",
+          "Pmax = Vth²/(4Rth) = 81/20 = 4.05 W.",
+          "Answer: **Vth = 9 V, Rth = 5 Ω, RL = 5 Ω par Pmax = 4.05 W**."
+        ]
+      },
+      "mistakes": [
+        "Dependent source ko bhi off kar dena. Dependent source circuit ki variables se control hota hai, use hamesha rakhte hain aur test source method lagate hain.",
+        "AC me ZL = Zth le lena. Max power ke liye conjugate chahiye: Zth = R + jX ho to ZL = R − jX.",
+        "Pmax = Vth²/Rth likh dena. Matched load par current Vth/(2Rth) hota hai, isliye Pmax = Vth²/(4Rth)."
+      ],
+      "revision": [
+        "Vth = Voc, In = Isc, Rth = Rn = Voc/Isc.",
+        "Independent sources off: V-source short, I-source open.",
+        "Dependent source ho to test source lagao.",
+        "DC: RL = Rth, Pmax = Vth²/(4Rth).",
+        "AC: ZL = Zth*, Pmax = |Vth,rms|²/(4Rth)."
+      ],
+      "questions": [
+        {
+          "id": "eec-w3-q1",
+          "question": "Ek circuit ka Thevenin equivalent Vth = 10 V, Rth = 5 Ω hai. Norton equivalent kya hoga?",
+          "options": [
+            "In = 2 A, Rn = 5 Ω",
+            "In = 50 A, Rn = 5 Ω",
+            "In = 2 A, Rn = 0.2 Ω",
+            "In = 10 A, Rn = 5 Ω"
+          ],
+          "answer": 0,
+          "explanation": "In = Vth/Rth = 10/5 = 2 A, aur Rn = Rth = 5 Ω (same resistance, bas parallel me). 50 A multiply karne se aata hai, aur 0.2 Ω resistance ko conductance (1/5) bana dene se.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w3-q2",
+          "question": "Vth = 20 V aur Rth = 10 Ω wale circuit se ek resistive load kitni maximum power le sakta hai?",
+          "options": [
+            "40 W",
+            "20 W",
+            "10 W",
+            "5 W"
+          ],
+          "answer": 2,
+          "explanation": "RL = Rth = 10 Ω par current 20/20 = 1 A, Pmax = 1² × 10 = 10 W = Vth²/(4Rth). 40 W = Vth²/Rth tab aata hai jab load ko seedha source pe maan lo aur Rth bhool jao.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w3-q3",
+          "question": "24 V source ke series me 6 Ω, phir 3 Ω ground pe shunt, phir 2 Ω series me terminals a-b tak. Thevenin equivalent kya hai?",
+          "options": [
+            "Vth = 16 V, Rth = 4 Ω",
+            "Vth = 8 V, Rth = 4 Ω",
+            "Vth = 8 V, Rth = 2 Ω",
+            "Vth = 24 V, Rth = 11 Ω"
+          ],
+          "answer": 1,
+          "explanation": "Vth = 3 Ω ke across voltage = 24 × 3/(6 + 3) = 8 V (2 Ω me open circuit par current nahi). Rth = (6 ∥ 3) + 2 = 2 + 2 = 4 Ω. 16 V divider me galat resistor (6 Ω) upar rakhne se aata hai, aur 2 Ω wala Rth series 2 Ω bhoolne se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w3-q4",
+          "question": "Terminals a-b ke beech (independent sources off karne ke baad) ek 6 Ω resistor aur ek CCVS series me hain. CCVS ka voltage 3·ix hai, + terminal a ki taraf, jahan ix wo current hai jo terminal a se circuit me andar jaata hai. Rth kya hai?",
+          "options": [
+            "6 Ω",
+            "3 Ω",
+            "2 Ω",
+            "9 Ω"
+          ],
+          "answer": 3,
+          "explanation": "a-b par test voltage V lagao; current ix a se andar jaakar 6 Ω (drop 6ix) aur phir CCVS ke + se − tak (drop 3ix) jaata hai. V = 6ix + 3ix = 9ix, to Rth = V/ix = 9 Ω. 6 Ω dependent source ko off karne se aata hai (jo galat hai), aur 3 Ω uska sign ulta lene se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w3-q5",
+          "question": "5 A current source ke parallel me 4 Ω hai. Iska equivalent voltage source (series resistor ke saath) kya hai?",
+          "options": [
+            "1.25 V series 4 Ω",
+            "20 V series 4 Ω",
+            "20 V series 0.25 Ω",
+            "5 V series 4 Ω"
+          ],
+          "answer": 1,
+          "explanation": "Source transformation: Vs = Is·R = 5 × 4 = 20 V, aur wahi 4 Ω ab series me. 1.25 V I/R lene se aata hai, aur 0.25 Ω resistance ko ulta (1/R) karne se — resistor value transformation me nahi badalti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w3-q6",
+          "question": "AC circuit ka Thevenin equivalent: Vth = 10∠0° V (rms), Zth = 3 + j4 Ω. Load koi bhi impedance ho sakta hai. Max power ke liye ZL aur Pmax kya hain?",
+          "options": [
+            "ZL = 3 − j4 Ω, Pmax = 8.33 W",
+            "ZL = 3 + j4 Ω, Pmax = 8.33 W",
+            "ZL = 5 Ω, Pmax = 6.25 W",
+            "ZL = 3 − j4 Ω, Pmax = 33.33 W"
+          ],
+          "answer": 0,
+          "explanation": "ZL = Zth* = 3 − j4 Ω; reactance cancel hoke total Z = 6 Ω, I = 10/6 A, P = I²·3 = 100/12 = 8.33 W. ZL = 3 + j4 conjugate bhoolne se aata hai. 5 Ω, 6.25 W tab sahi hota jab load sirf resistor hota (RL = |Zth|), aur 33.33 W = |V|²/R me 4 bhoolne se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Nodal, mesh and dependent sources",
+      "summary": "Is week aap seekhoge ki dependent sources wale circuits me nodal aur mesh analysis kaise karte hain, supernode/supermesh kab banta hai, superposition ka sahi use, aur Δ–Y transformation se uljhe hue resistor networks kaise simplify hote hain.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Nodal analysis**: ek reference (ground) node chuno, baaki har node ka voltage unknown. Har node par KCL: leaving currents ka sum = 0, ya entering = leaving. Resistor me current = (Va − Vb)/R. n non-reference nodes ⇒ n equations.",
+        "**Dependent sources**: VCVS, CCVS, VCCS, CCCS — inka value kisi doosre voltage/current pe depend karta hai. Equations likhte waqt inhe normal source ki tarah treat karo, phir controlling variable ko node voltages ya mesh currents me express karke ek extra relation likho.",
+        "**Supernode**: jab voltage source do non-reference nodes ke beech ho, uska current pata nahi hota. Dono nodes ko milake ek supernode banao: (1) supernode ke boundary par ek KCL, (2) constraint equation Va − Vb = Vs. Equations ki ginti same rehti hai.",
+        "**Mesh analysis**: planar circuit me har mesh ka ek clockwise current. KVL: drops ka sum = rises ka sum. Shared resistor me current = (i1 − i2). Current source sirf ek mesh me ho to wo mesh current seedha pata; do meshes ke beech ho to **supermesh** banao.",
+        "**Superposition**: linear circuit me kisi bhi response = har independent source ka akele ka response, jod ke. Baaki independent sources off karo (V short, I open). Dependent sources kabhi off nahi hote. Power par superposition nahi lagta, kyunki P ∝ I².",
+        "**Δ–Y transformation**: Δ se Y: har Y arm = (us node pe judne wale do Δ resistors ka product)/(teeno ka sum). Equal Δ ke liye RY = RΔ/3. Y se Δ: RΔ = (Y products ka sum)/(saamne wala Y arm). Bridge circuits jaha series/parallel kaam nahi karta, wahan ye kaam aata hai.",
+        "**Dependent source power de sakta hai**: is wajah se kisi node ka voltage kabhi kabhi independent source se bhi zyada aa jaata hai. Ye galti nahi hai — check karo ki KCL sab nodes par satisfy ho raha hai."
+      ],
+      "example": {
+        "problem": "Node 1 aur node 2 ke beech 5 V source hai (+ node 1 ki taraf). Node 1 se ground 2 Ω, node 2 se ground 3 Ω, aur 5 A current source ground se node 1 me current daalta hai. V1 aur V2 nikaalo.",
+        "steps": [
+          "Voltage source do non-reference nodes ke beech hai, to node 1 aur node 2 milake supernode banao.",
+          "Constraint: V1 − V2 = 5, yaani V1 = V2 + 5.",
+          "Supernode KCL (entering = leaving): 5 = V1/2 + V2/3.",
+          "Substitute: 5 = (V2 + 5)/2 + V2/3 ⇒ 5 − 2.5 = V2(1/2 + 1/3) = (5/6)V2.",
+          "V2 = 2.5 × 6/5 = 3 V, aur V1 = 3 + 5 = 8 V.",
+          "Check: 8/2 + 3/3 = 4 + 1 = 5 A ✓.",
+          "Answer: **V1 = 8 V, V2 = 3 V**."
+        ]
+      },
+      "mistakes": [
+        "Superposition me dependent source ko bhi off kar dena. Sirf independent sources off hote hain; dependent source har sub-circuit me rehta hai.",
+        "Dependent source ki polarity ya direction ulti lena. Equation likhne se pehle diagram pe + aur arrow mark karo, phir drop/rise consistent rakho.",
+        "Supernode ke andar wale voltage source ke through current ke liye alag KCL likhne ki koshish karna. Wo current unknown hai, isliye supernode ke boundary pe KCL lo aur constraint equation add karo."
+      ],
+      "revision": [
+        "Nodal: har non-reference node pe KCL, I = ΔV/R.",
+        "Supernode = KCL on boundary + Va − Vb = Vs.",
+        "Mesh: shared branch current = i1 − i2.",
+        "Superposition: sirf independent sources off; dependent rehte hain.",
+        "Δ → Y: (adjacent product)/(sum); equal Δ: R/3."
+      ],
+      "questions": [
+        {
+          "id": "eec-w4-q1",
+          "question": "Ek Δ network ke teeno resistors 9 Ω ke hain. Equivalent Y ke har arm ka resistance kya hoga?",
+          "options": [
+            "27 Ω",
+            "9 Ω",
+            "4.5 Ω",
+            "3 Ω"
+          ],
+          "answer": 3,
+          "explanation": "Δ → Y: RY = (9 × 9)/(9 + 9 + 9) = 81/27 = 3 Ω, yaani equal case me RΔ/3. 27 Ω ulta formula (Y → Δ: 3RY) lagane se aata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w4-q2",
+          "question": "Ek circuit me 3 non-reference nodes hain. Node 2 aur node 3 ke beech ek independent voltage source hai (ground se koi voltage source nahi juda). Nodal analysis me kaunse equations chahiye?",
+          "options": [
+            "3 KCL equations, koi constraint nahi",
+            "2 KCL (node 1 aur supernode 2-3) + 1 constraint V2 − V3 = Vs",
+            "Sirf 1 KCL equation (supernode), node 1 ki zaroorat nahi",
+            "3 KCL + 1 constraint, total 4"
+          ],
+          "answer": 1,
+          "explanation": "Node 2-3 supernode ban jaata hai: node 1 par KCL, supernode boundary par KCL, aur source ka constraint — total 3 equations, 3 unknowns. Teen alag KCL likhna galat hai kyunki source ka current unknown hai, aur 4 equations matlab unknowns se zyada.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w4-q3",
+          "question": "Ek Δ network me Rab = 10 Ω, Rbc = 20 Ω, Rca = 30 Ω hain. Equivalent Y me node c se judne wala resistor Rc kitna hai?",
+          "options": [
+            "5 Ω",
+            "3.33 Ω",
+            "10 Ω",
+            "20 Ω"
+          ],
+          "answer": 2,
+          "explanation": "Rc = (node c pe judne wale Δ resistors ka product)/(sum) = Rbc·Rca/(10 + 20 + 30) = 600/60 = 10 Ω. 5 Ω Ra hai (Rab·Rca/60) aur 3.33 Ω Rb hai — galat pair chunne se aate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w4-q4",
+          "question": "10 V source 4 Ω ke through node A se juda hai, node A se ground 6 Ω hai, aur ek 2 A current source ground se node A me current daalta hai. Superposition se VA kya hai?",
+          "options": [
+            "10.8 V",
+            "6 V",
+            "1.2 V",
+            "22 V"
+          ],
+          "answer": 0,
+          "explanation": "Sirf 10 V: current source open, VA = 10 × 6/(4 + 6) = 6 V. Sirf 2 A: voltage source short, 4 ∥ 6 = 2.4 Ω, VA = 2 × 2.4 = 4.8 V. Total = 6 + 4.8 = 10.8 V. 22 V tab aata hai jab 2 A ko sirf 6 Ω se guzarte maan lo (voltage source short karna bhool gaye).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w4-q5",
+          "question": "12 V source 3 Ω ke through node V se juda hai. Node V se ground 6 Ω hai, aur ek VCCS ground se node V me 0.25·V ampere daalta hai. V kya hai?",
+          "options": [
+            "16 V",
+            "8 V",
+            "5.33 V",
+            "12 V"
+          ],
+          "answer": 0,
+          "explanation": "KCL (entering = leaving): (12 − V)/3 + 0.25V = V/6 ⇒ 4 = V(1/3 − 1/4 + 1/6) = V(3/12) ⇒ V = 16 V. Dependent source power supply kar raha hai, isliye V source se zyada hai. 8 V VCCS ko ignore karne se aata hai, aur 5.33 V uski direction ulti (leaving) lene se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w4-q6",
+          "question": "Do meshes, dono currents clockwise. Mesh 1: 12 V source (i1 ko clockwise chalata hai) aur 2 Ω. Shared branch: 4 Ω. Mesh 2: 2 Ω aur ek CCVS 3·i1 volt, jo i2 ka virodh karta hai (i2 iske + terminal me ghusta hai). i1 kya hai?",
+          "options": [
+            "3.6 A",
+            "9 A",
+            "2.25 A",
+            "6 A"
+          ],
+          "answer": 2,
+          "explanation": "Mesh 1: 12 = 2i1 + 4(i1 − i2) ⇒ 6i1 − 4i2 = 12. Mesh 2 (drops): 4(i2 − i1) + 2i2 + 3i1 = 0 ⇒ i1 = 6i2. To 36i2 − 4i2 = 12 ⇒ i2 = 0.375 A, i1 = 2.25 A. 3.6 A CCVS ignore karne se aata hai, 9 A uska sign ulta (rise) lene se, aur 6 A sirf 12/2 se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Laplace transform basics",
+      "summary": "Is week aap seekhoge ki Laplace transform kya hai, common functions ke transform pairs, linearity, shift aur derivative properties, aur partial fractions se inverse Laplace kaise nikalte hain.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Definition**: F(s) = ∫₀^∞ f(t)·e^(−st) dt, jahan s = σ + jω complex frequency hai. Ye time-domain ke differential equations ko s-domain ke algebraic equations me badal deta hai. Hum one-sided transform lete hain (t ≥ 0, sab f(t)·u(t) maana jaata hai).",
+        "**Common pairs**: δ(t) → 1, u(t) → 1/s, t → 1/s², e^(−at) → 1/(s + a), t·e^(−at) → 1/(s + a)², sin ωt → ω/(s² + ω²), cos ωt → s/(s² + ω²). Inhe ratt lo, poora course inhi pe chalta hai.",
+        "**Linearity**: L{a·f + b·g} = a·F(s) + b·G(s). Isi wajah se har term ka transform alag nikaal ke jod sakte ho.",
+        "**Frequency shift**: L{e^(−at)·f(t)} = F(s + a). Jaise e^(−2t) sin 3t → 3/((s + 2)² + 9). **Time shift**: L{f(t − T)·u(t − T)} = e^(−sT)·F(s).",
+        "**Derivative property**: L{f'(t)} = sF(s) − f(0⁻), L{f''(t)} = s²F(s) − s·f(0⁻) − f'(0⁻). Initial conditions khud equation me aa jaate hain — circuits me yahi sabse kaam ka hai. **Integral**: L{∫₀ᵗ f dτ} = F(s)/s.",
+        "**Partial fractions (distinct poles)**: F(s) = N(s)/((s + a)(s + b)) = A/(s + a) + B/(s + b). Cover-up: A = [(s + a)F(s)] at s = −a. Phir har term ka inverse: A·e^(−at).",
+        "**Repeated aur complex poles**: (s + a)² ke liye A/(s + a) + B/(s + a)², inverse A·e^(−at) + B·t·e^(−at). Complex poles ke liye denominator ko (s + α)² + β² form me complete the square karo aur shifted sin/cos pairs use karo."
+      ],
+      "example": {
+        "problem": "F(s) = (s + 5)/((s + 1)(s + 2)) ka inverse Laplace f(t) nikaalo.",
+        "steps": [
+          "Likho F(s) = A/(s + 1) + B/(s + 2).",
+          "Cover-up for A: (s + 1) hatao aur s = −1 rakho: A = (−1 + 5)/(−1 + 2) = 4.",
+          "Cover-up for B: (s + 2) hatao aur s = −2 rakho: B = (−2 + 5)/(−2 + 1) = −3.",
+          "Check s = 0 par: F(0) = 5/2 = 2.5, aur 4/1 − 3/2 = 2.5 ✓.",
+          "Har term ka inverse: 4/(s + 1) → 4e^(−t), −3/(s + 2) → −3e^(−2t).",
+          "Answer: **f(t) = 4e^(−t) − 3e^(−2t), t ≥ 0**."
+        ]
+      },
+      "mistakes": [
+        "Frequency shift me sign ulta lena: e^(−at) ka matlab s → s + a hai, s − a nahi.",
+        "Derivative property me initial value bhool jaana: L{f'} = sF(s) − f(0), sirf sF(s) nahi.",
+        "Partial fractions se pehle check na karna ki numerator ki degree denominator se chhoti hai ya nahi. Badi ya barabar ho to pehle long division karo."
+      ],
+      "revision": [
+        "u(t) → 1/s, e^(−at) → 1/(s + a), t → 1/s².",
+        "sin ωt → ω/(s² + ω²), cos ωt → s/(s² + ω²).",
+        "e^(−at)f(t) → F(s + a).",
+        "f' → sF(s) − f(0).",
+        "Cover-up: A = (s + a)F(s) at s = −a.",
+        "1/(s + a)² → t·e^(−at)."
+      ],
+      "questions": [
+        {
+          "id": "eec-w5-q1",
+          "question": "f(t) = 3e^(−2t), t ≥ 0 ka Laplace transform kya hai?",
+          "options": [
+            "3/(s − 2)",
+            "3/(s + 2)",
+            "3/(s + 2)²",
+            "3s/(s² + 4)"
+          ],
+          "answer": 1,
+          "explanation": "e^(−at) → 1/(s + a), to a = 2 ke saath 3e^(−2t) → 3/(s + 2) (linearity se 3 bahar). 3/(s − 2) sign ulta lene se aata hai — wo growing e^(2t) ka transform hai. 3/(s + 2)² te^(−2t) wala pair hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w5-q2",
+          "question": "f(t) ka Laplace F(s) hai aur f(0⁻) = 2. df/dt ka Laplace kya hoga?",
+          "options": [
+            "sF(s) − 2",
+            "sF(s) + 2",
+            "F(s)/s − 2",
+            "s²F(s) − 2"
+          ],
+          "answer": 0,
+          "explanation": "Derivative property: L{f'} = sF(s) − f(0⁻) = sF(s) − 2. +2 sign galat yaad hone se aata hai, F(s)/s integral ka rule hai, aur s²F(s) second derivative ke liye hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w5-q3",
+          "question": "f(t) = e^(−3t)·cos 4t ka Laplace transform kya hai?",
+          "options": [
+            "s/(s² + 16)",
+            "(s − 3)/((s − 3)² + 16)",
+            "4/((s + 3)² + 16)",
+            "(s + 3)/((s + 3)² + 16)"
+          ],
+          "answer": 3,
+          "explanation": "cos 4t → s/(s² + 16). e^(−3t) se multiply karne par har s ko s + 3 se replace karo: (s + 3)/((s + 3)² + 16). 4/((s + 3)² + 16) sin wala pair hai, aur (s − 3) shift ka sign ulta lene se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w5-q4",
+          "question": "F(s) = 6/(s(s + 3)) ka inverse Laplace kya hai?",
+          "options": [
+            "6(1 − e^(−3t))",
+            "2e^(−3t)",
+            "2(1 − e^(−3t))",
+            "2(1 + e^(−3t))"
+          ],
+          "answer": 2,
+          "explanation": "6/(s(s + 3)) = A/s + B/(s + 3). A = 6/3 = 2 (s = 0 par), B = 6/(−3) = −2 (s = −3 par). f(t) = 2 − 2e^(−3t) = 2(1 − e^(−3t)). Check: f(∞) = 2 = lim sF(s) ✓. 6(1 − e^(−3t)) me 3 se divide karna bhool gaye, aur (1 + e^(−3t)) B ka sign galat hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w5-q5",
+          "question": "F(s) = 10/(s² + 4s + 13) ka inverse Laplace kya hai?",
+          "options": [
+            "10e^(−2t) sin 3t",
+            "(10/3)e^(−2t) sin 3t",
+            "(10/3)e^(2t) sin 3t",
+            "10e^(−2t) cos 3t"
+          ],
+          "answer": 1,
+          "explanation": "Complete the square: s² + 4s + 13 = (s + 2)² + 9, to β = 3. F(s) = (10/3)·3/((s + 2)² + 9) → (10/3)e^(−2t) sin 3t. 10e^(−2t) sin 3t me β = 3 se divide karna bhool gaye (sin pair me numerator β hona chahiye), aur e^(2t) shift ka sign ulta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w5-q6",
+          "question": "F(s) = (s + 3)/(s + 1)² ka inverse Laplace kya hai?",
+          "options": [
+            "e^(−t) + 2e^(−2t)",
+            "(1 + 3t)e^(−t)",
+            "e^(−t) − 2te^(−t)",
+            "e^(−t) + 2te^(−t)"
+          ],
+          "answer": 3,
+          "explanation": "Numerator ko (s + 1) + 2 likho: F(s) = 1/(s + 1) + 2/(s + 1)². Inverse: e^(−t) + 2te^(−t). Check t = 0: f(0) = 1 = lim sF(s) ✓. (1 + 3t)e^(−t) numerator ko s = 0 par (3) lene se aata hai, aur e^(−2t) wala option repeated pole ko do alag poles maan lene se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Circuit transients with Laplace",
+      "summary": "Is week aap seekhoge ki R, L, C ko initial conditions ke saath s-domain me kaise model karte hain, RC/RL/RLC circuits ka transient response Laplace se kaise nikalte hain, aur initial/final value theorems se answer jaldi kaise check karte hain.",
+      "readMinutes": 16,
+      "concepts": [
+        "**s-domain impedances**: R → R, L → sL, C → 1/(sC). Ab circuit algebraic hai: KVL, KCL, divider, Thevenin — sab s-domain me waise hi lagte hain jaise phasor me (jω ki jagah s).",
+        "**Inductor with initial current** i(0⁻) = I₀: impedance sL ke series me ek voltage source L·I₀ (kyunki v = L di/dt → sL·I(s) − L·I₀). Ya Norton form: sL ke parallel me current source I₀/s.",
+        "**Capacitor with initial voltage** v(0⁻) = V₀: impedance 1/(sC) ke series me voltage source V₀/s. Ya parallel me current source C·V₀. Initial conditions hamesha t = 0⁻ (switching se theek pehle) ki values lo.",
+        "**First-order circuits**: RC ka time constant τ = RC, RL ka τ = L/R. Step response: x(t) = x(∞) + [x(0⁺) − x(∞)]·e^(−t/τ). Laplace se ye form khud nikal aata hai: ek pole s = −1/τ par.",
+        "**Series RLC**: characteristic equation s² + (R/L)s + 1/(LC) = 0. α = R/(2L), ω₀ = 1/√(LC). α > ω₀ overdamped (do real poles), α = ω₀ critically damped (repeated pole), α < ω₀ underdamped (complex poles, ringing).",
+        "**Initial value theorem**: f(0⁺) = lim (s → ∞) s·F(s). **Final value theorem**: f(∞) = lim (s → 0) s·F(s), lekin sirf tab jab sF(s) ke saare poles left half-plane me hon (yaani f(t) settle hota ho). Oscillating ya growing f(t) par FVT galat answer deta hai."
+      ],
+      "example": {
+        "problem": "t = 0 par 10 V step ek series RC pe lagta hai: R = 1 kΩ, C = 1 μF, vC(0⁻) = 0. vC(t) nikaalo.",
+        "steps": [
+          "s-domain: source 10/s, R = 1000, C → 1/(sC) = 10⁶/s. Initial voltage zero, to extra source nahi.",
+          "Voltage divider: VC(s) = (10/s)·(1/(sC))/(R + 1/(sC)) = (10/s)·1/(1 + sRC).",
+          "RC = 10⁻³ s, to VC(s) = 10/(s(1 + 0.001s)) = 10000/(s(s + 1000)).",
+          "Partial fractions: A = 10000/1000 = 10 (s = 0), B = 10000/(−1000) = −10 (s = −1000).",
+          "VC(s) = 10/s − 10/(s + 1000) ⇒ vC(t) = 10 − 10e^(−1000t).",
+          "Check: IVT: lim sVC = 0 ✓ (capacitor voltage jump nahi karta), FVT: 10 V ✓.",
+          "Answer: **vC(t) = 10(1 − e^(−1000t)) V, τ = 1 ms**."
+        ]
+      },
+      "mistakes": [
+        "Initial condition source ko bhool jaana ya galat value lena: inductor ke liye L·I₀ (sirf I₀ nahi), capacitor ke liye V₀/s (sirf V₀ nahi).",
+        "FVT ko har jagah laga dena. Agar sF(s) ka koi pole jω-axis par (origin chhod ke) ya right half-plane me ho, jaise sinusoid ya e^(2t), to final value exist hi nahi karti.",
+        "RL ka time constant R/L le lena. Sahi τ = L/R hai; units check karo: H/Ω = second."
+      ],
+      "revision": [
+        "L → sL + series source L·I₀; C → 1/(sC) + series source V₀/s.",
+        "τ(RC) = RC, τ(RL) = L/R.",
+        "x(t) = x(∞) + [x(0⁺) − x(∞)]e^(−t/τ).",
+        "RLC: α = R/2L, ω₀ = 1/√(LC); α vs ω₀ decides damping.",
+        "IVT: s → ∞; FVT: s → 0, sirf stable case me."
+      ],
+      "questions": [
+        {
+          "id": "eec-w6-q1",
+          "question": "2 H inductor jiska initial current i(0⁻) = 3 A hai. s-domain me series model (impedance + voltage source) kya hoga?",
+          "options": [
+            "2s Ω, series me 3 V source",
+            "1/(2s) Ω, series me 6 V source",
+            "2s Ω, series me 6 V source",
+            "2s Ω, series me 1.5 V source"
+          ],
+          "answer": 2,
+          "explanation": "v = L di/dt → V(s) = sL·I(s) − L·i(0⁻). Impedance sL = 2s Ω aur series source L·I₀ = 2 × 3 = 6 V. 3 V tab aata jab sirf I₀ likha, aur 1/(2s) capacitor jaisa formula hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w6-q2",
+          "question": "F(s) = 5(s + 2)/(s(s + 4)(s + 5)) hai. Final value theorem se f(∞) kya hai?",
+          "options": [
+            "0",
+            "∞",
+            "10",
+            "0.5"
+          ],
+          "answer": 3,
+          "explanation": "sF(s) = 5(s + 2)/((s + 4)(s + 5)); iske poles −4, −5 left half-plane me hain, to FVT valid hai. s → 0: 5 × 2/(4 × 5) = 10/20 = 0.5. ∞ tab aata jab s se multiply kiye bina F(0) dekha, aur 10 sirf numerator ki value hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w6-q3",
+          "question": "F(s) = (3s + 2)/(s² + 4s + 5) hai. Initial value f(0⁺) kya hai?",
+          "options": [
+            "3",
+            "0",
+            "0.4",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "IVT: f(0⁺) = lim (s → ∞) sF(s) = lim (3s² + 2s)/(s² + 4s + 5) = 3. 0 tab aata jab s se multiply kiye bina F(∞) liya, aur 0.4 = F(0) = 2/5 jo initial value ka formula hai hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w6-q4",
+          "question": "Series RLC: R = 4 Ω, L = 1 H, C = 0.25 F. Natural response kis type ka hoga?",
+          "options": [
+            "Overdamped",
+            "Critically damped",
+            "Underdamped",
+            "Undamped (pure oscillation)"
+          ],
+          "answer": 1,
+          "explanation": "α = R/(2L) = 4/2 = 2, ω₀ = 1/√(LC) = 1/√0.25 = 2. α = ω₀, to critically damped; characteristic equation s² + 4s + 4 = (s + 2)², repeated pole −2. Galti se ω₀ = 1/(LC) = 4 lene par α < ω₀ dikh ke underdamped lagta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w6-q5",
+          "question": "t = 0 par 12 V source series RL (R = 4 Ω, L = 2 H) pe lagta hai, i(0⁻) = 0. t = 0.5 s par current kitna hai?",
+          "options": [
+            "1.10 A",
+            "0.66 A",
+            "3.00 A",
+            "1.90 A"
+          ],
+          "answer": 3,
+          "explanation": "I(s) = 12/(s(2s + 4)) = 6/(s(s + 2)) ⇒ i(t) = 3(1 − e^(−2t)), τ = L/R = 0.5 s. t = 0.5: 3(1 − e^(−1)) = 3 × 0.632 ≈ 1.90 A. 1.10 A = 3e^(−1) decay wala form hai, 0.66 A τ = R/L = 2 s lene se, aur 3 A final value hai jo 1 τ par abhi nahi pahuncha.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w6-q6",
+          "question": "Capacitor C = 0.5 F ka vC(0⁻) = 4 V hai. t = 0 par ise R = 2 Ω ke through 10 V source se jod dete hain (series loop). VC(s) kya hai?",
+          "options": [
+            "10/(s(s + 1))",
+            "(4s + 10)/(s(s + 1))",
+            "(10s + 4)/(s(s + 1))",
+            "(4s + 10)/(s(s + 2))"
+          ],
+          "answer": 1,
+          "explanation": "KVL: 10/s = 2I + I/(0.5s) + 4/s ⇒ I(s) = (6/s)/(2 + 2/s) = 3/(s + 1). VC = I/(sC) + 4/s = 6/(s(s + 1)) + 4/s = (4s + 10)/(s(s + 1)), yaani vC = 10 − 6e^(−t). Check: IVT 4 V, FVT 10 V ✓. 10/(s(s + 1)) initial voltage bhoolne se aata hai, aur (s + 2) galat τ (RC = 1 s hai) se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Diodes and rectifiers",
+      "summary": "Is week aap seekhoge ki p-n junction diode ka I-V characteristic kaisa hota hai, ideal aur constant-drop models kab use karte hain, half-wave aur full-wave rectifiers kaise kaam karte hain, aur capacitor filter se ripple kitna bachta hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Diode equation (Shockley)**: I = Is(e^(V/(n·VT)) − 1). Is saturation current (bahut chhota, nA–fA), VT = kT/q ≈ 25 mV room temperature par, n ideality factor (1–2). Forward bias me current exponentially badhta hai, reverse bias me sirf −Is.",
+        "**Decade rule**: n = 1 ke liye current 10 guna karne par V sirf VT·ln 10 ≈ 57.6 mV (VT = 25 mV) badhta hai. Isi wajah se conducting silicon diode ka voltage lagbhag 0.6–0.7 V par tika rehta hai.",
+        "**Diode models**: (1) Ideal — forward me short (0 V), reverse me open. (2) Constant drop — on hone par fixed VD = 0.7 V (Si), off par open. (3) Piecewise linear — 0.7 V + series rD. Pehle maan lo diode on/off hai, solve karo, phir check karo (on: ID > 0, off: VD < 0.7 V).",
+        "**Half-wave rectifier**: sirf positive half cycle load tak jaata hai. Ideal diode ke saath Vdc = Vm/π ≈ 0.318Vm, PIV = Vm. Output frequency = input frequency f.",
+        "**Full-wave rectifier**: center-tapped (2 diodes) ya bridge (4 diodes). Vdc = 2Vm/π ≈ 0.637Vm, ripple frequency 2f. Center-tapped me har half-winding ka peak Vm, PIV = 2Vm. Bridge me PIV = Vm par har time do diode conduct karte hain, to drop 2 × 0.7 = 1.4 V.",
+        "**Capacitor filter**: load ke parallel C lagao. Peak par C charge hota hai, beech me RL se discharge. Ripple (peak-to-peak) Vr ≈ Vp/(f·R·C) half-wave ke liye, Vr ≈ Vp/(2f·R·C) full-wave ke liye. Average output ≈ Vp − Vr/2.",
+        "**Design trade-off**: bada C ⇒ kam ripple, lekin diode ka peak charging current bahut badh jaata hai, kyunki C sirf chhote se conduction angle me charge hota hai."
+      ],
+      "example": {
+        "problem": "Bridge rectifier: transformer secondary 12 V rms, 50 Hz, har diode 0.7 V drop, RL = 1 kΩ, filter C = 1000 μF. Output peak aur ripple nikaalo.",
+        "steps": [
+          "Secondary peak: Vm = 12√2 ≈ 16.97 V.",
+          "Bridge me har half-cycle do diode conduct karte hain: Vp = 16.97 − 1.4 = 15.57 V.",
+          "Full-wave ripple: Vr ≈ Vp/(2fRC).",
+          "2fRC = 2 × 50 × 1000 × 1000 × 10⁻⁶ = 100.",
+          "Vr ≈ 15.57/100 ≈ 0.156 V (peak-to-peak).",
+          "Average DC ≈ Vp − Vr/2 ≈ 15.49 V.",
+          "Answer: **Vp ≈ 15.57 V, ripple ≈ 0.16 V p-p, Vdc ≈ 15.5 V**."
+        ]
+      },
+      "mistakes": [
+        "RMS value ko hi peak maan lena. Transformer rating (jaise 12 V) RMS hoti hai; peak = √2 × RMS.",
+        "Bridge rectifier me sirf ek diode drop ghataana. Har half cycle me do diodes series me hote hain, to 1.4 V ghatega.",
+        "Half-wave aur full-wave ka ripple formula mix karna. Full-wave me capacitor do baar refill hota hai, isliye ripple aadha (2f denominator me)."
+      ],
+      "revision": [
+        "I = Is(e^(V/nVT) − 1), VT ≈ 25 mV.",
+        "10× current ⇒ +57.6 mV (n = 1).",
+        "Half-wave: Vdc = Vm/π, PIV = Vm.",
+        "Full-wave: Vdc = 2Vm/π; center-tap PIV = 2Vm, bridge PIV = Vm.",
+        "Ripple: Vp/(fRC) half-wave, Vp/(2fRC) full-wave."
+      ],
+      "questions": [
+        {
+          "id": "eec-w7-q1",
+          "question": "Ideal diode wala half-wave rectifier, input peak Vm = 20 V, resistive load (koi capacitor nahi). Output ka average (DC) value kya hai?",
+          "options": [
+            "6.37 V",
+            "12.73 V",
+            "14.14 V",
+            "10 V"
+          ],
+          "answer": 0,
+          "explanation": "Half-wave: Vdc = Vm/π = 20/3.1416 ≈ 6.37 V. 12.73 V = 2Vm/π full-wave ka formula hai, 14.14 V RMS jaisa Vm/√2, aur 10 V Vm/2 — koi bhi half-wave ka average nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w7-q2",
+          "question": "5 V DC source, 1 kΩ resistor aur ek forward-biased silicon diode series me hain. Constant-drop model (VD = 0.7 V) se current kitna hai?",
+          "options": [
+            "5 mA",
+            "4.3 mA",
+            "5.7 mA",
+            "0.7 mA"
+          ],
+          "answer": 1,
+          "explanation": "I = (5 − 0.7)/1 kΩ = 4.3 mA. 5 mA ideal diode model ka answer hai, 5.7 mA drop ko add kar dene se, aur 0.7 mA diode voltage ko resistor ke across maan lene se.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w7-q3",
+          "question": "Ek forward-biased diode (n = 1, VT = 25 mV, I ≫ Is) ka current 1 mA se 10 mA kar diya. Diode voltage kitna badhega?",
+          "options": [
+            "25 mV",
+            "250 mV",
+            "57.6 mV",
+            "576 mV"
+          ],
+          "answer": 2,
+          "explanation": "V2 − V1 = n·VT·ln(I2/I1) = 25 mV × ln 10 = 25 × 2.303 ≈ 57.6 mV. 250 mV linear soch (10 × VT) se aata hai, aur 25 mV ln 10 bhoolne se — diode exponential hai, isliye voltage bahut kam badhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w7-q4",
+          "question": "Center-tapped full-wave rectifier me har half-winding ka peak voltage 15 V hai (ideal diodes). Har diode ka PIV kitna hai?",
+          "options": [
+            "15 V",
+            "7.5 V",
+            "21.2 V",
+            "30 V"
+          ],
+          "answer": 3,
+          "explanation": "Jab ek diode conduct karta hai, output ≈ +15 V hota hai aur off diode ke doosre end pe dusri half-winding −15 V deti hai. Off diode ke across 15 + 15 = 30 V = 2Vm. 15 V bridge ya half-wave ka PIV hai, jo yahan lagu nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w7-q5",
+          "question": "Half-wave rectifier with capacitor filter (ideal diode): Vp = 20 V, f = 50 Hz, RL = 2 kΩ, C = 100 μF. Peak-to-peak ripple lagbhag kitna hai?",
+          "options": [
+            "1 V",
+            "0.2 V",
+            "2 V",
+            "4 V"
+          ],
+          "answer": 2,
+          "explanation": "Half-wave: Vr ≈ Vp/(fRC) = 20/(50 × 2000 × 100 × 10⁻⁶) = 20/10 = 2 V. 1 V full-wave formula (2f) lagane se aata hai — half-wave me capacitor har cycle me sirf ek baar refill hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w7-q6",
+          "question": "Half-wave rectifier: secondary 9 V rms, 50 Hz, diode drop 0.7 V, RL = 200 Ω, C = 1000 μF. Average DC output lagbhag kitna hai? (Vdc ≈ Vp − Vr/2 lo.)",
+          "options": [
+            "11.43 V",
+            "10.83 V",
+            "12.09 V",
+            "11.73 V"
+          ],
+          "answer": 0,
+          "explanation": "Vm = 9√2 = 12.73 V, Vp = 12.73 − 0.7 = 12.03 V. Vr ≈ Vp/(fRC) = 12.03/(50 × 200 × 0.001) = 12.03/10 ≈ 1.20 V. Vdc ≈ 12.03 − 0.60 = 11.43 V. 10.83 V poora Vr ghataane se, 12.09 V diode drop bhoolne se, aur 11.73 V full-wave ripple formula lagane se aata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Clippers, clampers and Zener regulators",
+      "summary": "Is week aap seekhoge ki diodes se signal ko ek level par kaise kaatte hain (clipper), uska DC level kaise shift karte hain (clamper), aur Zener diode se simple voltage regulator kaise banta hai — saath me line aur load regulation.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Clipper (limiter)**: diode + bias battery se waveform ka ek hissa kaat diya jaata hai. Shunt clipper me diode branch output ke across hoti hai: jab output (VB + 0.7) se upar jaane ki koshish kare, diode on hokar output ko wahin rok deta hai; baaki time diode off aur output = input.",
+        "**Clipper analysis trick**: diode ke on hone ki condition likho (anode − cathode ≥ 0.7 V). Us threshold se upar/neeche output fixed, warna input follow karta hai. Do diodes ulti direction me lagao to dono taraf clipping (double clipper).",
+        "**Clamper (DC restorer)**: series capacitor + shunt diode. Waveform ka shape same rehta hai, sirf DC level shift hota hai. Capacitor ek peak par Vm tak charge hokar wahi voltage pakde rakhta hai (RC ≫ period). Ideal diode ke saath output 0 se 2Vm (positive clamper) ya −2Vm se 0 (negative clamper).",
+        "**Zener diode**: reverse breakdown region me kaam karta hai jahan voltage lagbhag Vz par constant rehta hai, current kaafi range me badal sakta hai. Forward me normal diode jaisa 0.7 V.",
+        "**Zener shunt regulator**: Vin → series R → output node, jahan Zener aur RL parallel hain. IR = (Vin − Vz)/R, IL = Vz/RL, Iz = IR − IL. Regulation ke liye Iz ≥ Iz,min (≈ 0 maan sakte ho) aur Iz·Vz ≤ power rating.",
+        "**Line regulation** = ΔVout/ΔVin (input badalne par output kitna hilta hai). Zener ka dynamic resistance rz ho to, no-load par, line regulation ≈ rz/(R + rz). **Load regulation** = (V_NL − V_FL)/V_FL × 100% — chhota hona achha hai.",
+        "**Worst cases**: Iz sabse kam tab hota hai jab Vin minimum aur load current maximum ho; Zener ki power sabse zyada tab jab Vin maximum aur load hat jaaye (IL = 0)."
+      ],
+      "example": {
+        "problem": "Zener regulator: Vin = 20 V, R = 200 Ω, Vz = 10 V, RL = 500 Ω. IR, IL, Iz aur Zener power nikaalo.",
+        "steps": [
+          "Pehle check karo Zener breakdown me hai: Zener hatao to RL ke across 20 × 500/700 ≈ 14.3 V > 10 V, to Zener on hai aur Vout = 10 V.",
+          "IR = (20 − 10)/200 = 50 mA.",
+          "IL = 10/500 = 20 mA.",
+          "Iz = IR − IL = 50 − 20 = 30 mA.",
+          "Pz = Vz·Iz = 10 × 0.03 = 0.3 W.",
+          "Answer: **IR = 50 mA, IL = 20 mA, Iz = 30 mA, Pz = 0.3 W**."
+        ]
+      },
+      "mistakes": [
+        "Bina check kiye maan lena ki Zener breakdown me hai. Pehle Zener hata ke open-circuit voltage dekho; agar wo Vz se kam hai to Zener off hai aur simple voltage divider chalega.",
+        "Clipper me bias battery ke saath diode ka 0.7 V drop bhool jaana. Clipping level VB + 0.7 hota hai (ideal diode ho to sirf VB).",
+        "Load regulation me V_NL se divide karna. Standard definition me denominator V_FL hai."
+      ],
+      "revision": [
+        "Shunt clipper level = VB + VD.",
+        "Clamper: shape same, DC shift; ideal output 0 to 2Vm ya −2Vm to 0.",
+        "IR = (Vin − Vz)/R, IL = Vz/RL, Iz = IR − IL.",
+        "Line reg = ΔVout/ΔVin; load reg = (V_NL − V_FL)/V_FL × 100%.",
+        "Zener ki max power: Vin max aur no load par."
+      ],
+      "questions": [
+        {
+          "id": "eec-w8-q1",
+          "question": "Input 10 sin ωt V ek series resistor ke through output node par aata hai. Output se ground tak ek branch hai: diode (anode output ki taraf, drop 0.7 V) series me 3 V battery (+ diode ke cathode ki taraf). Output ka maximum value kya hai?",
+          "options": [
+            "10 V",
+            "3 V",
+            "2.3 V",
+            "3.7 V"
+          ],
+          "answer": 3,
+          "explanation": "Diode tab on hota hai jab vout − 3 ≥ 0.7, yaani vout ≥ 3.7 V. On hote hi output 3.7 V par clip ho jaata hai. 3 V diode drop bhoolne se aata hai, 2.3 V drop ko ghataane se, aur 10 V clipper ko ignore karne se.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w8-q2",
+          "question": "Clamper: input 5 sin ωt V, series capacitor (RC ≫ period), aur output ke across ideal diode jiska anode ground par aur cathode output par hai. Steady state me output kis range me swing karega?",
+          "options": [
+            "−5 V se +5 V",
+            "−10 V se 0 V",
+            "0 V se +10 V",
+            "0 V se +5 V"
+          ],
+          "answer": 2,
+          "explanation": "Diode output ko 0 se neeche nahi jaane deta (output negative hote hi diode on). Negative peak par capacitor 5 V tak charge hokar input me +5 V DC jod deta hai: output = 5 sin ωt + 5, yaani 0 se +10 V. −10 se 0 diode ulta lagne par hota, aur 0 se 5 V clipper (rectifier) wala output hai, clamper ka nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w8-q3",
+          "question": "Zener regulator: Vin = 15 V, R = 100 Ω, Vz = 6 V, RL = 300 Ω. Zener current Iz kitna hai?",
+          "options": [
+            "90 mA",
+            "70 mA",
+            "20 mA",
+            "110 mA"
+          ],
+          "answer": 1,
+          "explanation": "IR = (15 − 6)/100 = 90 mA, IL = 6/300 = 20 mA, Iz = 90 − 20 = 70 mA. 90 mA poora series current hai (load ko bhool gaye), aur 110 mA IL ko add kar dene se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w8-q4",
+          "question": "Zener regulator: Vin = 12 V, R = 200 Ω, Vz = 5 V. Iz,min ≈ 0 maan ke, regulation bani rahe iske liye RL ka minimum value kya hai?",
+          "options": [
+            "142.9 Ω",
+            "342.9 Ω",
+            "83.3 Ω",
+            "200 Ω"
+          ],
+          "answer": 0,
+          "explanation": "IR = (12 − 5)/200 = 35 mA. Sabse chhota RL tab jab poora IR load me jaaye: RL,min = 5/0.035 ≈ 142.9 Ω. Check: is RL par divider 12 × 142.9/342.9 = 5 V ✓. 83.3 Ω IR ko 12/200 = 60 mA lene se aata hai (Vz ghataana bhool gaye), aur 342.9 Ω Vin ko Vz ki jagah lene se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w8-q5",
+          "question": "Ek regulated supply ka no-load output 10 V aur full-load output 8 V hai. Load regulation kitna hai?",
+          "options": [
+            "2 %",
+            "25 %",
+            "20 %",
+            "80 %"
+          ],
+          "answer": 1,
+          "explanation": "Load regulation = (V_NL − V_FL)/V_FL × 100 = (10 − 8)/8 × 100 = 25%. 20% V_NL se divide karne se aata hai, aur 2% sirf voltage difference ko percent likh dene se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w8-q6",
+          "question": "Zener regulator (no load): R = 495 Ω, Zener ka dynamic resistance rz = 5 Ω. Vin 2 V badh jaaye to Vout kitna badhega?",
+          "options": [
+            "2 V",
+            "10 mV",
+            "0 V",
+            "20 mV"
+          ],
+          "answer": 3,
+          "explanation": "Small-signal me Zener = rz, to R aur rz ek divider banate hain: ΔVout = ΔVin × rz/(R + rz) = 2 × 5/500 = 20 mV (line regulation 10 mV/V). 10 mV sirf per-volt value hai, 0 V ideal Zener (rz = 0) maanne se, aur 2 V Zener ko ignore karne se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "BJT operation and DC biasing",
+      "summary": "Is week aap seekhoge ki BJT ki structure kya hai, active, saturation aur cutoff regions kaise pehchaante hain, aur fixed bias aur voltage-divider bias se DC operating point (IC, VCE) kaise nikalte hain.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Structure**: BJT me do p-n junctions hote hain — base-emitter (BE) aur base-collector (BC). npn me emitter heavily doped n, base patla p, collector n. pnp me sab ulta, aur currents/voltages ki directions bhi ulti.",
+        "**Regions of operation**: active — BE forward, BC reverse (amplifier yahin). Saturation — dono forward (switch on, VCE(sat) ≈ 0.2 V). Cutoff — dono reverse (switch off, IC ≈ 0). Reverse active — BE reverse, BC forward (rarely used).",
+        "**Active region relations**: IC = β·IB, IE = IB + IC = (β + 1)IB, α = IC/IE = β/(β + 1) (1 se thoda kam). VBE ≈ 0.7 V (Si). β transistor-to-transistor bahut badalta hai, isliye achha bias circuit β pe kam depend karta hai.",
+        "**Saturation check**: active maan ke IC = βIB nikaalo aur VCE calculate karo. Agar VCE < 0.2 V aaye to assumption galat — transistor saturated hai; tab VCE = 0.2 V rakh ke IC = (VCC − 0.2)/RC (jaisa circuit ho) nikaalo, aur IC < βIB hoga.",
+        "**Fixed bias**: VCC → RB → base. IB = (VCC − 0.7)/RB, IC = βIB, VCE = VCC − IC·RC. Simple hai par Q-point seedha β pe depend karta hai — β double to IC double.",
+        "**Voltage-divider bias**: R1 (VCC se base) aur R2 (base se ground) ka Thevenin: VTH = VCC·R2/(R1 + R2), RTH = R1 ∥ R2. Base loop: IB = (VTH − 0.7)/(RTH + (β + 1)RE). Phir IC = βIB, VCE = VCC − IC·RC − IE·RE.",
+        "**Stability**: agar (β + 1)RE ≫ RTH, to IE ≈ (VTH − 0.7)/RE — β pe almost depend hi nahi karta. Emitter resistor negative feedback deta hai: IC badhe to VE badhta hai, VBE ghatta hai, IC wapas aata hai."
+      ],
+      "example": {
+        "problem": "Voltage-divider bias: VCC = 12 V, R1 = 40 kΩ, R2 = 10 kΩ, RC = 2 kΩ, RE = 1 kΩ, β = 100, VBE = 0.7 V. IC aur VCE nikaalo.",
+        "steps": [
+          "VTH = 12 × 10/(40 + 10) = 2.4 V, RTH = 40 ∥ 10 = 8 kΩ.",
+          "Base loop KVL: VTH = IB·RTH + 0.7 + (β + 1)IB·RE.",
+          "IB = (2.4 − 0.7)/(8 + 101 × 1) kΩ = 1.7/109 mA ≈ 15.6 μA.",
+          "IC = 100 × 15.6 μA ≈ 1.56 mA, IE = 101 × 15.6 μA ≈ 1.58 mA.",
+          "VCE = 12 − 1.56 × 2 − 1.58 × 1 ≈ 7.31 V.",
+          "VCE > 0.2 V, to active region assumption sahi hai.",
+          "Answer: **IC ≈ 1.56 mA, VCE ≈ 7.31 V (active)**."
+        ]
+      },
+      "mistakes": [
+        "Emitter resistor ko base loop me sirf RE likhna. Base side se dekhne par wo (β + 1)RE dikhta hai, kyunki usme IE = (β + 1)IB behta hai.",
+        "Active region maan ke answer de dena bina VCE check kiye. Negative ya 0.2 V se kam VCE aaye to transistor saturated hai.",
+        "Voltage-divider bias me R1, R2 ko seedha divider maan lena jab base current significant ho. Exact answer ke liye Thevenin (VTH, RTH) use karo."
+      ],
+      "revision": [
+        "Active: BE fwd, BC rev; sat: dono fwd; cutoff: dono rev.",
+        "IC = βIB, IE = (β + 1)IB, α = β/(β + 1).",
+        "Fixed bias: IB = (VCC − 0.7)/RB.",
+        "Divider bias: IB = (VTH − 0.7)/(RTH + (β + 1)RE).",
+        "VCE = VCC − IC·RC − IE·RE; check VCE > 0.2 V."
+      ],
+      "questions": [
+        {
+          "id": "eec-w9-q1",
+          "question": "Ek BJT ka β = 100 hai. Uska α kitna hai?",
+          "options": [
+            "1.01",
+            "0.990",
+            "0.0099",
+            "101"
+          ],
+          "answer": 1,
+          "explanation": "α = β/(β + 1) = 100/101 ≈ 0.990. α hamesha 1 se thoda kam hota hai, kyunki IC < IE. 1.01 formula ulta (101/100) karne se, aur 101 = β + 1 hai jo IE/IB ka ratio hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w9-q2",
+          "question": "Ek npn transistor me VB = 0.7 V, VE = 0 V aur VC = 0.2 V hain. Transistor kis region me hai?",
+          "options": [
+            "Active",
+            "Cutoff",
+            "Saturation",
+            "Reverse active"
+          ],
+          "answer": 2,
+          "explanation": "VBE = 0.7 V (BE forward) aur VBC = 0.7 − 0.2 = 0.5 V (BC bhi forward). Dono junctions forward ⇒ saturation, aur VCE = 0.2 V bhi isi ka sign hai. Sirf VBE = 0.7 dekh ke active bol dena common galti hai — BC junction bhi check karo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w9-q3",
+          "question": "Fixed bias: VCC = 10 V, RB = 465 kΩ, RC = 2 kΩ, β = 100, VBE = 0.7 V. VCE kitna hai?",
+          "options": [
+            "5.7 V",
+            "0.2 V",
+            "9.96 V",
+            "6 V"
+          ],
+          "answer": 3,
+          "explanation": "IB = (10 − 0.7)/465 kΩ = 20 μA, IC = 100 × 20 μA = 2 mA, VCE = 10 − 2 × 2 = 6 V (> 0.2 V, active ✓). 5.7 V 0.7 V ghataana bhoolne se aata hai, aur 9.96 V IC ki jagah IB × RC lene se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w9-q4",
+          "question": "npn: 5 V source RB = 100 kΩ ke through base ko drive karta hai, VCC = 10 V, RC = 4 kΩ, RE = 0, β = 100, VBE = 0.7 V, VCE(sat) = 0.2 V. IC aur region kya hai?",
+          "options": [
+            "2.45 mA (saturation)",
+            "4.3 mA (active)",
+            "0.043 mA (active)",
+            "0 mA (cutoff)"
+          ],
+          "answer": 0,
+          "explanation": "IB = (5 − 0.7)/100 kΩ = 43 μA. Active maano to IC = 4.3 mA, VCE = 10 − 4.3 × 4 = −7.2 V — impossible, to transistor saturated hai. IC = (10 − 0.2)/4 kΩ = 2.45 mA (aur ye βIB = 4.3 mA se kam hai ✓). 4.3 mA bina VCE check kiye active maan lene se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w9-q5",
+          "question": "Voltage-divider bias: VCC = 12 V, R1 = 47 kΩ, R2 = 10 kΩ, RE = 1 kΩ, β = 100, VBE = 0.7 V. Thevenin (exact) analysis se IC kitna hai?",
+          "options": [
+            "1.29 mA",
+            "1.41 mA",
+            "2.11 mA",
+            "17.0 mA"
+          ],
+          "answer": 0,
+          "explanation": "VTH = 12 × 10/57 = 2.105 V, RTH = 47 ∥ 10 = 8.25 kΩ. IB = (2.105 − 0.7)/(8.25 + 101 × 1) kΩ = 12.9 μA, IC = 1.29 mA. 1.41 mA RTH ko ignore karne wala approximation hai, 2.11 mA 0.7 V bhoolne se, aur 17.0 mA base loop me (β + 1)RE bhoolne se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w9-q6",
+          "question": "Voltage-divider bias: VCC = 15 V, R1 = 68 kΩ, R2 = 12 kΩ, RC = 4 kΩ, RE = 1 kΩ, β = 100, VBE = 0.7 V. Exact analysis se VCE kitna hai?",
+          "options": [
+            "7.25 V",
+            "9.42 V",
+            "8.02 V",
+            "3.75 V"
+          ],
+          "answer": 2,
+          "explanation": "VTH = 15 × 12/80 = 2.25 V, RTH = 68 ∥ 12 = 10.2 kΩ. IB = 1.55/(10.2 + 101) kΩ ≈ 13.9 μA, IC ≈ 1.394 mA, IE ≈ 1.408 mA. VCE = 15 − 1.394 × 4 − 1.408 × 1 ≈ 8.02 V. 7.25 V RTH ignore karne (IC ≈ 1.55 mA) se, 9.42 V RE ka drop bhoolne se, aur 3.75 V 0.7 V bhoolne se aata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "BJT small-signal amplifiers",
+      "summary": "Is week aap seekhoge ki bias point ke aas-paas BJT ko small-signal model (gm, rπ) se kaise replace karte hain, common-emitter amplifier ka gain kaise nikalte hain, aur differential pair aur current mirror ka basic idea kya hai.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Small-signal idea**: total signal = DC bias + chhota AC signal. Agar AC part VT (25 mV) se kaafi chhota ho, to transistor ko linear model se replace kar sakte hain. Analysis do hisso me: pehle DC (Q-point), phir AC (DC sources ko AC ground, bade capacitors short).",
+        "**Transconductance** gm = IC/VT. 1 mA par gm = 1/25 mS = 40 mS. Ye batata hai ki vbe me chhota badlaav ic ko kitna badalta hai: ic = gm·vbe. gm sirf bias current pe depend karta hai, transistor ke size pe nahi.",
+        "**Hybrid-π model**: base aur emitter ke beech rπ = β/gm, aur collector se emitter tak dependent current source gm·vπ. Early effect ho to iske parallel ro = VA/IC. Emitter side se dikhne wala resistance re = α/gm ≈ 1/gm, bahut chhota hota hai.",
+        "**Common-emitter (CE) amplifier**: RE bypassed ho to Av = vo/vb = −gm(RC ∥ RL ∥ ro). Minus sign = 180° phase inversion. Input resistance Rin = RB ∥ rπ (RB = R1 ∥ R2).",
+        "**Emitter degeneration**: RE bypass na ho to Av = −β(RC ∥ RL)/(rπ + (β + 1)RE) ≈ −(RC ∥ RL)/RE jab (β + 1)RE ≫ rπ. Gain kam hota hai par stable aur predictable, aur Rin badh jaata hai.",
+        "**Differential pair**: do matched transistors, emitters ek tail current source I pe jude. Har transistor me I/2, gm = (I/2)/VT. Differential input vid ke liye: double-ended output (collector se collector) gain = gm·RC, single-ended = gm·RC/2. Common-mode signal ideally reject hota hai.",
+        "**Current mirror**: diode-connected Q1 me reference current Iref, Q2 ka base-emitter same hai to Iout ≈ Iref. Finite β ke saath dono base currents Iref se lete hain: Iout = Iref/(1 + 2/β). ICs me biasing aur active loads ke liye use hota hai."
+      ],
+      "example": {
+        "problem": "CE amplifier (RE fully bypassed): IC = 1 mA, β = 100, VT = 25 mV, RC = 5 kΩ, RL = 5 kΩ, ro = ∞. gm, rπ aur voltage gain vo/vb nikaalo.",
+        "steps": [
+          "gm = IC/VT = 1 mA/25 mV = 40 mS.",
+          "rπ = β/gm = 100/0.04 = 2.5 kΩ.",
+          "AC me collector ka load: RC ∥ RL = 5 ∥ 5 = 2.5 kΩ.",
+          "Av = −gm(RC ∥ RL) = −0.04 × 2500 = −100.",
+          "Minus sign ka matlab output input se 180° out of phase hai.",
+          "Answer: **gm = 40 mS, rπ = 2.5 kΩ, Av = −100**."
+        ]
+      },
+      "mistakes": [
+        "Gain nikaalte waqt RL ko bhool jaana. Collector par AC load RC ∥ RL hai, sirf RC nahi.",
+        "rπ ko β/IC ya 1/gm likh dena. rπ = β/gm = β·VT/IC; 1/gm to re ke barabar hai, jo β guna chhota hai.",
+        "Differential pair me har transistor ka current I maan lena. Tail current dono me bant'ta hai, to gm = (I/2)/VT."
+      ],
+      "revision": [
+        "gm = IC/VT; 1 mA ⇒ 40 mS.",
+        "rπ = β/gm.",
+        "CE (bypassed): Av = −gm(RC ∥ RL).",
+        "Unbypassed RE: Av = −β(RC ∥ RL)/(rπ + (β + 1)RE).",
+        "Diff pair: Ad = gm·RC (double-ended), gm = (I/2)/VT.",
+        "Mirror: Iout = Iref/(1 + 2/β)."
+      ],
+      "questions": [
+        {
+          "id": "eec-w10-q1",
+          "question": "Ek BJT IC = 2 mA par biased hai, VT = 25 mV. Uska gm kitna hai?",
+          "options": [
+            "12.5 mS",
+            "40 mS",
+            "80 mS",
+            "160 mS"
+          ],
+          "answer": 2,
+          "explanation": "gm = IC/VT = 2 mA/25 mV = 0.08 S = 80 mS. 40 mS 1 mA wala yaad kiya hua number hai (ya IC/2 lena), 160 mS MOSFET ka 2ID/Vov jaisa formula galat jagah lagane se.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w10-q2",
+          "question": "β = 150 aur IC = 1.5 mA (VT = 25 mV) wale BJT ka rπ kitna hai?",
+          "options": [
+            "2.5 kΩ",
+            "16.7 Ω",
+            "9 kΩ",
+            "0.4 kΩ"
+          ],
+          "answer": 0,
+          "explanation": "gm = 1.5/25 = 60 mS, rπ = β/gm = 150/0.06 = 2500 Ω = 2.5 kΩ. 16.7 Ω = 1/gm hai (re jaisa), jo β guna chhota hai, aur 9 kΩ β aur gm ko multiply karne se aata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w10-q3",
+          "question": "CE amplifier (RE bypassed, ro = ∞): IC = 0.5 mA, VT = 25 mV, RC = 4 kΩ, RL = 4 kΩ. Voltage gain vo/vb kya hai?",
+          "options": [
+            "−80",
+            "−40",
+            "+40",
+            "−20"
+          ],
+          "answer": 1,
+          "explanation": "gm = 0.5/25 = 20 mS. Av = −gm(RC ∥ RL) = −0.02 × 2000 = −40. −80 RL bhoolne se (sirf RC = 4 kΩ) aata hai, aur +40 me CE ka phase inversion (minus) chhoot gaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w10-q4",
+          "question": "CE amplifier jisme RE = 500 Ω bypass NAHI hai: β = 100, IC = 1 mA, VT = 25 mV, RC = 5 kΩ, koi RL nahi, ro = ∞. Exact formula se gain vo/vb kya hai?",
+          "options": [
+            "−200",
+            "−166.7",
+            "+9.43",
+            "−9.43"
+          ],
+          "answer": 3,
+          "explanation": "rπ = 100/0.04 = 2.5 kΩ. Av = −βRC/(rπ + (β + 1)RE) = −100 × 5000/(2500 + 101 × 500) = −500000/53000 ≈ −9.43 (approx −RC/RE = −10 ke paas). −200 RE ko ignore karne se (bypassed case), aur −166.7 base side par (β + 1)RE ki jagah sirf RE lene se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w10-q5",
+          "question": "Simple two-transistor current mirror: Iref = 1 mA, dono matched transistors ka β = 50 (Early effect ignore). Output current kitna hai?",
+          "options": [
+            "1.04 mA",
+            "1.00 mA",
+            "0.980 mA",
+            "0.962 mA"
+          ],
+          "answer": 3,
+          "explanation": "Iref = IC + 2IB = IC(1 + 2/β), aur Iout = IC. Iout = 1/(1 + 2/50) = 1/1.04 ≈ 0.962 mA. 1.00 mA ideal (β = ∞) answer hai, 0.980 mA sirf ek base current ghataane se, aur 1.04 mA correction ulta lagane se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w10-q6",
+          "question": "BJT differential pair: tail current 2 mA, har collector resistor RC = 10 kΩ, VT = 25 mV, ro = ∞. Double-ended output (collector se collector) ka differential gain vod/vid kitna hai?",
+          "options": [
+            "200",
+            "400",
+            "800",
+            "40"
+          ],
+          "answer": 1,
+          "explanation": "Har transistor me 1 mA, to gm = 1/25 = 40 mS. Double-ended differential gain = gm·RC = 0.04 × 10000 = 400. 200 single-ended output ka gain hai, aur 800 tab aata jab poora 2 mA ek transistor me maan ke gm = 80 mS liya.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "MOSFET biasing and CMOS",
+      "summary": "Is week aap seekhoge ki n-channel MOSFET ke cutoff, triode aur saturation regions kaise pehchaante hain, square-law se drain current kaise nikalte hain, biasing aur common-source amplifier ka gain, aur CMOS inverter kaise kaam karta hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**MOSFET basics**: gate insulated hai, isliye DC gate current = 0 (BJT ke base current jaisa kuch nahi). Enhancement nMOS me channel tab banta hai jab VGS > Vt (threshold voltage). Overdrive Vov = VGS − Vt.",
+        "**Regions (nMOS)**: cutoff — VGS < Vt, ID = 0. Triode — VGS > Vt aur VDS < Vov; device ek voltage-controlled resistor jaisa. Saturation — VGS > Vt aur VDS ≥ Vov; current VDS pe almost depend nahi karta (amplifier yahin).",
+        "**Square law**: kn = μnCox(W/L). Saturation: ID = (kn/2)·Vov². Triode: ID = kn·[Vov·VDS − VDS²/2]. Dono formulas VDS = Vov par same value dete hain — boundary par continuous.",
+        "**Biasing**: gate par divider se VG set karo (gate current nahi, to divider exact hai). Source resistor RS ho to VGS = VG − ID·RS, aur square law ke saath quadratic banta hai. Do roots aate hain — wo root lo jisme VGS > Vt ho.",
+        "**Small-signal**: gm = kn·Vov = 2ID/Vov = √(2kn·ID). Channel-length modulation se ro = 1/(λID). Common-source (CS) amplifier, RS bypassed: Av = −gm(RD ∥ RL ∥ ro). Input resistance = gate divider ki resistance (bahut badi ho sakti hai).",
+        "**CMOS inverter**: pMOS VDD se output tak, nMOS output se ground tak, dono gates input pe. Input high ⇒ nMOS on, pMOS off ⇒ output 0. Input low ⇒ ulta ⇒ output VDD. Dono steady states me ek transistor off hai, isliye static current ≈ 0; power mainly switching ke time lagti hai.",
+        "**Switching threshold**: matched inverter (kn = kp, |Vtp| = Vtn) me VM = VDD/2. Transition ke beech dono transistors saturation me hote hain aur gain bahut high hota hai — isi se sharp digital transition milta hai."
+      ],
+      "example": {
+        "problem": "nMOS: VDD = 10 V, gate divider se VG = 4 V, RS = 0, RD = 1 kΩ, Vt = 1 V, kn = 1 mA/V², λ = 0. ID, VDS aur CS gain (RL nahi) nikaalo.",
+        "steps": [
+          "VGS = 4 V, Vov = 4 − 1 = 3 V.",
+          "Saturation maan ke: ID = (kn/2)Vov² = 0.5 × 1 × 9 = 4.5 mA.",
+          "VDS = 10 − 4.5 × 1 = 5.5 V.",
+          "Check: VDS = 5.5 V ≥ Vov = 3 V, to saturation assumption sahi.",
+          "gm = kn·Vov = 1 × 3 = 3 mS (ya 2ID/Vov = 9/3 = 3 mS).",
+          "Av = −gm·RD = −3 mS × 1 kΩ = −3.",
+          "Answer: **ID = 4.5 mA, VDS = 5.5 V, Av = −3**."
+        ]
+      },
+      "mistakes": [
+        "Saturation formula lagaane ke baad VDS ≥ Vov check na karna. Agar condition fail ho to triode formula se dobara solve karo.",
+        "RS wale bias quadratic ka galat root le lena. Jis root me VGS < Vt aaye wo physically possible nahi (tab current flow hi nahi hota).",
+        "BJT ka gm = I/VT formula MOSFET pe laga dena. MOSFET me gm = 2ID/Vov hai, jo same current par aam taur pe BJT se kaafi kam hota hai."
+      ],
+      "revision": [
+        "Vov = VGS − Vt; cutoff: Vov < 0.",
+        "Saturation: VDS ≥ Vov, ID = (kn/2)Vov².",
+        "Triode: ID = kn(Vov·VDS − VDS²/2).",
+        "gm = knVov = 2ID/Vov.",
+        "CS: Av = −gm(RD ∥ RL ∥ ro).",
+        "CMOS: static current ≈ 0, matched VM = VDD/2."
+      ],
+      "questions": [
+        {
+          "id": "eec-w11-q1",
+          "question": "nMOS saturation me hai: kn = 2 mA/V², Vt = 1 V, VGS = 3 V, λ = 0. ID kitna hai?",
+          "options": [
+            "4 mA",
+            "8 mA",
+            "2 mA",
+            "9 mA"
+          ],
+          "answer": 0,
+          "explanation": "Vov = 3 − 1 = 2 V. ID = (kn/2)Vov² = (2/2) × 4 = 4 mA. 8 mA ½ bhoolne se aata hai, aur 9 mA Vt ghataaye bina VGS² = 9 lene se.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w11-q2",
+          "question": "Ek nMOS me Vt = 1 V, VGS = 3 V aur VDS = 1 V hai. Ye kis region me hai?",
+          "options": [
+            "Cutoff",
+            "Saturation",
+            "Reverse active",
+            "Triode (linear)"
+          ],
+          "answer": 3,
+          "explanation": "VGS > Vt, to channel bana hua hai (cutoff nahi). Vov = 2 V aur VDS = 1 V < Vov, isliye triode. Sirf VGS > Vt dekh ke saturation bol dena common galti hai — saturation ke liye VDS ≥ Vov bhi chahiye. Reverse active BJT ka region hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w11-q3",
+          "question": "Saturation me ek MOSFET ID = 2 mA par Vov = 0.5 V ke saath biased hai. Uska gm kitna hai?",
+          "options": [
+            "4 mS",
+            "80 mS",
+            "8 mS",
+            "16 mS"
+          ],
+          "answer": 2,
+          "explanation": "gm = 2ID/Vov = 2 × 2 mA/0.5 V = 8 mS. 4 mS 2 bhoolne se (ID/Vov), 80 mS BJT ka IC/VT formula lagane se, aur 16 mS Vov ki jagah Vov² se divide karne se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w11-q4",
+          "question": "Common-source amplifier (RS bypassed, ro = ∞): gm = 4 mS, RD = 5 kΩ, RL = 5 kΩ. Voltage gain kya hai?",
+          "options": [
+            "−20",
+            "−10",
+            "+10",
+            "−2.5"
+          ],
+          "answer": 1,
+          "explanation": "Av = −gm(RD ∥ RL) = −4 mS × 2.5 kΩ = −10. −20 RL bhoolne se (sirf RD), aur +10 CS ka phase inversion bhoolne se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w11-q5",
+          "question": "Ek CMOS inverter (VDD supply) ke baare me kaunsa statement sahi hai?",
+          "options": [
+            "Input = VDD par nMOS off aur pMOS on, output = VDD",
+            "Steady state me (input 0 ya VDD) VDD se ground tak bada static current behta hai",
+            "Input = VDD par nMOS on, pMOS off, output ≈ 0 V aur static current ≈ 0",
+            "Matched inverter ka switching threshold VDD/4 hota hai"
+          ],
+          "answer": 2,
+          "explanation": "Input high ⇒ nMOS ka VGS = VDD (on), pMOS ka VSG = 0 (off) ⇒ output ground se jud jaata hai aur VDD-ground path toota rehta hai, to static current ≈ 0. Pehla option devices ki roles ulti kar deta hai, aur matched inverter ka threshold VDD/2 hota hai, VDD/4 nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w11-q6",
+          "question": "nMOS bias: VDD = 10 V, VG = 3 V (divider se), RS = 1 kΩ, RD = 4 kΩ, Vt = 1 V, kn = 2 mA/V², λ = 0. Saturation maan ke ID kitna hai?",
+          "options": [
+            "1 mA",
+            "4 mA",
+            "1.22 mA",
+            "2 mA"
+          ],
+          "answer": 0,
+          "explanation": "VGS = 3 − ID·(1 kΩ). ID (mA) = (2/2)(3 − ID − 1)² ⇒ ID = (2 − ID)² ⇒ ID² − 5ID + 4 = 0 ⇒ ID = 1 ya 4 mA. 4 mA par VGS = −1 V < Vt, impossible — to ID = 1 mA (VGS = 2 V). Check: VDS = 10 − 4 − 1 = 5 V ≥ Vov = 1 V ✓. 4 mA galat root ya RS ignore karne se aata hai, aur 1.22 mA ½ bhoolne se.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Two-ports, transformers and transfer functions",
+      "summary": "Is week aap seekhoge ki do-port networks ko z, y aur h parameters se kaise describe karte hain, ideal transformer se impedance matching, aur transfer function ke poles, zeros, impulse response aur Bode plot ki basics.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Two-port network**: do terminal pairs — port 1 (input: V1, I1) aur port 2 (output: V2, I2). Convention: dono currents port me andar jaate hain. Andar ka circuit linear ho to chaar variables me se do ko baaki do se linear relations se likh sakte hain.",
+        "**z-parameters (open-circuit)**: V1 = z11I1 + z12I2, V2 = z21I1 + z22I2. z11 = V1/I1 jab I2 = 0 (port 2 open). T-network (Za port 1 side, Zb port 2 side, Zc shunt) ke liye z11 = Za + Zc, z22 = Zb + Zc, z12 = z21 = Zc. Reciprocal network me z12 = z21.",
+        "**y-parameters (short-circuit)**: I1 = y11V1 + y12V2, I2 = y21V1 + y22V2; y11 = I1/V1 jab V2 = 0. **h-parameters (hybrid)**: V1 = h11I1 + h12V2, I2 = h21I1 + h22V2. h21 = I2/I1 (port 2 short) current gain hai — BJT ka hfe yahi hai.",
+        "**Ideal transformer**: V2/V1 = N2/N1 = n, I2/I1 = −1/n (power in = power out). Secondary par ZL lagao to primary se dikhta hai Zin = ZL/n² = ZL·(N1/N2)². Is reflected impedance se load ko source ke Rth se match karte hain: N1/N2 = √(Rs/RL).",
+        "**Transfer function**: H(s) = Y(s)/X(s), zero initial conditions ke saath. Numerator ke roots = zeros, denominator ke roots = poles. Saare poles left half-plane me ⇒ stable. DC gain = H(0).",
+        "**Impulse response**: h(t) = L⁻¹{H(s)}. Kisi bhi input ka output = H(s)·X(s), time me convolution. Step response = L⁻¹{H(s)/s}. Pole −a ⇒ response me e^(−at) term; complex poles ⇒ damped oscillation.",
+        "**Bode plot**: |H| dB me (20 log₁₀|H|) vs log ω. Har real pole corner ωc ke baad −20 dB/decade slope jodta hai, har zero +20 dB/decade. Corner par exact value asymptote se 3 dB kam hoti hai aur single pole ka phase −45° hota hai."
+      ],
+      "example": {
+        "problem": "Ek amplifier ka Thevenin source 10 V rms, Rs = 800 Ω hai, aur load 8 Ω speaker hai. Max power ke liye ideal transformer ka turns ratio N1/N2 kya ho, aur speaker ko kitni power milegi? Bina transformer kitni milti?",
+        "steps": [
+          "Max power ke liye primary se dikhne wala resistance Rs ke barabar chahiye: RL·(N1/N2)² = 800.",
+          "(N1/N2)² = 800/8 = 100 ⇒ N1/N2 = 10 (step-down).",
+          "Matched condition: P = Vs²/(4Rs) = 100/3200 = 31.25 mW; ideal transformer lossless hai, to yahi speaker tak pahunchti hai.",
+          "Bina transformer: I = 10/(800 + 8) A, P = I²·8 ≈ 1.23 mW.",
+          "Transformer se power lagbhag 25 guna badh gayi.",
+          "Answer: **N1/N2 = 10, P ≈ 31.25 mW (bina transformer ≈ 1.23 mW)**."
+        ]
+      },
+      "mistakes": [
+        "Reflected impedance me turns ratio square karna bhool jaana. Zin = ZL·(N1/N2)², sirf ratio se multiply nahi.",
+        "Two-port me I2 ki direction ulti lena. Standard convention me I2 port 2 me andar jaata hai, isliye short-circuit current gain (h21) aksar negative aata hai.",
+        "Bode asymptote ko exact value samajh lena. Corner frequency par asymptote se actual magnitude 3 dB kam hota hai."
+      ],
+      "revision": [
+        "T-network: z11 = Za + Zc, z22 = Zb + Zc, z12 = z21 = Zc.",
+        "z: ports open; y: ports short; h21 = current gain.",
+        "Ideal transformer: Zin = ZL(N1/N2)².",
+        "Poles LHP me ⇒ stable; DC gain = H(0).",
+        "h(t) = L⁻¹{H(s)}.",
+        "Har pole: −20 dB/decade, corner par −3 dB, −45°."
+      ],
+      "questions": [
+        {
+          "id": "eec-w12-q1",
+          "question": "T-network: Za = 2 Ω (port 1 side), Zb = 3 Ω (port 2 side), Zc = 5 Ω (shunt). z12 kya hai?",
+          "options": [
+            "7 Ω",
+            "8 Ω",
+            "10 Ω",
+            "5 Ω"
+          ],
+          "answer": 3,
+          "explanation": "z12 = V1/I2 jab I1 = 0. Port 1 open hai to Za me current nahi, aur V1 = Zc ke across voltage = 5·I2. z12 = Zc = 5 Ω. 7 Ω z11 (Za + Zc) hai aur 8 Ω z22 (Zb + Zc).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w12-q2",
+          "question": "Ideal transformer ka turns ratio N1:N2 = 5:1 hai aur secondary par 8 Ω load hai. Primary se dikhne wala resistance kitna hai?",
+          "options": [
+            "40 Ω",
+            "200 Ω",
+            "1.6 Ω",
+            "0.32 Ω"
+          ],
+          "answer": 1,
+          "explanation": "Zin = RL·(N1/N2)² = 8 × 25 = 200 Ω. 40 Ω ratio ko square kiye bina multiply karne se aata hai, aur 0.32 Ω ratio ulta (1/25) lagane se — step-down transformer primary par impedance badha ke dikhata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "eec-w12-q3",
+          "question": "H(s) = 10(s + 2)/((s + 1)(s + 5)) ka DC gain kya hai?",
+          "options": [
+            "4",
+            "10",
+            "20",
+            "0"
+          ],
+          "answer": 0,
+          "explanation": "DC par s = 0: H(0) = 10 × 2/(1 × 5) = 4. 10 sirf leading constant hai, aur 20 numerator ki value ko denominator se divide karna bhoolne se. 0 to H(∞) hai (high frequency par), DC par nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w12-q4",
+          "question": "Ek RC low-pass filter ka transfer function H(s) = 1/(0.5s + 1) hai. Iska impulse response h(t) kya hai?",
+          "options": [
+            "e^(−2t)",
+            "0.5e^(−0.5t)",
+            "2e^(−2t)",
+            "1 − e^(−2t)"
+          ],
+          "answer": 2,
+          "explanation": "H(s) = 1/(0.5(s + 2)) = 2/(s + 2) ⇒ h(t) = 2e^(−2t), t ≥ 0. e^(−2t) me 0.5 ko bahar nikaal ke 2 se multiply karna bhool gaye, aur 1 − e^(−2t) step response hai (H(s)/s ka inverse), impulse ka nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w12-q5",
+          "question": "H(jω) = 100/(1 + jω/1000). ω = 10000 rad/s par asymptotic (straight-line) Bode magnitude kitna hai?",
+          "options": [
+            "40 dB",
+            "20 dB",
+            "37 dB",
+            "0 dB"
+          ],
+          "answer": 1,
+          "explanation": "DC gain 100 = 40 dB. Corner 1000 rad/s ke baad −20 dB/decade, aur 10000 ek decade aage hai: 40 − 20 = 20 dB (exact value 100/√101 ≈ 19.96 dB, lagbhag same). 37 dB corner frequency par ki value hai (40 − 3), aur 40 dB pole ko ignore karne se.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "eec-w12-q6",
+          "question": "T-network: Za = 2 Ω (port 1 side), Zb = 3 Ω (port 2 side), Zc = 5 Ω (shunt), dono port currents andar ki taraf positive. h21 = I2/I1 (V2 = 0) kya hai?",
+          "options": [
+            "0.625",
+            "−1.6",
+            "−0.375",
+            "−0.625"
+          ],
+          "answer": 3,
+          "explanation": "Port 2 short: I1, Zc aur Zb me bant'ta hai. Zb (port 2 ki taraf) me current = I1 × Zc/(Zb + Zc) = I1 × 5/8, aur ye port 2 se BAHAR nikalta hai, to I2 = −0.625·I1. 0.625 sign convention bhoolne se, −0.375 current divider me galat impedance (Zb/(Zb + Zc)) lene se, aur −1.6 ratio ulta lene se aata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSubject, getSubjects, getWeek, getWeekRefs, getWeeks } from '@/lib/content';
+import { SubjectCode } from '@/components/programme-switch';
 import { InlineText } from '@/components/ui';
 import { WeekNav } from '@/components/library/week-nav';
 import { WeekActions, VisitTracker } from '@/components/library/week-actions';
@@ -49,7 +50,7 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
               <span className="chip chip-teal">WEEK {week.week} · {week.readMinutes} MIN READ</span>
               <h1>{week.title}</h1>
               <p>{week.summary}</p>
-              <p className="muted mt-sm">{subject.name} · {subject.code}</p>
+              <p className="muted mt-sm">{subject.name} · <SubjectCode subject={subject} /></p>
             </div>
             <WeekActions subjectId={subject.id} week={week.week} variant="top" />
           </div>

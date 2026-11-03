@@ -7,6 +7,7 @@ import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
 import { useQuestionLang } from '@/lib/question-lang';
 import { localize } from '@/lib/question-text';
 import { LanguageSwitch } from '@/components/quiz/language-switch';
+import { useChoice } from '@/lib/programme-choice';
 
 export type SearchEntry = { subjectId: string; subject: string; week: number; title: string; summary: string; text: string };
 
@@ -30,7 +31,7 @@ function search(entries: SearchEntry[], query: string) {
 
 /** Practice questions whose text (in either language) contains every search word. */
 function searchQuestions(bank: BankQuestion[], query: string) {
-  const words = query.toLowerCase().split(/s+/).filter((w) => w.length > 1);
+  const words = query.toLowerCase().split(/\s+/).filter((w) => w.length > 1);
   if (!words.length) return [];
   const textOf = (q: BankQuestion) => [q.question, ...q.options, q.en?.question ?? '', ...(q.en?.options ?? [])].join(' ').toLowerCase();
   return bank.filter((q) => words.every((w) => textOf(q).includes(w))).slice(0, 10);
@@ -44,11 +45,17 @@ function snippet(text: string, query: string) {
   return `${start > 0 ? '…' : ''}${text.slice(start, i + 120)}…`;
 }
 
-export function NotesSearch({ entries }: { entries: SearchEntry[] }) {
+export function NotesSearch({ entries: allEntries }: { entries: SearchEntry[] }) {
   const router = useRouter();
   const initial = useSearchParams().get('q') ?? '';
   const [query, setQuery] = useState(initial);
+  const level = useChoice().level;
+  const entries = useMemo(() => {
+    const ids = new Set(level.subjects);
+    return allEntries.filter((e) => ids.has(e.subjectId));
+  }, [allEntries, level]);
   const results = useMemo(() => search(entries, query), [entries, query]);
+  const subjectNames = useMemo(() => new Map(entries.map((e) => [e.subjectId, e.subject])), [entries]);
 
   return (
     <div className="card">
@@ -72,7 +79,7 @@ export function NotesSearch({ entries }: { entries: SearchEntry[] }) {
           <span className="muted">{snippet(r.text, query) || r.summary}</span>
         </Link>
       ))}
-      {query.trim().length > 1 && <QuestionHits query={query} subjects={new Map(entries.map((e) => [e.subjectId, e.subject]))} />}
+      {query.trim().length > 1 && <QuestionHits query={query} subjects={subjectNames} />}
     </div>
   );
 }
@@ -81,7 +88,7 @@ export function NotesSearch({ entries }: { entries: SearchEntry[] }) {
 function QuestionHits({ query, subjects }: { query: string; subjects: Map<string, string> }) {
   const bank = useQuestionBank();
   const lang = useQuestionLang();
-  const hits = useMemo(() => (bank ? searchQuestions(bank, query) : []), [bank, query]);
+  const hits = useMemo(() => (bank ? searchQuestions(bank.filter((q) => subjects.has(q.subjectId)), query) : []), [bank, query, subjects]);
   if (!bank || hits.length === 0) return null;
   return (
     <>

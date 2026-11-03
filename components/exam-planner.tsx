@@ -6,6 +6,8 @@ import { progress, useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { buildPlan, daysUntil, EXAMS, examWeeks, type PlanItem } from '@/lib/planner';
 import { orderSubjects } from '@/lib/subjects';
+import { useChoiceSubjects } from '@/lib/programme-choice';
+import { termSubjects } from '@/lib/programmes';
 import type { Subject, WeekRef } from '@/lib/types';
 
 type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]> };
@@ -15,8 +17,9 @@ const todayLocal = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-export function ExamPlanner({ subjects, catalog }: Props) {
+export function ExamPlanner({ subjects: allSubjects, catalog }: Props) {
   const state = useProgress();
+  const subjects = useChoiceSubjects(allSubjects);
   const [today, setToday] = useState('');
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
@@ -29,7 +32,9 @@ export function ExamPlanner({ subjects, catalog }: Props) {
     setDate(state.exam?.date ?? '');
   }, [state.exam]);
 
-  const chosen = state.profile?.subjects?.length ? state.profile.subjects : subjects.map((s) => s.id);
+  // The profile's subjects in this programme, or all the programme's subjects if none of them are chosen.
+  const profileSubjects = termSubjects(state.profile?.subjects).filter((id) => subjects.some((s) => s.id === id));
+  const chosen = profileSubjects.length ? profileSubjects : subjects.map((s) => s.id);
   const subjectName = new Map(subjects.map((s) => [s.id, s.short]));
 
   const plan = useMemo(() => {
@@ -76,7 +81,7 @@ export function ExamPlanner({ subjects, catalog }: Props) {
         </div>
         {error && <p className="field-error" role="alert">{error}</p>}
         <p className="muted my-md">
-          Check the official date on the IIT Madras BS student portal. The plan covers {state.profile?.subjects?.length ? 'your profile’s subjects' : 'all subjects'}; change them in <Link href="/profile">My profile</Link>.
+          Check the official date on the IIT Madras BS student portal. The plan covers {profileSubjects.length ? 'your profile’s subjects' : 'all your programme’s subjects'}; change them in <Link href="/profile">My profile</Link>.
         </p>
         <div className="btn-group">
           <button className="btn btn-primary">Build my plan</button>

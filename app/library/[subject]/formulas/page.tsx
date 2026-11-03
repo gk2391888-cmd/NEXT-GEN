@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSubject, getSubjects, getWeeks } from '@/lib/content';
+import { SubjectCode } from '@/components/programme-switch';
 import { InlineText, PageHead } from '@/components/ui';
 import { PrintButton } from '@/components/library/print-button';
 
@@ -32,7 +33,7 @@ export default async function FormulaSheetPage({ params }: { params: Promise<Par
       </div>
       <article className="card legal wide">
         <PageHead
-          kicker={subject.code}
+          kicker={<SubjectCode subject={subject} />}
           title={`${subject.name}: quick revision sheet`}
           description="Every week’s key formulas and points on one page, for last-minute revision."
           action={<PrintButton />}
