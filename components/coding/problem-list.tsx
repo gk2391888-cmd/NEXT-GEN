@@ -4,13 +4,11 @@ import Link from 'next/link';
 import { useProgress } from '@/lib/progress/store';
 import { usePlan } from '@/lib/plan';
 import { ProTag } from '@/components/pro-lock';
-import type { CodingProblem } from '@/lib/coding';
-
-type Summary = Pick<CodingProblem, 'id' | 'tier' | 'set' | 'week' | 'title' | 'difficulty'>;
+import type { ProblemSummary } from '@/lib/coding';
 
 const DIFFICULTY_CHIP = { easy: 'chip-teal', medium: 'chip-yellow', hard: 'chip-red' } as const;
 
-export function ProblemList({ problems, sets }: { problems: Summary[]; sets: { id: string; title: string; minutes: number }[] }) {
+export function ProblemList({ problems, sets }: { problems: ProblemSummary[]; sets: { id: string; title: string; minutes: number }[] }) {
   const { coding = {} } = useProgress();
   const { isPro } = usePlan();
   const practice = problems.filter((p) => p.tier === 'practice');

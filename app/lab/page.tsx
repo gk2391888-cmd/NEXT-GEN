@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import labs from '@/content/lab.json';
-import { OPPE_SETS, PROBLEMS } from '@/lib/coding';
+import { OPPE_SETS, PROBLEMS, summaryOf } from '@/lib/coding';
 import { PageHead } from '@/components/ui';
 import { LabCard } from '@/components/lab-card';
 import { ProblemList } from '@/components/coding/problem-list';
@@ -8,7 +8,7 @@ import { ProblemList } from '@/components/coding/problem-list';
 export const metadata: Metadata = { title: 'Coding Lab' };
 
 export default function LabPage() {
-  const summary = PROBLEMS.map(({ id, tier, set, week, title, difficulty }) => ({ id, tier, set, week, title, difficulty }));
+  const summary = PROBLEMS.map(summaryOf);
   return (
     <>
       <PageHead

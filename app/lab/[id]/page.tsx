@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getProblem, OPPE_SETS, PROBLEMS, siblings } from '@/lib/coding';
 import { CodingWorkspace } from '@/components/coding/workspace';
+import { ProCodingWorkspace } from '@/components/coding/pro-workspace';
 import { ProLock } from '@/components/pro-lock';
 
 type Params = { id: string };
@@ -25,7 +26,7 @@ export default async function ProblemPage({ params }: { params: Promise<Params> 
 
   const { prev, next, position, total } = siblings(problem);
   const setTitle = problem.set ? OPPE_SETS.find((s) => s.id === problem.set)?.title : 'Practice problems';
-  const workspace = <CodingWorkspace problem={problem} prev={prev?.id} next={next?.id} position={position} total={total} />;
+  const nav = { prev: prev?.id, next: next?.id, position, total };
 
   return (
     <>
@@ -33,7 +34,12 @@ export default async function ProblemPage({ params }: { params: Promise<Params> 
         <Link href="/lab">Coding Lab</Link><span className="sep">/</span>
         {setTitle}<span className="sep">/</span><strong>{problem.title}</strong>
       </div>
-      {problem.tier === 'oppe' ? <ProLock feature="OPPE-style coding practice">{workspace}</ProLock> : workspace}
+      {problem.tier === 'oppe' ? (
+        // Only the id goes into the page: the problem itself is Pro content, fetched from /api/pro/coding/<id>.
+        <ProLock feature="OPPE-style coding practice"><ProCodingWorkspace id={problem.id} {...nav} /></ProLock>
+      ) : (
+        <CodingWorkspace problem={problem} {...nav} />
+      )}
     </>
   );
 }

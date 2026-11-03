@@ -11,7 +11,7 @@
 import math1 from '@/content/weeks/math1.json';
 import stat1 from '@/content/weeks/stat1.json';
 import { AI_FEATURES, isAiFeatureId, limitsFor } from '@/lib/ai/features';
-import { PRICING } from '@/lib/plans';
+import { planFrom, PRICING } from '@/lib/plans';
 import { cleanUtr, isUtr } from '@/lib/upi';
 
 export const DEMO = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEMO_MODE === '1';
@@ -369,6 +369,17 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
   if (path === '/api/payments/config') return reply({ enabled: false, upi: { id: 'nextgen.demo@okaxis', name: 'NEXT GEN (demo)', amountInr: PRICING.proMonthlyInr } });
   const p = read<Persona>(PERSONA_KEY, 'trial');
   if (p === 'guest') return reply({ ok: false, code: 'login_required', error: 'Log in to continue.', message: 'Log in to continue.' }, 401);
+
+  // Pro content (/api/pro/*) is served by the real route, which can't see a demo session:
+  // the plan is worked out here from the demo profile and passed on in a dev-only header.
+  if (path.startsWith('/api/pro/')) {
+    const profile = (loadDb().profiles ?? []).find((r) => r.id === userId(p));
+    const plan = planFrom({ trialEndsAt: profile?.trial_ends_at as string | null, proUntil: profile?.pro_until as string | null }, true);
+    if (!plan.isPro) return reply({ ok: false, code: 'not_in_plan', message: 'This is part of Pro.' }, 403);
+    const headers = new Headers(init.headers);
+    headers.set('x-demo-pro', '1');
+    return fetch(path, { ...init, headers });
+  }
 
   // Same contract as /api/ai/<feature> (lib/server/ai/handler.ts), with the real limits from lib/ai/features.ts.
   const feature = /^\/api\/ai\/([\w-]+)$/.exec(path)?.[1];

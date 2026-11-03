@@ -2,13 +2,21 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { CodingProblem } from '@/lib/coding';
+import type { CodingProblem, ProblemAnswers } from '@/lib/coding';
 import { runPython, warmUpPython, type RunResult } from '@/lib/python-runner';
 import { progress, useProgress } from '@/lib/progress/store';
 import { InlineText } from '@/components/ui';
 import { useConfirm } from '@/components/confirm-dialog';
 
-type Props = { problem: CodingProblem; prev?: string; next?: string; position: number; total: number };
+type Props = {
+  problem: CodingProblem;
+  /** OPPE problems arrive without hidden tests or solution; this fetches them on Submit or "Show model solution". */
+  loadAnswers?: () => Promise<ProblemAnswers>;
+  prev?: string;
+  next?: string;
+  position: number;
+  total: number;
+};
 
 const draftKey = (id: string) => `nextgen-code:${id}`;
 
@@ -20,7 +28,7 @@ function readDraft(problem: CodingProblem) {
   }
 }
 
-export function CodingWorkspace({ problem, prev, next, position, total }: Props) {
+export function CodingWorkspace({ problem, loadAnswers, prev, next, position, total }: Props) {
   const solved = Boolean(useProgress().coding?.[problem.id]);
   const [code, setCode] = useState(problem.starter);
   const [pythonState, setPythonState] = useState<'loading' | 'ready' | 'failed'>('loading');
@@ -29,9 +37,13 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
   const [submitted, setSubmitted] = useState<RunResult | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [answers, setAnswers] = useState<ProblemAnswers | null>(null);
+  const [answersError, setAnswersError] = useState<string | null>(null);
   const { confirm, dialog } = useConfirm();
 
-  const visible = problem.tests.filter((t) => !t.hidden);
+  const tests = answers?.tests ?? problem.tests;
+  const solution = answers?.solution ?? problem.solution;
+  const visible = tests.filter((t) => !t.hidden);
 
   useEffect(() => {
     setCode(readDraft(problem));
@@ -39,6 +51,8 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
     setSubmitted(null);
     setShowHint(false);
     setShowSolution(false);
+    setAnswers(null);
+    setAnswersError(null);
     warmUpPython().then(() => setPythonState('ready')).catch(() => setPythonState('failed'));
   }, [problem]);
 
@@ -70,15 +84,37 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
     setBusy(null);
   }
 
+  async function getAnswers(): Promise<ProblemAnswers | null> {
+    if (!loadAnswers) return { tests: problem.tests, solution: problem.solution };
+    if (answers) return answers;
+    setAnswersError(null);
+    try {
+      const loaded = await loadAnswers();
+      setAnswers(loaded);
+      return loaded;
+    } catch (e) {
+      setAnswersError(e instanceof Error ? e.message : 'Couldn’t load the hidden tests. Please try again.');
+      return null;
+    }
+  }
+
   async function submit() {
     setBusy('submit');
-    const result = await runPython(code, problem.tests);
-    setSubmitted(result);
-    setOutput(null);
-    if (!result.error && result.results.length === problem.tests.length && result.results.every((r) => r.pass)) {
-      progress.markSolved(problem.id);
+    const all = await getAnswers();
+    if (all) {
+      const result = await runPython(code, all.tests);
+      setSubmitted(result);
+      setOutput(null);
+      if (!result.error && result.results.length === all.tests.length && result.results.every((r) => r.pass)) {
+        progress.markSolved(problem.id);
+      }
     }
     setBusy(null);
+  }
+
+  async function toggleSolution() {
+    if (showSolution) return setShowSolution(false);
+    if (await getAnswers()) setShowSolution(true);
   }
 
   async function reset() {
@@ -87,7 +123,7 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
   }
 
   const passed = submitted?.results.filter((r) => r.pass).length ?? 0;
-  const allPassed = submitted && !submitted.error && passed === problem.tests.length;
+  const allPassed = submitted && !submitted.error && passed === tests.length;
 
   return (
     <div className="row">
@@ -148,8 +184,8 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
 
         {(solved || showSolution) && (
           <details className="solution" open={showSolution}>
-            <summary onClick={(e) => { e.preventDefault(); setShowSolution((s) => !s); }}>{showSolution ? 'Hide' : 'Show'} model solution</summary>
-            {showSolution && <pre className="code-block">{problem.solution}</pre>}
+            <summary onClick={(e) => { e.preventDefault(); toggleSolution(); }}>{showSolution ? 'Hide' : 'Show'} model solution</summary>
+            {showSolution && <pre className="code-block">{solution}</pre>}
           </details>
         )}
 
@@ -161,11 +197,11 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
 
       <aside className="card test-side">
         <h3>Test cases</h3>
-        {problem.tests.map((t, i) => {
+        {tests.map((t, i) => {
           const r = submitted?.results[i] ?? (output && !t.hidden ? output.results[visible.indexOf(t)] : undefined);
           return (
             <div key={i} className="test-row">
-              <code className="test-call">{t.hidden ? `Hidden test ${problem.tests.slice(0, i + 1).filter((x) => x.hidden).length}` : t.call}</code>
+              <code className="test-call">{t.hidden ? `Hidden test ${tests.slice(0, i + 1).filter((x) => x.hidden).length}` : t.call}</code>
               {r ? (
                 <span className={`chip ${r.pass ? 'chip-teal' : 'chip-red'}`}>{r.pass ? 'PASS' : 'FAIL'}</span>
               ) : (
@@ -175,16 +211,17 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
             </div>
           );
         })}
+        {answersError && <div className="explain bad mt-md"><strong>{answersError}</strong></div>}
         {submitted && (
           <div className={`explain mt-md${allPassed ? '' : ' bad'}`}>
             {submitted.error ? (
               <strong>Your code has an error. Fix it and submit again.</strong>
             ) : allPassed ? (
-              <strong>✓ All {problem.tests.length} tests passed. Well done!</strong>
+              <strong>✓ All {tests.length} tests passed. Well done!</strong>
             ) : (
               <>
-                <strong>{passed} of {problem.tests.length} tests passed.</strong>{' '}
-                {!showSolution && <button className="text-btn" onClick={() => setShowSolution(true)}>Stuck? See the solution</button>}
+                <strong>{passed} of {tests.length} tests passed.</strong>{' '}
+                {!showSolution && <button className="text-btn" onClick={toggleSolution}>Stuck? See the solution</button>}
               </>
             )}
           </div>

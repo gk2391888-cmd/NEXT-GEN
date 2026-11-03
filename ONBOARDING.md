@@ -48,6 +48,8 @@ next-gen/
 │   ├── api/                  ← Server-only endpoints
 │   │   ├── ai/[feature]/route.ts      → every AI feature (POST /api/ai/doubt)
 │   │   ├── content/questions/route.ts → every question as JSON (static)
+│   │   ├── pro/coding/[id]/route.ts   → an OPPE problem; ?part=answers adds hidden tests + solution (Pro only)
+│   │   ├── pro/tests/[subject]/[test]/route.ts → the End-term question pool (Pro only)
 │   │   └── payments/{config,order,verify,webhook,upi,upi/review}/route.ts
 │   ├── manifest.ts           ← PWA "Add to home screen"
 │   ├── tokens.css            ← Generated CSS variables (from tokens/, don't edit)
@@ -67,7 +69,8 @@ next-gen/
 │   ├── ai/                   ← ★ AI features + Free/Pro limits (features.ts), askAi() (client.ts)
 │   ├── tests.ts  planner.ts  coding.ts  overrides.ts  question-bank.ts  python-runner.ts
 │   ├── supabase/client.ts    ← Browser Supabase client + authedFetch()
-│   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, upi.ts, pro.ts (adds 30 days), supabase.ts (service role)
+│   ├── pro-content.ts        ← fetchProContent() / useProContent(): the browser side of /api/pro/*
+│   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, upi.ts, pro.ts (adds 30 days), pro-access.ts (requirePro), supabase.ts (service role)
 ├── content/                  ← ★ All study material
 │   ├── subjects.json         ← The 8 subjects (id, code, name, icon); colours live in tokens
 │   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week
@@ -113,6 +116,7 @@ next-gen/
 - Students **can't edit their plan dates**: column-level grants in migration 0002 block it.
 - AI limits are counted atomically by the SQL function `consume_ai_quota()`. Only the server can call it, using the limits in `lib/ai/features.ts`.
 - Only server routes that hold `SUPABASE_SERVICE_ROLE_KEY` can grant Pro.
+- Pro **content** (OPPE problems, End-term pools) is only sent by `/api/pro/*`, after `requirePro()` ([lib/server/pro-access.ts](lib/server/pro-access.ts)) has checked the access token and asked `public.is_pro()` as that student. The plan in localStorage only decides what the UI shows.
 
 ```
 Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, test_attempts, week_status,
@@ -149,6 +153,18 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 | **Admin** | A row in `public.admins`, added by hand in SQL | `/admin` panel |
 
 The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features are wrapped in `<ProLock>` or show a `<ProTag>` ([components/pro-lock.tsx](components/pro-lock.tsx)).
+
+`<ProLock>` only decides what the UI shows, from the plan in localStorage, which a student can edit. So anything worth paying for must also be checked on the server:
+
+| Pro feature | Where it's enforced |
+|---|---|
+| OPPE coding sets | Server: `/api/pro/coding/<id>`. The page only has the title; statement and visible tests come from the route, hidden tests and solution only on Submit or "Show model solution" (`?part=answers`). |
+| End-term mock tests | Server: `/api/pro/tests/<subject>/end-term`. The page has no questions. |
+| AI limits (200 doubts a day, longer answers) | Server: `lib/server/ai/handler.ts` |
+| Pro-only PDF notes | Storage policies (migration 0006) |
+| Time per question, Save as PDF | UI only, on purpose: one shows the student's own timings, the other is the browser's print dialog. Nothing to protect. |
+
+To add Pro content: put it behind a route under `app/api/pro/` that starts with `const denied = await requirePro(req); if (denied) return denied;`, fetch it with `useProContent()` inside a `<ProLock>`, and never pass it as a prop from a server page (props end up in the page's HTML).
 
 ## 6. Every user flow, page by page
 
@@ -214,7 +230,7 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
 - There are 3 tests per subject ([lib/tests.ts](lib/tests.ts)):
   - **Quiz 1**: weeks 1–4, 15 questions, 25 min
   - **Quiz 2**: weeks 5–8, 15 questions, 25 min
-  - **End term**: all weeks, 30 questions, 60 min, **Pro**
+  - **End term**: all weeks, 30 questions, 60 min, **Pro**. Its question pool comes from `/api/pro/tests/<subject>/end-term` ([pro-test-runner.tsx](components/quiz/pro-test-runner.tsx)), not from the page.
 - Questions are picked spread evenly across the weeks.
 - [test-runner.tsx](components/quiz/test-runner.tsx) has 3 screens:
   1. **Intro:** the rules and your previous attempts.
@@ -237,6 +253,8 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
    - **Run** checks your code against the visible tests.
    - **Submit** checks against all tests, including the hidden ones.
    - There's also a hint, the model solution, and previous/next links.
+   - OPPE problems go through [pro-workspace.tsx](components/coding/pro-workspace.tsx): the statement, starter code, hint and visible tests come from `/api/pro/coding/<id>` (hidden tests arrive blanked out, so they can be counted). The first Submit or "Show model solution" fetches `?part=answers` with the real hidden tests and the solution.
+   - Grading still runs in the browser (Pyodide), so a Pro student can see the hidden tests in the network tab once they've submitted. Grading on the server would keep them secret even then, but it needs a sandboxed Python runner on the server (Pyodide in a Vercel function: ~10 MB, a few seconds of cold start, plus a time limit per run). Not worth it while the tests are practice, not an exam.
 3. Python runs in [public/pyodide-worker.js](public/pyodide-worker.js) and is killed after 8 s if it doesn't finish ([lib/python-runner.ts](lib/python-runner.ts)). Each test compares `repr(eval(call))` with the expected value.
 
 ### AI Doubt Solver (`/doubts`)
@@ -346,6 +364,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
     - `pro`: paid Pro
     - `admin`: Pro plus the admin panel
   - On the login page, any email and any 6-digit code logs you in as a trial student.
+  - `/api/pro/*` really runs in demo mode: `demoFetch` checks the demo profile's plan and, for trial/Pro personas, calls the route with an `x-demo-pro: 1` header that the route honours only when demo mode is on (never in production builds).
   - Demo mode only switches on when `NODE_ENV` isn't production and `NEXT_PUBLIC_DEMO_MODE=1`, so it's stripped from production builds.
 - **Without any env vars the site still works.** It falls back to the production Supabase project (the publishable key is hard-coded in [lib/supabase/client.ts](lib/supabase/client.ts)). The AI shows "being set up" and payments show "launching soon".
 - **Server env vars:** `GROQ_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (needed for AI limits and payments), `RAZORPAY_KEY_ID/SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `UPI_ID` (pay by UPI QR), and optionally `UPI_PAYEE_NAME`, `AI_MODEL_SMART` / `AI_MODEL_FAST` and `PRO_PRICE_INR`. They're listed in the README, along with "AI features".
@@ -355,11 +374,10 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 
 ## 9. Things worth knowing
 
-1. **Pro content isn't really secret.**
-   - `<ProLock>` only hides the UI in the browser. The data still gets sent.
-   - OPPE problems, **including their solutions and hidden tests**, are sent in the page data, so anyone reading the page source can see them.
-   - End-term questions are the same questions used in free practice anyway.
-   - If this matters, OPPE content needs to move behind a server route.
+1. **Pro content comes from the server, and `<ProLock>` is only UI.**
+   - OPPE problems and End-term pools are served by `/api/pro/*` after a server-side plan check (see §5). Don't pass Pro content as props from a server page: props are in the page's HTML.
+   - End-term questions are still the same questions used in free practice (and in `/api/content/questions`), so what Pro buys there is the 30-question timed test, not new questions. Pro-only questions would need their own content file that only the route reads.
+   - Hidden tests reach a Pro student's browser on Submit, since Pyodide grades in the browser (see Coding Lab above).
 2. **Coding Lab "solved" status is device-only.** `markSolved` uses `commit`, not `dispatch`, so it never syncs to the account.
 3. **There are no automated tests and no ESLint setup.** The only safety nets are `validate:content` (which runs before every build) and `typecheck`.
 4. **Email is a launch blocker.** Supabase's built-in mailer only sends a few emails an hour, so custom SMTP (for example Resend) needs to be set up before real traffic. The README covers it.
