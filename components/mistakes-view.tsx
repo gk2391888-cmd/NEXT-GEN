@@ -9,6 +9,7 @@ import { useCorrectedQuestions } from '@/lib/overrides';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar } from '@/components/ui';
 import { Explanation, QuestionView } from '@/components/quiz/question-view';
+import { LanguageSwitch } from '@/components/quiz/language-switch';
 
 type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]> };
 
@@ -129,7 +130,10 @@ function RevisionSession({ questions: original, onDone }: { questions: BankQuest
     <div className="quiz-wrap">
       <div className="quiz-top">
         <span className="chip chip-red">REVISION · {q.weekTitle.toUpperCase()}</span>
-        <span className="muted">Question {index + 1} of {questions.length}</span>
+        <span className="btn-group items-center">
+          <span className="muted">Question {index + 1} of {questions.length}</span>
+          <LanguageSwitch />
+        </span>
       </div>
       <ProgressBar value={(index / questions.length) * 100} color="var(--color-accent-solid)" />
       <div className="card quiz-card">

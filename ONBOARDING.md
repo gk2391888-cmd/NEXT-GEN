@@ -7,7 +7,7 @@ A walkthrough of the whole project for a developer taking it over: what it is, h
 NEXT GEN ("by THE TECH HUB") is a study site for **IIT Madras BS Foundation students**. It isn't affiliated with IITM. It covers 8 subjects × 12 weeks, and every week has:
 
 - **Hinglish notes** (concept, solved example, common mistakes, quick revision)
-- **6 MCQs** (576 in total)
+- **6 MCQs** (576 in total), in English and Hinglish
 
 Around that content it adds mock tests, a Python coding lab, an AI doubt solver, spaced-repetition revision, an exam planner, progress tracking, and a paid **Pro** plan (₹99 for 30 days, with a 7-day free trial when you sign up).
 
@@ -73,7 +73,8 @@ next-gen/
 │   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, upi.ts, pro.ts (adds 30 days), pro-access.ts (requirePro), supabase.ts (service role)
 ├── content/                  ← ★ All study material
 │   ├── subjects.json         ← The 8 subjects (id, code, name, icon); colours live in tokens
-│   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week
+│   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week (Hinglish)
+│   ├── weeks-en/<subject>.json ← English text of every question, by id
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
 ├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
@@ -209,16 +210,25 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
    - At the bottom: **Mark as done**, **Practice week N →**, and previous/next week links.
    - Opening the page records `lastVisited`.
 4. `/library/[subject]/formulas` puts every week's revision points on one printable page.
-5. `/search` is a client-side keyword search across all 96 weeks. The `?q=` parameter in the URL stays in sync.
+5. `/search` is a client-side keyword search across all 96 weeks, plus matching practice questions (loaded from `/api/content/questions` once you type). The `?q=` parameter in the URL stays in sync.
 
 ### Practice (`/practice` → `/practice/[subject]/[week]`)
 
 1. The picker shows a subject dropdown and a table of weeks with your accuracy for each.
 2. Each session goes through the 6 questions one at a time:
    - pick an option → **Check answer** → green/red feedback and the explanation → Next
+   - an **English / Hinglish** switch at the top changes the question, options and explanation (see "Question language" below)
    - each answer is recorded as `mode: 'practice'`
 3. Every explanation has **"✦ Explain more with AI"** (opens `/doubts?question=<id>` with the question attached) and **"⚑ Report a problem"** (writes to the `reports` table and needs login).
 4. The result screen shows your score and a review of every question.
+
+### Question language (English / Hinglish)
+
+- Questions are written in Hinglish in `content/weeks/<subject>.json`; their English text lives in `content/weeks-en/<subject>.json`, keyed by question id. `getWeeks()` in [lib/content.ts](lib/content.ts) merges it in as `question.en`, so every page and API route that sends questions sends both languages.
+- The switch ([language-switch.tsx](components/quiz/language-switch.tsx)) is on practice, mock tests (intro, running test, answer review), My Mistakes, search and the admin editor. The choice is kept in localStorage (`nextgen-question-lang`, [lib/question-lang.ts](lib/question-lang.ts)), English by default. It's per device, not saved to the profile, so it isn't synced between devices.
+- `useCorrectedQuestions()` applies admin corrections and then the chosen language ([lib/question-text.ts](lib/question-text.ts): `applyPatch`, `localize`). A correction in `content_overrides` keeps the Hinglish at the top level and the English under `en`; older corrections without `en` still work and leave the English as built.
+- The AI doubt solver gets `lang` with the question id. The server reads the question in that language (with any correction) and, for English, asks the model to answer in English.
+- Notes (concepts, example, mistakes, revision) are still Hinglish only.
 
 ### My Mistakes (`/mistakes`)
 
@@ -332,7 +342,7 @@ Attempts are a `coding` `SyncOp` and sync to `coding_attempts` (migration 0007) 
 Five tabs ([components/admin/](components/admin/admin-panel.tsx)):
 
 - **Reports:** open reports grouped by question, with **Fix** and **Dismiss**.
-- **Edit questions:** search by ID (for example `stat1-w3-q4`) or text. Edit the text, options, answer and explanation, with a live preview.
+- **Edit questions:** search by ID (for example `stat1-w3-q4`) or text in either language. Edit the text, options, answer and explanation, with a live preview. The English / Hinglish switch picks which language's text you're editing; both are saved together, and code and the correct option are shared.
   - Saves go to `content_overrides`, and students see them **without a redeploy** via `useCorrectedQuestions()` in [lib/overrides.ts](lib/overrides.ts).
   - **Revert to original** removes the correction.
 - **PDF notes:** upload PDFs (up to 25 MB, several at once) for a subject and a week or "All weeks", optionally Pro only; open, switch free/Pro or delete them ([components/admin/note-uploads.tsx](components/admin/note-uploads.tsx)).
@@ -356,7 +366,7 @@ Five tabs ([components/admin/](components/admin/admin-panel.tsx)):
   - `.card`, `.chip`, `.btn-primary/secondary/danger`
   - an empty state with an icon and a call to action
   - accuracy colours: green at 75% and above, amber at 50%+, red below
-- **Copy:** the tone is friendly. Content and AI answers are Hinglish, while the UI chrome is English. Errors are rewritten into friendly messages (see `friendlyError` in the login form).
+- **Copy:** the tone is friendly. Notes are Hinglish; questions are in English or Hinglish (the student's choice), and AI answers follow that choice. The UI chrome is English. Errors are rewritten into friendly messages (see `friendlyError` in the login form).
 - **Accessibility:** radio roles on options, `aria-current` on nav links, `aria-live` in the chat, and Escape closes menus.
 
 ## 8. Run, configure, deploy
@@ -402,6 +412,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
    - exactly 12 weeks per subject
    - 6 questions per week
    - 4 distinct options per question
+   - an English version of every question in `content/weeks-en/<subject>.json`, with its options in the same order
    - question IDs like `math1-w3-q2`
    - correct answers spread across A–D
    - only `**bold**` and `` `code` `` formatting

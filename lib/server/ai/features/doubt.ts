@@ -1,6 +1,6 @@
 import 'server-only';
 import { getQuestion } from '@/lib/content';
-import type { QuestionPatch } from '@/lib/overrides';
+import { applyPatch, localize, type QuestionPatch } from '@/lib/question-text';
 import type { FeatureHandler } from './types';
 
 /** How the doubt solver behaves. Written for any model, so it stays the same when the model changes. */
@@ -18,7 +18,8 @@ How to answer:
 
 const LETTERS = ['A', 'B', 'C', 'D'];
 
-type Input = { messages: { role: 'user' | 'assistant'; content: string }[]; questionId?: string };
+/** `lang` is the language the student reads questions in (the English / Hinglish switch). */
+type Input = { messages: { role: 'user' | 'assistant'; content: string }[]; questionId?: string; lang?: 'en' | 'hi' };
 
 /** The AI Doubt Solver: a tutor chat, optionally about one practice question from the site. */
 export const doubt: FeatureHandler<{ answer: string }> = {
@@ -37,13 +38,14 @@ export const doubt: FeatureHandler<{ answer: string }> = {
 
     // The question is looked up on the server (with any admin correction), never taken from the browser.
     let system = SYSTEM_PROMPT;
+    const english = input.lang !== 'hi';
     if (typeof input.questionId === 'string') {
       const original = getQuestion(input.questionId);
       if (original) {
         const { data } = await admin.from('content_overrides').select('data').eq('key', `q:${original.id}`).maybeSingle();
-        const q = { ...original, ...((data?.data as QuestionPatch | undefined) ?? {}) };
+        const q = localize(applyPatch(original, data?.data as QuestionPatch | undefined), english ? 'en' : 'hi');
         system += [
-          '\n\nThe student is asking about this practice question from the site:',
+          `\n\nThe student is asking about this practice question from the site, which they read in ${english ? 'English' : 'Hinglish'}:`,
           `Question: ${q.question}`,
           q.code ? `Code:\n${q.code}` : '',
           `Options: ${q.options.map((o, i) => `${LETTERS[i]}) ${o}`).join('  ')}`,
@@ -55,6 +57,7 @@ export const doubt: FeatureHandler<{ answer: string }> = {
       }
     }
 
+    if (english) system += '\n\nThe student reads questions on the site in English, so reply in simple English unless they write to you in Hinglish.';
     return { system, messages: history };
   },
 

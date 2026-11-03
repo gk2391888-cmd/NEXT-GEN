@@ -13,6 +13,7 @@ import { pickQuestions, testKey, type MockTest } from '@/lib/tests';
 import type { Question, Subject } from '@/lib/types';
 import { accuracyColor, accuracyTone, formatClock, InlineText, ProgressBar } from '@/components/ui';
 import { Explanation, letter, QuestionView } from './question-view';
+import { LanguageSwitch } from './language-switch';
 
 type Props = { subject: Subject; test: MockTest; pool: Question[]; weekTitles: Record<number, string> };
 
@@ -53,7 +54,10 @@ export function TestRunner({ subject, test, pool: original, weekTitles }: Props)
   return (
     <div className="quiz-wrap stack">
       <div className="card card-loose">
-        <span className="chip chip-blue">{subject.short.toUpperCase()} · WEEKS {test.fromWeek}–{test.toWeek}</span>
+        <div className="quiz-top">
+          <span className="chip chip-blue">{subject.short.toUpperCase()} · WEEKS {test.fromWeek}–{test.toWeek}</span>
+          <LanguageSwitch />
+        </div>
         <h1 className="mt-md mb-sm">{test.title}</h1>
         <p>{subject.name} · {test.questionCount} questions · {test.minutes} minutes</p>
         <ul className="my-lg">
@@ -201,7 +205,10 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
         <div className="card row-main card-loose">
           <div className="quiz-top">
             <span className="chip chip-blue">QUESTION {current + 1} OF {questions.length}</span>
-            <span className="muted">1 mark · Week {question.week}</span>
+            <span className="btn-group items-center">
+              <span className="muted">1 mark · Week {question.week}</span>
+              <LanguageSwitch />
+            </span>
           </div>
           <QuestionView
             question={question}
@@ -336,6 +343,7 @@ function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProp
         <div className="card row-main">
           <div className="flex-between">
             <h3>Answer review</h3>
+            <LanguageSwitch />
             <div className="filters">
               <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>All {rows.length}</button>
               <button className={filter === 'wrong' ? 'on' : ''} onClick={() => setFilter('wrong')}>Wrong {wrong.length}</button>
