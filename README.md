@@ -68,7 +68,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 
-Migrations: run `supabase/migrations/0001…0007` in order in the Supabase SQL Editor. `0007_coding_attempts.sql` adds the table that syncs timed OPPE attempts; until it's run, those attempts stay on the student's device and everything else keeps syncing.
+Migrations: run `supabase/migrations/0001…0008` in order in the Supabase SQL Editor. `0007_coding_attempts.sql` adds the table that syncs timed OPPE attempts; until it's run, those attempts stay on the student's device and everything else keeps syncing.
 
 ## AI features
 

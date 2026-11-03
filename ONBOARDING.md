@@ -77,7 +77,7 @@ next-gen/
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
 ├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
-├── supabase/migrations/      ← 0001 → 0007, run by hand in the Supabase SQL editor
+├── supabase/migrations/      ← 0001 → 0008, run by hand in the Supabase SQL editor
 ├── scripts/
 │   ├── validate-content.mjs  ← Runs before every build, so broken content never ships
 │   ├── build-tokens.mjs      ← tokens/*.json → app/tokens.css + lib/tokens.ts
@@ -397,7 +397,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 2. **Coding Lab "solved" status is device-only.** `markSolved` uses `commit`, not `dispatch`, so it never syncs to the account. Timed OPPE attempts do sync (`coding_attempts`).
 3. **There are no automated tests and no ESLint setup.** The only safety nets are `validate:content` (which runs before every build) and `typecheck`.
 4. **Email is a launch blocker.** Supabase's built-in mailer only sends a few emails an hour, so custom SMTP (for example Resend) needs to be set up before real traffic. The README covers it.
-5. **Pricing has one source per number.** AI limits per plan live in `lib/ai/features.ts`, and the server enforces exactly those. The price shown in the UI is `PRICING` in `lib/plans.ts`, but the amount actually charged is `PRO_PRICE_INR` on the server, so change those two together. Migration 0004 keeps the old `consume_doubt()` (hard-coded 5/200) working only until this code is deployed; drop it afterwards.
+5. **Pricing has one source per number.** AI limits per plan live in `lib/ai/features.ts`, and the server enforces exactly those. The price shown in the UI is `PRICING` in `lib/plans.ts`, but the amount actually charged is `PRO_PRICE_INR` on the server, so change those two together. The old `consume_doubt()` (hard-coded 5/200) from 0002 is unused since 0004; migration 0008 drops it.
 6. **Content rules** (enforced by the validator):
    - exactly 12 weeks per subject
    - 6 questions per week
