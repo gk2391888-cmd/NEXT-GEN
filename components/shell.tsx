@@ -10,6 +10,7 @@ import { RenewBanner } from './renew-banner';
 
 const NAV = [
   { href: '/', label: 'Overview', icon: '◈' },
+  { href: '/qualifier', label: 'Qualifier Prep', icon: '★', tag: 'NEW' },
   { href: '/library', label: 'Study Library', icon: '▣' },
   { href: '/practice', label: 'Practice Quiz', icon: '▤' },
   { href: '/mistakes', label: 'My Mistakes', icon: '↻' },

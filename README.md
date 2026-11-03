@@ -11,6 +11,30 @@ An independent learning and exam-preparation site for IITM BS Foundation student
 - **Mock Tests**: Quiz 1 (weeks 1–4), Quiz 2 (weeks 5–8) and End term (all weeks) per subject, with timer, question palette, mark-for-review, auto-submit, resume after refresh, and a result page with week-wise performance and answer review.
 - **My Progress**: accuracy by subject, weak weeks, mock test history, weeks saved for revision.
 
+## Qualifier Prep (`/qualifier`)
+
+For people preparing for the IITM BS **qualifier exam**, who aren't students yet, so it's also a sign-up funnel.
+
+- **Two qualifiers**, from `content/qualifier/qualifiers.json`:
+  - **Data Science**: Maths I, Stats I, CT, English I. The Management and Data Science programme uses the same four courses.
+  - **Electronic Systems**: English I, Math for Electronics I, Electronic Systems Thinking and Circuits, Intro to C. Aeronautics and Space Technology uses the same four.
+- **Overview page** (`/qualifier/<ds|es>`):
+  - a countdown to the exam
+  - the 4 courses, with links to our week 1–4 notes and practice (DS only, since we have no ES notes yet)
+  - the process and the published hall-ticket and pass rules, with sources
+- **Study plan** (`/qualifier/<id>/plan`): a day-by-day plan to the exam, worked out in the browser.
+  - It covers weeks 1–4 of every course, then two mocks, and keeps the last day light.
+  - Weeks marked done on their notes page drop out of the plan.
+- **Timed mocks** (`/qualifier/<id>/mock/<mock>`): the mock test runner with one section per course (32 questions, 80 min).
+  - The result shows the score per course against the published pass rule (General: 40% in each course and 50% on average).
+  - Mock 1 of each qualifier is free, even logged out. Mock 2 is Pro and comes from `/api/pro/qualifier/<mock>`.
+  - Attempts are stored as test attempts with `subject_id = 'qualifier'`. They don't feed My Mistakes or weak weeks.
+- **Exam date:** `QUALIFIER_EXAM_DATE` in `lib/qualifier.ts` (2026-11-15) drives the countdown and the plan. Every page tells students to confirm their own date.
+  - The official pages checked on 4 Nov 2026 did **not** show this date. They list the January 2027 term instead: apply by 29 Jan 2027, qualifier exam 14 Mar 2027 on the ES/AE/MG pages.
+  - Update the date, and `QUALIFIER_FACTS_CHECKED`, each term.
+- **Rules shown** (`PASS_RULES` and `COURSE_LIMITS` in `lib/qualifier.ts`) come from the official admissions pages, listed in `QUALIFIER_SOURCES`.
+  - Question types, negative marking and per-course question counts aren't published. The pages say so and send students to their hall ticket.
+
 ## Phase 2: student accounts
 
 - **Login** with an emailed link (no passwords), an emailed code once the template includes it, or Google once it's switched on in Supabase. The first login creates the account.
@@ -37,6 +61,8 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | Notes, formula sheets, search, practice | ✓ | ✓ |
 | Quiz 1 / Quiz 2 mock tests | ✓ | ✓ |
 | End term mock tests | | ✓ |
+| Qualifier Prep: countdown, study plan, mock 1 of each qualifier (logged out too) | ✓ | ✓ |
+| Qualifier mock 2 (DS and ES) | | ✓ |
 | My Mistakes (spaced revision), Exam Planner | ✓ | ✓ |
 | Coding Lab practice problems (Python in the browser via Pyodide) | ✓ | ✓ |
 | OPPE-style coding sets with hidden tests | | ✓ |
@@ -48,7 +74,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 - **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), upload PDF notes, post announcements, confirm UPI payments.
 - **PDF notes**: admins upload PDFs per subject and week (or for the whole subject) into the private Storage bucket `notes`, listed in `note_files`. Students open them from the Study Library and the week's notes through a one-hour signed link. Files marked Pro only open for trial and Pro students; Storage enforces that, not the browser.
 - **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. `lib/plans.ts` turns them into a tier, the same way on the server and in the browser.
-- **Pro content is checked on the server.** OPPE problems (with their hidden tests and solutions) and End-term question pools aren't in the pages; they come from `/api/pro/coding/<id>`, `/api/pro/oppe/<set>` and `/api/pro/tests/<subject>/<test>`, which check the student's session and `public.is_pro()` first (`lib/server/pro-access.ts`). Hidden tests and solutions are only fetched on Submit. The `<ProLock>` in the browser only decides what's shown.
+- **Pro content is checked on the server.** OPPE problems (with their hidden tests and solutions), End-term question pools and Pro qualifier mocks aren't in the pages; they come from `/api/pro/coding/<id>`, `/api/pro/oppe/<set>`, `/api/pro/tests/<subject>/<test>` and `/api/pro/qualifier/<mock>`, which check the student's session and `public.is_pro()` first (`lib/server/pro-access.ts`). Hidden tests and solutions are only fetched on Submit. The `<ProLock>` in the browser only decides what's shown.
 - **Payments**, two ways, each adding 30 days via the service-role key. Either can be on alone, or both.
   - Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup).
   - Pay by UPI QR: the student pays our UPI ID and submits the 12-digit UTR (`/api/payments/upi`, table `upi_requests`). An admin matches it in the bank statement and approves it in **Admin → UPI payments** (`/api/payments/upi/review`).
@@ -141,10 +167,13 @@ Open http://localhost:3000.
 | `content/subjects.json` | The 8 subjects (code, name, colours) |
 | `content/weeks/<subject>.json` | 12 weeks of notes and questions per subject (Hinglish) |
 | `content/weeks-en/<subject>.json` | The English text of every question (question, options, explanation), by question id |
+| `content/qualifier/qualifiers.json` | The qualifiers (sections = courses) and their mocks (time, free or Pro) |
+| `content/qualifier/mocks/<mock>.json`, `mocks-en/<mock>.json` | Qualifier mock papers (Hinglish, one section per course) and their English text, by question id |
 | `content/lab.json`, `content/faqs.json` | Python & CT lab exercises, Doubt Help answers |
 | `app/` | Pages (Next.js App Router, statically generated) |
 | `components/` | UI; `components/quiz/` has practice and mock test logic |
 | `lib/content.ts` | Reads content at build time |
+| `lib/qualifier.ts`, `lib/qualifier-content.ts`, `lib/qualifier-plan.ts` | Qualifier config, exam date and rules · mock loader (server) · study plan |
 | `lib/progress/` | Progress store, types and weak-topic insights |
 | `lib/tests.ts` | Mock test definitions and question picking |
 | `legacy/` | The original single-file prototype, kept for reference |
@@ -162,6 +191,15 @@ The validator checks every week has the right fields, 6 questions with 4 distinc
 Every question also needs its English text in `content/weeks-en/<subject>.json` (`question`, `options`, `explanation`; answer, code and difficulty are shared). The validator fails if one is missing, has a different number of options, or has different `` ` `` / `**` marks, and lists any question or option whose numbers differ between the two languages so you can check the translation. Keep the options in the same order: the answer index is the same in both languages.
 
 Formatting inside content strings: only `**bold**` and `` `code` ``. Multi-line code goes in a `code` field.
+
+**Qualifier mocks** follow the same rules per question.
+- Ids are `<mock>-<section>-q<n>`, for example `ds-1-math1-q3`.
+- Each mock needs one section per course of its qualifier, in the order of `qualifiers.json`, with 5–25 questions each.
+- Every mock in `qualifiers.json` needs both files, and every file needs an entry there.
+- Each qualifier needs at least one free mock.
+- To add a mock, add it to `qualifiers.json` and write both files. The pages, the sitemap and the Pro route pick it up from there.
+
+Check them with `npm run validate:content` (or `node scripts/validate-content.mjs qualifier`).
 
 All notes and questions are original. Don't paste official IITM lecture notes, assignments or previous-year papers into the content.
 

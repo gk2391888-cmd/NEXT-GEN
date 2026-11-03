@@ -41,7 +41,7 @@ export async function handleAiRequest(req: Request, featureId: string): Promise<
   const limits = limitsFor(featureId, accessOf(plan));
   if (!limits) return fail('not_in_plan', `The ${feature.name} is part of Pro.`);
 
-  const prepared = await FEATURE_HANDLERS[featureId].prepare(await req.json().catch(() => null), { limits, userId: auth.user.id, admin });
+  const prepared = await FEATURE_HANDLERS[featureId].prepare(await req.json().catch(() => null), { limits, userId: auth.user.id, admin, isPro: plan.isPro });
   if ('error' in prepared) return fail('invalid', prepared.error);
 
   const quota = await consumeQuota(admin, auth.user.id, featureId, limits).catch((error) => {

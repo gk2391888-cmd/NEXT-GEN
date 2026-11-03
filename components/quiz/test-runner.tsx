@@ -15,9 +15,55 @@ import { accuracyColor, accuracyTone, formatClock, InlineText, ProgressBar } fro
 import { Explanation, letter, QuestionView } from './question-view';
 import { LanguageSwitch } from './language-switch';
 
-type Props = { subject: Subject; test: MockTest; pool: Question[]; weekTitles: Record<number, string> };
+/**
+ * A section of a test that mixes subjects (the qualifier mocks): each question's `week` is then its
+ * section number `n`, and results are shown per section instead of per week.
+ */
+export type TestSection = { n: number; name: string; short?: string; revise?: { href: string; label: string } };
 
-export function TestRunner({ subject, test, pool: original, weekTitles }: Props) {
+/** Right answers out of the total in one section (or week) of a submitted test. */
+export type SectionScore = { n: number; right: number; total: number };
+
+type Props = {
+  subject: Subject;
+  test: MockTest;
+  pool: Question[];
+  weekTitles: Record<number, string>;
+  /** Group by these sections instead of by week. Answers then stay out of course progress (My Mistakes, weak weeks). */
+  sections?: TestSection[];
+  /** Replaces the default rules on the intro screen. */
+  rules?: React.ReactNode;
+  /** Shown at the top of the result, from the score in each section (or week). */
+  resultExtra?: (scores: SectionScore[]) => React.ReactNode;
+};
+
+/** How a test names a group of questions: "Week 3", or a section's name. */
+type Grouping = {
+  label: (n: number) => string;
+  /** For the small "Weakest" tile. */
+  short: (n: number) => string;
+  /** The longer name in the result, e.g. "Week 3 · Probability". */
+  title: (n: number) => string;
+  revise: (n: number) => { href: string; label: string } | undefined;
+  noun: string;
+};
+
+function grouping(subject: Subject, weekTitles: Record<number, string>, sections?: TestSection[]): Grouping {
+  if (sections) {
+    const byN = new Map(sections.map((s) => [s.n, s]));
+    const name = (n: number) => byN.get(n)?.name ?? `Section ${n}`;
+    return { label: name, short: (n) => byN.get(n)?.short ?? name(n), title: name, revise: (n) => byN.get(n)?.revise, noun: 'section' };
+  }
+  return {
+    label: (w) => `Week ${w}`,
+    short: (w) => `Week ${w}`,
+    title: (w) => `Week ${w} · ${weekTitles[w]}`,
+    revise: (w) => ({ href: `/library/${subject.id}/${w}`, label: `Revise week ${w} notes →` }),
+    noun: 'topic',
+  };
+}
+
+export function TestRunner({ subject, test, pool: original, weekTitles, sections, rules, resultExtra }: Props) {
   const pool = useCorrectedQuestions(original);
   const state = useProgress();
   const key = testKey(subject.id, test.id);
@@ -26,6 +72,7 @@ export function TestRunner({ subject, test, pool: original, weekTitles }: Props)
   const attempts = state.tests.filter((a) => a.subjectId === subject.id && a.testId === test.id);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const viewing = viewingId ? attempts.find((a) => a.id === viewingId) : undefined;
+  const group = grouping(subject, weekTitles, sections);
 
   function start() {
     const questions = pickQuestions(pool, test.questionCount);
@@ -44,28 +91,32 @@ export function TestRunner({ subject, test, pool: original, weekTitles }: Props)
   }
 
   if (active) {
-    return <RunningTest key={active.startedAt} active={active} storeKey={key} test={test} subject={subject} byId={byId} onSubmitted={setViewingId} />;
+    return <RunningTest key={active.startedAt} active={active} storeKey={key} test={test} subject={subject} byId={byId} group={group} sectioned={Boolean(sections)} onSubmitted={setViewingId} />;
   }
 
   if (viewing) {
-    return <TestResult attempt={viewing} byId={byId} weekTitles={weekTitles} subject={subject} onRetake={start} />;
+    return <TestResult attempt={viewing} byId={byId} group={group} extra={resultExtra} onRetake={start} />;
   }
 
   return (
     <div className="quiz-wrap stack">
       <div className="card card-loose">
         <div className="quiz-top">
-          <span className="chip chip-blue">{subject.short.toUpperCase()} · WEEKS {test.fromWeek}–{test.toWeek}</span>
+          <span className="chip chip-blue">
+            {subject.short.toUpperCase()} · {sections ? `${sections.length} SECTIONS` : `WEEKS ${test.fromWeek}–${test.toWeek}`}
+          </span>
           <LanguageSwitch />
         </div>
         <h1 className="mt-md mb-sm">{test.title}</h1>
         <p>{subject.name} · {test.questionCount} questions · {test.minutes} minutes</p>
-        <ul className="my-lg">
-          <li>The timer starts as soon as you begin. The test is submitted automatically when time runs out.</li>
-          <li>Use the question palette to jump to any question, and <strong>Mark for review</strong> anything you want to revisit.</li>
-          <li>Each correct answer scores 1 mark. Wrong or skipped answers score 0; there is no negative marking.</li>
-          <li>If the page is refreshed or closed, the test resumes where you left off.</li>
-        </ul>
+        {rules ?? (
+          <ul className="my-lg">
+            <li>The timer starts as soon as you begin. The test is submitted automatically when time runs out.</li>
+            <li>Use the question palette to jump to any question, and <strong>Mark for review</strong> anything you want to revisit.</li>
+            <li>Each correct answer scores 1 mark. Wrong or skipped answers score 0; there is no negative marking.</li>
+            <li>If the page is refreshed or closed, the test resumes where you left off.</li>
+          </ul>
+        )}
         <button className="btn btn-primary" onClick={start}>Start test →</button>
       </div>
 
@@ -99,10 +150,13 @@ type RunningProps = {
   test: MockTest;
   subject: Subject;
   byId: Map<string, Question>;
+  group: Grouping;
+  /** Sectioned (qualifier) tests don't add their answers to course progress. */
+  sectioned: boolean;
   onSubmitted: (attemptId: string) => void;
 };
 
-function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: RunningProps) {
+function RunningTest({ active, storeKey, test, subject, byId, group, sectioned, onSubmitted }: RunningProps) {
   const [remaining, setRemaining] = useState(() => active.endsAt - Date.now());
   const submitted = useRef(false);
   const { confirm, dialog } = useConfirm();
@@ -148,13 +202,13 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
     };
     // Skipped questions don't count towards weak-topic detection; only answered ones do.
     const answers: NewAnswer[] = qs.flatMap((q, i) =>
-      q && active.responses[i] !== null
+      q && !sectioned && active.responses[i] !== null
         ? [{ questionId: q.id, subjectId: active.subjectId, week: q.week ?? 0, correct: active.responses[i] === q.answer, mode: 'test' as const, at: submittedAt }]
         : [],
     );
     onSubmitted(attempt.id);
     progress.submitTest(storeKey, attempt, answers);
-  }, [active, byId, onSubmitted, storeKey, withElapsed]);
+  }, [active, byId, onSubmitted, sectioned, storeKey, withElapsed]);
 
   useEffect(() => {
     const tick = () => {
@@ -190,7 +244,7 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
       <div className="test-header">
         <div>
           <div className="kicker mb-xs">Mock test · {subject.short}</div>
-          <h2>{test.title} · Weeks {test.fromWeek}–{test.toWeek}</h2>
+          <h2>{test.title}{!sectioned && ` · Weeks ${test.fromWeek}–${test.toWeek}`}</h2>
         </div>
         <div className="flex gap-md items-center">
           <div className="card timer-box" aria-live="off">
@@ -206,7 +260,7 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
           <div className="quiz-top">
             <span className="chip chip-blue">QUESTION {current + 1} OF {questions.length}</span>
             <span className="btn-group items-center">
-              <span className="muted">1 mark · Week {question.week}</span>
+              <span className="muted">1 mark · {group.label(question.week ?? 0)}</span>
               <LanguageSwitch />
             </span>
           </div>
@@ -259,10 +313,10 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
 
 /* ---------------- Result ---------------- */
 
-type ResultProps = { attempt: TestAttempt; byId: Map<string, Question>; weekTitles: Record<number, string>; subject: Subject; onRetake: () => void };
+type ResultProps = { attempt: TestAttempt; byId: Map<string, Question>; group: Grouping; extra?: Props['resultExtra']; onRetake: () => void };
 type Filter = 'all' | 'wrong' | 'skipped';
 
-function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProps) {
+function TestResult({ attempt, byId, group, extra, onRetake }: ResultProps) {
   const [filter, setFilter] = useState<Filter>('all');
   const { isPro } = usePlan();
   const rows = attempt.questionIds
@@ -289,38 +343,37 @@ function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProp
     (worst, cur) => (!worst || cur[1].right / cur[1].total < worst[1].right / worst[1].total ? cur : worst),
     null,
   );
+  const weak = weakest && percent(weakest[1].right, weakest[1].total) < 75 ? weakest[0] : null;
+  const revise = weak === null ? undefined : group.revise(weak);
 
   const shown = filter === 'wrong' ? wrong : filter === 'skipped' ? skipped : rows;
 
   return (
     <div>
+      {extra?.(weeks.map(([n, s]) => ({ n, ...s })))}
       <div className="grid grid-4 mb-lg">
         <div className="stat"><strong>{attempt.correct} / {attempt.total}</strong><span className="muted">Score</span></div>
         <div className="stat"><strong className={accuracyTone(accuracy)}>{accuracy}%</strong><span className="muted">Accuracy</span></div>
         <div className="stat"><strong>{formatClock(attempt.durationSec)}</strong><span className="muted">Time taken</span></div>
         <div className="stat">
-          <strong className={weakest && percent(weakest[1].right, weakest[1].total) < 75 ? 'tone-poor' : 'tone-good'}>
-            {weakest && percent(weakest[1].right, weakest[1].total) < 75 ? `Week ${weakest[0]}` : 'None'}
-          </strong>
-          <span className="muted">Weakest topic</span>
+          <strong className={weak !== null ? 'tone-poor' : 'tone-good'}>{weak !== null ? group.short(weak) : 'None'}</strong>
+          <span className="muted">Weakest {group.noun}</span>
         </div>
       </div>
 
       <div className="row">
         <div className="card test-side">
-          <h3 className="mb-md">Week-wise performance</h3>
+          <h3 className="mb-md">{group.noun === 'section' ? 'Section-wise' : 'Week-wise'} performance</h3>
           {weeks.map(([w, s]) => (
             <div key={w} className="week-score">
               <div>
-                <span>Week {w} · {weekTitles[w]}</span><b>{s.right}/{s.total}</b>
+                <span>{group.title(w)}</span><b>{s.right}/{s.total}</b>
               </div>
               <ProgressBar value={percent(s.right, s.total)} color={accuracyColor(percent(s.right, s.total))} />
             </div>
           ))}
           <div className="stack mt-lg">
-            {weakest && percent(weakest[1].right, weakest[1].total) < 75 && (
-              <Link className="btn btn-primary btn-block" href={`/library/${subject.id}/${weakest[0]}`}>Revise week {weakest[0]} notes →</Link>
-            )}
+            {revise && <Link className="btn btn-primary btn-block" href={revise.href}>{revise.label}</Link>}
             <button className="btn btn-secondary btn-block" onClick={onRetake}>Take a new test</button>
           </div>
           <div className="divider-top">
@@ -333,7 +386,7 @@ function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProp
               <>
                 <p className="muted">Average {avgSecs}s per question. Slowest:</p>
                 {slowest.map((r) => (
-                  <div key={r.q.id} className="weak-row"><span>Q{r.n} · Week {r.q.week}</span><b>{r.secs}s</b></div>
+                  <div key={r.q.id} className="weak-row"><span>Q{r.n} · {group.label(r.q.week ?? 0)}</span><b>{r.secs}s</b></div>
                 ))}
               </>
             )}

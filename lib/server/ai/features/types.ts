@@ -11,7 +11,8 @@ export type FeatureHandler<Output> = {
   /** Validates the request against the plan's limits. Return { error } for bad input (it doesn't use up quota). */
   prepare(
     body: unknown,
-    context: { limits: FeatureLimits; userId: string; admin: SupabaseClient },
+    /** `isPro`: trial or Pro, from the database (e.g. for questions from Pro-only qualifier mocks). */
+    context: { limits: FeatureLimits; userId: string; admin: SupabaseClient; isPro: boolean },
   ): Promise<{ system: string; messages: ChatMessage[] } | { error: string }>;
   /** What the browser receives on success. */
   respond(result: GenerateResult): Output;
