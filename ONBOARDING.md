@@ -48,7 +48,7 @@ next-gen/
 │   ├── api/                  ← Server-only endpoints
 │   │   ├── ai/[feature]/route.ts      → every AI feature (POST /api/ai/doubt)
 │   │   ├── content/questions/route.ts → every question as JSON (static)
-│   │   └── payments/{config,order,verify,webhook}/route.ts
+│   │   └── payments/{config,order,verify,webhook,upi,upi/review}/route.ts
 │   ├── manifest.ts           ← PWA "Add to home screen"
 │   ├── tokens.css            ← Generated CSS variables (from tokens/, don't edit)
 │   └── globals.css           ← All styles, built only from tokens
@@ -67,14 +67,14 @@ next-gen/
 │   ├── ai/                   ← ★ AI features + Free/Pro limits (features.ts), askAi() (client.ts)
 │   ├── tests.ts  planner.ts  coding.ts  overrides.ts  question-bank.ts  python-runner.ts
 │   ├── supabase/client.ts    ← Browser Supabase client + authedFetch()
-│   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, supabase.ts (service role)
+│   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, upi.ts, pro.ts (adds 30 days), supabase.ts (service role)
 ├── content/                  ← ★ All study material
 │   ├── subjects.json         ← The 8 subjects (id, code, name, icon); colours live in tokens
 │   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
 ├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
-├── supabase/migrations/      ← 0001 → 0003, run by hand in the Supabase SQL editor
+├── supabase/migrations/      ← 0001 → 0005, run by hand in the Supabase SQL editor
 ├── scripts/
 │   ├── validate-content.mjs  ← Runs before every build, so broken content never ships
 │   ├── build-tokens.mjs      ← tokens/*.json → app/tokens.css + lib/tokens.ts
@@ -134,6 +134,7 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 | `announcements` | Banners on the Overview page | Admin; everyone reads active ones |
 | `ai_usage` | AI requests per student, per feature, per day (India time), plus tokens used | Server only, via `consume_ai_quota()` / `finish_ai_request()` |
 | `payments` | Razorpay orders and their status | Server (service role) only |
+| `upi_requests` | UPI QR payments: UTR, amount, pending / approved / rejected | Server (service role) only; students read their own, admins read all |
 | `admins` | Who can open `/admin` | Added by hand in SQL |
 
 ## 5. Who the users are
@@ -271,23 +272,28 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
 
 ### Pricing and payment (`/pricing`)
 
-1. Free vs Pro cards ([components/pricing-plans.tsx](components/pricing-plans.tsx)). The button changes with your state: Start trial / Upgrade / Keep Pro / Pro active / "launching soon" when Razorpay env vars are missing.
+1. Free vs Pro cards ([components/pricing-plans.tsx](components/pricing-plans.tsx)). The button changes with your state: Start trial / Upgrade / Keep Pro / Pro active / "launching soon" when neither Razorpay nor `UPI_ID` is set.
 2. Payment flow:
    - `POST /api/payments/order` creates a Razorpay order plus a `payments` row with status `created`.
    - The Razorpay modal opens.
    - On success, `POST /api/payments/verify` checks the HMAC signature and calls `grantProForOrder()` ([lib/server/razorpay.ts](lib/server/razorpay.ts)). That claims the order once and adds 30 days to `pro_until`.
    - `/api/payments/webhook` does the same work as a backup if the tab closed. It's safe to run twice.
-3. No auto-renewal: each payment adds 30 days.
+3. Pay by UPI QR ([components/upi-payment.tsx](components/upi-payment.tsx)), on when `UPI_ID` is set. With Razorpay off it's the only way to pay; with Razorpay on it's a "Pay by scanning a UPI QR instead" button.
+   - The QR is a `upi://pay` link with the amount and a note `NEXTGEN <first 8 chars of the user id>`, so the admin can match the bank statement.
+   - The student submits the 12-digit UTR. `POST /api/payments/upi` stores it in `upi_requests` as `pending` (UTR unique, at most 3 pending per student).
+   - An admin approves or rejects it in **Admin → UPI payments**. `POST /api/payments/upi/review` checks `is_admin()`, claims the request once and calls `extendPro()` ([lib/server/pro.ts](lib/server/pro.ts)), the same 30 days Razorpay gives. A rejection's reason is shown to the student, who can submit again.
+4. No auto-renewal: each payment adds 30 days.
 
 ### Admin (`/admin`)
 
-Three tabs ([components/admin/](components/admin/admin-panel.tsx)):
+Four tabs ([components/admin/](components/admin/admin-panel.tsx)):
 
 - **Reports:** open reports grouped by question, with **Fix** and **Dismiss**.
 - **Edit questions:** search by ID (for example `stat1-w3-q4`) or text. Edit the text, options, answer and explanation, with a live preview.
   - Saves go to `content_overrides`, and students see them **without a redeploy** via `useCorrectedQuestions()` in [lib/overrides.ts](lib/overrides.ts).
   - **Revert to original** removes the correction.
 - **Announcements:** create, hide or delete. They show on the Overview page.
+- **UPI payments:** UPI QR payments waiting for a check, oldest first. Approve only after the UTR and amount show up in the bank or UPI app.
 
 ## 7. UI/UX conventions
 
@@ -330,7 +336,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
   - On the login page, any email and any 6-digit code logs you in as a trial student.
   - Demo mode only switches on when `NODE_ENV` isn't production and `NEXT_PUBLIC_DEMO_MODE=1`, so it's stripped from production builds.
 - **Without any env vars the site still works.** It falls back to the production Supabase project (the publishable key is hard-coded in [lib/supabase/client.ts](lib/supabase/client.ts)). The AI shows "being set up" and payments show "launching soon".
-- **Server env vars:** `GROQ_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (needed for AI limits and payments), `RAZORPAY_KEY_ID/SECRET`, `RAZORPAY_WEBHOOK_SECRET`, and optionally `AI_MODEL_SMART` / `AI_MODEL_FAST` and `PRO_PRICE_INR`. They're listed in the README, along with "AI features".
+- **Server env vars:** `GROQ_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (needed for AI limits and payments), `RAZORPAY_KEY_ID/SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `UPI_ID` (pay by UPI QR), and optionally `UPI_PAYEE_NAME`, `AI_MODEL_SMART` / `AI_MODEL_FAST` and `PRO_PRICE_INR`. They're listed in the README, along with "AI features".
 - **Database changes:** add a new `supabase/migrations/000N_*.sql` and run it by hand in the Supabase SQL editor. There's no migration CLI.
 - **Making yourself an admin:** `insert into public.admins (user_id) values ('<your auth uid>');`
 - **Deploy:** push to `main`; Vercel builds and deploys. The build runs the content validator first.

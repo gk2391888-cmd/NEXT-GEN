@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { authedFetch } from '@/lib/supabase/client';
+import { DEMO, demoFetch } from '@/lib/supabase/demo';
 import { PRICING, usePlan } from '@/lib/plan';
 import { limitsFor } from '@/lib/ai/features';
 import { sync } from '@/lib/sync';
 import { RAW } from '@/lib/tokens';
 import { useAuth } from './auth/auth-provider';
+import { UpiPayment, type UpiConfig } from './upi-payment';
 
 const FREE_DOUBTS = limitsFor('doubt', 'free')?.perDay ?? 0;
 const PRO_DOUBTS = limitsFor('doubt', 'pro')?.perDay ?? 0;
@@ -51,12 +53,16 @@ function loadCheckout(): Promise<boolean> {
 export function PricingPlans() {
   const { user } = useAuth();
   const plan = usePlan();
-  const [paymentsOn, setPaymentsOn] = useState<boolean | null>(null);
+  const [config, setConfig] = useState<{ enabled: boolean; upi: UpiConfig | null } | null>(null);
+  const [showUpi, setShowUpi] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetch('/api/payments/config').then((r) => r.json()).then((d) => setPaymentsOn(Boolean(d.enabled))).catch(() => setPaymentsOn(false));
+    (DEMO ? demoFetch('/api/payments/config') : fetch('/api/payments/config'))
+      .then((r) => r.json())
+      .then((d) => setConfig({ enabled: Boolean(d.enabled), upi: d.upi ?? null }))
+      .catch(() => setConfig({ enabled: false, upi: null }));
   }, []);
 
   async function upgrade() {
@@ -97,14 +103,27 @@ export function PricingPlans() {
     }
   }
 
+  const upgradeLabel = plan.tier === 'trial' ? `Keep Pro for ₹${PRICING.proMonthlyInr}/month` : `Upgrade for ₹${PRICING.proMonthlyInr}/month`;
+  // With only UPI switched on, the QR is the way to pay, so it's always shown.
+  const upiOnly = Boolean(config && !config.enabled && config.upi);
+  const upiOpen = Boolean(user && plan.tier !== 'pro' && config?.upi && (showUpi || upiOnly));
+  const openUpi = () => {
+    setShowUpi(true);
+    requestAnimationFrame(() => document.getElementById('upi-pay')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
+
   const proButton = (() => {
     if (!user) return <Link className="btn btn-primary btn-block" href="/login?next=/pricing">Start {PRICING.trialDays}-day free trial</Link>;
     if (plan.tier === 'pro') return <span className="btn btn-primary btn-block">Pro active · {plan.daysLeft} days left</span>;
-    if (paymentsOn === false) return <span className="btn btn-secondary btn-block">Online payment launching soon</span>;
+    if (config && !config.enabled && !config.upi) return <span className="btn btn-secondary btn-block">Online payment launching soon</span>;
+    if (upiOnly) return <button className="btn btn-primary btn-block" onClick={openUpi}>{upgradeLabel}</button>;
     return (
-      <button className="btn btn-primary btn-block" onClick={upgrade} disabled={busy || paymentsOn === null}>
-        {busy ? 'Opening payment…' : plan.tier === 'trial' ? `Keep Pro for ₹${PRICING.proMonthlyInr}/month` : `Upgrade for ₹${PRICING.proMonthlyInr}/month`}
-      </button>
+      <div className="stack">
+        <button className="btn btn-primary btn-block" onClick={upgrade} disabled={busy || config === null}>
+          {busy ? 'Opening payment…' : upgradeLabel}
+        </button>
+        {config?.upi && !upiOpen && <button className="btn btn-secondary btn-block" onClick={openUpi}>Pay by scanning a UPI QR instead</button>}
+      </div>
     );
   })();
 
@@ -146,6 +165,11 @@ export function PricingPlans() {
       </div>
 
       {message && <div className="plan-grid"><p className="alert mt-lg" role="status">{message}</p></div>}
+      {upiOpen && user && config?.upi && (
+        <div className="plan-grid" id="upi-pay">
+          <UpiPayment upi={config.upi} userId={user.id} />
+        </div>
+      )}
       <p className="muted text-center mt-lg">
         Each payment adds 30 days of Pro. Questions about billing? See our <Link href="/terms">Terms</Link>.
       </p>

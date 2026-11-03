@@ -43,9 +43,11 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | AI Doubt Solver (limits set in `lib/ai/features.ts`) | 5 / day | 200 / day, longer answers |
 | Time per question in test results, Save as PDF | | ✓ |
 
-- **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), post announcements.
+- **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), post announcements, confirm UPI payments.
 - **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. `lib/plans.ts` turns them into a tier, the same way on the server and in the browser.
-- **Payments**: Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup), both granting 30 days via the service-role key.
+- **Payments**, two ways, each adding 30 days via the service-role key. Either can be on alone, or both.
+  - Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup).
+  - Pay by UPI QR: the student pays our UPI ID and submits the 12-digit UTR (`/api/payments/upi`, table `upi_requests`). An admin matches it in the bank statement and approves it in **Admin → UPI payments** (`/api/payments/upi/review`).
 
 ### Environment variables (Vercel → Settings → Environment Variables)
 
@@ -56,11 +58,13 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | `SUPABASE_SERVICE_ROLE_KEY` | AI features (counting daily limits) and payments (granting Pro). Never expose it to the browser. |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Payments |
 | `RAZORPAY_WEBHOOK_SECRET` | Payment webhook (`<site>/api/payments/webhook`, event `payment.captured`) |
+| `UPI_ID` | Pay by UPI QR, e.g. `yourname@okaxis`. A business/merchant UPI ID is safer than a personal one for many payments. |
+| `UPI_PAYEE_NAME` | Optional: the name shown in the UPI app, defaults to `NEXT GEN` |
 | `PRO_PRICE_INR` | Optional, defaults to 99 |
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 
-Migrations: run `supabase/migrations/0001…0004` in order in the Supabase SQL Editor.
+Migrations: run `supabase/migrations/0001…0005` in order in the Supabase SQL Editor.
 
 ## AI features
 

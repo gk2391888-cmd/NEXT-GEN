@@ -1,14 +1,12 @@
 import 'server-only';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { extendPro, proPriceInr } from './pro';
 import { adminClient } from './supabase';
-
-const PRO_DAYS = 30;
 
 export function razorpayConfig() {
   const keyId = process.env.RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
-  const amountInr = Number(process.env.PRO_PRICE_INR ?? 99);
-  return keyId && keySecret ? { keyId, keySecret, amountPaise: Math.round(amountInr * 100) } : null;
+  return keyId && keySecret ? { keyId, keySecret, amountPaise: Math.round(proPriceInr() * 100) } : null;
 }
 
 const safeEqual = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
@@ -46,10 +44,6 @@ export async function grantProForOrder(orderId: string, paymentId: string): Prom
     return existing ? 'already' : 'unknown';
   }
 
-  const { data: profile } = await admin.from('profiles').select('pro_until').eq('id', claimed.user_id).single();
-  const from = Math.max(Date.now(), profile?.pro_until ? Date.parse(profile.pro_until) : 0);
-  const proUntil = new Date(from + PRO_DAYS * 86_400_000).toISOString();
-  const { error: grantError } = await admin.from('profiles').update({ pro_until: proUntil }).eq('id', claimed.user_id);
-  if (grantError) throw grantError;
+  await extendPro(admin, claimed.user_id);
   return 'granted';
 }

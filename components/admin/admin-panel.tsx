@@ -8,9 +8,10 @@ import { PageHead } from '@/components/ui';
 import { useAuth } from '@/components/auth/auth-provider';
 import { QuestionEditor } from './question-editor';
 import { Announcements } from './announcements';
+import { UpiRequests } from './upi-requests';
 
 type Report = { id: number; question_id: string; kind: string; message: string; created_at: string };
-type Tab = 'reports' | 'edit' | 'announcements';
+type Tab = 'reports' | 'edit' | 'announcements' | 'payments';
 
 const KIND_LABEL: Record<string, string> = { wrong_answer: 'Wrong answer', unclear: 'Unclear', typo: 'Typo', other: 'Other' };
 
@@ -21,6 +22,7 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [reports, setReports] = useState<Report[] | null>(null);
   const [error, setError] = useState('');
+  const [pendingPayments, setPendingPayments] = useState<number | null>(null);
 
   const subjectName = useMemo(() => new Map(subjects.map((s) => [s.id, s.short])), [subjects]);
   const byId = useMemo(() => new Map((bank ?? []).map((q) => [q.id, q])), [bank]);
@@ -38,7 +40,9 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
   }, []);
 
   useEffect(() => {
-    if (isAdmin) loadReports();
+    if (!isAdmin) return;
+    loadReports();
+    getSupabase().from('upi_requests').select('id').eq('status', 'pending').limit(200).then(({ data }) => setPendingPayments(data?.length ?? 0));
   }, [isAdmin, loadReports]);
 
   const grouped = useMemo(() => {
@@ -65,11 +69,12 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
 
   return (
     <>
-      <PageHead kicker="Admin" title="Admin panel" description="Review reported questions, correct content and post announcements. Changes go live immediately." />
+      <PageHead kicker="Admin" title="Admin panel" description="Review reported questions, correct content, post announcements and confirm UPI payments. Changes go live immediately." />
       <div className="filters mb-lg">
         <button className={tab === 'reports' ? 'on' : ''} onClick={() => setTab('reports')}>Reports ({grouped.length})</button>
         <button className={tab === 'edit' ? 'on' : ''} onClick={() => setTab('edit')}>Edit questions</button>
         <button className={tab === 'announcements' ? 'on' : ''} onClick={() => setTab('announcements')}>Announcements</button>
+        <button className={tab === 'payments' ? 'on' : ''} onClick={() => setTab('payments')}>UPI payments{pendingPayments ? ` (${pendingPayments})` : ''}</button>
       </div>
       {error && <p className="field-error" role="alert">{error}</p>}
 
@@ -121,6 +126,8 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
       )}
 
       {tab === 'announcements' && <Announcements />}
+
+      {tab === 'payments' && <UpiRequests onCount={setPendingPayments} />}
     </>
   );
 }

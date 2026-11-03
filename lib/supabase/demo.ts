@@ -11,6 +11,8 @@
 import math1 from '@/content/weeks/math1.json';
 import stat1 from '@/content/weeks/stat1.json';
 import { AI_FEATURES, isAiFeatureId, limitsFor } from '@/lib/ai/features';
+import { PRICING } from '@/lib/plans';
+import { cleanUtr, isUtr } from '@/lib/upi';
 
 export const DEMO = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEMO_MODE === '1';
 
@@ -136,6 +138,11 @@ function seedUser(db: Db, p: Persona) {
 }
 
 function seedShared(db: Db) {
+  db.upi_requests ??= [
+    { id: 1, user_id: 'demo-free', email: 'free@demo.nextgen.local', utr: '412345678901', amount_inr: PRICING.proMonthlyInr, status: 'pending', note: '', reviewed_at: null, created_at: day(-0.1) },
+    { id: 2, user_id: 'demo-new', email: 'new@demo.nextgen.local', utr: '412345678902', amount_inr: PRICING.proMonthlyInr, status: 'pending', note: '', reviewed_at: null, created_at: day(-0.4) },
+    { id: 3, user_id: 'demo-pro', email: 'pro@demo.nextgen.local', utr: '412345678800', amount_inr: PRICING.proMonthlyInr, status: 'approved', note: '', reviewed_at: day(-9), created_at: day(-9) },
+  ];
   if (db.announcements) return;
   db.announcements = [
     { id: 1, title: 'Quiz 2 mock tests are live', body: 'Practise weeks 5–8 of every subject with timed tests and detailed results.', active: true, created_at: day(-1) },
@@ -311,6 +318,8 @@ export function createDemoClient() {
 /** Answers our own API routes in demo mode, since they need a real session. */
 export async function demoFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  // A demo UPI ID, so the pay-by-QR flow can be tried without real payment settings.
+  if (path === '/api/payments/config') return reply({ enabled: false, upi: { id: 'nextgen.demo@okaxis', name: 'NEXT GEN (demo)', amountInr: PRICING.proMonthlyInr } });
   const p = read<Persona>(PERSONA_KEY, 'trial');
   if (p === 'guest') return reply({ ok: false, code: 'login_required', error: 'Log in to continue.', message: 'Log in to continue.' }, 401);
 
@@ -356,5 +365,30 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
   }
 
   if (path === '/api/payments/order' || path === '/api/payments/verify') return reply({ error: 'Payments are switched off in demo mode.' }, 503);
+
+  // Same contract as /api/payments/upi and /api/payments/upi/review.
+  if (path === '/api/payments/upi') {
+    const utr = cleanUtr(String(JSON.parse(String(init.body ?? '{}')).utr ?? ''));
+    if (!isUtr(utr)) return reply({ error: 'Enter the 12-digit UTR (UPI reference number) from your payment details.' }, 400);
+    const db = loadDb();
+    const rows = (db.upi_requests ??= []);
+    if (rows.some((r) => r.utr === utr)) return reply({ error: 'This UTR has already been submitted.' }, 409);
+    const request = { id: Math.max(0, ...rows.map((r) => Number(r.id))) + 1, user_id: userId(p), email: `${p}@demo.nextgen.local`, utr, amount_inr: PRICING.proMonthlyInr, status: 'pending', note: '', reviewed_at: null, created_at: new Date().toISOString() };
+    rows.push(request);
+    saveDb(db);
+    return reply({ request });
+  }
+  if (path === '/api/payments/upi/review') {
+    if (p !== 'admin') return reply({ error: 'Only admins can review payments.' }, 403);
+    const { id, approve, note } = JSON.parse(String(init.body ?? '{}')) as { id: number; approve: boolean; note?: string };
+    const db = loadDb();
+    const row = (db.upi_requests ?? []).find((r) => r.id === id && r.status === 'pending');
+    if (!row) return reply({ error: 'This payment was already reviewed.' }, 409);
+    Object.assign(row, { status: approve ? 'approved' : 'rejected', note: approve ? '' : String(note ?? '').trim(), reviewed_at: new Date().toISOString() });
+    const profile = (db.profiles ?? []).find((r) => r.id === row.user_id);
+    if (approve && profile) profile.pro_until = iso(Math.max(Date.now(), profile.pro_until ? Date.parse(String(profile.pro_until)) : 0) + 30 * DAY);
+    saveDb(db);
+    return reply({ ok: true });
+  }
   return reply({ error: `${path} isn't available in demo mode` }, 404);
 }
