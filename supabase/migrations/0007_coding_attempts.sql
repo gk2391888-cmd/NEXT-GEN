@@ -15,7 +15,7 @@ create table if not exists public.coding_attempts (
   primary key (user_id, id)
 );
 
-revoke all on public.coding_attempts from anon;
+revoke all on public.coding_attempts from anon, authenticated;
 grant select, insert, update, delete on public.coding_attempts to authenticated;
 
 alter table public.coding_attempts enable row level security;
