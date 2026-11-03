@@ -88,6 +88,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <main className="content" id="content">{children}</main>
         <footer className="footer">
           <span>© {new Date().getFullYear()} NEXT GEN · A THE TECH HUB initiative</span>
+          <span className="footer-links">
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+          </span>
           <span>Made for learning by <strong>GAURAV GUPTA</strong></span>
         </footer>
       </div>

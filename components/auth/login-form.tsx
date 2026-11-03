@@ -130,6 +130,9 @@ export function LoginForm() {
           <p className="muted" style={{ marginTop: 16 }}>
             New here? Your account is created automatically. You can also study and practise without logging in; your progress will then be saved only on this device.
           </p>
+          <p className="muted" style={{ marginTop: 10 }}>
+            By continuing you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
+          </p>
         </form>
       ) : (
         <form onSubmit={verify} noValidate>
