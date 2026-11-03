@@ -1,0 +1,1429 @@
+{
+  "subjectId": "mfe2",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Positive-term series: comparison and integral tests",
+      "summary": "Is week aap positive terms wali series ki convergence comparison, limit comparison aur integral test se check karoge, p-series ko benchmark ki tarah use karoge, aur integral se partial sum ka error estimate nikaloge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Positive-term series**: agar har aₙ ≥ 0 hai to partial sums Sₙ sirf badhte hain (monotonic). Isliye Σ aₙ converge karti hai tabhi jab Sₙ bounded ho. Is week ke saare tests isi ek idea par khade hain — har test bas Sₙ ko upar se baandhne ka tareeka hai.",
+        "**p-series**: Σ 1/nᵖ converge karti hai sirf p > 1 par, aur p ≤ 1 par diverge. Σ 1/n² converge (sum π²/6), Σ 1/n aur Σ 1/√n diverge. Ye hamara main benchmark hai — naye series ko isi se compare karenge. Geometric series Σ rⁿ (|r| < 1) doosra benchmark hai.",
+        "**Direct comparison test**: 0 ≤ aₙ ≤ bₙ (kuch n ke baad). Badi wali Σ bₙ converge ⇒ chhoti Σ aₙ bhi converge. Chhoti wali diverge ⇒ badi bhi diverge. Dhyan do: 'chhoti series diverge karti hai' ya 'badi converge karti hai' se kuch nahi milta jab direction ulti ho.",
+        "**Limit comparison test**: aₙ, bₙ > 0 aur L = lim aₙ/bₙ. Agar 0 < L < ∞ to dono series saath-saath converge ya diverge karti hain. Practical trick: aₙ me numerator aur denominator ki sabse badi powers rakho — (3n + 1)/(n³ + 4) ≈ 3n/n³ = 3/n², to bₙ = 1/n² lo.",
+        "**Integral test**: agar f(x) positive, continuous aur decreasing hai (x ≥ N ke liye) aur aₙ = f(n), to Σ aₙ aur ∫_N^∞ f(x) dx ya to dono converge ya dono diverge. Isi se p-series ka result aata hai, aur Σ 1/(n ln n) diverge, Σ 1/(n (ln n)²) converge — ln wale terms ke liye ye sabse kaam ka test hai.",
+        "**Integral se error estimate**: integral test ki shartein poori hon to remainder Rₙ = S − Sₙ ke liye ∫ₙ₊₁^∞ f dx ≤ Rₙ ≤ ∫ₙ^∞ f dx. Jaise Σ 1/n³ me R₁₀ ≤ ∫₁₀^∞ dx/x³ = 1/200. Engineering me yahi batata hai ki computer ko kitne terms jodne padenge taaki answer tolerance ke andar ho.",
+        "**Test choose karne ki strategy**: pehle nth-term test (aₙ ↛ 0 ⇒ diverge). Rational/algebraic terms ⇒ limit comparison with p-series. ln n wale terms ⇒ integral test. Factorials ya cⁿ ⇒ ratio test (Math for Electronics I wala). Test inconclusive aaye to doosra try karo — conclusion kabhi guess mat karo."
+      ],
+      "example": {
+        "problem": "Σ (n = 1 se ∞) (3n + 1)/(n³ + 4) converge karti hai ya nahi? Aur Σ 1/n³ ke liye kitne terms jodne padenge taaki integral bound ke hisaab se error 0.001 se kam ho?",
+        "steps": [
+          "Pehli series: badi powers dekho — (3n + 1)/(n³ + 4) ≈ 3n/n³ = 3/n². To bₙ = 1/n² lo.",
+          "L = lim [(3n + 1)/(n³ + 4)]·n² = lim (3n³ + n²)/(n³ + 4) = 3. Ye 0 aur ∞ ke beech hai.",
+          "Σ 1/n² converge karti hai (p = 2 > 1), isliye limit comparison se di gayi series bhi **converge** karti hai.",
+          "Doosra sawaal: f(x) = 1/x³ positive, continuous, decreasing hai, to Rₙ ≤ ∫ₙ^∞ dx/x³ = 1/(2n²).",
+          "Chahiye 1/(2n²) < 0.001 ⇒ n² > 500 ⇒ n > 22.36.",
+          "n = 22 par bound 1/968 ≈ 0.00103 (thoda zyada), n = 23 par 1/1058 ≈ 0.00095 ✓.",
+          "Answer: series **converge** karti hai, aur Σ 1/n³ ke **23 terms** jodne se error 0.001 se kam guaranteed hai."
+        ]
+      },
+      "mistakes": [
+        "Comparison ki direction ulti lagana: 'aₙ ≤ bₙ aur Σ bₙ diverge, isliye Σ aₙ diverge' — galat. Chhoti series ke baare me badi divergent series kuch nahi batati. Ya to limit comparison lo, ya sahi direction wali inequality dhoondo.",
+        "Integral test ka answer series ka sum samajh lena. ∫₁^∞ dx/x² = 1, par Σ 1/n² = π²/6 ≈ 1.645. Integral sirf converge/diverge batata hai aur error ko baandhta hai, sum nahi deta.",
+        "Integral test lagane se pehle check na karna ki f decreasing hai. Jaise sin² wale ya oscillating terms par seedha integral test lagana galat hai."
+      ],
+      "revision": [
+        "Σ 1/nᵖ: p > 1 converge, p ≤ 1 diverge.",
+        "0 ≤ aₙ ≤ bₙ: Σ bₙ converge ⇒ Σ aₙ converge; Σ aₙ diverge ⇒ Σ bₙ diverge.",
+        "Limit comparison: 0 < lim aₙ/bₙ < ∞ ⇒ same fate.",
+        "Integral test: f positive, continuous, decreasing.",
+        "Error: ∫ₙ₊₁^∞ f ≤ Rₙ ≤ ∫ₙ^∞ f."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w1-q1",
+          "question": "p-series Σ (n = 1 se ∞) 1/nᵖ inme se kis value par converge karti hai?",
+          "options": [
+            "p = 1",
+            "p = 1.01",
+            "p = 1/2",
+            "p = 0"
+          ],
+          "answer": 1,
+          "explanation": "p-series sirf p > 1 par converge karti hai, aur 1.01 > 1 hai — chahe 1 ke kitna bhi paas ho. p = 1 harmonic series hai jo diverge karti hai (sabse common trap). p = 1/2 aur p = 0 par terms aur bhi bade hain, to diverge.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w1-q2",
+          "question": "Σ (n = 1 se ∞) 1/(n² + 5) ke baare me kaunsa statement sahi hai?",
+          "options": [
+            "Diverge karti hai, kyunki 1/(n² + 5) ≤ 1/n² hai",
+            "Converge karti hai aur sum exactly π²/6 hai",
+            "Comparison test kuch nahi bata sakta, kyunki terms Σ 1/n² se chhote hain",
+            "Converge karti hai, kyunki 0 < 1/(n² + 5) ≤ 1/n² aur Σ 1/n² converge karti hai"
+          ],
+          "answer": 3,
+          "explanation": "Chhote positive terms ki series, ek convergent series se neeche hai, to direct comparison se converge. Sum π²/6 se kam hoga (har term chhota hai), isliye 'exactly π²/6' galat. Chhota hona hi to wo case hai jahan comparison convergence deta hai — wo 'kuch nahi bata sakta' wala option direction ka confusion hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w1-q3",
+          "question": "Σ (n = 1 se ∞) (2n² + 1)/(n⁴ + 3n) ko bₙ = 1/n² se limit-compare karo. L = lim aₙ/bₙ aur conclusion kya hai?",
+          "options": [
+            "L = 2, series converge karti hai",
+            "L = 2, series diverge karti hai",
+            "L = 0, test inconclusive hai",
+            "L = 1/2, series converge karti hai"
+          ],
+          "answer": 0,
+          "explanation": "aₙ/bₙ = (2n⁴ + n²)/(n⁴ + 3n) → 2 (leading coefficients ka ratio). 0 < 2 < ∞ aur Σ 1/n² converge, to di gayi series bhi converge. L = 1/2 ratio ulta lene se aata hai (bₙ/aₙ) — conclusion same rehta par L galat hai. L = 0 tab aata jab galti se bₙ = 1/n lete.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w1-q4",
+          "question": "Inme se kaunsi series (n = 2 se ∞) converge karti hai?",
+          "options": [
+            "Σ 1/(n ln n)",
+            "Σ (ln n)/n",
+            "Σ 1/(n (ln n)²)",
+            "Σ 1/√n"
+          ],
+          "answer": 2,
+          "explanation": "Integral test: u = ln x lo, ∫ dx/(x (ln x)²) = −1/ln x, jo ∞ par finite hai ⇒ converge. ∫ dx/(x ln x) = ln(ln x) → ∞, to Σ 1/(n ln n) diverge — terms 1/n se thode hi chhote hain, utna kaafi nahi. (ln n)/n ≥ 1/n (n ≥ 3) aur 1/√n p = 1/2 wali p-series hai, dono diverge.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w1-q5",
+          "question": "S = Σ (n = 1 se ∞) 1/n³ ko S₁₀ (pehle 10 terms ka sum) se approximate kiya. Integral test ke hisaab se error R₁₀ = S − S₁₀ ka upper bound kya hai?",
+          "options": [
+            "0.001",
+            "0.01",
+            "0.05",
+            "0.005"
+          ],
+          "answer": 3,
+          "explanation": "R₁₀ ≤ ∫₁₀^∞ dx/x³ = [−1/(2x²)]₁₀^∞ = 1/200 = 0.005. 0.001 = 1/10³ sirf agla term a₁₀ ka size hai, poore tail ka bound nahi (tail me a₁₁, a₁₂, ... sab hain). 0.01 = 1/10² me integral ka 1/2 bhool gaye. (Actual error ≈ 0.0045, jo bound ke andar hai.)",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w1-q6",
+          "question": "Σ (n = 1 se ∞) 1/n⁴ ko computer par Sₙ se approximate karna hai. Integral bound Rₙ ≤ ∫ₙ^∞ dx/x⁴ ke hisaab se kam se kam kitne terms chahiye taaki error 10⁻⁶ se kam ho?",
+          "options": [
+            "70",
+            "32",
+            "100",
+            "1000"
+          ],
+          "answer": 0,
+          "explanation": "∫ₙ^∞ dx/x⁴ = 1/(3n³). Chahiye 1/(3n³) < 10⁻⁶ ⇒ n³ > 333334 ⇒ n > 69.3, to n = 70 (69³ = 328509 kam padta hai, 70³ = 343000 ✓). 100 tab aata hai jab 1/3 bhool ke n³ > 10⁶ lo. 32 tab jab sirf aakhri term 1/n⁴ < 10⁻⁶ maang lo — par error poora tail hai, ek term nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Alternating series and absolute convergence",
+      "summary": "Is week aap alternating series test (Leibniz) lagana, absolute aur conditional convergence me fark karna, aur alternating series ke partial sum ka error aur uska sign nikalna seekhoge.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Alternating series**: Σ (−1)ⁿ⁺¹bₙ = b₁ − b₂ + b₃ − ..., jahan bₙ > 0. Terms ka sign har baar palat-ta hai, isliye partial sums ek value ke upar-neeche jhoolte hue use ghere rehte hain — jaise damped oscillation apni final value ke around settle hota hai.",
+        "**Alternating series test (Leibniz)**: do shartein — (1) bₙ eventually decreasing ho (bₙ₊₁ ≤ bₙ), (2) bₙ → 0. Dono hon to series converge karti hai. Sirf bₙ → 0 kaafi nahi agar decreasing na ho, aur bₙ ↛ 0 ho to nth-term test se seedha divergent.",
+        "**Error bound aur sign**: AST ki shartein poori hon to |S − Sₙ| ≤ bₙ₊₁ — yaani error pehle chhode gaye term se bada nahi. Aur S − Sₙ ka sign chhode gaye pehle term ka sign hota hai: agar agla term negative hai to Sₙ true sum se zyada (overestimate) hai.",
+        "**Absolute convergence**: Σ |aₙ| converge kare to Σ aₙ **absolutely convergent** hai, aur absolute convergence ⇒ convergence (hamesha). Isliye kisi bhi sign wali series ke liye pehle Σ |aₙ| par comparison, p-series ya ratio test lagao — kaam ban gaya to baaki check ki zaroorat nahi.",
+        "**Conditional convergence**: Σ aₙ converge kare par Σ |aₙ| diverge kare. Classic example Σ (−1)ⁿ⁺¹/n = ln 2 (alternating harmonic). Σ (−1)ⁿ/nᵖ: p > 1 absolutely, 0 < p ≤ 1 conditionally, p ≤ 0 diverge (terms 0 nahi hote).",
+        "**Rearrangement ka khatra**: absolutely convergent series ke terms kisi bhi order me jodo, sum same aata hai. Conditionally convergent series ke terms ka order badalne par sum badal sakta hai (Riemann ka theorem) — isliye numerical code me aisi series ka order mat chhedo.",
+        "**Ratio test aur signs**: ratio test |aₙ₊₁/aₙ| par chalta hai, isliye L < 1 ka matlab absolute convergence hai. L = 1 aaye (jaise (−1)ⁿ/n me) to ratio test chup hai — tab AST aur Σ |aₙ| ka comparison alag-alag lagao."
+      ],
+      "example": {
+        "problem": "1/e = Σ (n = 0 se ∞) (−1)ⁿ/n! hai. RC circuit ke discharge me e⁻¹ (ek time constant ke baad bacha fraction) chahiye. Kitne terms lene se error 0.001 se kam hoga, aur wo approximation kya hai?",
+        "steps": [
+          "bₙ = 1/n! positive, decreasing aur → 0 hai, to AST lagta hai aur error ≤ pehla chhoda gaya term.",
+          "Chahiye 1/(n + 1)! < 0.001, yaani (n + 1)! > 1000. 6! = 720 (kam), 7! = 5040 ✓.",
+          "To n = 0 se 6 tak (7 terms) jodo: 1 − 1 + 1/2 − 1/6 + 1/24 − 1/120 + 1/720.",
+          "Sum = 0.5 − 0.16667 + 0.04167 − 0.00833 + 0.00139 = 0.36806.",
+          "Error bound = 1/7! ≈ 0.000198. Chhoda gaya pehla term −1/5040 negative hai, isliye S₆ thoda zyada (overestimate) hai.",
+          "Check: e⁻¹ = 0.36788, aur 0.36806 − 0.36788 = 0.00018 < 0.000198 ✓.",
+          "Answer: **7 terms (n = 0 se 6) se 1/e ≈ 0.3681**, error ≤ 0.0002, aur ye estimate true value se thoda upar hai."
+        ]
+      },
+      "mistakes": [
+        "Sirf 'signs alternate ho rahe hain' dekh ke convergence maan lena. Σ (−1)ⁿ n/(n + 1) me terms ±1 ki taraf jaate hain, 0 nahi — ye diverge karti hai. Pehle hamesha bₙ → 0 check karo.",
+        "Error bound me bₙ₊₁ ki jagah bₙ (aakhri joda gaya term) le lena. Bound pehla CHHODA gaya term deta hai.",
+        "Conditionally convergent ko 'absolutely' bol dena kyunki series converge kar rahi hai. Absolute ke liye Σ |aₙ| alag se check karo — Σ (−1)ⁿ/√n converge karti hai par Σ 1/√n nahi."
+      ],
+      "revision": [
+        "AST: bₙ decreasing aur bₙ → 0 ⇒ converge.",
+        "|S − Sₙ| ≤ bₙ₊₁, sign = pehle chhode term ka sign.",
+        "Σ |aₙ| converge ⇒ absolutely convergent ⇒ convergent.",
+        "Σ (−1)ⁿ/nᵖ: p > 1 absolute, 0 < p ≤ 1 conditional.",
+        "Conditional series ka order badla to sum badal sakta hai."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w2-q1",
+          "question": "Series Σ (n = 1 se ∞) (−1)ⁿ/√n ko classify karo.",
+          "options": [
+            "Absolutely convergent",
+            "Divergent, kyunki Σ 1/√n diverge karti hai",
+            "Conditionally convergent",
+            "Divergent, kyunki terms 0 ki taraf nahi jaate"
+          ],
+          "answer": 2,
+          "explanation": "bₙ = 1/√n decreasing aur → 0, to AST se series converge karti hai. Par Σ |aₙ| = Σ 1/√n (p = 1/2) diverge karti hai, isliye conditionally convergent. 'Σ 1/√n diverge, isliye series diverge' wala trap absolute aur ordinary convergence ko mila deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w2-q2",
+          "question": "Series Σ (n = 1 se ∞) (−1)ⁿ·n/(n + 1) ke baare me kya sahi hai?",
+          "options": [
+            "Diverge karti hai, kyunki terms ka limit 0 nahi hai",
+            "Converge karti hai, kyunki ye alternating series hai",
+            "Conditionally converge karti hai",
+            "Absolutely converge karti hai"
+          ],
+          "answer": 0,
+          "explanation": "|aₙ| = n/(n + 1) → 1, to aₙ → 0 nahi hota aur nth-term test se series diverge. Partial sums lagbhag −0.69 aur +0.31 ke beech jhoolte rehte hain, kisi ek value par nahi rukte. 'Alternating hai to converge' wala trap AST ki bₙ → 0 wali shart bhool jaata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w2-q3",
+          "question": "S = Σ (n = 1 se ∞) (−1)ⁿ⁺¹/n³ ko S₄ = 1 − 1/8 + 1/27 − 1/64 se approximate kiya. Alternating series estimate ke hisaab se |S − S₄| ka bound kya hai?",
+          "options": [
+            "1/64",
+            "1/16",
+            "1/4",
+            "1/125"
+          ],
+          "answer": 3,
+          "explanation": "Error ≤ pehla chhoda gaya term b₅ = 1/5³ = 1/125 = 0.008. 1/64 = b₄ to S₄ me already jud chuka hai — aakhri jode gaye term ko bound maanna sabse common galti hai. 1/16 aur 1/4 me cube ki jagah square ya kuch aur le liya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w2-q4",
+          "question": "Inme se kaunsi series conditionally convergent hai?",
+          "options": [
+            "Σ (n = 1 se ∞) (−1)ⁿ/n²",
+            "Σ (n = 2 se ∞) (−1)ⁿ/ln n",
+            "Σ (n = 1 se ∞) (−1)ⁿ",
+            "Σ (n = 1 se ∞) (−1)ⁿ·n/2ⁿ"
+          ],
+          "answer": 1,
+          "explanation": "1/ln n decreasing aur → 0, to AST se converge. Par 1/ln n > 1/n (n ≥ 2), aur Σ 1/n diverge, to Σ 1/ln n bhi diverge ⇒ conditional. Σ (−1)ⁿ/n² aur Σ (−1)ⁿn/2ⁿ absolutely convergent hain (p = 2, aur ratio test L = 1/2). Σ (−1)ⁿ ke terms 0 nahi hote, wo diverge.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w2-q5",
+          "question": "S = Σ (n = 1 se ∞) (−1)ⁿ⁺¹/(n·2ⁿ) (iska sum ln(3/2) hai). S₃ = 1/2 − 1/8 + 1/24 ke baare me kya sahi hai?",
+          "options": [
+            "S₃ ≈ 0.4167, true sum se zyada, error ≤ 1/64",
+            "S₃ ≈ 0.4167, true sum se kam, error ≤ 1/64",
+            "S₃ ≈ 0.4167, true sum se zyada, error ≤ 1/24",
+            "S₃ ≈ 0.375, true sum se kam, error ≤ 1/24"
+          ],
+          "answer": 0,
+          "explanation": "S₃ = 0.5 − 0.125 + 0.04167 = 0.4167. Pehla chhoda term −1/(4·16) = −1/64 negative hai, to S₃ true sum se upar hai aur error ≤ 1/64 ≈ 0.0156. Check: ln 1.5 ≈ 0.4055, fark 0.0112 ✓. 'True sum se kam' sign ulta padhta hai; 1/24 aakhri joda gaya term hai, bound nahi; 0.375 me teesra term bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w2-q6",
+          "question": "Series Σ (n = 1 se ∞) (−1)ⁿ/nᵖ kin values of p ke liye conditionally convergent hai?",
+          "options": [
+            "p > 1",
+            "p ≤ 0",
+            "0 < p ≤ 1",
+            "p ≥ 1"
+          ],
+          "answer": 2,
+          "explanation": "p > 0 par 1/nᵖ decreasing aur → 0, to AST se converge. Σ 1/nᵖ sirf p > 1 par converge, to p > 1 absolute aur 0 < p ≤ 1 conditional. p ≤ 0 par terms 0 nahi hote, to diverge. 'p ≥ 1' p = 1 ko sahi pakadta hai par p = 2, 3 (jo absolute hain) ko bhi shaamil kar leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Power series, Taylor series and approximation error",
+      "summary": "Is week aap power series ka radius aur poora interval of convergence (endpoints samet) nikaloge, standard Maclaurin series yaad karke unse nayi series banaoge, aur Taylor approximation ka error Lagrange remainder ya alternating bound se estimate karoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Interval of convergence**: Σ cₙ(x − a)ⁿ ke liye ratio test se radius R nikaalo: |x − a| < R par absolutely converge, |x − a| > R par diverge. Endpoints x = a ± R par ratio test L = 1 deta hai, isliye wahan series ko alag se (p-series, AST, comparison se) check karna padta hai — interval (a − R, a + R), [ ], [ ) ya ( ] kuch bhi ho sakta hai.",
+        "**Term-by-term calculus**: R ke andar power series ko term-by-term differentiate ya integrate kar sakte ho, aur radius same rehta hai (endpoints badal sakte hain). Jaise 1/(1 − x) = Σ xⁿ ko integrate karke −ln(1 − x) = Σ xⁿ⁺¹/(n + 1), aur differentiate karke 1/(1 − x)² = Σ n xⁿ⁻¹.",
+        "**Taylor series**: f(x) = Σ f⁽ⁿ⁾(a)(x − a)ⁿ/n!. a = 0 par isse **Maclaurin series** kehte hain. Coefficient cₙ = f⁽ⁿ⁾(a)/n!, isliye ulta bhi kaam aata hai: series pata ho to f⁽ⁿ⁾(a) = n!·cₙ, bina baar-baar differentiate kiye.",
+        "**Standard Maclaurin series**: sin x = x − x³/3! + x⁵/5! − ... aur cos x = 1 − x²/2! + x⁴/4! − ... (har x); ln(1 + x) = x − x²/2 + x³/3 − ... (−1 < x ≤ 1); tan⁻¹ x = x − x³/3 + x⁵/5 − ... (|x| ≤ 1); binomial (1 + x)ᵏ = 1 + kx + k(k − 1)x²/2! + ... (|x| < 1). Nayi series substitution se banao: e^(−x²) me eˣ ki series me x → −x² rakh do.",
+        "**Lagrange remainder**: degree n Taylor polynomial Pₙ ka error Rₙ(x) = f⁽ⁿ⁺¹⁾(c)(x − a)ⁿ⁺¹/(n + 1)!, kisi c ke liye jo a aur x ke beech hai. Agar |f⁽ⁿ⁺¹⁾| ≤ M us interval par, to |Rₙ| ≤ M|x − a|ⁿ⁺¹/(n + 1)!. Series alternating ho (sin, cos, ln(1 + x) chhote x par) to aasaan bound: pehla chhoda gaya term.",
+        "**Engineering approximations**: chhote angle par sin θ ≈ θ aur cos θ ≈ 1 − θ²/2 (pendulum, aircraft ka small pitch angle). Binomial se altitude h par gravity g(h) = g₀(1 + h/R)⁻² ≈ g₀(1 − 2h/R) jab h ≪ R. Ye linearisation hi control systems me non-linear equations ko linear banata hai.",
+        "**Kitna accurate?**: approximation ka relative error dekho. sin θ ≈ θ me agla term θ³/6 hai, to θ = 0.1 rad (≈ 5.7°) par error ≤ 0.000167, yaani 0.17% se kam. θ = 0.5 rad par wahi bound 0.0208 ho jaata hai (lagbhag 4%) — 'small angle' ka matlab ye numbers decide karte hain."
+      ],
+      "example": {
+        "problem": "Power series Σ (n = 1 se ∞) (x − 2)ⁿ/(n·3ⁿ) ka radius aur interval of convergence nikalo.",
+        "steps": [
+          "Ratio test: |aₙ₊₁/aₙ| = |x − 2|·n/(3(n + 1)) → |x − 2|/3.",
+          "|x − 2|/3 < 1 ⇒ |x − 2| < 3 ⇒ R = 3, aur open interval −1 < x < 5.",
+          "Endpoint x = 5: terms 3ⁿ/(n·3ⁿ) = 1/n, harmonic series ⇒ diverge.",
+          "Endpoint x = −1: terms (−3)ⁿ/(n·3ⁿ) = (−1)ⁿ/n, alternating harmonic ⇒ (conditionally) converge.",
+          "Answer: **R = 3, interval of convergence [−1, 5)** — left endpoint shaamil, right endpoint nahi."
+        ]
+      },
+      "mistakes": [
+        "Ratio test se R nikaal ke endpoints check kiye bina open interval likh dena. Endpoints par L = 1 hota hai, to wahan answer ratio test se kabhi nahi milta — alag test lagao.",
+        "Taylor coefficient me n! bhool jaana: cₙ = f⁽ⁿ⁾(a)/n!, sirf f⁽ⁿ⁾(a) nahi. e^(2x) me x³ ka coefficient 2³/3! = 4/3 hai, 8 nahi.",
+        "Series ko uske interval ke bahar use karna: ln(1 + x) ki series x = 2 par diverge karti hai, chahe ln 3 exist karta ho. Pehle |x| < R check karo."
+      ],
+      "revision": [
+        "R ratio test se; endpoints alag se check.",
+        "cₙ = f⁽ⁿ⁾(a)/n!.",
+        "sin, cos, eˣ: har x par; ln(1 + x): (−1, 1]; 1/(1 − x), (1 + x)ᵏ: |x| < 1.",
+        "|Rₙ| ≤ M|x − a|ⁿ⁺¹/(n + 1)!.",
+        "Alternating series me error ≤ pehla chhoda term.",
+        "(1 + x)ᵏ ≈ 1 + kx jab |x| ≪ 1."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w3-q1",
+          "question": "cos x ki Maclaurin series ke pehle teen non-zero terms kya hain?",
+          "options": [
+            "1 − x²/2 + x⁴/24",
+            "x − x³/6 + x⁵/120",
+            "1 + x²/2 + x⁴/24",
+            "1 − x²/2 + x⁴/4"
+          ],
+          "answer": 0,
+          "explanation": "cos x = 1 − x²/2! + x⁴/4! − ... = 1 − x²/2 + x⁴/24. x − x³/6 + x⁵/120 sin x ki series hai. Saare plus signs cosh x ke hain. x⁴/4 me 4! ki jagah 4 le liya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w3-q2",
+          "question": "Power series Σ (n = 1 se ∞) n·xⁿ/4ⁿ ka radius of convergence kya hai?",
+          "options": [
+            "1/4",
+            "1",
+            "4",
+            "∞"
+          ],
+          "answer": 2,
+          "explanation": "|aₙ₊₁/aₙ| = (n + 1)|x|/(4n) → |x|/4 < 1 ⇒ |x| < 4, to R = 4. Factor n ratio me 1 ki taraf jaata hai, radius ko nahi badalta. 1/4 tab aata hai jab |x|/4 < 1 ko |x| < 1/4 padh lo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w3-q3",
+          "question": "Σ (n = 1 se ∞) (x + 1)ⁿ/n² ka interval of convergence kya hai?",
+          "options": [
+            "(−2, 0)",
+            "[−2, 0]",
+            "[−2, 0)",
+            "(0, 2]"
+          ],
+          "answer": 1,
+          "explanation": "Ratio test se |x + 1| < 1, yaani −2 < x < 0, R = 1. x = 0 par Σ 1/n² (p = 2) converge; x = −2 par Σ (−1)ⁿ/n² absolutely converge. Dono endpoints shaamil ⇒ [−2, 0]. (−2, 0) endpoints check nahi karta; [−2, 0) n² ko n samajh leta hai; (0, 2] center ko −1 ki jagah +1 le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w3-q4",
+          "question": "e^(2x) ki Maclaurin series me x³ ka coefficient kya hai?",
+          "options": [
+            "2/3",
+            "8",
+            "1/6",
+            "4/3"
+          ],
+          "answer": 3,
+          "explanation": "eᵘ = Σ uⁿ/n! me u = 2x rakho: x³ wala term (2x)³/3! = 8x³/6, to coefficient 8/6 = 4/3. 8 me 3! bhool gaye; 1/6 me 2³ bhool gaye (eˣ ka coefficient); 2/3 me 2³ ki jagah 2·2 liya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w3-q5",
+          "question": "Altitude h par gravity g(h) = g₀(1 + h/R)⁻² hai, R = 6400 km. Space station h = 400 km par hai. Binomial (linear) approximation se g(h)/g₀ kitna aata hai?",
+          "options": [
+            "0.9375",
+            "0.875",
+            "0.8858",
+            "0.75"
+          ],
+          "answer": 1,
+          "explanation": "(1 + u)⁻² ≈ 1 − 2u, u = h/R = 400/6400 = 0.0625, to g/g₀ ≈ 1 − 0.125 = 0.875. 0.9375 = 1 − u me exponent −2 ka factor 2 bhool gaye. 0.8858 exact value (1/1.0625)² hai — wo approximation nahi; linear approx ka error yahan lagbhag 1% hai kyunki u bahut chhota nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w3-q6",
+          "question": "ln(1.2) ko ln(1 + x) ke degree 3 Maclaurin polynomial x − x²/2 + x³/3 se (x = 0.2) approximate karo. Approximation aur uska error bound kya hai?",
+          "options": [
+            "0.1827, error ≤ 0.0016",
+            "0.1800, error ≤ 0.0027",
+            "0.2227, error ≤ 0.0004",
+            "0.1827, error ≤ 0.0004"
+          ],
+          "answer": 3,
+          "explanation": "0.2 − 0.02 + 0.008/3 = 0.2 − 0.02 + 0.00267 = 0.1827. x = 0.2 par series alternating aur decreasing hai, to error ≤ agla term x⁴/4 = 0.0016/4 = 0.0004 (actual ln 1.2 = 0.18232, error ≈ 0.00035 ✓). 0.0016 me x⁴ ko 4 se divide karna bhool gaye. 0.1800 sirf degree 2 hai. 0.2227 me saare signs plus le liye.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "First-order ODEs: separable, exact and Bernoulli equations",
+      "summary": "Is week aap first-order ODEs ke chaar bade types solve karoge — separable, exact, integrating factor se exact banaye gaye equations, aur Bernoulli — aur pehchaanna seekhoge ki kaunsa method kis equation par lagta hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Separable equation**: dy/dx = g(x)·h(y). y wale terms ek taraf, x wale doosri taraf: ∫ dy/h(y) = ∫ g(x) dx + C. Answer aksar implicit hota hai (y akela nahi nikalta), aur constant C ek hi baar, integrate karne ke turant baad lagao.",
+        "**Khoye hue solutions**: h(y) se divide karte waqt maan liya ki h(y) ≠ 0. Jin y₀ par h(y₀) = 0 hai, y = y₀ (constant) bhi solution hai — jaise dy/dx = xy me y = 0. Initial condition y(0) = 0 ho to yahi sahi answer hai, formula wala nahi.",
+        "**Exact equation**: M(x, y) dx + N(x, y) dy = 0 exact hai agar ∂M/∂y = ∂N/∂x. Tab ek function F(x, y) hai jiska F_x = M aur F_y = N, aur solution F(x, y) = C. F nikalne ke liye M ko x me integrate karo, phir y ka bacha hua function g(y) N se match karke nikaalo.",
+        "**Integrating factor (non-exact ke liye)**: agar (M_y − N_x)/N sirf x ka function ho, to μ(x) = e^(∫(M_y − N_x)/N dx). Agar (N_x − M_y)/M sirf y ka function ho, to μ(y) = e^(∫(N_x − M_y)/M dy). μ se poori equation multiply karo, wo exact ban jaati hai. First-order linear ka e^(∫P dx) isi idea ka special case hai.",
+        "**Bernoulli equation**: y' + P(x)y = Q(x)yⁿ (n ≠ 0, 1). Non-linear hai, par substitution v = y¹⁻ⁿ use linear bana deta hai: v' + (1 − n)P v = (1 − n)Q. Phir linear wala integrating factor lagao aur aakhir me y = v^(1/(1 − n)) wapas likho.",
+        "**Method pehchaano**: (1) kya f(x)g(y) me tootta hai? separable. (2) kya y' + Py = Q hai? linear. (3) yⁿ extra hai? Bernoulli. (4) M dx + N dy form me M_y = N_x? exact; warna integrating factor try karo. Kai equations ek se zyada tareeke se solve hoti hain — sabse chhota raasta chuno.",
+        "**Existence aur uniqueness**: y' = f(x, y), y(x₀) = y₀ me agar f aur ∂f/∂y point ke aas-paas continuous hain, to ek hi solution hota hai. dy/dx = 3y^(2/3), y(0) = 0 me ∂f/∂y = 2y^(−1/3) zero par blow up karta hai — aur sach me y = 0 aur y = x³ dono solutions hain."
+      ],
+      "example": {
+        "problem": "(2xy + 3) dx + (x² + 4y) dy = 0 ko y(1) = 1 ke saath solve karo.",
+        "steps": [
+          "M = 2xy + 3, N = x² + 4y. M_y = 2x aur N_x = 2x — barabar, to equation **exact** hai.",
+          "F_x = M ⇒ F = ∫ (2xy + 3) dx = x²y + 3x + g(y).",
+          "F_y = x² + g'(y) ko N = x² + 4y ke barabar rakho ⇒ g'(y) = 4y ⇒ g(y) = 2y².",
+          "To F(x, y) = x²y + 3x + 2y², aur general solution x²y + 3x + 2y² = C.",
+          "y(1) = 1: 1 + 3 + 2 = 6 ⇒ C = 6.",
+          "Check: F_x = 2xy + 3 = M ✓, F_y = x² + 4y = N ✓.",
+          "Answer: **x²y + 3x + 2y² = 6** (implicit solution)."
+        ]
+      },
+      "mistakes": [
+        "Exact equation me F = ∫M dx + ∫N dy likh dena. Isse common terms (jaise x²y) do baar aa jaate hain. Sahi tareeka: ∫M dx lo, phir sirf g(y) N se nikaalo.",
+        "Bernoulli me substitution v = yⁿ ya v = y¹⁻ⁿ ka exponent galat lena. n = 3 ho to v = y⁻², aur v' = −2y⁻³y'. Aakhir me y par wapas jaana mat bhoolo.",
+        "Separable equation me C ko baad me exponent ke bahar galat jagah lagana: ln|y| = x²/2 + C ⇒ y = A·e^(x²/2), y = e^(x²/2) + C nahi."
+      ],
+      "revision": [
+        "Separable: ∫ dy/h(y) = ∫ g(x) dx.",
+        "Exact: M_y = N_x ⇒ F(x, y) = C.",
+        "(M_y − N_x)/N sirf x ka ⇒ μ(x) = e^∫.",
+        "Bernoulli yⁿ: v = y¹⁻ⁿ se linear.",
+        "h(y₀) = 0 wale constant solutions check karo."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w4-q1",
+          "question": "dy/dx = x·y, y(0) = 2 ka solution kya hai?",
+          "options": [
+            "y = 2eˣ",
+            "y = e^(x²/2) + 1",
+            "y = 2 + x²/2",
+            "y = 2e^(x²/2)"
+          ],
+          "answer": 3,
+          "explanation": "Separate karo: dy/y = x dx ⇒ ln|y| = x²/2 + C ⇒ y = A·e^(x²/2). y(0) = 2 ⇒ A = 2. 'e^(x²/2) + 1' me C ko exponent ke bahar plus kar diya — wo initial condition to satisfy karta hai par ODE nahi. 2eˣ me x ka integral x²/2 ki jagah x le liya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w4-q2",
+          "question": "Inme se kaunsi equation exact hai?",
+          "options": [
+            "y dx − x dy = 0",
+            "2xy dx + x² dy = 0",
+            "x dx − xy dy = 0",
+            "(x + y) dx + (y − x) dy = 0"
+          ],
+          "answer": 1,
+          "explanation": "2xy dx + x² dy: M_y = 2x, N_x = 2x, barabar ⇒ exact (F = x²y). y dx − x dy me M_y = 1, N_x = −1. x dx − xy dy me M_y = 0, N_x = −y. (x + y) dx + (y − x) dy me M_y = 1, N_x = −1. Sign par dhyan na dene se pehla aur aakhri option exact lagte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w4-q3",
+          "question": "Bernoulli equation y' + y = x·y³ ko linear banane ke liye kaunsa substitution lagega?",
+          "options": [
+            "v = y⁻²",
+            "v = y³",
+            "v = y⁻³",
+            "v = y²"
+          ],
+          "answer": 0,
+          "explanation": "n = 3, to v = y¹⁻ⁿ = y⁻². Isse v' = −2y⁻³y', aur equation ko −2y⁻³ se multiply karke v' − 2v = −2x milta hai — linear. v = y⁻³ me exponent −n le liya, 1 − n nahi. v = y³ ya y² se equation linear nahi banti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w4-q4",
+          "question": "(3xy + y²) dx + (x² + xy) dy = 0 exact nahi hai. Kaunsa integrating factor ise exact banayega?",
+          "options": [
+            "μ = y",
+            "μ = 1/x",
+            "μ = x",
+            "μ = x²"
+          ],
+          "answer": 2,
+          "explanation": "M_y = 3x + 2y, N_x = 2x + y. (M_y − N_x)/N = (x + y)/(x(x + y)) = 1/x, sirf x ka ⇒ μ = e^(∫dx/x) = x. Check: x se multiply karke M = 3x²y + xy², N = x³ + x²y, aur M_y = 3x² + 2xy = N_x ✓. 1/x tab aata hai jab exponent ka integral lena bhool ke (M_y − N_x)/N ko hi μ maan lo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w4-q5",
+          "question": "dy/dt = −2t·y², y(0) = 1 hai. y(2) kya hai?",
+          "options": [
+            "1/3",
+            "e⁻⁴",
+            "1/5",
+            "−1/3"
+          ],
+          "answer": 2,
+          "explanation": "dy/y² = −2t dt ⇒ −1/y = −t² + C. y(0) = 1 ⇒ C = −1, to 1/y = t² + 1 ⇒ y = 1/(1 + t²), y(2) = 1/5. e⁻⁴ tab aata hai jab y² ko y samajh ke linear decay ki tarah solve karo. 1/3 me C ka sign galat ho gaya (1/y = t² − 1).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w4-q6",
+          "question": "Bernoulli equation y' + y/x = x·y², y(1) = 1 (x > 0) solve karo. y(1.5) kya hai?",
+          "options": [
+            "4/3",
+            "3/4",
+            "−4/3",
+            "2/3"
+          ],
+          "answer": 0,
+          "explanation": "v = 1/y lo: v' − v/x = −x. Integrating factor 1/x: (v/x)' = −1 ⇒ v/x = −x + C ⇒ v = Cx − x². v(1) = 1 ⇒ C = 2, to y = 1/(2x − x²). x = 1.5 par 2x − x² = 3 − 2.25 = 0.75 ⇒ y = 4/3. 3/4 to v ki value hai — y = 1/v karna bhool gaye. −4/3 v' wali equation me sign ulta lene se (v = x² − 2x) aata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Modelling with first-order ODEs",
+      "summary": "Is week aap real systems ko first-order ODE me badalna seekhoge — exponential growth/decay, mixing tank, Newton's law of cooling, RL circuit, aur linear aur quadratic drag ke saath girti cheez ki terminal velocity.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Modelling recipe**: (1) unknown quantity aur uski unit chuno, (2) 'rate of change = rate in − rate out' likho, (3) initial condition daalo, (4) solve karo, (5) units aur long-time behaviour se answer check karo. Zyaadatar engineering models ka shape y' = −k(y − y∞) hota hai, jiska solution y = y∞ + (y₀ − y∞)e^(−kt).",
+        "**Exponential growth/decay**: y' = ky ⇒ y = y₀e^(kt). Decay (k < 0) me **half-life** t½ = ln 2/|k|, aur time constant τ = 1/|k| (ek τ me value e⁻¹ ≈ 36.8% reh jaati hai). Radioactive isotopes, capacitor discharge, battery self-discharge sab isi model me aate hain.",
+        "**Mixing problems**: tank me Q(t) amount of salt/contaminant. Rate in = (inflow concentration)×(inflow rate); rate out = (Q/V)×(outflow rate), kyunki well-mixed tank me concentration Q/V hai. Inflow aur outflow barabar ho to V constant rehta hai aur equation linear first-order banti hai.",
+        "**Newton's law of cooling**: dT/dt = −k(T − Tₐ), jahan Tₐ ambient temperature hai. Solution T = Tₐ + (T₀ − Tₐ)e^(−kt). Avionics box, brake disc ya engine ke parts ki cooling isi se estimate hoti hai — k do measurements se nikaalte hain.",
+        "**RL aur RC circuits**: series RL ko DC source V se jodo to L di/dt + Ri = V ⇒ i = (V/R)(1 − e^(−t/τ)), τ = L/R. Ek τ par current final value ka 63.2% hota hai. Yahi structure RC me τ = RC ke saath aata hai — maths same, sirf variables badle.",
+        "**Linear drag (dheemi speed)**: m dv/dt = mg − bv. Terminal velocity v_t = mg/b (jab dv/dt = 0), aur v = v_t(1 − e^(−t/τ)) jahan τ = m/b. Ye model chhote particles ya bahut dheemi speed par theek hai.",
+        "**Quadratic drag (tez speed)**: hawa me zyaadatar cheezon par drag ≈ cv², to m dv/dt = mg − cv². Terminal velocity v_t = √(mg/c), aur separable solve karke v(t) = v_t·tanh(gt/v_t). Parachute aur skydiver ki speed isi se design hoti hai — c badhao (bada canopy) to v_t ghatega.",
+        "**Equilibrium se sanity check**: kisi bhi model me y' = 0 rakhke steady state nikaalo — final temperature = Tₐ, final salt = inflow concentration × V, final current = V/R, final speed = v_t. Agar tumhara solution t → ∞ par is value par nahi jaata, to kahin sign ya constant galat hai."
+      ],
+      "example": {
+        "problem": "Ek avionics box 90°C par hai aur cabin 30°C par. 10 minute baad box 70°C par hai. Newton's law of cooling se: box 40°C par kab aayega?",
+        "steps": [
+          "Model: T(t) = 30 + (90 − 30)e^(−kt) = 30 + 60e^(−kt).",
+          "t = 10 par 70 = 30 + 60e^(−10k) ⇒ e^(−10k) = 40/60 = 2/3.",
+          "Isse k = ln(3/2)/10 ≈ 0.04055 per minute.",
+          "40°C ke liye: 40 = 30 + 60e^(−kt) ⇒ e^(−kt) = 1/6 ⇒ kt = ln 6.",
+          "t = ln 6/k = 10·ln 6/ln 1.5 = 10 × 1.7918/0.4055 ≈ 44.2 min.",
+          "Sanity check: pehle 10 min me 20°C gira, par agle 34 min me sirf 30°C — difference T − Tₐ chhota hone par cooling dheemi ho jaati hai ✓.",
+          "Answer: lagbhag **44.2 minute** par box 40°C tak thanda hoga."
+        ]
+      },
+      "mistakes": [
+        "Newton's cooling me ambient bhool ke T = T₀e^(−kt) likh dena. Isse temperature 0°C ki taraf jaata dikhega, cabin temperature ki taraf nahi. Hamesha (T − Tₐ) decay hota hai.",
+        "Mixing problem me outflow concentration ko inflow concentration maan lena. Bahar jaane wale liquid ka concentration tank ka current concentration Q/V hai.",
+        "Quadratic drag me linear wala formula lagana: v_t = mg/c nahi, √(mg/c) hai, aur v(t) exponential nahi balki tanh hai."
+      ],
+      "revision": [
+        "y' = −k(y − y∞) ⇒ y = y∞ + (y₀ − y∞)e^(−kt).",
+        "Half-life t½ = ln 2/k; time constant τ = 1/k.",
+        "Mixing: rate out = (Q/V)·outflow rate.",
+        "RL: τ = L/R; RC: τ = RC.",
+        "Linear drag v_t = mg/b; quadratic drag v_t = √(mg/c), v = v_t tanh(gt/v_t)."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w5-q1",
+          "question": "Ek battery ka charge Q' = −0.1·Q (t hours me) se self-discharge hota hai. Half-life kitni hai?",
+          "options": [
+            "5 h",
+            "6.93 h",
+            "10 h",
+            "0.069 h"
+          ],
+          "answer": 1,
+          "explanation": "Q = Q₀e^(−0.1t). Aadha hone par e^(−0.1t) = 1/2 ⇒ t = ln 2/0.1 ≈ 6.93 h. 10 h to time constant τ = 1/k hai (jab 36.8% bachta hai, 50% nahi). 0.069 h me ln 2 ko 0.1 se multiply kar diya, divide nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w5-q2",
+          "question": "2 kg ka sensor pod linear drag ke saath girta hai: m dv/dt = mg − bv, b = 0.5 N·s/m, g = 9.8 m/s². Terminal velocity kya hai?",
+          "options": [
+            "39.2 m/s",
+            "9.8 m/s",
+            "2.45 m/s",
+            "19.6 m/s"
+          ],
+          "answer": 0,
+          "explanation": "Terminal par dv/dt = 0 ⇒ mg = bv ⇒ v_t = mg/b = 2 × 9.8/0.5 = 39.2 m/s. 2.45 m/s me fraction ulta (bg/m) le liya. 19.6 to weight mg (newton me) hai, b se divide karna bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w5-q3",
+          "question": "100 L ke tank me shuru me saaf paani hai. 2 g/L wala brine 5 L/min se andar aata hai, aur well-mixed solution 5 L/min se bahar jaata hai. 20 minute baad tank me kitna salt hai?",
+          "options": [
+            "200 g",
+            "73.6 g",
+            "126.4 g",
+            "100 g"
+          ],
+          "answer": 2,
+          "explanation": "Q' = 2·5 − (Q/100)·5 = 10 − Q/20, Q(0) = 0 ⇒ Q = 200(1 − e^(−t/20)). t = 20 par 200(1 − e⁻¹) ≈ 126.4 g. 200 g long-run (t → ∞) value hai. 73.6 g = 200e⁻¹, yaani (1 − e⁻¹) ki jagah e⁻¹ le liya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w5-q4",
+          "question": "Ek power resistor 100°C par hai aur hawa 20°C par. Cooling constant k = 0.05 per min hai. 20 minute baad resistor ka temperature kya hoga?",
+          "options": [
+            "29.4 °C",
+            "36.8 °C",
+            "60.0 °C",
+            "49.4 °C"
+          ],
+          "answer": 3,
+          "explanation": "T = 20 + 80e^(−0.05t). t = 20 par e⁻¹ ≈ 0.3679, to T ≈ 20 + 29.4 = 49.4 °C. 29.4 °C me ambient 20 jodna bhool gaye. 36.8 °C = 100e⁻¹ ambient ko poori tarah ignore karta hai (T = T₀e^(−kt)).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w5-q5",
+          "question": "Series RL circuit: L = 0.5 H, R = 10 Ω, aur t = 0 par 12 V DC source joda gaya (i(0) = 0). t = 0.05 s par current kitna hai?",
+          "options": [
+            "0.76 A",
+            "1.2 A",
+            "0.44 A",
+            "0.024 A"
+          ],
+          "answer": 0,
+          "explanation": "τ = L/R = 0.5/10 = 0.05 s, final current V/R = 1.2 A. i(τ) = 1.2(1 − e⁻¹) ≈ 1.2 × 0.632 = 0.76 A. 1.2 A steady-state hai, jo sirf kai τ baad aata hai. 0.44 A = 1.2e⁻¹ decay wala formula hai, charging wala nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w5-q6",
+          "question": "80 kg ka skydiver quadratic drag ke saath girta hai: m dv/dt = mg − cv², c = 0.25 kg/m, g = 9.8 m/s², v(0) = 0. Terminal velocity ka aadha (v_t/2) kitne second me pahunchega?",
+          "options": [
+            "2.86 s",
+            "3.14 s",
+            "3.96 s",
+            "5.71 s"
+          ],
+          "answer": 1,
+          "explanation": "v_t = √(mg/c) = √(80 × 9.8/0.25) = √3136 = 56 m/s. v = v_t·tanh(gt/v_t) = 28 ⇒ tanh(gt/56) = 0.5 ⇒ gt/56 = tanh⁻¹(0.5) ≈ 0.5493 ⇒ t ≈ 0.5493 × 56/9.8 ≈ 3.14 s. 2.86 s = 28/9.8 drag ignore karke free fall hai. 3.96 s linear-drag wala ln 2·(v_t/g) hai — galat model. 5.71 s = v_t/g.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Second-order linear ODEs and damping",
+      "summary": "Is week aap homogeneous second-order linear ODEs ki theory (superposition, Wronskian, Abel ka formula) samjhoge, characteristic equation ke teeno cases solve karoge, aur mass-spring-damper ko ωₙ aur damping ratio ζ se underdamped, critical ya overdamped classify karoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Linear homogeneous second-order**: y'' + p(t)y' + q(t)y = 0. Agar y₁ aur y₂ solutions hain to c₁y₁ + c₂y₂ bhi solution hai (**superposition**). General solution ke liye do 'alag' (linearly independent) solutions chahiye, aur do initial conditions y(t₀), y'(t₀) se c₁, c₂ fix hote hain.",
+        "**Wronskian**: W(y₁, y₂) = y₁y₂' − y₂y₁'. Agar kisi point par W ≠ 0 to y₁, y₂ **fundamental set** hain (independent), aur unse har solution ban sakta hai. Jaise W(cos ωt, sin ωt) = ω ≠ 0. Agar y₂ = k·y₁ to W = 0 — ek hi solution do baar gina.",
+        "**Abel's formula**: y'' + p(t)y' + q(t)y = 0 ke kinhi bhi do solutions ka W(t) = C·e^(−∫p dt). Matlab Wronskian ya to har jagah zero hai ya kahin zero nahi — aur use nikaalne ke liye solutions jaanne ki zaroorat bhi nahi, sirf p(t) chahiye.",
+        "**Constant coefficients**: ay'' + by' + cy = 0, characteristic ar² + br + c = 0. Do real alag roots ⇒ c₁e^(r₁t) + c₂e^(r₂t). Repeated root r ⇒ (c₁ + c₂t)e^(rt) (doosra solution t·e^(rt) reduction of order se aata hai). Complex α ± iβ ⇒ e^(αt)(c₁ cos βt + c₂ sin βt).",
+        "**Mass-spring-damper**: m x'' + c x' + k x = 0 (landing gear ka shock strut, seat suspension, accelerometer ka proof mass). Divide by m: x'' + 2ζωₙx' + ωₙ²x = 0, jahan **natural frequency** ωₙ = √(k/m) aur **damping ratio** ζ = c/(2√(km)). Critical damping coefficient c_c = 2√(km), aur ζ = c/c_c.",
+        "**Damping regimes**: ζ < 1 **underdamped** — decaying oscillation, damped frequency ω_d = ωₙ√(1 − ζ²). ζ = 1 **critically damped** — sabse tez wapas aata hai bina overshoot ke. ζ > 1 **overdamped** — do real negative roots, dheere-dheere bina oscillation ke settle. ζ = 0 me pure oscillation cos ωₙt.",
+        "**Design intuition**: aircraft landing gear ya door closer ko aksar ζ ≈ 0.3–0.7 ke aas-paas rakhte hain — thoda overshoot, par jaldi settle. Measuring instruments (galvanometer, accelerometer) ke liye ζ ≈ 0.7 popular hai. Envelope e^(−ζωₙt) batata hai ki oscillation kitni jaldi marti hai."
+      ],
+      "example": {
+        "problem": "Ek drone ke landing leg ka model: m = 100 kg, k = 10000 N/m, c = 600 N·s/m. ωₙ, ζ, regime aur damped frequency nikalo, aur characteristic roots likho.",
+        "steps": [
+          "ωₙ = √(k/m) = √(10000/100) = 10 rad/s.",
+          "c_c = 2√(km) = 2√(10⁶) = 2000 N·s/m, to ζ = c/c_c = 600/2000 = 0.3.",
+          "ζ < 1 ⇒ **underdamped**: leg thoda oscillate karke settle hoga.",
+          "ω_d = ωₙ√(1 − ζ²) = 10√0.91 ≈ 9.54 rad/s.",
+          "Characteristic: 100r² + 600r + 10000 = 0 ⇒ r² + 6r + 100 = 0 ⇒ r = −3 ± i√91 ≈ −3 ± 9.54i.",
+          "Real part −3 = −ζωₙ envelope deta hai: x(t) = e^(−3t)(c₁ cos 9.54t + c₂ sin 9.54t).",
+          "Answer: **ωₙ = 10 rad/s, ζ = 0.3 (underdamped), ω_d ≈ 9.54 rad/s**, roots −3 ± 9.54i."
+        ]
+      },
+      "mistakes": [
+        "Repeated root par c₁e^(rt) + c₂e^(rt) likh dena. Ye asal me ek hi solution hai (W = 0). Doosra solution t·e^(rt) hai.",
+        "Complex roots α ± iβ me e^(βt) aur cos(αt) ulta lagana. Real part α decay/growth deta hai (exponent me), imaginary part β frequency deta hai (cos/sin me).",
+        "ζ nikaalte waqt c/(2km) ya c/√(km) likhna. Sahi formula ζ = c/(2√(km)) hai — dimensions check karo, ζ unitless hona chahiye."
+      ],
+      "revision": [
+        "W = y₁y₂' − y₂y₁' ≠ 0 ⇒ fundamental set.",
+        "Abel: W = C·e^(−∫p dt).",
+        "Roots: real alag / repeated (t·e^(rt)) / complex e^(αt)(cos, sin).",
+        "ωₙ = √(k/m), ζ = c/(2√(km)), c_c = 2√(km).",
+        "ζ < 1 under, = 1 critical, > 1 over; ω_d = ωₙ√(1 − ζ²)."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w6-q1",
+          "question": "y'' − 5y' + 6y = 0 ka general solution kya hai?",
+          "options": [
+            "c₁e^(−2x) + c₂e^(−3x)",
+            "c₁e^(2x) + c₂e^(−3x)",
+            "c₁e^(2x) + c₂e^(3x)",
+            "(c₁ + c₂x)e^(2x)"
+          ],
+          "answer": 2,
+          "explanation": "Characteristic r² − 5r + 6 = (r − 2)(r − 3) = 0 ⇒ r = 2, 3, dono positive. Negative roots tab aate jab factors (r + 2)(r + 3) padh lo — yaani −5 ka sign bhool gaye. (c₁ + c₂x)e^(2x) sirf repeated root ke liye hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w6-q2",
+          "question": "y₁ = eˣ aur y₂ = x·eˣ ka Wronskian W(y₁, y₂) kya hai?",
+          "options": [
+            "0",
+            "x·e^(2x)",
+            "eˣ",
+            "e^(2x)"
+          ],
+          "answer": 3,
+          "explanation": "y₁' = eˣ, y₂' = eˣ + xeˣ. W = eˣ(eˣ + xeˣ) − xeˣ·eˣ = e^(2x). Ye kabhi zero nahi, to dono independent hain — isliye repeated root me x·eˣ doosra solution banta hai. 0 wala trap sochta hai 'dono me eˣ hai to dependent' — par x se multiply karna constant multiple nahi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w6-q3",
+          "question": "m = 2 kg, k = 50 N/m, c = 8 N·s/m wale mass-spring-damper ka damping ratio ζ aur regime kya hai?",
+          "options": [
+            "ζ = 0.08, underdamped",
+            "ζ = 0.4, underdamped",
+            "ζ = 0.4, overdamped",
+            "ζ = 2.5, overdamped"
+          ],
+          "answer": 1,
+          "explanation": "ζ = c/(2√(km)) = 8/(2√100) = 8/20 = 0.4 < 1 ⇒ underdamped (ωₙ = 5 rad/s). 0.08 = c/(2k) me √ aur m chhoot gaye. 2.5 = 1/0.4, fraction ulta. 'Overdamped' ζ < 1 ka matlab ulta padhna hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w6-q4",
+          "question": "m = 4 kg aur k = 100 N/m wale system ko critically damped banane ke liye damping coefficient c kitna chahiye?",
+          "options": [
+            "40 N·s/m",
+            "20 N·s/m",
+            "10 N·s/m",
+            "80 N·s/m"
+          ],
+          "answer": 0,
+          "explanation": "Critical: c² = 4km ⇒ c = 2√(km) = 2√400 = 40 N·s/m. 20 = √(km) me 2 bhool gaye. 10 = √(k/m)·2 to ωₙ jaisa number hai, damping nahi. 80 = 4√(km): c² = 4km se 4 ko bina square root liye bahar nikaal diya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w6-q5",
+          "question": "y'' + 4y' + 13y = 0, y(0) = 1, y'(0) = 0 ka solution kya hai?",
+          "options": [
+            "e^(−2t)(cos 3t + 2 sin 3t)",
+            "e^(−3t)(cos 2t + (3/2) sin 2t)",
+            "e^(2t)(cos 3t − (2/3) sin 3t)",
+            "e^(−2t)(cos 3t + (2/3) sin 3t)"
+          ],
+          "answer": 3,
+          "explanation": "r² + 4r + 13 = 0 ⇒ r = −2 ± 3i. y = e^(−2t)(c₁ cos 3t + c₂ sin 3t). y(0) = c₁ = 1. y'(0) = −2c₁ + 3c₂ = 0 ⇒ c₂ = 2/3. e^(−3t)(cos 2t ...) real aur imaginary parts ko ulta laga deta hai. c₂ = 2 tab aata hai jab y'(0) me sin ke derivative ka factor 3 bhool jao.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w6-q6",
+          "question": "t > 0 par y'' + (2/t)y' + q(t)y = 0 ke do solutions ka Wronskian W(1) = 3 hai. Abel's formula se W(2) kya hai?",
+          "options": [
+            "12",
+            "3/2",
+            "3/4",
+            "3"
+          ],
+          "answer": 2,
+          "explanation": "W = C·e^(−∫(2/t)dt) = C·e^(−2 ln t) = C/t². W(1) = 3 ⇒ C = 3, to W(2) = 3/4. 12 = 3t² me exponent ka minus sign bhool gaye. 3/2 = 3/t me ∫(2/t) ka factor 2 chhoot gaya. Dhyan do: q(t) ka answer par koi asar nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Forced oscillations: non-homogeneous second-order ODEs",
+      "summary": "Is week aap ay'' + by' + cy = g(t) ka particular solution undetermined coefficients (modification rule ke saath) aur variation of parameters se nikaloge, aur forced mass-spring-damper me steady-state amplitude, resonance aur beats samjhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Structure**: y = y_h + y_p, jahan y_h homogeneous equation ka general solution (do constants) aur y_p koi bhi ek particular solution hai. Agar g = g₁ + g₂ to y_p = y_p1 + y_p2 — har forcing ka hissa alag nikaal ke jodo. Initial conditions hamesha poore y par lagao, sirf y_h par nahi.",
+        "**Undetermined coefficients — guess table**: g polynomial (degree n) ⇒ poora degree-n polynomial guess (saare lower terms samet). g = e^(kt) ⇒ Ae^(kt). g = cos ωt ya sin ωt ⇒ A cos ωt + B sin ωt (dono, chahe g me sirf ek ho). Products ke liye guesses ka product: t·e^(2t) ⇒ (At + B)e^(2t).",
+        "**Modification rule**: agar guess ka koi term y_h ka solution hai to guess ko t se multiply karo; agar ab bhi hai (double root) to t² se. y'' − 3y' + 2y = e^(2t) me r = 1, 2 hain, to Ae^(2t) kaam nahi karega — Ate^(2t) lo. Pehle y_h nikaalna isi liye zaroori hai.",
+        "**Variation of parameters**: jab g sec t, tan t, ln t, eᵗ/t jaisa ho (table me nahi), to y_p = u₁y₁ + u₂y₂ lo, jahan u₁' = −y₂g/W aur u₂' = y₁g/W, W = Wronskian. Shart: equation standard form y'' + py' + qy = g me ho (y'' ka coefficient 1) — warna pehle divide karo.",
+        "**Forced damped oscillator**: m x'' + c x' + k x = F₀ cos ωt. Transient (y_h) e^(−ζωₙt) se mar jaata hai; bachta hai steady state X cos(ωt − φ), jahan X = F₀/√((k − mω²)² + (cω)²) aur tan φ = cω/(k − mω²). Low ω par X ≈ F₀/k (static deflection).",
+        "**Resonance**: bina damping ke ω = ωₙ par guess y_h me hi hai, to modification rule se x_p = (F₀/(2mωₙ))·t·sin ωₙt — amplitude t ke saath linearly badhta jaata hai. Damping ho to amplitude finite rehta hai, aur peak ω_r = ωₙ√(1 − 2ζ²) par aata hai (ζ < 1/√2). Wing flutter, engine vibration aur RLC tuning sab isi ki kahani hain.",
+        "**Beats**: undamped system ko ωₙ ke kareeb (par barabar nahi) ω se force karo, x(0) = x'(0) = 0, to x ∝ cos ωt − cos ωₙt = 2 sin((ωₙ − ω)t/2)·sin((ωₙ + ω)t/2). Tez oscillation ka amplitude dheere-dheere upar-neeche hota hai — do kareebi frequencies wale propellers ki 'wah-wah' awaaz yahi hai."
+      ],
+      "example": {
+        "problem": "Variation of parameters se y'' + y = sec t (−π/2 < t < π/2) ka particular solution nikalo.",
+        "steps": [
+          "Homogeneous: r² + 1 = 0 ⇒ y₁ = cos t, y₂ = sin t. W = cos t·cos t − sin t·(−sin t) = 1.",
+          "Equation pehle se standard form me hai, g = sec t.",
+          "u₁' = −y₂g/W = −sin t·sec t = −tan t ⇒ u₁ = ln|cos t|.",
+          "u₂' = y₁g/W = cos t·sec t = 1 ⇒ u₂ = t.",
+          "y_p = u₁y₁ + u₂y₂ = cos t·ln|cos t| + t sin t.",
+          "Check: y_p' = −sin t·ln|cos t| − sin t + sin t + t cos t = −sin t·ln|cos t| + t cos t; y_p'' = −cos t·ln|cos t| + sin²t/cos t + cos t − t sin t; y_p'' + y_p = sin²t/cos t + cos t = 1/cos t = sec t ✓.",
+          "Answer: **y_p = cos t·ln|cos t| + t sin t**, aur general solution y = c₁ cos t + c₂ sin t + y_p."
+        ]
+      },
+      "mistakes": [
+        "g = 3 cos t par sirf A cos t guess karna. Damping (y' term) ho to sin bhi aata hai, isliye hamesha A cos ωt + B sin ωt lo; jahan B zero aana hai, wo calculation khud bata degi.",
+        "Modification rule bhoolna: guess y_h me ho to substitute karne par 0 = g jaisa contradiction milta hai. Ise 'no solution' mat samjho — t se multiply karo.",
+        "Variation of parameters me u₁' ka minus sign bhoolna, ya y'' ka coefficient 1 kiye bina formula lagana (2y'' + ... = g me g/2 use karna hai)."
+      ],
+      "revision": [
+        "y = y_h + y_p; ICs poore y par.",
+        "cos/sin forcing ⇒ A cos ωt + B sin ωt.",
+        "Guess y_h me ho ⇒ × t (double root ⇒ × t²).",
+        "u₁' = −y₂g/W, u₂' = y₁g/W.",
+        "X = F₀/√((k − mω²)² + (cω)²); undamped resonance ⇒ t sin ωₙt growth."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w7-q1",
+          "question": "y'' + 2y' + 5y = 10 ka ek particular solution kya hai?",
+          "options": [
+            "y_p = 2",
+            "y_p = 10",
+            "y_p = 5",
+            "y_p = 1/2"
+          ],
+          "answer": 0,
+          "explanation": "Constant guess y_p = A: y_p' = y_p'' = 0, to 5A = 10 ⇒ A = 2. 10 me y ka coefficient 5 se divide karna bhool gaye. 1/2 me fraction ulta (5/10). Constant r = 0 root nahi hai (r² + 2r + 5 = 0 ke roots −1 ± 2i), to modification ki zaroorat nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w7-q2",
+          "question": "y'' − 3y' + 2y = 5e^(2t) ke liye undetermined coefficients ka sahi trial form kya hai?",
+          "options": [
+            "Ae^(2t)",
+            "Ate^(2t)",
+            "At²e^(2t)",
+            "(At + B)e^(2t)"
+          ],
+          "answer": 1,
+          "explanation": "Characteristic r² − 3r + 2 = (r − 1)(r − 2) ⇒ r = 1, 2. e^(2t) already y_h me hai (simple root), to ek baar t se multiply: Ate^(2t). Ae^(2t) substitute karne par 0 = 5e^(2t) aata hai. t² sirf double root par lagta. (At + B)e^(2t) ka B part phir se y_h hai — bekaar.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w7-q3",
+          "question": "y'' + 4y = 3 cos t ka particular solution kya hai?",
+          "options": [
+            "cos t + sin t",
+            "(3/5) cos t",
+            "−cos t",
+            "cos t"
+          ],
+          "answer": 3,
+          "explanation": "y_p = A cos t + B sin t: y_p'' = −A cos t − B sin t, to (−A + 4A) cos t + 3B sin t = 3 cos t ⇒ A = 1, B = 0, y_p = cos t. (3/5) me ω² ka sign galat (4 + 1). −cos t me 3/(1 − 4) — y'' ka sign ulta le liya. y' term nahi hai, isliye B = 0 aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w7-q4",
+          "question": "Undamped system y'' + 9y = 6 sin 3t (resonance) ka particular solution kya hai?",
+          "options": [
+            "(2/3) sin 3t",
+            "t sin 3t",
+            "−t cos 3t",
+            "−t sin 3t"
+          ],
+          "answer": 2,
+          "explanation": "Forcing frequency 3 = ωₙ, to guess t(A cos 3t + B sin 3t). Substitute karne par −6A sin 3t + 6B cos 3t = 6 sin 3t ⇒ A = −1, B = 0 ⇒ y_p = −t cos 3t (amplitude t ke saath badhta hai). (2/3) sin 3t = 6/9 sin 3t resonance ignore karta hai — wo to y_h ka hissa hai aur 0 deta hai. t sin 3t aur −t sin 3t me cos/sin ka switch nahi hua.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w7-q5",
+          "question": "x'' + 2x' + 5x = 10 cos t ke steady-state response ka amplitude kya hai?",
+          "options": [
+            "5/2",
+            "√5",
+            "2",
+            "5/3"
+          ],
+          "answer": 1,
+          "explanation": "Yahan m = 1, c = 2, k = 5, ω = 1, F₀ = 10. X = F₀/√((k − mω²)² + (cω)²) = 10/√(4² + 2²) = 10/√20 = √5 ≈ 2.24. 5/2 = 10/4 damping ignore karta hai. 2 = F₀/k static deflection hai (ω = 0 wala). 5/3 = 10/(4 + 2) me squares ka root lene ki jagah seedha jod diya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w7-q6",
+          "question": "Variation of parameters se y'' − 2y' + y = eᵗ/t (t > 0) ka particular solution kya hai?",
+          "options": [
+            "t·eᵗ·ln t",
+            "eᵗ·ln t",
+            "eᵗ/t",
+            "t²·eᵗ"
+          ],
+          "answer": 0,
+          "explanation": "r = 1 double root ⇒ y₁ = eᵗ, y₂ = teᵗ, W = e^(2t). u₁' = −y₂g/W = −1 ⇒ u₁ = −t; u₂' = y₁g/W = 1/t ⇒ u₂ = ln t. y_p = −teᵗ + teᵗ ln t, aur −teᵗ to y_h ka hissa hai, use chhod do ⇒ y_p = teᵗ ln t. eᵗ ln t me u₂ ko y₂ = teᵗ ki jagah eᵗ se multiply kar diya. eᵗ/t to forcing hi hai — undetermined coefficients wali 'g jaisa guess' aadat.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Vectors in 3D, lines and planes",
+      "summary": "Is week aap 3D vectors ke dot aur cross product, projections, work aur torque, scalar triple product, aur space me lines aur planes ki equations aur distances seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**3D vectors**: a = (a₁, a₂, a₃) = a₁i + a₂j + a₃k. Magnitude |a| = √(a₁² + a₂² + a₃²), unit vector â = a/|a|. Do points P, Q ke beech vector PQ = Q − P (end minus start). Force, velocity, wind aur displacement sab isi bhasha me likhe jaate hain.",
+        "**Dot product**: a·b = a₁b₁ + a₂b₂ + a₃b₃ = |a||b| cos θ. Result ek scalar hai. a·b = 0 ⇔ perpendicular, a·b > 0 ⇒ acute angle, < 0 ⇒ obtuse. **Work** W = F·d — sirf force ka wo hissa kaam karta hai jo displacement ki direction me hai.",
+        "**Projection**: b ki direction me a ka scalar component comp_b a = (a·b)/|b|, aur vector projection proj_b a = ((a·b)/|b|²)·b. Aircraft par lift aur drag isi tarah resolve hote hain — relative wind ki direction me component drag, perpendicular lift.",
+        "**Cross product**: a × b = (a₂b₃ − a₃b₂, a₃b₁ − a₁b₃, a₁b₂ − a₂b₁), determinant se yaad rakho. Ye a aur b dono ke perpendicular hai (right-hand rule), |a × b| = |a||b| sin θ = parallelogram ka area. b × a = −(a × b). **Torque** τ = r × F — bolt ya control surface hinge par moment.",
+        "**Scalar triple product**: a·(b × c) = 3×3 determinant jiski rows a, b, c hain. |a·(b × c)| = parallelepiped ka volume. Zero ho to teeno vectors **coplanar** hain — ek hi plane me.",
+        "**Lines in 3D**: point r₀ aur direction v se r(t) = r₀ + t·v, yaani x = x₀ + at, y = y₀ + bt, z = z₀ + ct. Symmetric form (x − x₀)/a = (y − y₀)/b = (z − z₀)/c. Do lines parallel (v multiples), intersecting, ya **skew** (na parallel, na milti) ho sakti hain — 3D me teesra case naya hai.",
+        "**Planes**: normal n = (a, b, c) aur point P₀ se a(x − x₀) + b(y − y₀) + c(z − z₀) = 0, yaani ax + by + cz = d. Teen points diye hon to do edge vectors ka cross product normal deta hai. Point (x₁, y₁, z₁) se plane ki distance = |ax₁ + by₁ + cz₁ − d|/√(a² + b² + c²). Do planes ka angle unke normals ka angle hai."
+      ],
+      "example": {
+        "problem": "Points P(1, 0, 2), Q(2, 1, 0) aur R(0, 3, 1) se guzarne wale plane ki equation nikalo.",
+        "steps": [
+          "Edge vectors: PQ = Q − P = (1, 1, −2), PR = R − P = (−1, 3, −1).",
+          "Normal n = PQ × PR = (1·(−1) − (−2)·3, (−2)(−1) − 1·(−1), 1·3 − 1·(−1)) = (5, 3, 4).",
+          "Point P se: 5(x − 1) + 3(y − 0) + 4(z − 2) = 0.",
+          "Simplify: 5x + 3y + 4z = 5 + 8 = 13.",
+          "Check Q: 10 + 3 + 0 = 13 ✓. Check R: 0 + 9 + 4 = 13 ✓.",
+          "Answer: **5x + 3y + 4z = 13**."
+        ]
+      },
+      "mistakes": [
+        "Cross product ke middle component ka sign galat lena. Determinant se karo to j wale term me minus aata hai: −(a₁b₃ − a₃b₁) = a₃b₁ − a₁b₃ — formula ko component-by-component check karo.",
+        "Scalar projection aur vector projection mix karna: (a·b)/|b| ek number hai, (a·b)/|b|² × b ek vector. Aur b par projection me |b| se divide karo, |a| se nahi.",
+        "Point-to-plane distance me plane ko ax + by + cz = d form me laaye bina constant galat lena, ya √(a² + b² + c²) se divide karna bhool jaana."
+      ],
+      "revision": [
+        "a·b = |a||b| cos θ; a·b = 0 ⇔ perpendicular.",
+        "|a × b| = area; a × b ⊥ a, b; b × a = −a × b.",
+        "comp_b a = (a·b)/|b|.",
+        "a·(b × c) = 0 ⇔ coplanar.",
+        "Plane: n·(r − r₀) = 0; distance |ax₁ + by₁ + cz₁ − d|/|n|."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w8-q1",
+          "question": "a = (1, 1, 0) aur b = (0, 1, 1) ke beech ka angle kya hai?",
+          "options": [
+            "30°",
+            "45°",
+            "90°",
+            "60°"
+          ],
+          "answer": 3,
+          "explanation": "a·b = 0 + 1 + 0 = 1, |a| = |b| = √2, to cos θ = 1/2 ⇒ θ = 60°. 90° tab sochte hain jab lagta hai 'alag axes par hain' — par dono ka y-component common hai. 45° me |a||b| = 2 ki jagah √2 le liya (cos θ = 1/√2).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w8-q2",
+          "question": "Ek drone par constant force F = (3, −2, 5) N lagta hai jab wo (1, 0, 0) m se (4, 2, 1) m tak jaata hai. Force ne kitna work kiya?",
+          "options": [
+            "10 J",
+            "18 J",
+            "13 J",
+            "0 J"
+          ],
+          "answer": 0,
+          "explanation": "d = (4, 2, 1) − (1, 0, 0) = (3, 2, 1). W = F·d = 9 − 4 + 5 = 10 J. 18 J me −2·2 ka minus sign ignore kiya. 13 J = F·(4, 2, 1) me displacement ki jagah end point se dot kar diya — hamesha pehle d = end − start nikaalo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w8-q3",
+          "question": "(1, 2, 3) × (4, 5, 6) kya hai?",
+          "options": [
+            "(3, −6, 3)",
+            "(−3, −6, −3)",
+            "(−3, 6, −3)",
+            "(4, 10, 18)"
+          ],
+          "answer": 2,
+          "explanation": "(2·6 − 3·5, 3·4 − 1·6, 1·5 − 2·4) = (12 − 15, 12 − 6, 5 − 8) = (−3, 6, −3). Check: (−3, 6, −3)·(1, 2, 3) = −3 + 12 − 9 = 0 ✓. (3, −6, 3) to b × a hai (order ulta). (−3, −6, −3) me middle component ka sign galat. (4, 10, 18) component-wise product hai, cross product nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w8-q4",
+          "question": "a = (3, 4, 0) ka b = (1, 2, 2) ki direction me scalar component (comp_b a) kya hai?",
+          "options": [
+            "11/9",
+            "11/3",
+            "11/5",
+            "11"
+          ],
+          "answer": 1,
+          "explanation": "a·b = 3 + 8 + 0 = 11, |b| = √(1 + 4 + 4) = 3, to comp_b a = 11/3. 11/9 = (a·b)/|b|² vector projection ka coefficient hai, component nahi. 11/5 me |a| = 5 se divide kiya — wo b ka a par component hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w8-q5",
+          "question": "Point (1, 2, 3) ki plane 2x − y + 2z = 10 se distance kya hai?",
+          "options": [
+            "4/3",
+            "4/9",
+            "4",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "|2·1 − 2 + 2·3 − 10|/√(4 + 1 + 4) = |−4|/3 = 4/3. 4 me |n| = 3 se divide karna bhool gaye. 4/9 me |n|² se divide kiya. 2 = 6/3 me plane ka constant 10 ghatana bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w8-q6",
+          "question": "k ki kis value par vectors (1, 2, k), (2, 0, 1) aur (0, 1, 3) coplanar hain?",
+          "options": [
+            "13",
+            "−11/2",
+            "6",
+            "13/2"
+          ],
+          "answer": 3,
+          "explanation": "Coplanar ⇔ scalar triple product = 0. Determinant = 1(0·3 − 1·1) − 2(2·3 − 1·0) + k(2·1 − 0·0) = −1 − 12 + 2k. 2k − 13 = 0 ⇒ k = 13/2. −11/2 tab aata hai jab doosre term ka minus (cofactor sign) bhool jao: −1 + 12 + 2k = 0. 13 me 2k ka 2 chhoot gaya.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Vector-valued functions and motion along curves",
+      "summary": "Is week aap space curves ko r(t) se describe karoge, velocity, speed aur acceleration nikaloge, acceleration integrate karke trajectory banaoge, arc length nikaloge, aur curvature se samjhoge ki curve kitna tez mudta hai.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Vector-valued function**: r(t) = (x(t), y(t), z(t)) har time t par ek point deta hai — jaise ek aircraft ya satellite ka path. Limit, continuity aur derivative sab component-wise: r'(t) = (x'(t), y'(t), z'(t)).",
+        "**Velocity, speed, acceleration**: v(t) = r'(t) curve ka tangent vector hai, speed = |v(t)| (scalar), aur a(t) = r''(t). Unit tangent T = v/|v|. Speed constant ho tab bhi acceleration zero nahi hota agar direction badal rahi ho — circular motion me a center ki taraf hota hai.",
+        "**Differentiation rules**: (u·v)' = u'·v + u·v' aur (u × v)' = u' × v + u × v' (cross product me order mat badlo). Ek useful result: agar |r(t)| constant hai (jaise circle ya sphere par motion) to r·r' = 0, yaani velocity position ke perpendicular hai.",
+        "**Integrate karke trajectory**: a(t) diya ho to v(t) = v(0) + ∫a dt, r(t) = r(0) + ∫v dt. Constant gravity a = (0, 0, −g) ke saath r(t) = r₀ + v₀t + (0, 0, −gt²/2) — projectile ya air-dropped payload ka path. Har integration me ek vector constant aata hai, initial conditions se fix karo.",
+        "**Arc length**: t = a se b tak curve ki length L = ∫ₐᵇ |r'(t)| dt = ∫ √(x'² + y'² + z'²) dt. Helix (R cos t, R sin t, ct) ki speed constant √(R² + c²) hai, to ek chakkar ki length 2π√(R² + c²).",
+        "**Curvature**: κ batata hai curve direction kitni tezi se badalta hai. κ = |r' × r''|/|r'|³. Plane curve y = f(x) ke liye κ = |f''|/(1 + f'²)^(3/2). Radius R ke circle ki κ = 1/R, aur **radius of curvature** ρ = 1/κ. Straight line ki κ = 0.",
+        "**Acceleration ke components**: a = a_T·T + a_N·N, jahan a_T = d|v|/dt (speed badalne se) aur a_N = κ|v|² (direction badalne se). Constant speed par turn karta aircraft sirf a_N = v²/ρ mehsoos karta hai — yahi pilot par 'g-load' banata hai."
+      ],
+      "example": {
+        "problem": "Ek climbing turn me aircraft ka path helix r(t) = (3 cos t, 3 sin t, 4t) hai (units km, t minutes). Speed, ek poore chakkar (0 ≤ t ≤ 2π) ki arc length, aur curvature nikalo.",
+        "steps": [
+          "r'(t) = (−3 sin t, 3 cos t, 4). Speed = √(9 sin²t + 9 cos²t + 16) = √25 = 5 (constant).",
+          "Arc length = ∫₀^(2π) 5 dt = 10π ≈ 31.4 km.",
+          "r''(t) = (−3 cos t, −3 sin t, 0).",
+          "r' × r'' = (3 cos t·0 − 4·(−3 sin t), 4·(−3 cos t) − (−3 sin t)·0, (−3 sin t)(−3 sin t) − (3 cos t)(−3 cos t)) = (12 sin t, −12 cos t, 9).",
+          "|r' × r''| = √(144 + 81) = 15, aur |r'|³ = 125.",
+          "κ = 15/125 = 3/25 = 0.12 per km (general formula R/(R² + c²) = 3/25 ✓), radius of curvature ρ = 25/3 ≈ 8.33 km.",
+          "Answer: **speed 5, arc length 10π, κ = 3/25** — climb ki wajah se curvature flat circle (κ = 1/3) se kam hai."
+        ]
+      },
+      "mistakes": [
+        "Speed aur velocity mix karna: velocity ek vector hai (r'), speed uska magnitude |r'|. 'Speed kya hai' poochha ho to vector likhna galat hai.",
+        "Arc length me ∫|r'| dt ki jagah |∫r' dt| (displacement ki length) nikaal dena. Curve ghoom ke wapas aaye to displacement zero ho sakta hai, par length nahi.",
+        "Curvature ko |r''| samajh lena. |r''| tabhi κ deta hai jab speed 1 ho; warna |r' × r''|/|r'|³ use karo."
+      ],
+      "revision": [
+        "v = r', speed = |r'|, a = r''.",
+        "r(t) = r₀ + v₀t + ∫∫a.",
+        "L = ∫ |r'(t)| dt.",
+        "κ = |r' × r''|/|r'|³; y = f(x): |f''|/(1 + f'²)^(3/2).",
+        "Circle: κ = 1/R; a_N = κ|v|²."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w9-q1",
+          "question": "r(t) = (t², 2t, t³) ke liye t = 1 par speed kya hai?",
+          "options": [
+            "√13",
+            "√17",
+            "17",
+            "7"
+          ],
+          "answer": 1,
+          "explanation": "r'(t) = (2t, 2, 3t²), t = 1 par (2, 2, 3). Speed = √(4 + 4 + 9) = √17. 17 me square root lena bhool gaye. 7 = 2 + 2 + 3 components ko seedha jod diya. √13 = √(4 + 9) me y-component 2 bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w9-q2",
+          "question": "r(t) = (cos 2t, sin 2t, t) ka acceleration a(t) kya hai?",
+          "options": [
+            "(−2 sin 2t, 2 cos 2t, 1)",
+            "(4 cos 2t, 4 sin 2t, 0)",
+            "(−4 cos 2t, −4 sin 2t, 0)",
+            "(−cos 2t, −sin 2t, 0)"
+          ],
+          "answer": 2,
+          "explanation": "r' = (−2 sin 2t, 2 cos 2t, 1), r'' = (−4 cos 2t, −4 sin 2t, 0). Ye xy-plane me center (z-axis) ki taraf point karta hai. (−2 sin 2t, 2 cos 2t, 1) sirf velocity hai. (4 cos 2t, ...) me sign galat (bahar ki taraf). (−cos 2t, ...) me chain rule ka 2² = 4 bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w9-q3",
+          "question": "Curve r(t) = (2t, t², ln t) ki 1 ≤ t ≤ e par arc length kya hai?",
+          "options": [
+            "e²",
+            "e² + 1",
+            "e² − 1",
+            "2e"
+          ],
+          "answer": 0,
+          "explanation": "r' = (2, 2t, 1/t), |r'|² = 4 + 4t² + 1/t² = (2t + 1/t)², to |r'| = 2t + 1/t. L = [t² + ln t]₁^e = (e² + 1) − (1 + 0) = e². e² + 1 me lower limit ka t² = 1 ghatana bhool gaye. e² − 1 me ln e = 1 jodna bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w9-q4",
+          "question": "Parabola y = x² ka point (1, 1) par radius of curvature kya hai?",
+          "options": [
+            "1/2",
+            "2",
+            "2/(5√5)",
+            "5√5/2"
+          ],
+          "answer": 3,
+          "explanation": "f' = 2x = 2, f'' = 2. κ = 2/(1 + 4)^(3/2) = 2/(5√5) ≈ 0.179, to radius ρ = 1/κ = 5√5/2 ≈ 5.59. 2/(5√5) curvature hai, radius nahi — yahi sabse common trap. 1/2 aur 2 origin wali values hain (wahan f' = 0), (1, 1) ki nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w9-q5",
+          "question": "Ek payload ka acceleration a(t) = (0, 0, −10) m/s² hai, v(0) = (20, 0, 30) m/s aur r(0) = (0, 0, 0). t = 2 s par position kya hai?",
+          "options": [
+            "(40, 0, 80)",
+            "(40, 0, 60)",
+            "(40, 0, 40)",
+            "(20, 0, 10)"
+          ],
+          "answer": 2,
+          "explanation": "v(t) = (20, 0, 30 − 10t), r(t) = (20t, 0, 30t − 5t²). t = 2: (40, 0, 60 − 20) = (40, 0, 40). (40, 0, 80) me gravity ka sign ulta (+5t²). (40, 0, 60) me gravity hi bhool gaye. (20, 0, 10) to t = 2 par velocity hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w9-q6",
+          "question": "Helix r(t) = (4 cos t, 4 sin t, 3t) ki curvature κ kya hai?",
+          "options": [
+            "1/4",
+            "4/25",
+            "1/5",
+            "3/25"
+          ],
+          "answer": 1,
+          "explanation": "r' = (−4 sin t, 4 cos t, 3), |r'| = 5. r'' = (−4 cos t, −4 sin t, 0). r' × r'' = (12 sin t, −12 cos t, 16), magnitude √(144 + 256) = 20. κ = 20/125 = 4/25. 1/4 radius 4 wale flat circle ki curvature hai — climb (3t) ko ignore kiya. 3/25 me R aur c ki jagah badal di. 1/5 = 1/|r'| sirf speed ka ulta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Partial derivatives, gradient and tangent planes",
+      "summary": "Is week aap do ya teen variables ke functions ke level curves, limits aur continuity samjhoge, partial derivatives aur multivariable chain rule lagaoge, gradient se directional derivative aur steepest direction nikaloge, aur tangent plane se linear approximation karoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Functions of several variables**: z = f(x, y) ek surface hai; T(x, y, z) jaisa function space ke har point ko ek number deta hai (temperature, pressure, potential). **Level curves** f(x, y) = c contour map banate hain — weather map ke isobars aur PCB par equipotential lines isi ke examples hain.",
+        "**Limits aur two-path test**: (x, y) → (a, b) har direction aur har raaste se ho sakta hai. Agar do raaston par limit alag aaye to limit exist nahi karti. Jaise xy/(x² + y²) line y = mx par m/(1 + m²) deta hai — m par depend karta hai, to (0, 0) par limit nahi. Continuity ka matlab limit = function value.",
+        "**Partial derivatives**: f_x = ∂f/∂x me y ko constant maan ke x me differentiate karo; f_y me ulta. Geometrically f_x surface ka slope hai x-direction me. Second partials f_xx, f_yy, f_xy; agar ye continuous hain to **Clairaut**: f_xy = f_yx.",
+        "**Chain rule**: z = f(x, y), x = x(t), y = y(t) ⇒ dz/dt = f_x·dx/dt + f_y·dy/dt. Har raasta (tree diagram ki branch) ka contribution jodo. Engineering me: power P = V²/R jab V aur R dono time ke saath badal rahe hon, to dP/dt dono ke effects ka sum hai.",
+        "**Gradient**: ∇f = (f_x, f_y, f_z). Ye wo direction hai jisme f sabse tez badhta hai, aur us direction me rate |∇f| hai. −∇f sabse tez ghatne ki direction (heat isi taraf behti hai). ∇f level curve/surface ke **perpendicular** hota hai.",
+        "**Directional derivative**: unit vector u ki direction me rate D_u f = ∇f·u = |∇f| cos θ. Direction vector unit na ho to pehle normalise karo. Max value |∇f| (θ = 0), min −|∇f|, aur level curve ke along (θ = 90°) zero.",
+        "**Tangent plane aur linearisation**: z = f(a, b) + f_x(a, b)(x − a) + f_y(a, b)(y − b). Point ke paas f ≈ ye plane. Differential dz = f_x dx + f_y dy se measurement error propagate hota hai: V = πr²h me relative error dV/V = 2 dr/r + dh/h — radius ka error do guna asar karta hai."
+      ],
+      "example": {
+        "problem": "f(x, y) = x²y + 3xy² ka point (1, 2) par vector (3, 4) ki direction me directional derivative nikalo. Is point par maximum rate of increase kitna hai?",
+        "steps": [
+          "f_x = 2xy + 3y² ⇒ (1, 2) par 4 + 12 = 16.",
+          "f_y = x² + 6xy ⇒ (1, 2) par 1 + 12 = 13. To ∇f(1, 2) = (16, 13).",
+          "Direction ko unit banao: |(3, 4)| = 5 ⇒ u = (3/5, 4/5).",
+          "D_u f = 16·(3/5) + 13·(4/5) = (48 + 52)/5 = 20.",
+          "Maximum rate = |∇f| = √(256 + 169) = √425 ≈ 20.6, direction (16, 13) ki taraf.",
+          "Answer: **D_u f = 20**, aur max rate **√425 ≈ 20.6** — (3, 4) direction gradient ke kaafi kareeb hai, isliye 20 max ke paas hai."
+        ]
+      },
+      "mistakes": [
+        "Directional derivative me direction vector ko normalise na karna. ∇f·(3, 4) = 100 aata, jo 5 guna bada hai — u hamesha unit vector hona chahiye.",
+        "Do-teen raaston par limit same aane se maan lena ki limit exist karti hai. Same aana sirf hint hai; proof ke liye squeeze ya polar coordinates chahiye. Alag aaye to pakka exist nahi karti.",
+        "Partial derivative me doosre variable ko constant na maanna: ∂(x²y)/∂x = 2xy, 2xy + x² nahi."
+      ],
+      "revision": [
+        "f_x: y constant; f_xy = f_yx (Clairaut).",
+        "dz/dt = f_x x' + f_y y'.",
+        "D_u f = ∇f·u, u unit vector.",
+        "Max rate |∇f| direction ∇f me; ∇f ⊥ level curve.",
+        "Tangent plane: z = f + f_x(x − a) + f_y(y − b)."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w10-q1",
+          "question": "f(x, y) = x³y² + sin(xy) ke liye ∂f/∂x kya hai?",
+          "options": [
+            "3x²y² + cos(xy)",
+            "2x³y + x cos(xy)",
+            "3x²y² + y cos(xy)",
+            "3x²y² − y cos(xy)"
+          ],
+          "answer": 2,
+          "explanation": "y constant: ∂(x³y²)/∂x = 3x²y², ∂ sin(xy)/∂x = cos(xy)·y (chain rule). 3x²y² + cos(xy) me inner derivative y chhoot gaya. 2x³y + x cos(xy) to ∂f/∂y hai. Minus sign tab aata hai jab sin ka derivative −cos samajh lo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w10-q2",
+          "question": "lim (x, y) → (0, 0) of xy/(x² + y²) kya hai?",
+          "options": [
+            "0",
+            "Exist nahi karti",
+            "1/2",
+            "1"
+          ],
+          "answer": 1,
+          "explanation": "y = 0 ke along value 0 hai, par y = x ke along x²/(2x²) = 1/2. Do raaston par alag limits ⇒ limit exist nahi karti. 0 sirf axes ke along check karne se aata hai; 1/2 sirf y = x wala raasta dekhta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w10-q3",
+          "question": "Ek heater me P = V²/R hai. Kisi pal V = 12 V hai aur 0.1 V/s se ghat raha hai, aur R = 6 Ω hai jo garam hone se 0.2 Ω/s se badh raha hai. Us pal dP/dt kya hai?",
+          "options": [
+            "−0.4 W/s",
+            "0.4 W/s",
+            "−0.8 W/s",
+            "−1.2 W/s"
+          ],
+          "answer": 3,
+          "explanation": "P_V = 2V/R = 24/6 = 4, P_R = −V²/R² = −144/36 = −4. dP/dt = 4·(−0.1) + (−4)·(0.2) = −0.4 − 0.8 = −1.2 W/s. −0.4 sirf V ka effect hai aur −0.8 sirf R ka — chain rule me dono jodne hain. 0.4 tab aata hai jab P_R ka minus sign bhool jao.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w10-q4",
+          "question": "f(x, y) = 3x² − xy ka point (1, 2) par vector (4, 3) ki direction me directional derivative kya hai?",
+          "options": [
+            "2.6",
+            "13",
+            "3.8",
+            "√17"
+          ],
+          "answer": 0,
+          "explanation": "f_x = 6x − y = 4, f_y = −x = −1, to ∇f = (4, −1). u = (4, 3)/5 = (0.8, 0.6). D_u f = 3.2 − 0.6 = 2.6. 13 = ∇f·(4, 3) me normalise karna bhool gaye. √17 = |∇f| maximum rate hai, is direction ka nahi. 3.8 me f_y ka minus sign chhoot gaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w10-q5",
+          "question": "Surface z = x² + 2y² ka point (1, 1, 3) par tangent plane kya hai?",
+          "options": [
+            "z = 2x + 4y + 3",
+            "z = 2x + 4y",
+            "z = x + 2y",
+            "z = 2x + 4y − 3"
+          ],
+          "answer": 3,
+          "explanation": "f_x = 2x = 2, f_y = 4y = 4. z = 3 + 2(x − 1) + 4(y − 1) = 2x + 4y − 3. Check: (1, 1) par 2 + 4 − 3 = 3 ✓. z = 2x + 4y + 3 me (x − 1), (y − 1) ki jagah x, y le liye. z = 2x + 4y point se nahi guzarta (6 ≠ 3).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w10-q6",
+          "question": "Ek plate par temperature T(x, y) = 100 − x² − 2y² hai. Point (2, 1) par T kis unit direction me sabse tezi se badhta hai, aur kis rate se?",
+          "options": [
+            "(1/√2, 1/√2), rate 4√2",
+            "(−1/√2, −1/√2), rate 4√2",
+            "(−1/√2, −1/√2), rate 8",
+            "(−4, −4), rate 32"
+          ],
+          "answer": 1,
+          "explanation": "∇T = (−2x, −4y) = (−4, −4) at (2, 1). Direction ∇T/|∇T| = (−1/√2, −1/√2), aur rate |∇T| = √32 = 4√2 ≈ 5.66 — garam center (0, 0) ki taraf. (1/√2, 1/√2) sabse tez thanda hone ki direction hai (−∇T). Rate 8 me components ko seedha jod diya; (−4, −4) unit vector nahi hai aur 32 = |∇T|² hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Optimisation and double integrals",
+      "summary": "Is week aap do variables ke functions ke critical points ko second-derivative test se classify karoge, constraint ke saath Lagrange multipliers se optimise karoge, aur double integrals ko iterated integrals, order badal ke, aur polar coordinates me nikaloge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Critical points**: f(x, y) ke local max/min wahan ho sakte hain jahan ∇f = 0 (f_x = 0 aur f_y = 0 ek saath) ya jahan partials exist nahi karte. Dono equations ko simultaneous solve karo — ek me se variable nikaal ke doosri me daalo.",
+        "**Second-derivative test**: D = f_xx·f_yy − (f_xy)² critical point par. D > 0 aur f_xx > 0 ⇒ local minimum; D > 0 aur f_xx < 0 ⇒ local maximum; D < 0 ⇒ **saddle point** (ek direction me upar, doosri me neeche — jaise ghode ki kaathi); D = 0 ⇒ test chup, aur dekhna padega.",
+        "**Absolute extrema on closed region**: closed aur bounded region par continuous f ka absolute max aur min zaroor hota hai. Recipe: andar ke critical points par f nikaalo, boundary ko parametrise karke single-variable problem solve karo, corners bhi check karo, aur sab values me sabse badi/chhoti chuno.",
+        "**Lagrange multipliers**: f(x, y) ko constraint g(x, y) = k par optimise karna ho to ∇f = λ∇g aur g = k ek saath solve karo. Geometry: optimum par f ka level curve constraint curve ko chhoota (tangent) hai, isliye dono ke gradients parallel. λ batata hai ki constraint k thoda badhane par optimum value kitni badlegi.",
+        "**Double integral aur Fubini**: ∬_R f dA ko iterated integral ki tarah nikaalte hain: ∫ₐᵇ ∫_c^d f(x, y) dy dx — andar wala pehle (doosra variable constant). Rectangle par order badalne se answer same rehta hai. f ≥ 0 ho to ye surface ke neeche ka volume hai; f = 1 lo to region ka area.",
+        "**Non-rectangular regions aur order badalna**: region y = g₁(x) se g₂(x) tak ho to andar ki limits x par depend karti hain. Kabhi ek order me integral impossible lagta hai (jaise ∫ e^(y²) dy), par region ka sketch bana ke order badalne par aasaan ho jaata hai. Limits hamesha region ke diagram se nikaalo, purane integral ko ulat ke nahi.",
+        "**Polar coordinates**: x = r cos θ, y = r sin θ, aur **dA = r dr dθ** (extra r mat bhoolo). Circle, disk, ring ya sector wale regions aur x² + y² wale integrands ke liye polar sabse aasaan. Jaise antenna dish ya circular plate par load/mass ka total."
+      ],
+      "example": {
+        "problem": "f(x, y) = x³ + y³ − 3xy ke critical points nikalo aur classify karo.",
+        "steps": [
+          "f_x = 3x² − 3y = 0 ⇒ y = x². f_y = 3y² − 3x = 0 ⇒ x = y².",
+          "y = x² ko doosri me rakho: x = x⁴ ⇒ x(x³ − 1) = 0 ⇒ x = 0 ya x = 1. Critical points (0, 0) aur (1, 1).",
+          "Second partials: f_xx = 6x, f_yy = 6y, f_xy = −3. To D = 36xy − 9.",
+          "(0, 0): D = −9 < 0 ⇒ **saddle point**.",
+          "(1, 1): D = 36 − 9 = 27 > 0 aur f_xx = 6 > 0 ⇒ **local minimum**, f(1, 1) = 1 + 1 − 3 = −1.",
+          "Answer: **(0, 0) saddle, (1, 1) local minimum with value −1**."
+        ]
+      },
+      "mistakes": [
+        "D me (f_xy)² ki jagah f_xy likh dena, ya f_xx aur f_yy dono positive dekh ke seedha minimum bol dena. f = x² + 3xy + y² me f_xx = f_yy = 2 > 0 hai, par D = 4 − 9 < 0 ⇒ saddle.",
+        "Polar me dA = dr dθ likhna. Jacobian r bhoolne se disk ka area πR² ki jagah 2πR aata hai — units se bhi pakad sakte ho.",
+        "Order badalte waqt purani limits ko bas swap kar dena. ∫₀¹∫ₓ¹ ... dy dx ka order badal ke ∫₀¹∫₀^y ... dx dy hota hai — region sketch karke hi pata chalta hai."
+      ],
+      "revision": [
+        "Critical: f_x = f_y = 0.",
+        "D = f_xx f_yy − f_xy²: D > 0 min/max (sign of f_xx), D < 0 saddle.",
+        "Lagrange: ∇f = λ∇g, g = k.",
+        "Fubini: inner integral pehle; limits region se.",
+        "Polar: dA = r dr dθ."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w11-q1",
+          "question": "∫₀¹ ∫₀² (x + y) dy dx ki value kya hai?",
+          "options": [
+            "3",
+            "2",
+            "4",
+            "3/2"
+          ],
+          "answer": 0,
+          "explanation": "Andar: ∫₀² (x + y) dy = [xy + y²/2]₀² = 2x + 2. Bahar: ∫₀¹ (2x + 2) dx = 1 + 2 = 3. 2 sirf rectangle ka area hai — integrand ignore ho gaya. 4 tab aata hai jab ∫₀¹ 2x dx = 1 ki jagah 2 le lo. Order badal ke bhi 3 hi aata hai — rectangle par Fubini.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w11-q2",
+          "question": "f(x, y) = x² + y² − 4x + 6y ka critical point aur uska type kya hai?",
+          "options": [
+            "(−2, 3), minimum",
+            "(2, −3), saddle",
+            "(2, 3), minimum",
+            "(2, −3), minimum"
+          ],
+          "answer": 3,
+          "explanation": "f_x = 2x − 4 = 0 ⇒ x = 2; f_y = 2y + 6 = 0 ⇒ y = −3. f_xx = 2, f_yy = 2, f_xy = 0 ⇒ D = 4 > 0, f_xx > 0 ⇒ minimum. (Complete the square: (x − 2)² + (y + 3)² − 13.) (−2, 3) me dono signs ulte; (2, 3) me y wala sign.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w11-q3",
+          "question": "f(x, y) = x² + 3xy + y² ka origin par critical point kis type ka hai?",
+          "options": [
+            "Local minimum",
+            "Saddle point",
+            "Local maximum",
+            "Test inconclusive (D = 0)"
+          ],
+          "answer": 1,
+          "explanation": "f_xx = 2, f_yy = 2, f_xy = 3. D = 2·2 − 3² = 4 − 9 = −5 < 0 ⇒ saddle. Check: y = −x par f = x² − 3x² + x² = −x² < 0, par y = 0 par f = x² > 0 — origin na max hai na min. 'Local minimum' sirf f_xx, f_yy > 0 dekh ke cross term ko ignore karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w11-q4",
+          "question": "Disk x² + y² ≤ 4 par ∬ (x² + y²) dA ki value kya hai?",
+          "options": [
+            "4π",
+            "16π/3",
+            "8π",
+            "32π"
+          ],
+          "answer": 2,
+          "explanation": "Polar: ∫₀^(2π) ∫₀² r²·r dr dθ = 2π·[r⁴/4]₀² = 2π·4 = 8π. 16π/3 = 2π·∫₀² r² dr tab aata hai jab dA ka extra r bhool jao. 4π disk ka area hai, integrand ka nahi. 32π = 2π·2⁴ me r⁴/4 ka 1/4 bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w11-q5",
+          "question": "Ek rectangular antenna ground plane ke teen sides par 20 m fencing lagani hai (chautha side wall hai), yaani x + 2y = 20. Lagrange multipliers se area A = xy ka maximum kya hai?",
+          "options": [
+            "50 m²",
+            "100 m²",
+            "400/9 m²",
+            "25 m²"
+          ],
+          "answer": 0,
+          "explanation": "∇A = λ∇g: (y, x) = λ(1, 2) ⇒ y = λ, x = 2λ. Constraint: x + 2y = 2λ + 2λ = 4λ = 20 ⇒ λ = 5, x = 10, y = 5, A = 50 m². 100 m² tab aata hai jab constraint ko x + y = 20 samjho (10 × 10). 400/9 m² square (x = y = 20/3) maan lene se aata hai — jo yahan optimal nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w11-q6",
+          "question": "Integration ka order badal ke ∫₀¹ ∫ₓ¹ e^(y²) dy dx ki value nikalo.",
+          "options": [
+            "e − 1",
+            "e/2",
+            "(e − 1)/2",
+            "1/2"
+          ],
+          "answer": 2,
+          "explanation": "Region: 0 ≤ x ≤ y, 0 ≤ y ≤ 1. Order badal ke ∫₀¹ ∫₀^y e^(y²) dx dy = ∫₀¹ y·e^(y²) dy = [e^(y²)/2]₀¹ = (e − 1)/2 ≈ 0.859. e − 1 me 1/2 bhool gaye. e/2 me lower limit e⁰/2 = 1/2 ghatana bhool gaye. Original order me e^(y²) ka elementary antiderivative hi nahi hai — isiliye order badalna padta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Triple integrals, line integrals, divergence, curl and Green's theorem",
+      "summary": "Is week aap triple integrals se volume aur mass nikaloge, line integral se force field ka work calculate karoge, conservative fields aur potential pehchaanoge, divergence aur curl ka physical matlab samjhoge, aur Green's theorem se closed-curve integrals ko area integrals me badloge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Triple integrals**: ∭_E f dV, iterated ∫∫∫ ki tarah, andar se bahar. f = 1 ⇒ volume, f = density ρ ⇒ mass. Cylindrical coordinates me **dV = r dr dθ dz**, spherical me **dV = ρ² sin φ dρ dφ dθ** — fuel tank, rocket nozzle ya spherical pressure vessel jaise shapes ke liye ye aasaan padte hain.",
+        "**Scalar line integral**: curve C ko r(t), a ≤ t ≤ b se parametrise karo; ∫_C f ds = ∫ₐᵇ f(r(t))·|r'(t)| dt. f = 1 ho to curve ki length, f = linear density ho to ek patle wire ya cable ka mass.",
+        "**Work = vector line integral**: force field F ka C ke along work W = ∫_C F·dr = ∫ₐᵇ F(r(t))·r'(t) dt. Component form me ∫ P dx + Q dy + R dz. Curve ki direction ulti karo to sign ulta. Generally answer raaste par depend karta hai — same endpoints, alag path, alag work.",
+        "**Conservative fields**: agar F = ∇φ (φ = **potential function**), to ∫_C F·dr = φ(B) − φ(A) — sirf endpoints matter karte hain, aur har closed loop par work zero. 2D me test: ∂Q/∂x = ∂P/∂y (simply connected region par). Gravity aur electrostatic field conservative hain; isi liye potential energy aur voltage define ho paate hain.",
+        "**Divergence**: ∇·F = ∂P/∂x + ∂Q/∂y + ∂R/∂z, ek scalar. Positive ⇒ point se field bahar nikal raha hai (source), negative ⇒ sink. Incompressible flow (hawa kam speed par, paani) me ∇·v = 0. Electrostatics me ∇·E charge density se juda hai.",
+        "**Curl**: ∇×F = (R_y − Q_z, P_z − R_x, Q_x − P_y), ek vector jo batata hai field point ke aas-paas kitna ghoom raha hai (vorticity). Rigid rotation v = ω(−y, x, 0) ka curl (0, 0, 2ω) hai. Har gradient ka curl zero: ∇×(∇φ) = 0, isliye curl ≠ 0 ⇒ conservative nahi.",
+        "**Green's theorem**: simple closed curve C (anticlockwise, region D baayein haath par) ke liye ∮_C P dx + Q dy = ∬_D (∂Q/∂x − ∂P/∂y) dA. Mushkil boundary integral ko aasaan area integral me badal deta hai. Special case: area = (1/2)∮(x dy − y dx) — planimeter isi se map par area naapta hai."
+      ],
+      "example": {
+        "problem": "F = (x² − y, x + y²) ka circle x² + y² = 4 (anticlockwise) ke around circulation ∮ F·dr Green's theorem se nikalo.",
+        "steps": [
+          "P = x² − y, Q = x + y². C closed hai aur anticlockwise, to Green lagta hai.",
+          "∂Q/∂x = 1, ∂P/∂y = −1 ⇒ ∂Q/∂x − ∂P/∂y = 2.",
+          "∮ F·dr = ∬_D 2 dA = 2 × (disk ka area) = 2 × π·2² = 8π.",
+          "Note: x² aur y² wale hisse ka koi contribution nahi — (x², y²) conservative hai (potential x³/3 + y³/3).",
+          "Direct check (parametrise r = (2 cos t, 2 sin t)) bhi 8π ≈ 25.13 deta hai.",
+          "Answer: **∮ F·dr = 8π**."
+        ]
+      },
+      "mistakes": [
+        "Green's theorem me P_y − Q_x likh dena (ulta). Sahi order: ∂Q/∂x − ∂P/∂y. Curve clockwise ho to answer ka sign bhi ulta karo.",
+        "Har field ko conservative maan ke sirf endpoints se work nikaalna. Pehle curl test (Q_x = P_y) check karo; fail ho to parametrise karke poora integral karo.",
+        "Cylindrical/spherical me Jacobian bhoolna: dV = dr dθ dz nahi, r dr dθ dz; aur spherical me ρ² sin φ."
+      ],
+      "revision": [
+        "dV: r dr dθ dz (cylindrical), ρ² sin φ dρ dφ dθ (spherical).",
+        "W = ∫ F(r(t))·r'(t) dt.",
+        "F = ∇φ ⇒ ∫ F·dr = φ(B) − φ(A); test Q_x = P_y.",
+        "div = P_x + Q_y + R_z; curl = (R_y − Q_z, P_z − R_x, Q_x − P_y).",
+        "Green: ∮ P dx + Q dy = ∬ (Q_x − P_y) dA, anticlockwise."
+      ],
+      "questions": [
+        {
+          "id": "mfe2-w12-q1",
+          "question": "F = (x²y, yz, xz²) ka divergence ∇·F kya hai?",
+          "options": [
+            "2xy + y + 2z",
+            "(2xy, z, 2xz)",
+            "x² + z + z²",
+            "2xy + z + 2xz"
+          ],
+          "answer": 3,
+          "explanation": "∂(x²y)/∂x = 2xy, ∂(yz)/∂y = z, ∂(xz²)/∂z = 2xz. Sum = 2xy + z + 2xz. (2xy, z, 2xz) vector likh diya — divergence scalar hota hai, terms jodo. 2xy + y + 2z me galat variables ke saath differentiate kiya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w12-q2",
+          "question": "Rotating flow F = (−y, x, 0) ka curl ∇×F kya hai?",
+          "options": [
+            "(0, 0, 0)",
+            "(0, 0, 1)",
+            "(0, 0, 2)",
+            "(0, 0, −2)"
+          ],
+          "answer": 2,
+          "explanation": "Sirf k-component bachta hai: Q_x − P_y = ∂x/∂x − ∂(−y)/∂y = 1 − (−1) = 2. (0, 0, 1) me sirf Q_x = 1 liya, −P_y wala hissa bhool gaye. (0, 0, −2) me order ulta (P_y − Q_x). (0, 0, 0) wo field hai jo ghoomta nahi — ye to rigid rotation hai, angular speed 1.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mfe2-w12-q3",
+          "question": "Force field F = (y, x) (0, 0) se (2, 3) tak kisi bhi raaste par kitna work karta hai?",
+          "options": [
+            "6",
+            "5",
+            "13",
+            "0"
+          ],
+          "answer": 0,
+          "explanation": "Q_x = 1 = P_y, to F conservative hai, potential φ = xy (φ_x = y, φ_y = x). Work = φ(2, 3) − φ(0, 0) = 6. 0 sirf closed loop par hota hai. 5 = 2 + 3 aur 13 = 2² + 3² endpoints ke coordinates se bana guess hai, potential se nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w12-q4",
+          "question": "Box 0 ≤ x ≤ 1, 0 ≤ y ≤ 2, 0 ≤ z ≤ 3 par ∭ xyz dV ki value kya hai?",
+          "options": [
+            "6",
+            "9/2",
+            "3/4",
+            "36"
+          ],
+          "answer": 1,
+          "explanation": "Integrand aur limits alag-alag hain, to product: (∫₀¹ x dx)(∫₀² y dy)(∫₀³ z dz) = (1/2)(2)(9/2) = 9/2. 6 box ka volume hai (integrand ignore). 36 = (xyz ka max 6) × volume 6 — integrand ko constant maan liya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w12-q5",
+          "question": "Green's theorem se ∮_C (3y dx + 5x dy) nikalo, jahan C unit circle hai (anticlockwise).",
+          "options": [
+            "8π",
+            "2π",
+            "−2π",
+            "π"
+          ],
+          "answer": 1,
+          "explanation": "P = 3y, Q = 5x ⇒ Q_x − P_y = 5 − 3 = 2. ∬ 2 dA = 2 × π·1² = 2π. 8π me 5 aur 3 ko jod diya. −2π order ulta (P_y − Q_x) lene se ya clockwise maan lene se aata hai. π sirf area hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mfe2-w12-q6",
+          "question": "F = (y², x) ka parabola y = x² ke along (0, 0) se (1, 1) tak work ∫ F·dr kya hai?",
+          "options": [
+            "5/6",
+            "1",
+            "1/2",
+            "13/15"
+          ],
+          "answer": 3,
+          "explanation": "r(t) = (t, t²), r' = (1, 2t), F = (t⁴, t). F·r' = t⁴ + 2t², ∫₀¹ = 1/5 + 2/3 = 13/15. 5/6 straight line y = x ka answer hai (1/3 + 1/2) — path independence maan liya, par Q_x − P_y = 1 − 2y ≠ 0, to F conservative nahi aur raasta matter karta hai. 1 = φ(1, 1) tab aata hai jab galti se φ = xy ko potential maan lo.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

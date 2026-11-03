@@ -68,8 +68,14 @@ export function ProgressView({ subjects: allSubjects, catalog, testTitles }: Pro
                     <tr key={s.id}>
                       <td><div className="subject-row"><SubjectIcon subject={s} size="sm" /><strong>{s.short}</strong></div></td>
                       <td className="cell-grow">
-                        <div className="muted">{done}/{weeks.length}<span className="show-phone"> weeks done</span></div>
-                        <ProgressBar value={percent(done, weeks.length)} color={subjectColor(s.id)} />
+                        {weeks.length ? (
+                          <>
+                            <div className="muted">{done}/{weeks.length}<span className="show-phone"> weeks done</span></div>
+                            <ProgressBar value={percent(done, weeks.length)} color={subjectColor(s.id)} />
+                          </>
+                        ) : (
+                          <div className="muted">Notes coming soon</div>
+                        )}
                       </td>
                       <td data-label="Answered">{sc.attempted}</td>
                       <td>{sc.attempted ? <strong className={accuracyTone(sc.accuracy)}>{sc.accuracy}%</strong> : <span className="muted">—</span>}</td>

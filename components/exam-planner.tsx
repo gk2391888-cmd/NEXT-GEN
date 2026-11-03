@@ -8,6 +8,7 @@ import { buildPlan, daysUntil, EXAMS, examWeeks, type PlanItem } from '@/lib/pla
 import { orderSubjects } from '@/lib/subjects';
 import { useChoiceSubjects } from '@/lib/programme-choice';
 import { termSubjects } from '@/lib/programmes';
+import { LevelComingSoon, useLevelComingSoon } from '@/components/coming-soon';
 import type { Subject, WeekRef } from '@/lib/types';
 
 type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]> };
@@ -20,6 +21,7 @@ const todayLocal = () => {
 export function ExamPlanner({ subjects: allSubjects, catalog }: Props) {
   const state = useProgress();
   const subjects = useChoiceSubjects(allSubjects);
+  const comingSoon = useLevelComingSoon(catalog);
   const [today, setToday] = useState('');
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
@@ -60,6 +62,7 @@ export function ExamPlanner({ subjects: allSubjects, catalog }: Props) {
   }
 
   if (!today) return null;
+  if (comingSoon) return <LevelComingSoon action="plan" />;
 
   if (!state.exam || editing) {
     return (

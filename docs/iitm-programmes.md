@@ -53,18 +53,20 @@ Students can already choose a Diploma; its subjects show "Notes coming soon" unt
 |---|---|---|
 | Data Science – Foundation | All 8 | — |
 | Electronic Systems – Foundation | All 9 theory courses: English I, Math for Electronics I, Electronic Systems Thinking and Circuits, Introduction to C, Introduction to Linux, English II, Digital Systems, Electrical and Electronic Circuits, Embedded C | Labs aren't covered (no weekly theory) |
-| Aeronautics – Foundation | 5 of 8 (the courses shared with Electronic Systems) | Math for Electronics II, Introduction to Aerospace Systems, Engineering Mechanics |
-| Management & DS – Foundation | 4 of 8 (Maths I, Statistics I, Computational Thinking, English I from Data Science) | Principles of Economics, Financial Accounting, Business Statistics, Management Thought and Practice |
+| Aeronautics – Foundation | All 8: the 5 shared with Electronic Systems, plus Math for Electronics II, Introduction to Aerospace Systems and Engineering Mechanics | — |
+| Management & DS – Foundation | All 8: Maths I, Statistics I, Computational Thinking and English I (shared with Data Science), plus Principles of Economics, Financial Accounting, Business Statistics and Management Thought and Practice | — |
 | Data Science – Diploma in Programming | 0 of 6 | DBMS, PDSA, MAD I, Java, MAD II, System Commands |
 | Data Science – Diploma in Data Science | 0 of 7 | MLF, BDM, MLT, MLP, Tools in Data Science, Business Analytics, Deep Learning & GenAI |
 | Qualifier exam | Data Science Foundation subjects, plus `/qualifier` (built on another branch) | — |
 
-All notes and questions are original. The official week-topic titles were used only to decide the order of topics.
+In all: 22 subjects × 12 weeks, 1,584 questions in Hinglish and English. All notes and questions are original. The official week-topic titles were used only to decide the order of topics.
 
 - The Electronic Systems Python course (CS1002) is a Diploma course with the same weekly topics as Data Science's BSCS1002, so the existing `python` subject can be reused when the ES Diploma is added.
 - The Coding Lab runs Python only. Electronic Systems students get a note pointing them to the C "what does this print?" questions, since C can't run in the browser yet.
 
 ## Not in the app yet
+
+- The two Data Science Diplomas (13 subjects above): they can be chosen and show "Notes coming soon" everywhere until written.
 
 - Electronic Systems Diploma (EE2101 Signals and Systems, EE2102 Analog Electronic Systems, CS1002 Python Programming, EE2103 Digital System Design, EE3101 DSP, EE3103 Sensors, EE4108 Testing and Measurement, EE2106 Computer Organisation, plus labs and projects) and Degree.
 - The Aeronautics and Management Diploma and Degree levels.
