@@ -4,9 +4,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { authedFetch } from '@/lib/supabase/client';
 import { PRICING, usePlan } from '@/lib/plan';
+import { limitsFor } from '@/lib/ai/features';
 import { sync } from '@/lib/sync';
 import { RAW } from '@/lib/tokens';
 import { useAuth } from './auth/auth-provider';
+
+const FREE_DOUBTS = limitsFor('doubt', 'free')?.perDay ?? 0;
+const PRO_DOUBTS = limitsFor('doubt', 'pro')?.perDay ?? 0;
 
 const FREE_FEATURES = [
   'All 96 weeks of notes and formula sheets',
@@ -14,12 +18,12 @@ const FREE_FEATURES = [
   'Quiz 1 and Quiz 2 mock tests',
   'My Mistakes revision and Exam Planner',
   'Python Coding Lab practice problems',
-  `${PRICING.freeDoubtsPerDay} AI doubts per day`,
+  `${FREE_DOUBTS} AI doubts per day`,
 ];
 const FREE_MISSING = ['End term mock tests', 'OPPE-style coding tests'];
 const PRO_FEATURES = [
   'Everything in Free',
-  'Unlimited AI doubts',
+  `${PRO_DOUBTS} AI doubts per day, with longer answers`,
   'End term mock tests',
   'OPPE-style coding tests with hidden test cases',
   'Detailed analytics: time per question',
@@ -109,7 +113,7 @@ export function PricingPlans() {
       <div className="page-head-center">
         <span className="chip chip-teal">{PRICING.trialDays} DAYS OF PRO FREE · NO CARD NEEDED</span>
         <h1 className="mt-md">Simple pricing for every student</h1>
-        <p>Everything you need to study is free. Go Pro for unlimited AI help and exam-level practice.</p>
+        <p>Everything you need to study is free. Go Pro for more AI help and exam-level practice.</p>
         {plan.tier === 'trial' && (
           <p className="muted mt-sm">Your free trial has {plan.daysLeft} day{plan.daysLeft === 1 ? '' : 's'} left. After that you move to Free automatically; you’re never charged unless you upgrade.</p>
         )}

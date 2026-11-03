@@ -40,27 +40,81 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | My Mistakes (spaced revision), Exam Planner | ✓ | ✓ |
 | Coding Lab practice problems (Python in the browser via Pyodide) | ✓ | ✓ |
 | OPPE-style coding sets with hidden tests | | ✓ |
-| AI Doubt Solver (Gemini) | 5 / day | 200 / day fair use |
+| AI Doubt Solver (limits set in `lib/ai/features.ts`) | 5 / day | 200 / day, longer answers |
 | Time per question in test results, Save as PDF | | ✓ |
 
 - **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), post announcements.
-- **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. The AI limit is enforced in the database (`consume_doubt()`).
+- **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. `lib/plans.ts` turns them into a tier, the same way on the server and in the browser.
 - **Payments**: Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup), both granting 30 days via the service-role key.
 
 ### Environment variables (Vercel → Settings → Environment Variables)
 
 | Name | Needed for |
 | --- | --- |
-| `GEMINI_API_KEY` | AI Doubt Solver (from aistudio.google.com) |
-| `GEMINI_MODEL` | Optional, defaults to `gemini-2.5-flash` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Payments (granting Pro). Never expose it to the browser. |
+| `GROQ_API_KEY` | AI features via Groq (console.groq.com → API Keys) |
+| `AI_MODEL_SMART`, `AI_MODEL_FAST` | Optional: which models serve each tier. See **AI features** below. |
+| `SUPABASE_SERVICE_ROLE_KEY` | AI features (counting daily limits) and payments (granting Pro). Never expose it to the browser. |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Payments |
 | `RAZORPAY_WEBHOOK_SECRET` | Payment webhook (`<site>/api/payments/webhook`, event `payment.captured`) |
 | `PRO_PRICE_INR` | Optional, defaults to 99 |
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 
-Migrations: run `supabase/migrations/0001…0003` in order in the Supabase SQL Editor.
+Migrations: run `supabase/migrations/0001…0004` in order in the Supabase SQL Editor.
+
+## AI features
+
+The product uses AI through one engine, so switching models or changing what each plan gets is a one-line change. Nothing in the app names an AI vendor except `lib/server/ai/providers.ts` and `lib/server/ai/models.ts`.
+
+```
+lib/ai/                        shared by the browser and the server (no secrets)
+  features.ts                  every AI feature: its model tier and its Free / Pro limits
+  client.ts                    askAi(feature, input): the one way the UI calls AI
+lib/server/ai/                 server only
+  providers.ts                 where each vendor lives (Groq, OpenAI, OpenRouter, Gemini, custom)
+  models.ts                    which model serves each tier: smart, fast
+  chat-completions.ts          the one HTTP client (OpenAI Chat Completions format)
+  generate.ts                  generate(): tries the tier's models in order (fallback)
+  quota.ts                     daily limits and cooldowns, counted atomically in Postgres
+  handler.ts                   every request: sign-in → plan → limits → input → quota → model → usage
+  features/<feature>.ts        one file per feature: its prompt and input rules
+app/api/ai/[feature]/route.ts  one endpoint for every feature: POST /api/ai/doubt
+```
+
+### Change the model
+
+Features ask for a **tier** (`smart` or `fast`), never a model. `lib/server/ai/models.ts` maps each tier to models, written as `provider:model`. The first model is used; the rest are fallbacks, tried in order if it fails. To switch every feature on a tier, either edit that file or set an env var in Vercel and redeploy (no code change):
+
+| Env var | Default |
+| --- | --- |
+| `AI_MODEL_SMART` | `groq:openai/gpt-oss-120b` |
+| `AI_MODEL_FAST` | `groq:openai/gpt-oss-20b` |
+
+Examples:
+- `AI_MODEL_SMART=groq:llama-3.3-70b-versatile`: a different Groq model.
+- `AI_MODEL_SMART=groq:openai/gpt-oss-120b, openrouter:<model id>`: Groq, with OpenRouter as backup.
+- `AI_MODEL_SMART=custom:deepseek-chat` with `AI_CUSTOM_BASE_URL=https://api.deepseek.com/v1`: any other OpenAI-compatible API.
+
+Each provider needs its key: `GROQ_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY` or `AI_CUSTOM_API_KEY`. A model whose key isn't set is skipped, with a warning in the logs.
+
+### Change the limits
+
+Edit the feature's `limits` in `lib/ai/features.ts`. The server enforces them and the UI shows them (pricing page, doubt counter, input length), so the numbers can't drift apart. Per plan you can set:
+- `perDay`: requests per day
+- `cooldownSec`: seconds between requests
+- `historyMessages`: chat history sent to the model
+- `maxInputChars`: longest message
+- `maxOutputTokens`: longest answer
+
+Trial students get the Pro limits, and logged-out visitors can't use AI. Postgres does the counting (`consume_ai_quota`, migration 0004), so two requests at once can't both get past a limit. Only the server can call it, since it trusts the limits it's given. If the AI fails, the request is given back, so an outage never costs a student a doubt.
+
+### Add an AI feature
+
+1. Add it to `AI_FEATURES` in `lib/ai/features.ts`, with its tier and limits.
+2. Add `lib/server/ai/features/<id>.ts` with a `prepare()` (validate input, build the prompt) and a `respond()`, and register it in `features/index.ts`. TypeScript fails the build if you forget.
+3. Call it from the UI with `askAi('<id>', input)`.
+
+Sign-in, plans, limits, model choice, fallbacks and usage tracking all come for free.
 
 ## Run it
 

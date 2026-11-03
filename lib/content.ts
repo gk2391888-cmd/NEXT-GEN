@@ -41,3 +41,13 @@ export function getQuestionsForWeeks(subjectId: string, from: number, to: number
 export function getCatalog(): Record<string, WeekRef[]> {
   return Object.fromEntries(getSubjects().map((s) => [s.id, getWeekRefs(s.id)]));
 }
+
+/** One question by id (e.g. "stat1-w3-q2"), with its subject and week, or undefined. */
+export function getQuestion(id: string): (Question & { subjectId: string; week: number; weekTitle: string }) | undefined {
+  const match = /^([a-z0-9]+)-w(\d+)-q\d+$/.exec(id);
+  if (!match) return undefined;
+  const [, subjectId, week] = match;
+  const data = getWeek(subjectId, Number(week));
+  const question = data?.questions.find((q) => q.id === id);
+  return data && question ? { ...question, subjectId, week: data.week, weekTitle: data.title } : undefined;
+}

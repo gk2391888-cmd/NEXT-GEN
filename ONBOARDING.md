@@ -25,7 +25,7 @@ It was built in 3 phases, one commit each:
 | Styling | Design tokens in [tokens/](tokens/README.md) (W3C DTCG JSON) → generated CSS variables → one stylesheet, [app/globals.css](app/globals.css). No Tailwind. |
 | Content | JSON files in `content/`, read from disk **at build time** |
 | Auth and database | **Supabase**: email magic link, OTP code or Google; Postgres with Row Level Security |
-| AI | Google **Gemini** (`gemini-2.5-flash`), called from a server route |
+| AI | Vendor-neutral engine in `lib/server/ai/`. Features ask for a model **tier**; **Groq** (`openai/gpt-oss-120b`) serves it by default. Any OpenAI-compatible API can be swapped in by env var. See "AI features" in the README |
 | Payments | **Razorpay** Checkout plus a webhook |
 | Python in the browser | **Pyodide** inside a Web Worker |
 | Hosting | **Vercel**. Every push to `main` deploys. |
@@ -46,7 +46,7 @@ next-gen/
 │   ├── lab/                  ← /lab, /lab/[id]  (Coding Lab)
 │   ├── login/  profile/  pricing/  admin/  privacy/  terms/
 │   ├── api/                  ← Server-only endpoints
-│   │   ├── doubt/route.ts             → AI answer (Gemini)
+│   │   ├── ai/[feature]/route.ts      → every AI feature (POST /api/ai/doubt)
 │   │   ├── content/questions/route.ts → every question as JSON (static)
 │   │   └── payments/{config,order,verify,webhook}/route.ts
 │   ├── manifest.ts           ← PWA "Add to home screen"
@@ -63,10 +63,11 @@ next-gen/
 │   ├── content.ts            ← Reads content/*.json (server-only)
 │   ├── progress/             ← ★ Local progress store, types, insights, spaced repetition
 │   ├── sync.ts               ← ★ Uploads and downloads progress to and from Supabase
-│   ├── plan.ts               ← guest / free / trial / pro logic + PRICING constants
+│   ├── plans.ts  plan.ts     ← guest / free / trial / pro logic + PRICING (shared) · usePlan() hook
+│   ├── ai/                   ← ★ AI features + Free/Pro limits (features.ts), askAi() (client.ts)
 │   ├── tests.ts  planner.ts  coding.ts  overrides.ts  question-bank.ts  python-runner.ts
 │   ├── supabase/client.ts    ← Browser Supabase client + authedFetch()
-│   └── server/               ← Server-only: gemini.ts, razorpay.ts, supabase.ts (service role)
+│   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, supabase.ts (service role)
 ├── content/                  ← ★ All study material
 │   ├── subjects.json         ← The 8 subjects (id, code, name, icon); colours live in tokens
 │   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week
@@ -110,13 +111,13 @@ next-gen/
 
 - Every table has Row Level Security, so a student can only ever see their own rows.
 - Students **can't edit their plan dates**: column-level grants in migration 0002 block it.
-- The AI daily limit is enforced by the SQL function `consume_doubt()`.
+- AI limits are counted atomically by the SQL function `consume_ai_quota()`. Only the server can call it, using the limits in `lib/ai/features.ts`.
 - Only server routes that hold `SUPABASE_SERVICE_ROLE_KEY` can grant Pro.
 
 ```
 Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, test_attempts, week_status,
    │                                            reports, content_overrides, announcements, ai_usage, payments, admins)
-   └──► /api/doubt ──► Gemini        (checks the token, calls consume_doubt() first)
+   └──► /api/ai/<feature> ──► Groq   (sign-in → plan → limits → quota → model, with fallbacks)
    └──► /api/payments/* ──► Razorpay (service role grants +30 days pro_until)
 ```
 
@@ -131,7 +132,7 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 | `reports` | "Report a problem" submissions | Student inserts; admin updates status |
 | `content_overrides` | Admin corrections to questions (`q:<id>` → patch) | Admin; everyone reads |
 | `announcements` | Banners on the Overview page | Admin; everyone reads active ones |
-| `ai_usage` | Doubts used per student per day (India time) | `consume_doubt()` only |
+| `ai_usage` | AI requests per student, per feature, per day (India time), plus tokens used | Server only, via `consume_ai_quota()` / `finish_ai_request()` |
 | `payments` | Razorpay orders and their status | Server (service role) only |
 | `admins` | Who can open `/admin` | Added by hand in SQL |
 
@@ -238,9 +239,15 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
 
 ### AI Doubt Solver (`/doubts`)
 
-1. You must be logged in. A chip shows "X of 5 free doubts left today".
-2. The chat ([components/doubt-chat.tsx](components/doubt-chat.tsx)) posts to `/api/doubt`, sending the last 8 turns and the question context if you came from "Explain more".
-3. The server ([app/api/doubt/route.ts](app/api/doubt/route.ts)) checks your token, calls `consume_doubt()` (which returns 429 when you're over the limit), then calls Gemini with a tutor system prompt (Hinglish, step by step, no exam cheating) from [lib/server/gemini.ts](lib/server/gemini.ts).
+1. You must be logged in. A chip shows "X of 5 doubts left today" (200 on Pro). All the numbers come from [lib/ai/features.ts](lib/ai/features.ts).
+2. The chat ([components/doubt-chat.tsx](components/doubt-chat.tsx)) calls `askAi('doubt', { messages, questionId })`. It sends the question's id only; the server looks up the question text itself, so the browser can't inject a prompt.
+3. [lib/server/ai/handler.ts](lib/server/ai/handler.ts) runs the request:
+   - checks sign-in and the plan, and applies that plan's limits (history length, input size, answer length)
+   - takes one request from the daily quota, or returns 429 for the daily limit or the cooldown
+   - asks the `smart` tier's model, with fallbacks
+   - records the tokens used, and gives the request back if the AI failed
+
+   The tutor prompt (Hinglish, step by step, no exam cheating) is in [lib/server/ai/features/doubt.ts](lib/server/ai/features/doubt.ts).
 4. The answer is drawn with [rich-text.tsx](components/rich-text.tsx), a small safe markdown renderer that never inserts HTML.
 5. Below the chat is a static FAQ search.
 
@@ -323,7 +330,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
   - On the login page, any email and any 6-digit code logs you in as a trial student.
   - Demo mode only switches on when `NODE_ENV` isn't production and `NEXT_PUBLIC_DEMO_MODE=1`, so it's stripped from production builds.
 - **Without any env vars the site still works.** It falls back to the production Supabase project (the publishable key is hard-coded in [lib/supabase/client.ts](lib/supabase/client.ts)). The AI shows "being set up" and payments show "launching soon".
-- **Server env vars:** `GEMINI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RAZORPAY_KEY_ID/SECRET`, `RAZORPAY_WEBHOOK_SECRET`, and optionally `GEMINI_MODEL` and `PRO_PRICE_INR`. They're listed in the README.
+- **Server env vars:** `GROQ_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (needed for AI limits and payments), `RAZORPAY_KEY_ID/SECRET`, `RAZORPAY_WEBHOOK_SECRET`, and optionally `AI_MODEL_SMART` / `AI_MODEL_FAST` and `PRO_PRICE_INR`. They're listed in the README, along with "AI features".
 - **Database changes:** add a new `supabase/migrations/000N_*.sql` and run it by hand in the Supabase SQL editor. There's no migration CLI.
 - **Making yourself an admin:** `insert into public.admins (user_id) values ('<your auth uid>');`
 - **Deploy:** push to `main`; Vercel builds and deploys. The build runs the content validator first.
@@ -338,7 +345,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 2. **Coding Lab "solved" status is device-only.** `markSolved` uses `commit`, not `dispatch`, so it never syncs to the account.
 3. **There are no automated tests and no ESLint setup.** The only safety nets are `validate:content` (which runs before every build) and `typecheck`.
 4. **Email is a launch blocker.** Supabase's built-in mailer only sends a few emails an hour, so custom SMTP (for example Resend) needs to be set up before real traffic. The README covers it.
-5. **Pricing lives in two places.** `PRICING` in `lib/plan.ts` drives the UI text, while the real numbers are in SQL (`consume_doubt`: 5/200) and env (`PRO_PRICE_INR`). Change them together.
+5. **Pricing has one source per number.** AI limits per plan live in `lib/ai/features.ts`, and the server enforces exactly those. The price shown in the UI is `PRICING` in `lib/plans.ts`, but the amount actually charged is `PRO_PRICE_INR` on the server, so change those two together. Migration 0004 keeps the old `consume_doubt()` (hard-coded 5/200) working only until this code is deployed; drop it afterwards.
 6. **Content rules** (enforced by the validator):
    - exactly 12 weeks per subject
    - 6 questions per week
@@ -355,6 +362,6 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 3. [supabase/migrations/](supabase/migrations/0001_student_accounts.sql), in order
 4. [components/shell.tsx](components/shell.tsx) and [dashboard.tsx](components/dashboard.tsx)
 5. Follow one feature end to end: the week page → practice session → test runner
-6. [app/api/](app/api/doubt/route.ts) and [lib/server/](lib/server/razorpay.ts)
+6. [lib/ai/features.ts](lib/ai/features.ts) → [lib/server/ai/handler.ts](lib/server/ai/handler.ts) (the AI engine), then [lib/server/razorpay.ts](lib/server/razorpay.ts)
 
 Then run `npm run dev` and click through each flow above, both as a guest and logged in.

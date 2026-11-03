@@ -10,6 +10,7 @@
  */
 import math1 from '@/content/weeks/math1.json';
 import stat1 from '@/content/weeks/stat1.json';
+import { AI_FEATURES, isAiFeatureId, limitsFor } from '@/lib/ai/features';
 
 export const DEMO = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEMO_MODE === '1';
 
@@ -131,7 +132,7 @@ function seedUser(db: Db, p: Persona) {
     time_spent: pool.map((q, i) => 40 + Math.round(pick(q.id + i) * 110)),
   }]);
 
-  if (p === 'free') add('ai_usage', [{ user_id: uid, day: todayIST(), count: 3 }]);
+  if (p === 'free') add('ai_usage', [{ user_id: uid, day: todayIST(), feature: 'doubt', count: 3, last_at: null, tokens: 0 }]);
 }
 
 function seedShared(db: Db) {
@@ -311,37 +312,46 @@ export function createDemoClient() {
 export async function demoFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const p = read<Persona>(PERSONA_KEY, 'trial');
-  if (p === 'guest') return reply({ error: 'Log in to continue.' }, 401);
+  if (p === 'guest') return reply({ ok: false, code: 'login_required', error: 'Log in to continue.', message: 'Log in to continue.' }, 401);
 
-  if (path === '/api/doubt') {
+  // Same contract as /api/ai/<feature> (lib/server/ai/handler.ts), with the real limits from lib/ai/features.ts.
+  const feature = /^\/api\/ai\/([\w-]+)$/.exec(path)?.[1];
+  if (feature) {
+    if (!isAiFeatureId(feature)) return reply({ ok: false, code: 'invalid', message: 'Unknown AI feature.' }, 400);
+    const limits = limitsFor(feature, p === 'free' ? 'free' : 'pro');
+    if (!limits) return reply({ ok: false, code: 'not_in_plan', message: 'This is part of Pro.' }, 403);
     const db = loadDb();
     const uid = userId(p);
-    const pro = p !== 'free';
-    const limit = pro ? 200 : 5;
     const usage = (db.ai_usage ??= []);
-    let row = usage.find((r) => r.user_id === uid && r.day === todayIST());
-    if (!row) usage.push((row = { user_id: uid, day: todayIST(), count: 0 }));
-    if ((row.count as number) >= limit) return reply({ error: 'limit', used: row.count, limit, pro }, 429);
-    row.count = (row.count as number) + 1;
+    let row = usage.find((r) => r.user_id === uid && r.day === todayIST() && r.feature === feature);
+    if (!row) usage.push((row = { user_id: uid, day: todayIST(), feature, count: 0, last_at: null, tokens: 0 }));
+    const used = row.count as number;
+    const quota = { used, limit: limits.perDay };
+    if (used >= limits.perDay) return reply({ ok: false, code: 'limit', message: `You’ve used today’s ${limits.perDay} ${AI_FEATURES[feature].name} requests. They reset at midnight.`, usage: quota }, 429);
+    const wait = row.last_at ? limits.cooldownSec - Math.floor((Date.now() - Date.parse(String(row.last_at))) / 1000) : 0;
+    if (wait > 0) return reply({ ok: false, code: 'cooldown', message: `Please wait ${wait}s before asking again.`, usage: quota, retryAfter: wait }, 429);
+    row.count = used + 1;
+    row.last_at = new Date().toISOString();
     saveDb(db);
     const question = (JSON.parse(String(init.body ?? '{}')).messages as { content: string }[] | undefined)?.at(-1)?.content ?? '';
     await new Promise((r) => setTimeout(r, 700));
     return reply({
-      answer: [
-        `**Demo answer** (no AI call in demo mode) for: “${question.slice(0, 80)}”`,
-        '',
-        '1. **Mean** sab values ka average hai, isliye ek bada outlier use apni taraf kheench leta hai.',
-        '2. **Median** beech wali value hai; outlier sirf ek position badalta hai, value nahi.',
-        '3. Example: 2, 3, 4, 100 → mean = `27.25`, median = `3.5`.',
-        '',
-        '```python',
-        'import statistics',
-        'print(statistics.median([2, 3, 4, 100]))',
-        '```',
-      ].join('\n'),
-      used: row.count,
-      limit,
-      pro,
+      ok: true,
+      usage: { used: used + 1, limit: limits.perDay },
+      data: {
+        answer: [
+          `**Demo answer** (no AI call in demo mode) for: “${question.slice(0, 80)}”`,
+          '',
+          '1. **Mean** sab values ka average hai, isliye ek bada outlier use apni taraf kheench leta hai.',
+          '2. **Median** beech wali value hai; outlier sirf ek position badalta hai, value nahi.',
+          '3. Example: 2, 3, 4, 100 → mean = `27.25`, median = `3.5`.',
+          '',
+          '```python',
+          'import statistics',
+          'print(statistics.median([2, 3, 4, 100]))',
+          '```',
+        ].join('\n'),
+      },
     });
   }
 

@@ -21,7 +21,7 @@ export function ProLock({ feature, children }: { feature: string; children: Reac
         </>
       ) : (
         <>
-          <p>Upgrade to Pro for ₹{PRICING.proMonthlyInr}/month to unlock it, along with unlimited AI doubts and exam-level practice.</p>
+          <p>Upgrade to Pro for ₹{PRICING.proMonthlyInr}/month to unlock it, along with more AI doubts and exam-level practice.</p>
           <Link className="btn btn-primary mt-lg" href="/pricing">See Pro plans</Link>
         </>
       )}

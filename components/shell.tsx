@@ -82,7 +82,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {ready && user && !plan.isPro && (
             <Link href="/pricing" className="sidebar-pro">
               <strong>Go Pro for ₹{PRICING.proMonthlyInr}/month</strong>
-              <span>Unlimited AI doubts and End term tests</span>
+              <span>More AI doubts and End term tests</span>
             </Link>
           )}
           <div className="sidebar-info">

@@ -3,30 +3,17 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { authedFetch, getSupabase } from '@/lib/supabase/client';
+import { getSupabase } from '@/lib/supabase/client';
 import { loadQuestionBank, type BankQuestion } from '@/lib/question-bank';
-import { getOverride } from '@/lib/overrides';
-import { PRICING, usePlan } from '@/lib/plan';
+import { accessOf, PRICING, usePlan } from '@/lib/plan';
+import { limitsFor, type AiUsage } from '@/lib/ai/features';
+import { askAi } from '@/lib/ai/client';
 import { useAuth } from './auth/auth-provider';
 import { RichText } from './rich-text';
-import { letter } from './quiz/question-view';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
 
 const todayIST = () => new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
-
-function questionContext(q: BankQuestion) {
-  const patched = { ...q, ...getOverride(q.id) };
-  return [
-    `Question: ${patched.question}`,
-    patched.code ? `Code:\n${patched.code}` : '',
-    `Options: ${patched.options.map((o, i) => `${letter(i)}) ${o}`).join('  ')}`,
-    `Correct answer: ${letter(patched.answer)}`,
-    `Explanation on the site: ${patched.explanation}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
-}
 
 export function DoubtChat() {
   const { user, ready } = useAuth();
@@ -36,9 +23,13 @@ export function DoubtChat() {
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [usage, setUsage] = useState<{ used: number; limit: number } | null>(null);
+  const [usage, setUsage] = useState<AiUsage | null>(null);
   const [about, setAbout] = useState<BankQuestion | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  // Limits come from lib/ai/features.ts, the same numbers the server enforces.
+  const limits = limitsFor('doubt', accessOf(plan));
+  const freeLimits = limitsFor('doubt', 'free');
+  const proLimits = limitsFor('doubt', 'pro');
 
   // "Explain more with AI" links here with ?question=<id>.
   useEffect(() => {
@@ -62,9 +53,10 @@ export function DoubtChat() {
       .from('ai_usage')
       .select('count')
       .eq('day', todayIST())
+      .eq('feature', 'doubt')
       .maybeSingle()
-      .then(({ data }) => setUsage({ used: data?.count ?? 0, limit: plan.isPro ? 200 : PRICING.freeDoubtsPerDay }));
-  }, [user, plan.isPro]);
+      .then(({ data }) => limits && setUsage({ used: data?.count ?? 0, limit: limits.perDay }));
+  }, [user, limits?.perDay]); // eslint-disable-line react-hooks/exhaustive-deps -- limits is recomputed each render
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -82,32 +74,17 @@ export function DoubtChat() {
     setDraft('');
     setError('');
     setBusy(true);
-    try {
-      const res = await authedFetch('/api/doubt', {
-        method: 'POST',
-        body: JSON.stringify({ messages: next, context: about ? questionContext(about) : undefined }),
-      });
-      const data = await res.json();
-      if (res.status === 429) {
-        setUsage({ used: data.used, limit: data.limit });
-        setError(data.pro ? 'You’ve reached today’s fair-use limit. Please come back tomorrow.' : 'limit');
-        setTurns(turns);
-        setDraft(text);
-      } else if (!res.ok) {
-        setError(data.error ?? 'Something went wrong. Please try again.');
-        setTurns(turns);
-        setDraft(text);
-      } else {
-        setTurns([...next, { role: 'assistant', content: data.answer }]);
-        setUsage({ used: data.used, limit: data.limit });
-      }
-    } catch {
-      setError('Check your internet connection and try again.');
-      setTurns(turns);
-      setDraft(text);
-    } finally {
-      setBusy(false);
+    const res = await askAi<{ answer: string }>('doubt', { messages: next, questionId: about?.id });
+    setBusy(false);
+    if (res.usage) setUsage(res.usage);
+    if (res.ok) {
+      setTurns([...next, { role: 'assistant', content: res.data.answer }]);
+      return;
     }
+    // Put the doubt back so the student doesn't have to retype it.
+    setTurns(turns);
+    setDraft(text);
+    setError(res.code === 'limit' && !plan.isPro ? 'limit' : res.message);
   }
 
   if (!ready) return <div className="card chat" />;
@@ -116,7 +93,7 @@ export function DoubtChat() {
     return (
       <div className="card empty">
         <div className="empty-icon">✦</div>
-        <p>Log in to ask the AI doubt solver. New accounts get {PRICING.trialDays} days of Pro, with unlimited doubts.</p>
+        <p>Log in to ask the AI doubt solver. New accounts get {PRICING.trialDays} days of Pro, with {proLimits?.perDay} doubts a day.</p>
         <Link className="btn btn-primary" href="/login?next=/doubts">Log in to ask a doubt</Link>
       </div>
     );
@@ -127,8 +104,8 @@ export function DoubtChat() {
   return (
     <div className="card chat">
       <div className="quiz-top">
-        <span className="muted">{plan.isPro ? 'Pro · unlimited doubts' : 'Free plan'}</span>
-        {!plan.isPro && left !== null && <span className="chip chip-blue">{left} of {usage!.limit} free doubts left today</span>}
+        <span className="muted">{plan.isPro ? 'Pro plan' : 'Free plan'}</span>
+        {left !== null && <span className="chip chip-blue">{left} of {usage!.limit} doubts left today</span>}
       </div>
 
       {about && (
@@ -156,8 +133,8 @@ export function DoubtChat() {
 
       {error === 'limit' ? (
         <div className="alert alert-warn">
-          You’ve used all {usage?.limit ?? PRICING.freeDoubtsPerDay} free doubts for today. They reset at midnight, or{' '}
-          <Link href="/pricing">go Pro for ₹{PRICING.proMonthlyInr}/month</Link> for unlimited doubts.
+          You’ve used all {usage?.limit ?? freeLimits?.perDay} free doubts for today. They reset at midnight, or{' '}
+          <Link href="/pricing">go Pro for ₹{PRICING.proMonthlyInr}/month</Link> for {proLimits?.perDay} doubts a day.
         </div>
       ) : (
         error && <p className="field-error" role="alert">{error}</p>
@@ -167,7 +144,7 @@ export function DoubtChat() {
         <textarea
           className="input"
           rows={2}
-          maxLength={2000}
+          maxLength={limits?.maxInputChars}
           value={draft}
           onChange={(e) => { setDraft(e.target.value); if (error && error !== 'limit') setError(''); }}
           onKeyDown={(e) => {
