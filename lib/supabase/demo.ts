@@ -138,6 +138,10 @@ function seedUser(db: Db, p: Persona) {
 }
 
 function seedShared(db: Db) {
+  db.note_files ??= [
+    { id: 1, subject_id: 'math1', week: 1, title: 'Sets and functions: handwritten notes', path: 'math1/1/demo-sets.pdf', size_bytes: 1_840_000, pro_only: false, created_at: day(-2) },
+    { id: 2, subject_id: 'stat1', week: null, title: 'Statistics I: previous year quiz papers', path: 'stat1/all/demo-pyq.pdf', size_bytes: 3_400_000, pro_only: true, created_at: day(-5) },
+  ];
   db.upi_requests ??= [
     { id: 1, user_id: 'demo-free', email: 'free@demo.nextgen.local', utr: '412345678901', amount_inr: PRICING.proMonthlyInr, status: 'pending', note: '', reviewed_at: null, created_at: day(-0.1) },
     { id: 2, user_id: 'demo-new', email: 'new@demo.nextgen.local', utr: '412345678902', amount_inr: PRICING.proMonthlyInr, status: 'pending', note: '', reviewed_at: null, created_at: day(-0.4) },
@@ -165,6 +169,48 @@ function seedGuestProgress() {
   const at = day(-1);
   const answers = WEEKS.math1[0].questions.map((q, i) => ({ id: `guest-${q.id}`, questionId: q.id, subjectId: 'math1', week: 1, correct: i !== 2, mode: 'practice', at }));
   write(GUEST_PROGRESS_KEY, { version: 2, weeks: { 'math1:1': { done: true, saved: false } }, answers, tests: [], active: {}, pending: [] });
+}
+
+/* ---------------- storage ---------------- */
+
+/** Files "uploaded" this session, as blob URLs; seeded and older files open a one-page sample PDF. */
+const demoFiles = new Map<string, string>();
+const SAMPLE_PDF = [
+  '%PDF-1.4',
+  '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj',
+  '2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj',
+  '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj',
+  '4 0 obj<</Length 58>>stream',
+  'BT /F1 22 Tf 72 760 Td (NEXT GEN demo PDF) Tj ET',
+  'endstream endobj',
+  '5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj',
+  'trailer<</Root 1 0 R>>',
+  '%%EOF',
+].join('\n');
+
+function demoStorage(persona: () => Persona) {
+  const canRead = (path: string) => {
+    const row = (loadDb().note_files ?? []).find((r) => r.path === path);
+    return Boolean(row) && (!row?.pro_only || ['new', 'trial', 'pro', 'admin'].includes(persona()));
+  };
+  return {
+    from: () => ({
+      upload: async (path: string, file: Blob) => {
+        if (persona() !== 'admin') return { data: null, error: { message: 'Only admins can upload' } };
+        demoFiles.set(path, URL.createObjectURL(file));
+        return { data: { path }, error: null };
+      },
+      remove: async (paths: string[]) => {
+        paths.forEach((p) => demoFiles.delete(p));
+        return { data: [], error: null };
+      },
+      createSignedUrl: async (path: string) => {
+        if (!canRead(path) && persona() !== 'admin') return { data: null, error: { message: 'Object not found' } };
+        const url = demoFiles.get(path) ?? URL.createObjectURL(new Blob([SAMPLE_PDF], { type: 'application/pdf' }));
+        return { data: { signedUrl: url }, error: null };
+      },
+    }),
+  };
 }
 
 /* ---------------- query builder ---------------- */
@@ -282,6 +328,7 @@ export function createDemoClient() {
 
   return {
     from: (table: string) => new Query(table, uid()),
+    storage: demoStorage(() => current),
     rpc: async (name: string) => {
       if (name === 'is_admin') return { data: current === 'admin', error: null };
       if (name === 'delete_my_account') {
@@ -386,7 +433,8 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
     if (!row) return reply({ error: 'This payment was already reviewed.' }, 409);
     Object.assign(row, { status: approve ? 'approved' : 'rejected', note: approve ? '' : String(note ?? '').trim(), reviewed_at: new Date().toISOString() });
     const profile = (db.profiles ?? []).find((r) => r.id === row.user_id);
-    if (approve && profile) profile.pro_until = iso(Math.max(Date.now(), profile.pro_until ? Date.parse(String(profile.pro_until)) : 0) + 30 * DAY);
+    const end = (v: unknown) => (v ? Date.parse(String(v)) : 0);
+    if (approve && profile) profile.pro_until = iso(Math.max(Date.now(), end(profile.pro_until), end(profile.trial_ends_at)) + 30 * DAY);
     saveDb(db);
     return reply({ ok: true });
   }

@@ -94,6 +94,7 @@ export function PricingPlans() {
           } else {
             setMessage('Payment received, but we could not confirm it yet. It will activate within a few minutes; contact us if it doesn’t.');
           }
+          setBusy(false);
         },
         modal: { ondismiss: () => setBusy(false) },
       }).open();
@@ -103,10 +104,13 @@ export function PricingPlans() {
     }
   }
 
-  const upgradeLabel = plan.tier === 'trial' ? `Keep Pro for ₹${PRICING.proMonthlyInr}/month` : `Upgrade for ₹${PRICING.proMonthlyInr}/month`;
-  // With only UPI switched on, the QR is the way to pay, so it's always shown.
+  const isPaidPro = plan.tier === 'pro';
+  const upgradeLabel = isPaidPro
+    ? `Renew: add 30 days for ₹${PRICING.proMonthlyInr}`
+    : plan.tier === 'trial' ? `Keep Pro for ₹${PRICING.proMonthlyInr}/month` : `Upgrade for ₹${PRICING.proMonthlyInr}/month`;
+  // With only UPI switched on, the QR is the way to pay, so it's shown straight away (paid Pro students open it to renew).
   const upiOnly = Boolean(config && !config.enabled && config.upi);
-  const upiOpen = Boolean(user && plan.tier !== 'pro' && config?.upi && (showUpi || upiOnly));
+  const upiOpen = Boolean(user && config?.upi && (showUpi || (upiOnly && !isPaidPro)));
   const openUpi = () => {
     setShowUpi(true);
     requestAnimationFrame(() => document.getElementById('upi-pay')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -114,12 +118,22 @@ export function PricingPlans() {
 
   const proButton = (() => {
     if (!user) return <Link className="btn btn-primary btn-block" href="/login?next=/pricing">Start {PRICING.trialDays}-day free trial</Link>;
-    if (plan.tier === 'pro') return <span className="btn btn-primary btn-block">Pro active · {plan.daysLeft} days left</span>;
-    if (config && !config.enabled && !config.upi) return <span className="btn btn-secondary btn-block">Online payment launching soon</span>;
-    if (upiOnly) return <button className="btn btn-primary btn-block" onClick={openUpi}>{upgradeLabel}</button>;
+    const active = isPaidPro && <span className="btn btn-primary btn-block">Pro active · {plan.daysLeft} days left</span>;
+    // No auto-renewal, so paid Pro students can add another 30 days whenever they like.
+    const payStyle = isPaidPro ? 'btn-secondary' : 'btn-primary';
+    if (config && !config.enabled && !config.upi) return active || <span className="btn btn-secondary btn-block">Online payment launching soon</span>;
+    if (upiOnly) {
+      return (
+        <div className="stack">
+          {active}
+          {!upiOpen && <button className={`btn ${payStyle} btn-block`} onClick={openUpi}>{upgradeLabel}</button>}
+        </div>
+      );
+    }
     return (
       <div className="stack">
-        <button className="btn btn-primary btn-block" onClick={upgrade} disabled={busy || config === null}>
+        {active}
+        <button className={`btn ${payStyle} btn-block`} onClick={upgrade} disabled={busy || config === null}>
           {busy ? 'Opening payment…' : upgradeLabel}
         </button>
         {config?.upi && !upiOpen && <button className="btn btn-secondary btn-block" onClick={openUpi}>Pay by scanning a UPI QR instead</button>}
@@ -156,7 +170,7 @@ export function PricingPlans() {
             <span className="chip chip-teal">MOST POPULAR</span>
           </div>
           <div className="price">₹{PRICING.proMonthlyInr}<span> / month</span></div>
-          <p>Pay monthly · UPI, cards, net banking · No auto-renewal</p>
+          <p>{upiOnly ? 'Pay monthly by UPI' : 'Pay monthly · UPI, cards, net banking'} · No auto-renewal</p>
           <ul className="plan-list">
             {PRO_FEATURES.map((f) => <li key={f}>{f}</li>)}
           </ul>

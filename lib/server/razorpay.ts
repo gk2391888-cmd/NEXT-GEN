@@ -44,6 +44,12 @@ export async function grantProForOrder(orderId: string, paymentId: string): Prom
     return existing ? 'already' : 'unknown';
   }
 
-  await extendPro(admin, claimed.user_id);
+  try {
+    await extendPro(admin, claimed.user_id);
+  } catch (grantError) {
+    // Hand the order back, so the webhook's retry (or the next verify) can grant it.
+    await admin.from('payments').update({ status: 'created', razorpay_payment_id: null }).eq('razorpay_order_id', orderId);
+    throw grantError;
+  }
   return 'granted';
 }

@@ -3,19 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
-import type { Subject } from '@/lib/types';
+import type { Subject, WeekRef } from '@/lib/types';
 import { PageHead } from '@/components/ui';
 import { useAuth } from '@/components/auth/auth-provider';
 import { QuestionEditor } from './question-editor';
 import { Announcements } from './announcements';
 import { UpiRequests } from './upi-requests';
+import { NoteUploads } from './note-uploads';
 
 type Report = { id: number; question_id: string; kind: string; message: string; created_at: string };
-type Tab = 'reports' | 'edit' | 'announcements' | 'payments';
+type Tab = 'reports' | 'edit' | 'notes' | 'announcements' | 'payments';
 
 const KIND_LABEL: Record<string, string> = { wrong_answer: 'Wrong answer', unclear: 'Unclear', typo: 'Typo', other: 'Other' };
 
-export function AdminPanel({ subjects }: { subjects: Subject[] }) {
+export function AdminPanel({ subjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const { user, ready, isAdmin } = useAuth();
   const bank = useQuestionBank();
   const [tab, setTab] = useState<Tab>('reports');
@@ -69,10 +70,11 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
 
   return (
     <>
-      <PageHead kicker="Admin" title="Admin panel" description="Review reported questions, correct content, post announcements and confirm UPI payments. Changes go live immediately." />
+      <PageHead kicker="Admin" title="Admin panel" description="Review reported questions, correct content, upload PDF notes, post announcements and confirm UPI payments. Changes go live immediately." />
       <div className="filters mb-lg">
         <button className={tab === 'reports' ? 'on' : ''} onClick={() => setTab('reports')}>Reports ({grouped.length})</button>
         <button className={tab === 'edit' ? 'on' : ''} onClick={() => setTab('edit')}>Edit questions</button>
+        <button className={tab === 'notes' ? 'on' : ''} onClick={() => setTab('notes')}>PDF notes</button>
         <button className={tab === 'announcements' ? 'on' : ''} onClick={() => setTab('announcements')}>Announcements</button>
         <button className={tab === 'payments' ? 'on' : ''} onClick={() => setTab('payments')}>UPI payments{pendingPayments ? ` (${pendingPayments})` : ''}</button>
       </div>
@@ -124,6 +126,8 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
           onSaved={(qid) => closeReports(qid, 'fixed')}
         />
       )}
+
+      {tab === 'notes' && <NoteUploads subjects={subjects} catalog={catalog} userId={user.id} />}
 
       {tab === 'announcements' && <Announcements />}
 

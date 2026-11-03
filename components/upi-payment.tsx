@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { authedFetch, getSupabase } from '@/lib/supabase/client';
 import { cleanUtr, isUtr, upiLink } from '@/lib/upi';
+import { sync } from '@/lib/sync';
 
 export type UpiConfig = { id: string; name: string; amountInr: number };
 type UpiRequest = { id: number; utr: string; amount_inr: number; status: 'pending' | 'approved' | 'rejected'; note: string; created_at: string };
@@ -17,6 +18,7 @@ export function UpiPayment({ upi, userId }: { upi: UpiConfig; userId: string }) 
   const link = upiLink(upi, upi.amountInr, ref);
   const [qr, setQr] = useState('');
   const [latest, setLatest] = useState<UpiRequest | null>(null);
+  const latestRef = useRef<UpiRequest | null>(null);
   const [utr, setUtr] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -33,12 +35,32 @@ export function UpiPayment({ upi, userId }: { upi: UpiConfig; userId: string }) 
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(1);
-    setLatest((data?.[0] as UpiRequest | undefined) ?? null);
+    const next = (data?.[0] as UpiRequest | undefined) ?? null;
+    const prev = latestRef.current;
+    // Just approved while this page was open: fetch the new Pro dates.
+    if (prev?.status === 'pending' && next?.id === prev.id && next.status === 'approved') {
+      sync(userId);
+      setMessage('Payment confirmed. Pro is active. Thank you!');
+    }
+    latestRef.current = next;
+    setLatest(next);
   }, [userId]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // While a payment waits for an admin, check again every minute and when the student comes back to the tab.
+  const pending = latest?.status === 'pending';
+  useEffect(() => {
+    if (!pending) return;
+    const id = window.setInterval(load, 60_000);
+    window.addEventListener('focus', load);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener('focus', load);
+    };
+  }, [pending, load]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -51,6 +73,7 @@ export function UpiPayment({ upi, userId }: { upi: UpiConfig; userId: string }) 
     setBusy(false);
     if (!res.ok) return setMessage(body.error ?? 'Could not submit. Please try again.');
     setUtr('');
+    latestRef.current = body.request;
     setLatest(body.request);
   }
 
@@ -118,7 +141,7 @@ export function UpiPayment({ upi, userId }: { upi: UpiConfig; userId: string }) 
           </li>
         </ol>
       </div>
-      {message && <p className="field-error mt-sm" role="alert">{message}</p>}
+      {message && <p className={`${latest?.status === 'approved' ? 'alert' : 'field-error'} mt-sm`} role="alert">{message}</p>}
       <p className="muted mt-sm">We check every payment by hand, so Pro starts within a few hours, not instantly. Each payment adds 30 days.</p>
     </div>
   );

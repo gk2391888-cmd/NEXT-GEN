@@ -5,6 +5,7 @@ import { getSubject, getSubjects, getWeek, getWeekRefs, getWeeks } from '@/lib/c
 import { InlineText } from '@/components/ui';
 import { WeekNav } from '@/components/library/week-nav';
 import { WeekActions, VisitTracker } from '@/components/library/week-actions';
+import { WeekNoteFiles } from '@/components/library/note-files';
 
 type Params = { subject: string; week: string };
 
@@ -52,6 +53,8 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
             </div>
             <WeekActions subjectId={subject.id} week={week.week} variant="top" />
           </div>
+
+          <WeekNoteFiles subjectId={subject.id} week={week.week} />
 
           <section className="notes-section">
             <h3><span className="num">1</span>Concept</h3>

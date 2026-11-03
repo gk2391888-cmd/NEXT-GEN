@@ -74,7 +74,7 @@ next-gen/
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
 ├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
-├── supabase/migrations/      ← 0001 → 0005, run by hand in the Supabase SQL editor
+├── supabase/migrations/      ← 0001 → 0006, run by hand in the Supabase SQL editor
 ├── scripts/
 │   ├── validate-content.mjs  ← Runs before every build, so broken content never ships
 │   ├── build-tokens.mjs      ← tokens/*.json → app/tokens.css + lib/tokens.ts
@@ -134,6 +134,7 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 | `announcements` | Banners on the Overview page | Admin; everyone reads active ones |
 | `ai_usage` | AI requests per student, per feature, per day (India time), plus tokens used | Server only, via `consume_ai_quota()` / `finish_ai_request()` |
 | `payments` | Razorpay orders and their status | Server (service role) only |
+| `note_files` | PDF notes uploaded by admins: subject, week (null = whole subject), title, Storage path, Pro only | Everyone reads the list; admins write. The files themselves are in the private `notes` bucket. |
 | `upi_requests` | UPI QR payments: UTR, amount, pending / approved / rejected | Server (service role) only; students read their own, admins read all |
 | `admins` | Who can open `/admin` | Added by hand in SQL |
 
@@ -286,12 +287,15 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
 
 ### Admin (`/admin`)
 
-Four tabs ([components/admin/](components/admin/admin-panel.tsx)):
+Five tabs ([components/admin/](components/admin/admin-panel.tsx)):
 
 - **Reports:** open reports grouped by question, with **Fix** and **Dismiss**.
 - **Edit questions:** search by ID (for example `stat1-w3-q4`) or text. Edit the text, options, answer and explanation, with a live preview.
   - Saves go to `content_overrides`, and students see them **without a redeploy** via `useCorrectedQuestions()` in [lib/overrides.ts](lib/overrides.ts).
   - **Revert to original** removes the correction.
+- **PDF notes:** upload PDFs (up to 25 MB, several at once) for a subject and a week or "All weeks", optionally Pro only; open, switch free/Pro or delete them ([components/admin/note-uploads.tsx](components/admin/note-uploads.tsx)).
+  - The browser uploads straight to the private Storage bucket `notes` (no API route, so Vercel's request size limit doesn't apply), then adds a `note_files` row. Storage policies in migration 0006 allow uploads and deletes for admins only.
+  - Students see them on the Study Library page and on the matching week's notes ([components/library/note-files.tsx](components/library/note-files.tsx)). "Open PDF" is a plain link to a one-hour signed URL, so it works in in-app browsers that block popups. Free files open for everyone; Pro files only for trial, Pro and admin accounts.
 - **Announcements:** create, hide or delete. They show on the Overview page.
 - **UPI payments:** UPI QR payments waiting for a check, oldest first. Approve only after the UTR and amount show up in the bank or UPI app.
 

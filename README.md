@@ -43,7 +43,8 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | AI Doubt Solver (limits set in `lib/ai/features.ts`) | 5 / day | 200 / day, longer answers |
 | Time per question in test results, Save as PDF | | ✓ |
 
-- **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), post announcements, confirm UPI payments.
+- **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), upload PDF notes, post announcements, confirm UPI payments.
+- **PDF notes**: admins upload PDFs per subject and week (or for the whole subject) into the private Storage bucket `notes`, listed in `note_files`. Students open them from the Study Library and the week's notes through a one-hour signed link. Files marked Pro only open for trial and Pro students; Storage enforces that, not the browser.
 - **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. `lib/plans.ts` turns them into a tier, the same way on the server and in the browser.
 - **Payments**, two ways, each adding 30 days via the service-role key. Either can be on alone, or both.
   - Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup).
@@ -64,7 +65,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 
-Migrations: run `supabase/migrations/0001…0005` in order in the Supabase SQL Editor.
+Migrations: run `supabase/migrations/0001…0006` in order in the Supabase SQL Editor.
 
 ## AI features
 

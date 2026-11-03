@@ -9,9 +9,19 @@ import { useAuth } from './auth-provider';
 const RESEND_SECONDS = 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Only same-site paths, so the login link can't be used to bounce students to another website. */
+/**
+ * Only same-site paths, so the login link can't be used to bounce students to another website.
+ * Parsed like the browser would, since it treats `/\evil.com` and `/%09/evil.com` as `//evil.com`.
+ */
 function safeNext(value: string | null) {
-  return value && value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/login') ? value : '/';
+  if (!value?.startsWith('/')) return '/';
+  const base = 'https://nextgen.invalid';
+  try {
+    const url = new URL(value, base);
+    return url.origin === base && !url.pathname.startsWith('/login') ? url.pathname + url.search + url.hash : '/';
+  } catch {
+    return '/';
+  }
 }
 
 function friendlyError(message: string) {
