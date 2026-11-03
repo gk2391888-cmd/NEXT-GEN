@@ -25,7 +25,7 @@ export default async function PracticeWeekPage({ params }: { params: Promise<Par
 
   return (
     <>
-      <div className="crumb" style={{ marginBottom: 16 }}>
+      <div className="crumb page-crumb">
         <Link href="/practice">Practice</Link><span className="sep">/</span>
         {subject.short}<span className="sep">/</span><strong>Week {week.week}</strong>
       </div>

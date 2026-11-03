@@ -43,37 +43,37 @@ export function MistakesView({ subjects, catalog }: Props) {
     return (
       <div className="card empty">
         <div className="empty-icon">↻</div>
-        <p style={{ marginBottom: 14 }}>{state.answers.length ? 'No mistakes to revise. Great work!' : 'Practise some questions; the ones you get wrong will appear here for revision.'}</p>
+        <p>{state.answers.length ? 'No mistakes to revise. Great work!' : 'Practise some questions; the ones you get wrong will appear here for revision.'}</p>
         <Link className="btn btn-primary" href="/practice">Go to practice</Link>
       </div>
     );
   }
 
   return (
-    <div className="row" style={{ alignItems: 'flex-start' }}>
-      <section className="card" style={{ flex: 1, minWidth: 0 }}>
+    <div className="row">
+      <section className="card row-main">
         <div className="quiz-top">
           <h3>Due for revision</h3>
           <span className={`chip ${due.length ? 'chip-red' : 'chip-teal'}`}>{due.length} due today</span>
         </div>
         {due.length === 0 ? (
-          <p className="muted" style={{ padding: '12px 0' }}>Nothing due right now. Come back when the next ones are ready.</p>
+          <p className="muted my-md">Nothing due right now. Come back when the next ones are ready.</p>
         ) : (
           <>
-            <table className="table">
+            <table className="table table-stack">
               <thead><tr><th>Subject</th><th>Week</th><th>Questions</th><th /></tr></thead>
               <tbody>
                 {groups.map((list) => (
                   <tr key={`${list[0].subjectId}:${list[0].week}`}>
                     <td><strong>{subjectName.get(list[0].subjectId)}</strong></td>
                     <td>Week {list[0].week} <span className="muted">· {titleOf(list[0])}</span></td>
-                    <td>{list.length}</td>
-                    <td style={{ textAlign: 'right' }}><button className="btn btn-secondary" onClick={() => start(list)} disabled={!bank}>Revise</button></td>
+                    <td data-label="Questions:">{list.length}</td>
+                    <td className="text-right"><button className="btn btn-secondary" onClick={() => start(list)} disabled={!bank}>Revise</button></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <button className="btn btn-primary" style={{ marginTop: 14 }} onClick={() => start(due)} disabled={!bank}>
+            <button className="btn btn-primary mt-lg" onClick={() => start(due)} disabled={!bank}>
               {bank ? `Revise all ${due.length} →` : 'Loading questions…'}
             </button>
           </>
@@ -81,7 +81,7 @@ export function MistakesView({ subjects, catalog }: Props) {
       </section>
 
       <aside className="card test-side">
-        <h3 style={{ marginBottom: 8 }}>Coming up</h3>
+        <h3 className="card-title">Coming up</h3>
         {upcoming.length === 0 ? (
           <p className="muted">Nothing scheduled.</p>
         ) : (
@@ -92,7 +92,7 @@ export function MistakesView({ subjects, catalog }: Props) {
             </div>
           ))
         )}
-        <p className="muted" style={{ marginTop: 10 }}>{mistakes.length} question{mistakes.length === 1 ? '' : 's'} in your revision list.</p>
+        <p className="muted mt-md">{mistakes.length} question{mistakes.length === 1 ? '' : 's'} in your revision list.</p>
       </aside>
     </div>
   );
@@ -108,10 +108,10 @@ function RevisionSession({ questions: original, onDone }: { questions: BankQuest
 
   if (!q) {
     return (
-      <div className="card" style={{ textAlign: 'center', padding: 28, maxWidth: 780 }}>
+      <div className="card card-center max-reading">
         <div className="kicker">Revision complete</div>
         <h2>{right} of {questions.length} correct</h2>
-        <p style={{ margin: '6px 0 18px' }}>Correct ones move further out; wrong ones stay due until you get them right.</p>
+        <p className="mt-sm mb-lg">Correct ones move further out; wrong ones stay due until you get them right.</p>
         <button className="btn btn-primary" onClick={onDone}>Back to My Mistakes</button>
       </div>
     );
@@ -131,8 +131,8 @@ function RevisionSession({ questions: original, onDone }: { questions: BankQuest
         <span className="chip chip-red">REVISION · {q.weekTitle.toUpperCase()}</span>
         <span className="muted">Question {index + 1} of {questions.length}</span>
       </div>
-      <ProgressBar value={(index / questions.length) * 100} color="var(--primary)" />
-      <div className="card" style={{ marginTop: 14, padding: '22px 24px' }}>
+      <ProgressBar value={(index / questions.length) * 100} color="var(--color-accent-solid)" />
+      <div className="card quiz-card">
         <QuestionView question={q} selected={selected} onSelect={checked ? undefined : setSelected} reveal={checked} />
         {checked && <Explanation question={q} selected={selected} />}
         <div className="quiz-actions">

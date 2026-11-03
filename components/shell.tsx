@@ -19,7 +19,18 @@ const NAV = [
   { href: '/progress', label: 'My Progress', icon: '▥' },
 ];
 
+/** Topbar titles for pages that aren't in the sidebar. */
+const OTHER_PAGES = [
+  { href: '/search', label: 'Search notes' },
+  { href: '/pricing', label: 'Plans and pricing' },
+  { href: '/profile', label: 'My profile' },
+  { href: '/admin', label: 'Admin' },
+  { href: '/privacy', label: 'Privacy Policy' },
+  { href: '/terms', label: 'Terms of Use' },
+];
+
 const isActive = (pathname: string, href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+const pageTitle = (pathname: string) => [...NAV, ...OTHER_PAGES].find((n) => isActive(pathname, n.href))?.label ?? 'NEXT GEN';
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -39,7 +50,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <span className="logo" aria-hidden="true">N</span>
           <span>
             <span className="brand">NEXT GEN</span>
-            <span className="brand-sub" style={{ display: 'block' }}>STUDENT LEARNING HUB</span>
+            <span className="brand-sub">STUDENT LEARNING HUB</span>
           </span>
         </Link>
         <div className="side-eyebrow">WORKSPACE</div>
@@ -95,8 +106,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="top-left">
             <button className="menu-toggle" aria-label="Open navigation" aria-expanded={open} onClick={() => setOpen((o) => !o)}>☰</button>
             <span className="crumb">
-              Student workspace<span className="sep">/</span>
-              <strong>{NAV.find((n) => isActive(pathname, n.href))?.label ?? 'NEXT GEN'}</strong>
+              <span className="crumb-section">Student workspace<span className="sep">/</span></span>
+              <strong>{pageTitle(pathname)}</strong>
             </span>
           </div>
           <AccountMenu />

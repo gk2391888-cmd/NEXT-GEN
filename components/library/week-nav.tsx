@@ -5,7 +5,7 @@ import { useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent } from '@/lib/progress/insights';
 import type { Subject, WeekRef } from '@/lib/types';
-import { ProgressBar } from '@/components/ui';
+import { ProgressBar, subjectColor } from '@/components/ui';
 
 export function WeekNav({ subject, weeks, current }: { subject: Subject; weeks: WeekRef[]; current: number }) {
   const state = useProgress();
@@ -16,9 +16,9 @@ export function WeekNav({ subject, weeks, current }: { subject: Subject; weeks: 
     <nav className="card week-list" aria-label={`${subject.name} weeks`}>
       <div className="week-list-head">
         <h3>{subject.name}</h3>
-        <div className="muted" style={{ marginBottom: 8 }}>{subject.code} · {doneCount} of {weeks.length} done</div>
-        <ProgressBar value={percent(doneCount, weeks.length)} color={subject.color} />
-        <Link className="link" style={{ display: 'inline-block', marginTop: 10 }} href={`/library/${subject.id}/formulas`}>Formula sheet →</Link>
+        <div className="muted mb-sm">{subject.code} · {doneCount} of {weeks.length} done</div>
+        <ProgressBar value={percent(doneCount, weeks.length)} color={subjectColor(subject.id)} />
+        <Link className="link inline-block mt-md" href={`/library/${subject.id}/formulas`}>Formula sheet →</Link>
       </div>
       {weeks.map((w) => {
         const active = w.week === current;

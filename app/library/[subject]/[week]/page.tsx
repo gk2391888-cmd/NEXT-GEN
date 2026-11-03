@@ -34,21 +34,21 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
   return (
     <>
       <VisitTracker subjectId={subject.id} week={week.week} />
-      <div className="crumb no-print" style={{ marginBottom: 16 }}>
+      <div className="crumb page-crumb no-print">
         <Link href="/library">Study Library</Link><span className="sep">/</span>
         {subject.short}<span className="sep">/</span><strong>Week {week.week}</strong>
       </div>
 
-      <div className="row" style={{ alignItems: 'flex-start' }}>
+      <div className="row">
         <WeekNav subject={subject} weeks={weeks} current={week.week} />
 
         <article className="card notes">
           <div className="notes-head">
-            <div style={{ minWidth: 0, flex: '1 1 300px' }}>
+            <div>
               <span className="chip chip-teal">WEEK {week.week} · {week.readMinutes} MIN READ</span>
               <h1>{week.title}</h1>
               <p>{week.summary}</p>
-              <p className="muted" style={{ marginTop: 6 }}>{subject.name} · {subject.code}</p>
+              <p className="muted mt-sm">{subject.name} · {subject.code}</p>
             </div>
             <WeekActions subjectId={subject.id} week={week.week} variant="top" />
           </div>
@@ -61,7 +61,7 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
           <section className="notes-section">
             <h3><span className="num">2</span>Solved example</h3>
             <div className="example">
-              <div style={{ color: 'var(--ink)', fontWeight: 600 }}><InlineText text={week.example.problem} /></div>
+              <div className="example-problem"><InlineText text={week.example.problem} /></div>
               {week.example.code && <pre className="code-block">{week.example.code}</pre>}
               <ol>{week.example.steps.map((s, i) => <li key={i}><InlineText text={s} /></li>)}</ol>
             </div>
@@ -85,7 +85,7 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
             </div>
           </div>
 
-          <div className="notes-foot no-print" style={{ borderTop: 0, paddingTop: 0 }}>
+          <div className="notes-foot flush no-print">
             {prev ? <Link className="link" href={`/library/${subject.id}/${prev.week}`}>← Week {prev.week}: {prev.title}</Link> : <span />}
             {next && <Link className="link" href={`/library/${subject.id}/${next.week}`}>Week {next.week}: {next.title} →</Link>}
           </div>

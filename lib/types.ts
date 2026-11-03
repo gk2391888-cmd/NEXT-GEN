@@ -4,8 +4,6 @@ export type Subject = {
   name: string;
   short: string;
   icon: string;
-  color: string;
-  tone: string;
 };
 
 export type Difficulty = 'easy' | 'medium' | 'hard';

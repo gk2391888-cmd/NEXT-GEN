@@ -20,9 +20,9 @@ export function ImportPrompt({ user }: { user: User }) {
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="import-title">
       <div className="card modal">
         <span className="chip chip-teal">WELCOME{name ? `, ${name.toUpperCase()}` : ''}</span>
-        <h2 id="import-title" style={{ margin: '12px 0 6px' }}>We found progress on this device</h2>
+        <h2 id="import-title" className="mt-md mb-sm">We found progress on this device</h2>
         <p>Save the practice you did before logging in to your account so it’s available on all your devices.</p>
-        <div className="grid grid-3" style={{ margin: '16px 0', gap: 8 }}>
+        <div className="grid grid-3 gap-md my-lg">
           <Stat value={guest.answers.length} label="answers" />
           <Stat value={guest.tests.length} label="mock tests" />
           <Stat value={weeksDone} label="weeks done" />
@@ -38,8 +38,8 @@ export function ImportPrompt({ user }: { user: User }) {
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div style={{ background: 'var(--bg)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
-      <strong style={{ display: 'block', font: '800 20px var(--font-head)' }}>{value}</strong>
+    <div className="import-stat">
+      <strong className="stat-value">{value}</strong>
       <span className="muted">{label}</span>
     </div>
   );

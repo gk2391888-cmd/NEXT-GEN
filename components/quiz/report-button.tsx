@@ -40,26 +40,26 @@ export function ReportButton({ questionId, label }: { questionId: string; label?
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby={`report-${questionId}`} onClick={(e) => e.target === e.currentTarget && setOpen(false)}>
           <form className="card modal" onSubmit={send}>
             <h3 id={`report-${questionId}`}>Report a problem with this question</h3>
-            <p className="muted" style={{ margin: '4px 0 12px' }}>{label ?? questionId}</p>
+            <p className="muted mt-xs mb-md">{label ?? questionId}</p>
             {!user ? (
               <>
                 <p>Log in to send a report, so we can follow up if needed.</p>
-                <div className="btn-group" style={{ marginTop: 14 }}>
+                <div className="btn-group mt-lg">
                   <Link className="btn btn-primary" href={`/login?next=${encodeURIComponent(pathname)}`}>Log in</Link>
                   <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>Cancel</button>
                 </div>
               </>
             ) : (
               <>
-                <div className="filters" role="radiogroup" aria-label="What’s wrong?" style={{ marginBottom: 10 }}>
+                <div className="filters mb-md" role="radiogroup" aria-label="What’s wrong?">
                   {KINDS.map((k) => (
                     <button key={k.id} type="button" role="radio" aria-checked={kind === k.id} className={kind === k.id ? 'on' : ''} onClick={() => setKind(k.id)}>{k.label}</button>
                   ))}
                 </div>
                 <label className="field-label" htmlFor={`report-msg-${questionId}`}>Details (optional)</label>
-                <textarea id={`report-msg-${questionId}`} className="input" style={{ margin: 0, minHeight: 80 }} maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="For example: option B is also correct because…" />
-                {state === 'error' && <p className="field-error" role="alert" style={{ marginTop: 8 }}>We couldn’t send your report. Please try again.</p>}
-                <div className="btn-group" style={{ justifyContent: 'flex-end', marginTop: 12 }}>
+                <textarea id={`report-msg-${questionId}`} className="input" maxLength={1000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="For example: option B is also correct because…" />
+                {state === 'error' && <p className="field-error" role="alert">We couldn’t send your report. Please try again.</p>}
+                <div className="btn-group justify-end mt-md">
                   <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>Cancel</button>
                   <button className="btn btn-primary" disabled={state === 'sending'}>{state === 'sending' ? 'Sending…' : 'Send report'}</button>
                 </div>

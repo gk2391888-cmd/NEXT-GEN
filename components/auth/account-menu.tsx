@@ -38,8 +38,8 @@ export function AccountMenu() {
   if (!user) {
     return (
       <div className="account">
-        <span className="muted hide-mobile">Progress is saved on this device only</span>
-        <Link className="btn btn-primary" href={`/login?next=${encodeURIComponent(pathname)}`}>Log in to save progress</Link>
+        <span className="muted hide-tablet">Progress is saved on this device only</span>
+        <Link className="btn btn-primary" href={`/login?next=${encodeURIComponent(pathname)}`}>Log in<span className="hide-phone"> to save progress</span></Link>
       </div>
     );
   }
@@ -48,7 +48,7 @@ export function AccountMenu() {
 
   return (
     <div className="account" ref={ref}>
-      {STATUS_TEXT[status] && <span className={`sync-chip hide-mobile ${status}`}>{STATUS_TEXT[status]}</span>}
+      {STATUS_TEXT[status] && <span className={`sync-chip hide-tablet ${status}`}>{STATUS_TEXT[status]}</span>}
       {plan.tier === 'trial' && <Link href="/pricing" className="plan-chip pro">Pro trial · {plan.daysLeft}d left</Link>}
       {plan.tier === 'pro' && <span className="plan-chip pro">Pro</span>}
       {plan.tier === 'free' && <Link href="/pricing" className="plan-chip">Upgrade</Link>}
@@ -58,10 +58,10 @@ export function AccountMenu() {
       {open && (
         <div className="menu" role="menu">
           <div className="menu-head">
-            <span className="avatar" aria-hidden="true" style={{ width: 40, height: 40 }}>{initials(user, fullName)}</span>
-            <div style={{ minWidth: 0 }}>
-              <strong style={{ display: 'block' }}>{fullName || 'Student'}</strong>
-              <span className="muted" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</span>
+            <span className="avatar lg" aria-hidden="true">{initials(user, fullName)}</span>
+            <div className="min-w-0">
+              <strong className="block">{fullName || 'Student'}</strong>
+              <span className="muted block truncate">{user.email}</span>
             </div>
           </div>
           <Link role="menuitem" className="menu-item" href="/profile">My profile</Link>

@@ -22,7 +22,7 @@ It was built in 3 phases, one commit each:
 | Layer | What's used |
 |---|---|
 | Framework | **Next.js 16 App Router**, React 19, TypeScript. No other UI libraries. |
-| Styling | One hand-written stylesheet, [app/globals.css](app/globals.css), with CSS variables. No Tailwind. |
+| Styling | Design tokens in [tokens/](tokens/README.md) (W3C DTCG JSON) → generated CSS variables → one stylesheet, [app/globals.css](app/globals.css). No Tailwind. |
 | Content | JSON files in `content/`, read from disk **at build time** |
 | Auth and database | **Supabase**: email magic link, OTP code or Google; Postgres with Row Level Security |
 | AI | Google **Gemini** (`gemini-2.5-flash`), called from a server route |
@@ -50,7 +50,8 @@ next-gen/
 │   │   ├── content/questions/route.ts → every question as JSON (static)
 │   │   └── payments/{config,order,verify,webhook}/route.ts
 │   ├── manifest.ts           ← PWA "Add to home screen"
-│   └── globals.css           ← The entire design system
+│   ├── tokens.css            ← Generated CSS variables (from tokens/, don't edit)
+│   └── globals.css           ← All styles, built only from tokens
 ├── components/               ← UI (almost all 'use client')
 │   ├── shell.tsx             ← Sidebar + topbar + footer
 │   ├── ui.tsx                ← Small shared pieces: InlineText, PageHead, ProgressBar…
@@ -67,12 +68,16 @@ next-gen/
 │   ├── supabase/client.ts    ← Browser Supabase client + authedFetch()
 │   └── server/               ← Server-only: gemini.ts, razorpay.ts, supabase.ts (service role)
 ├── content/                  ← ★ All study material
-│   ├── subjects.json         ← The 8 subjects (id, code, colours, icon)
+│   ├── subjects.json         ← The 8 subjects (id, code, name, icon); colours live in tokens
 │   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
+├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
 ├── supabase/migrations/      ← 0001 → 0003, run by hand in the Supabase SQL editor
-├── scripts/validate-content.mjs ← Runs before every build, so broken content never ships
+├── scripts/
+│   ├── validate-content.mjs  ← Runs before every build, so broken content never ships
+│   ├── build-tokens.mjs      ← tokens/*.json → app/tokens.css + lib/tokens.ts
+│   └── lint-tokens.mjs       ← Rejects raw colours/sizes; checks contrast
 ├── public/pyodide-worker.js  ← Python sandbox worker
 ├── design/                   ← HTML mockups for each phase (reference only)
 └── legacy/                   ← The original single-file prototype (reference only)
@@ -279,8 +284,14 @@ Three tabs ([components/admin/](components/admin/admin-panel.tsx)):
 
 ## 7. UI/UX conventions
 
-- **Design tokens** are on `:root` in `globals.css`: navy sidebar `--nav`, primary indigo `#5364ef`, teal for success, red for wrong, yellow for warnings. Fonts are DM Sans for body text and Plus Jakarta Sans for headings.
-- **Breakpoints** are at 1100 / 900 / 560 px. There's a `@media print` block, and `.no-print` hides controls in PDFs.
+- **Design tokens:** every colour, space, size, radius, font size, shadow and breakpoint comes from [tokens/](tokens/README.md), written in the W3C DTCG format.
+  - There are three tiers: **primitive → semantic → component**.
+  - `npm run tokens` generates [app/tokens.css](app/tokens.css) (CSS variables) and [lib/tokens.ts](lib/tokens.ts) (types plus raw values).
+  - `npm run lint:tokens`, which also runs inside `npm run build`, rejects raw colours, raw sizes, primitive tokens and hard-coded inline styles. It also checks WCAG AA contrast.
+  - Read [tokens/README.md](tokens/README.md) before changing any styles.
+- **Brand:** teal is the primary action colour, indigo the accent (selection, links, info). The sidebar is navy. Fonts are DM Sans for body text and Plus Jakarta Sans for headings.
+- **Layout in JSX:** use the helper classes in `globals.css` (`mt-lg`, `flex-between`, `row-main`, `row-aside`, `card-loose`, …) instead of `style={{…}}`.
+- **Breakpoints** are tokens: laptop 1100px, tablet 900px, phone 600px. There's a `@media print` block, and `.no-print` hides controls in PDFs. Tables with row actions use `.table-stack`, so they become stacked rows on phones.
 - **Repeated patterns:**
   - `PageHead` (small kicker + title + description) on every page
   - `.card`, `.chip`, `.btn-primary/secondary/danger`
@@ -296,6 +307,8 @@ npm install
 npm run dev               # http://localhost:3000
 npm run validate:content  # check content JSON
 npm run typecheck         # TypeScript check
+npm run tokens            # rebuild CSS variables after editing tokens/*.json
+npm run lint:tokens       # check styles only use design tokens
 ```
 
 - **Without any env vars the site still works.** It falls back to the production Supabase project (the publishable key is hard-coded in [lib/supabase/client.ts](lib/supabase/client.ts)). The AI shows "being set up" and payments show "launching soon".

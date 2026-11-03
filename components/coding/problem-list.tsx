@@ -17,14 +17,14 @@ export function ProblemList({ problems, sets }: { problems: Summary[]; sets: { i
   const solvedCount = practice.filter((p) => coding[p.id]).length;
 
   return (
-    <div className="row" style={{ alignItems: 'flex-start' }}>
-      <section className="card" style={{ flex: 1, minWidth: 0 }}>
+    <div className="row">
+      <section className="card row-main">
         <div className="quiz-top">
           <h3>Practice problems</h3>
           <span className="muted">{solvedCount} of {practice.length} solved</span>
         </div>
         <div className="table-scroll">
-          <table className="table">
+          <table className="table table-stack">
             <thead><tr><th>#</th><th>Problem</th><th>Week</th><th>Level</th><th /></tr></thead>
             <tbody>
               {practice.map((p, i) => (
@@ -33,7 +33,7 @@ export function ProblemList({ problems, sets }: { problems: Summary[]; sets: { i
                   <td><Link href={`/lab/${p.id}`}><strong>{p.title}</strong></Link></td>
                   <td className="muted">{p.week}</td>
                   <td><span className={`chip ${DIFFICULTY_CHIP[p.difficulty]}`}>{p.difficulty.toUpperCase()}</span></td>
-                  <td style={{ textAlign: 'right' }}>{coding[p.id] ? <span className="chip chip-teal">✓ SOLVED</span> : <Link className="link" href={`/lab/${p.id}`}>Solve →</Link>}</td>
+                  <td className="text-right">{coding[p.id] ? <span className="chip chip-teal">✓ SOLVED</span> : <Link className="link" href={`/lab/${p.id}`}>Solve →</Link>}</td>
                 </tr>
               ))}
             </tbody>
@@ -47,7 +47,7 @@ export function ProblemList({ problems, sets }: { problems: Summary[]; sets: { i
           const done = list.filter((p) => coding[p.id]).length;
           return (
             <div key={set.id} className="card test-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+              <div className="flex-between">
                 <strong>{set.title}</strong>
                 <ProTag />
               </div>

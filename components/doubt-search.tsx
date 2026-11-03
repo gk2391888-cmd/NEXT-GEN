@@ -12,9 +12,9 @@ export function DoubtSearch({ faqs }: { faqs: Faq[] }) {
 
   return (
     <div className="card">
-      <h3 style={{ margin: '0 0 2px' }}>Search the concept help library</h3>
+      <h3 className="mb-xs">Search the concept help library</h3>
       <p className="muted">Try: determinant, range, independent events, grammar, Python loop.</p>
-      <input className="input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search concepts…" aria-label="Search doubt help topics" />
+      <input className="input mt-md" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search concepts…" aria-label="Search doubt help topics" />
       {matches.length === 0 ? (
         <div className="empty">
           <div className="empty-icon">⌕</div>
@@ -22,8 +22,8 @@ export function DoubtSearch({ faqs }: { faqs: Faq[] }) {
         </div>
       ) : (
         matches.map((f) => (
-          <div key={f.title} className="weak-row" style={{ display: 'block' }}>
-            <h3 style={{ fontSize: 14, marginBottom: 4 }}>{f.title}</h3>
+          <div key={f.title} className="weak-row stacked">
+            <h3 className="text-title mb-xs">{f.title}</h3>
             <p>{f.answer}</p>
           </div>
         ))

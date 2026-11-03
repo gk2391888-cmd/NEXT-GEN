@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { authedFetch } from '@/lib/supabase/client';
 import { PRICING, usePlan } from '@/lib/plan';
 import { sync } from '@/lib/sync';
+import { RAW } from '@/lib/tokens';
 import { useAuth } from './auth/auth-provider';
 
 const FREE_FEATURES = [
@@ -71,7 +72,7 @@ export function PricingPlans() {
         name: 'NEXT GEN',
         description: 'Pro · 1 month',
         prefill: { email: order.email },
-        theme: { color: '#20c8ba' },
+        theme: { color: RAW['color-action-primary-bg'] },
         handler: async (r: RazorpayResponse) => {
           const verify = await authedFetch('/api/payments/verify', {
             method: 'POST',
@@ -105,16 +106,16 @@ export function PricingPlans() {
 
   return (
     <>
-      <div style={{ textAlign: 'center', margin: '6px 0 24px' }}>
+      <div className="page-head-center">
         <span className="chip chip-teal">{PRICING.trialDays} DAYS OF PRO FREE · NO CARD NEEDED</span>
-        <h1 style={{ margin: '12px 0 6px' }}>Simple pricing for every student</h1>
+        <h1 className="mt-md">Simple pricing for every student</h1>
         <p>Everything you need to study is free. Go Pro for unlimited AI help and exam-level practice.</p>
         {plan.tier === 'trial' && (
-          <p className="muted" style={{ marginTop: 8 }}>Your free trial has {plan.daysLeft} day{plan.daysLeft === 1 ? '' : 's'} left. After that you move to Free automatically; you’re never charged unless you upgrade.</p>
+          <p className="muted mt-sm">Your free trial has {plan.daysLeft} day{plan.daysLeft === 1 ? '' : 's'} left. After that you move to Free automatically; you’re never charged unless you upgrade.</p>
         )}
       </div>
 
-      <div className="grid grid-2" style={{ maxWidth: 840, margin: '0 auto' }}>
+      <div className="grid grid-2 plan-grid">
         <div className="card plan-card">
           <h2>Free</h2>
           <div className="price">₹0</div>
@@ -127,7 +128,7 @@ export function PricingPlans() {
         </div>
 
         <div className="card plan-card plan-pro">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="flex-between">
             <h2>Pro</h2>
             <span className="chip chip-teal">MOST POPULAR</span>
           </div>
@@ -140,8 +141,8 @@ export function PricingPlans() {
         </div>
       </div>
 
-      {message && <p className="alert" role="status" style={{ maxWidth: 840, margin: '16px auto 0' }}>{message}</p>}
-      <p className="muted" style={{ textAlign: 'center', marginTop: 18 }}>
+      {message && <div className="plan-grid"><p className="alert mt-lg" role="status">{message}</p></div>}
+      <p className="muted text-center mt-lg">
         Each payment adds 30 days of Pro. Questions about billing? See our <Link href="/terms">Terms</Link>.
       </p>
     </>

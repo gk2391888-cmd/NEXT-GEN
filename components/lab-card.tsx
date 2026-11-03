@@ -8,21 +8,21 @@ export function LabCard({ lab, number }: { lab: Lab; number: number }) {
   const [open, setOpen] = useState(false);
   return (
     <article className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+      <div className="flex-between">
         <span className="chip chip-blue">{lab.subject}</span>
         <span className="chip chip-yellow">{lab.level}</span>
       </div>
-      <h3 style={{ margin: '14px 0 4px' }}>{number}. {lab.title}</h3>
+      <h3 className="mt-lg mb-xs">{number}. {lab.title}</h3>
       <p>{lab.question}</p>
       <pre className="code-block">{lab.code}</pre>
       {open && (
         <div className="explain">
           <strong>Expected output</strong>
-          <pre className="code-block" style={{ background: '#fff' }}>{lab.answer}</pre>
+          <pre className="code-block on-surface">{lab.answer}</pre>
           {lab.explanation}
         </div>
       )}
-      <button className="btn btn-secondary" style={{ marginTop: 12 }} onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+      <button className="btn btn-secondary mt-md" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         {open ? 'Hide solution' : 'Show solution →'}
       </button>
     </article>

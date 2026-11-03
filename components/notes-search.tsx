@@ -42,7 +42,6 @@ export function NotesSearch({ entries }: { entries: SearchEntry[] }) {
     <div className="card">
       <input
         className="input"
-        style={{ marginTop: 0 }}
         type="search"
         autoFocus
         value={query}

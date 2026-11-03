@@ -6,7 +6,7 @@ import { weekKey } from '@/lib/progress/types';
 import { percent, score, studyStreak, weakWeeks } from '@/lib/progress/insights';
 import { orderSubjects } from '@/lib/subjects';
 import type { Subject, WeekRef } from '@/lib/types';
-import { ProgressBar, SubjectIcon } from '@/components/ui';
+import { ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
 import { AnnouncementBar } from '@/components/announcement-bar';
 import { computeMistakes, isDue } from '@/lib/progress/mistakes';
 
@@ -47,11 +47,11 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
         <div className="hero-art" aria-hidden="true"><span className="logo">N</span></div>
       </section>
 
-      <section className="grid grid-4" style={{ marginTop: 16 }} aria-label="Your progress">
-        <Metric icon="▣" bg="#edf2ff" color="#6270d5" value={`${weeksDone}/${totalWeeks}`} label="Weeks completed" />
-        <Metric icon="▤" bg="#e7f8f2" color="#199e7b" value={String(totals.attempted)} label="Questions attempted" />
-        <Metric icon="◉" bg="#fff4e4" color="#ce9842" value={`${totals.accuracy}%`} label="Overall accuracy" />
-        <Metric icon="✦" bg="#f2eefe" color="#8e69cf" value={`${streak} day${streak === 1 ? '' : 's'}`} label="Practice streak" />
+      <section className="grid grid-4 mt-lg" aria-label="Your progress">
+        <Metric icon="▣" tone={1} value={`${weeksDone}/${totalWeeks}`} label="Weeks completed" />
+        <Metric icon="▤" tone={2} value={String(totals.attempted)} label="Questions attempted" />
+        <Metric icon="◉" tone={3} value={`${totals.accuracy}%`} label="Overall accuracy" />
+        <Metric icon="✦" tone={4} value={`${streak} day${streak === 1 ? '' : 's'}`} label="Practice streak" />
       </section>
 
       <div className="section-title">
@@ -69,17 +69,17 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
                 <strong>{s.name}</strong>
                 <div className="muted">{s.code} · {weeks.length ? `${weeks.length} weeks` : 'Coming soon'}</div>
               </div>
-              {weeks.length > 0 && <ProgressBar value={percent(done, weeks.length)} color={s.color} />}
+              {weeks.length > 0 && <ProgressBar value={percent(done, weeks.length)} color={subjectColor(s.id)} />}
             </Link>
           );
         })}
       </div>
 
-      <div className="grid grid-2" style={{ marginTop: 22 }}>
+      <div className="grid grid-2 mt-xl">
         <section className="card">
-          <h3 style={{ marginBottom: 6 }}>Topics to revisit</h3>
+          <h3 className="card-title">Topics to revisit</h3>
           {weak.length === 0 ? (
-            <p className="muted" style={{ padding: '10px 0' }}>
+            <p className="muted my-md">
               {totals.attempted ? 'No weak weeks found. Keep practising!' : 'Answer some practice questions and your weak weeks will appear here.'}
             </p>
           ) : (
@@ -96,7 +96,7 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
         </section>
 
         <section className="card">
-          <h3 style={{ marginBottom: 6 }}>Quick actions</h3>
+          <h3 className="card-title">Quick actions</h3>
           <QuickAction
             href="/mistakes"
             icon="↻"
@@ -117,10 +117,10 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
   );
 }
 
-function Metric({ icon, bg, color, value, label }: { icon: string; bg: string; color: string; value: string; label: string }) {
+function Metric({ icon, tone, value, label }: { icon: string; tone: 1 | 2 | 3 | 4; value: string; label: string }) {
   return (
     <div className="metric">
-      <div className="metric-icon" style={{ background: bg, color }} aria-hidden="true">{icon}</div>
+      <div className={`metric-icon tone-${tone}`} aria-hidden="true">{icon}</div>
       <strong>{value}</strong>
       <small>{label}</small>
     </div>
@@ -131,7 +131,7 @@ function QuickAction({ href, icon, title, text }: { href: string; icon: string; 
   return (
     <Link href={href} className="action-row">
       <span className="action-icon" aria-hidden="true">{icon}</span>
-      <span style={{ flex: 1 }}><strong>{title}</strong><small>{text}</small></span>
+      <span className="flex-1"><strong>{title}</strong><small>{text}</small></span>
       <span aria-hidden="true">→</span>
     </Link>
   );

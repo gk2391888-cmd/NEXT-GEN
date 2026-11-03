@@ -58,12 +58,12 @@ export function ExamPlanner({ subjects, catalog }: Props) {
 
   if (!state.exam || editing) {
     return (
-      <form className="card" style={{ maxWidth: 560 }} onSubmit={save} noValidate>
-        <h3 style={{ marginBottom: 12 }}>When is your exam?</h3>
+      <form className="card max-form" onSubmit={save} noValidate>
+        <h3 className="mb-md">When is your exam?</h3>
         <div className="grid grid-2">
           <div>
             <label className="field-label" htmlFor="exam-name">Exam</label>
-            <select id="exam-name" className="select" style={{ minWidth: 0, width: '100%' }} value={examWeeks(name).name} onChange={(e) => setName(e.target.value)}>
+            <select id="exam-name" className="select w-full" value={examWeeks(name).name} onChange={(e) => setName(e.target.value)}>
               {EXAMS.map((x) => (
                 <option key={x.name} value={x.name}>{x.name} (weeks {x.fromWeek}–{x.toWeek})</option>
               ))}
@@ -71,11 +71,11 @@ export function ExamPlanner({ subjects, catalog }: Props) {
           </div>
           <div>
             <label className="field-label" htmlFor="exam-date">Date</label>
-            <input id="exam-date" className="input" style={{ margin: 0 }} type="date" min={today} value={date} onChange={(e) => { setDate(e.target.value); setError(''); }} />
+            <input id="exam-date" className="input" type="date" min={today} value={date} onChange={(e) => { setDate(e.target.value); setError(''); }} />
           </div>
         </div>
-        {error && <p className="field-error" role="alert" style={{ marginTop: 10 }}>{error}</p>}
-        <p className="muted" style={{ margin: '12px 0' }}>
+        {error && <p className="field-error" role="alert">{error}</p>}
+        <p className="muted my-md">
           Check the official date on the IIT Madras BS student portal. The plan covers {state.profile?.subjects?.length ? 'your profile’s subjects' : 'all subjects'}; change them in <Link href="/profile">My profile</Link>.
         </p>
         <div className="btn-group">
@@ -91,8 +91,8 @@ export function ExamPlanner({ subjects, catalog }: Props) {
   const busiestDay = Math.max(0, ...plan.map((d) => d.items.filter((i) => i.kind === 'week').length));
 
   return (
-    <div className="row" style={{ alignItems: 'flex-start' }}>
-      <section className="card" style={{ flex: 1, minWidth: 0 }}>
+    <div className="row">
+      <section className="card row-main">
         <div className="quiz-top">
           <h3>Your plan</h3>
           <span className="chip chip-blue">{state.exam.name} in {left} day{left === 1 ? '' : 's'}</span>
@@ -106,7 +106,7 @@ export function ExamPlanner({ subjects, catalog }: Props) {
                 {new Date(day.date).getDate()}
                 <small>{i === 0 ? 'TODAY' : new Date(day.date).toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase()}</small>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="flex-1">
                 {day.items.length === 0 ? (
                   <span className="muted">Rest day, or catch up on anything you missed.</span>
                 ) : (
@@ -120,7 +120,7 @@ export function ExamPlanner({ subjects, catalog }: Props) {
       <aside className="card test-side stack">
         <div>
           <div className="muted">Weeks left to study</div>
-          <strong style={{ font: '800 26px var(--font-head)' }}>{remainingWeeks}</strong>
+          <strong className="stat-value">{remainingWeeks}</strong>
         </div>
         {busiestDay > 4 && (
           <div className="alert alert-warn">

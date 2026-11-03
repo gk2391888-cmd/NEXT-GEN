@@ -92,75 +92,77 @@ export function LoginForm() {
 
   return (
     <div className="card login-card">
-      <Link href="/" className="identity" style={{ color: 'var(--ink)', margin: '0 0 22px' }}>
+      <Link href="/" className="identity">
         <span className="logo" aria-hidden="true">N</span>
         <span className="brand">NEXT GEN</span>
       </Link>
 
       {step === 'email' ? (
         <form onSubmit={sendCode} noValidate>
-          <h1 style={{ fontSize: 22 }}>Log in to save your progress</h1>
-          <p style={{ margin: '6px 0 20px' }}>Pick up your notes and tests exactly where you left off, on any device.</p>
+          <h1 className="login-title">Log in to save your progress</h1>
+          <p className="mt-sm mb-xl">Pick up your notes and tests exactly where you left off, on any device.</p>
           {googleEnabled && (
             <>
-              <button type="button" className="btn btn-secondary btn-block btn-google" onClick={google}>
+              <button type="button" className="btn btn-secondary btn-block btn-lg btn-google" onClick={google}>
                 <span className="google-g" aria-hidden="true">G</span> Continue with Google
               </button>
               <div className="or">or continue with email</div>
             </>
           )}
-          <label className="field-label" htmlFor="email">Email</label>
-          <input
-            id="email"
-            className="input"
-            style={{ margin: '0 0 10px' }}
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="rahul@gmail.com"
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setError(''); }}
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? 'login-error' : undefined}
-          />
-          {error && <p id="login-error" className="field-error" role="alert">{error}</p>}
-          <button className="btn btn-primary btn-block" style={{ padding: 12 }} disabled={busy}>
+          <div className="field">
+            <label className="field-label" htmlFor="email">Email</label>
+            <input
+              id="email"
+              className="input"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="rahul@gmail.com"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError(''); }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'login-error' : undefined}
+            />
+            {error && <p id="login-error" className="field-error" role="alert">{error}</p>}
+          </div>
+          <button className="btn btn-primary btn-block btn-lg" disabled={busy}>
             {busy ? 'Sending…' : 'Email me a login link →'}
           </button>
-          <p className="muted" style={{ marginTop: 16 }}>
+          <p className="muted mt-lg">
             New here? Your account is created automatically. You can also study and practise without logging in; your progress will then be saved only on this device.
           </p>
-          <p className="muted" style={{ marginTop: 10 }}>
+          <p className="muted mt-md">
             By continuing you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.
           </p>
         </form>
       ) : (
         <form onSubmit={verify} noValidate>
           <span className="chip chip-blue">STEP 2</span>
-          <h1 style={{ fontSize: 22, margin: '12px 0 6px' }}>Check your email</h1>
+          <h1 className="login-title mt-md mb-sm">Check your email</h1>
           <p>
             We’ve sent a login email to <strong>{email}</strong>. Click <strong>Sign in</strong> in that email to log in.
             If you don’t see it, check your spam folder.
           </p>
-          <label className="field-label" htmlFor="code" style={{ marginTop: 16 }}>Got a code in the email? Enter it here</label>
-          <input
-            id="code"
-            className="input otp-input"
-            style={{ margin: '0 0 10px' }}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={10}
-            placeholder="••••••"
-            value={code}
-            onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
-            aria-invalid={Boolean(error)}
-            aria-describedby={error ? 'login-error' : undefined}
-          />
-          {error && <p id="login-error" className="field-error" role="alert">{error}</p>}
-          <button className="btn btn-primary btn-block" style={{ padding: 12 }} disabled={busy}>
+          <div className="field mt-lg">
+            <label className="field-label" htmlFor="code">Got a code in the email? Enter it here</label>
+            <input
+              id="code"
+              className="input otp-input"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={10}
+              placeholder="••••••"
+              value={code}
+              onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'login-error' : undefined}
+            />
+            {error && <p id="login-error" className="field-error" role="alert">{error}</p>}
+          </div>
+          <button className="btn btn-primary btn-block btn-lg" disabled={busy}>
             {busy ? 'Verifying…' : 'Log in with code'}
           </button>
-          <div className="muted" style={{ marginTop: 14, display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+          <div className="muted flex-between mt-lg">
             <button type="button" className="text-btn" onClick={() => { setStep('email'); setError(''); }}>← Use a different email</button>
             {cooldown > 0 ? (
               <span>Resend in {cooldown}s</span>

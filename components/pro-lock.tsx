@@ -13,16 +13,16 @@ export function ProLock({ feature, children }: { feature: string; children: Reac
   return (
     <div className="card pro-lock">
       <span className="chip chip-yellow">PRO</span>
-      <h2 style={{ margin: '12px 0 6px' }}>{feature} is a Pro feature</h2>
+      <h2 className="mt-md mb-sm">{feature} is a Pro feature</h2>
       {plan.tier === 'guest' ? (
         <>
           <p>Log in to start your {PRICING.trialDays}-day free trial of Pro. No card needed.</p>
-          <Link className="btn btn-primary" style={{ marginTop: 16 }} href={`/login?next=${encodeURIComponent(pathname)}`}>Log in to start free trial</Link>
+          <Link className="btn btn-primary mt-lg" href={`/login?next=${encodeURIComponent(pathname)}`}>Log in to start free trial</Link>
         </>
       ) : (
         <>
           <p>Upgrade to Pro for ₹{PRICING.proMonthlyInr}/month to unlock it, along with unlimited AI doubts and exam-level practice.</p>
-          <Link className="btn btn-primary" style={{ marginTop: 16 }} href="/pricing">See Pro plans</Link>
+          <Link className="btn btn-primary mt-lg" href="/pricing">See Pro plans</Link>
         </>
       )}
     </div>
@@ -31,5 +31,5 @@ export function ProLock({ feature, children }: { feature: string; children: Reac
 
 /** Small "PRO" tag for buttons and list items. */
 export function ProTag() {
-  return <span className="chip chip-yellow" style={{ fontSize: 10, padding: '2px 6px' }}>PRO</span>;
+  return <span className="chip chip-yellow chip-sm">PRO</span>;
 }

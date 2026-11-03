@@ -56,7 +56,7 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
   if (!ready) return null;
   if (!user || !isAdmin) {
     return (
-      <div className="card empty" style={{ maxWidth: 520 }}>
+      <div className="card empty max-form">
         <div className="empty-icon">⚙</div>
         This page is only for NEXT GEN admins.
       </div>
@@ -66,7 +66,7 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
   return (
     <>
       <PageHead kicker="Admin" title="Admin panel" description="Review reported questions, correct content and post announcements. Changes go live immediately." />
-      <div className="filters" style={{ marginBottom: 16 }}>
+      <div className="filters mb-lg">
         <button className={tab === 'reports' ? 'on' : ''} onClick={() => setTab('reports')}>Reports ({grouped.length})</button>
         <button className={tab === 'edit' ? 'on' : ''} onClick={() => setTab('edit')}>Edit questions</button>
         <button className={tab === 'announcements' ? 'on' : ''} onClick={() => setTab('announcements')}>Announcements</button>
@@ -81,7 +81,7 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
             <div className="empty"><div className="empty-icon">✓</div>No open reports.</div>
           ) : (
             <div className="table-scroll">
-              <table className="table">
+              <table className="table table-stack">
                 <thead><tr><th>Question</th><th>Issues</th><th>Latest note</th><th /></tr></thead>
                 <tbody>
                   {grouped.map(([qid, list]) => {
@@ -90,13 +90,13 @@ export function AdminPanel({ subjects }: { subjects: Subject[] }) {
                     const note = list.find((r) => r.message)?.message;
                     return (
                       <tr key={qid}>
-                        <td style={{ maxWidth: 320 }}>
+                        <td className="max-form">
                           <strong>{describe(q)}</strong>
                           <div className="muted">{q ? q.question.slice(0, 110) : qid}</div>
                         </td>
                         <td><span className="chip chip-red">{list.length}×</span> <span className="muted">{kinds}</span></td>
-                        <td className="muted" style={{ maxWidth: 260 }}>{note ? `“${note.slice(0, 140)}”` : '—'}</td>
-                        <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <td className="muted">{note ? `“${note.slice(0, 140)}”` : '—'}</td>
+                        <td className="text-right nowrap">
                           <button className="btn btn-secondary" onClick={() => { setEditing(qid); setTab('edit'); }}>Fix</button>{' '}
                           <button className="btn btn-secondary" onClick={() => closeReports(qid, 'dismissed')}>Dismiss</button>
                         </td>

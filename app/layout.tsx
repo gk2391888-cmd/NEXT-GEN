@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Plus_Jakarta_Sans } from 'next/font/google';
 import { Shell } from '@/components/shell';
 import { AuthProvider } from '@/components/auth/auth-provider';
+import { RAW } from '@/lib/tokens';
+import './tokens.css';
 import './globals.css';
 
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm-sans', display: 'swap' });
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
     'NEXT GEN by THE TECH HUB: week-wise Hinglish notes, practice questions and mock tests for IITM BS Foundation students.',
 };
 
-export const viewport: Viewport = { themeColor: '#0c1831' };
+export const viewport: Viewport = { themeColor: RAW['color-nav-bg'] };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

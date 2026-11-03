@@ -6,7 +6,7 @@ import { percent } from '@/lib/progress/insights';
 import { testKey, type MockTest } from '@/lib/tests';
 import { orderSubjects } from '@/lib/subjects';
 import type { Subject } from '@/lib/types';
-import { accuracyColor, SubjectIcon } from '@/components/ui';
+import { accuracyTone, SubjectIcon } from '@/components/ui';
 import { ProTag } from '@/components/pro-lock';
 
 export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]; tests: MockTest[] }) {
@@ -17,8 +17,8 @@ export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]
     <div className="stack">
       {subjects.map((s) => (
         <section key={s.id} className="card">
-          <div className="subject-row" style={{ marginBottom: 14 }}>
-            <SubjectIcon subject={s} size={36} />
+          <div className="subject-row mb-lg">
+            <SubjectIcon subject={s} size="md" />
             <div>
               <h3>{s.name}</h3>
               <div className="muted">{s.code}</div>
@@ -30,8 +30,8 @@ export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]
               const best = attempts.reduce((m, a) => Math.max(m, percent(a.correct, a.total)), 0);
               const inProgress = Boolean(state.active[testKey(s.id, t.id)]);
               return (
-                <div key={t.id} className="card test-card" style={{ background: 'var(--bg)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                <div key={t.id} className="card test-card">
+                  <div className="flex-between items-start">
                     <strong>{t.title} {t.pro && <ProTag />}</strong>
                     {inProgress && <span className="chip chip-yellow">IN PROGRESS</span>}
                   </div>
@@ -42,7 +42,7 @@ export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]
                   </div>
                   <div className="muted">
                     {attempts.length ? (
-                      <>Best: <strong style={{ color: accuracyColor(best) }}>{best}%</strong> · {attempts.length} attempt{attempts.length > 1 ? 's' : ''}</>
+                      <>Best: <strong className={accuracyTone(best)}>{best}%</strong> · {attempts.length} attempt{attempts.length > 1 ? 's' : ''}</>
                     ) : 'Not attempted yet'}
                   </div>
                   <Link className={`btn ${inProgress ? 'btn-primary' : 'btn-secondary'}`} href={`/tests/${s.id}/${t.id}`}>

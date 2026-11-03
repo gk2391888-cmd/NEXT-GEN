@@ -20,7 +20,7 @@ export default function LibraryPage() {
         action={<Link className="btn btn-secondary" href="/search">⌕ Search notes</Link>}
       />
       <LibraryGrid subjects={subjects} catalog={catalog} />
-      <p className="muted" style={{ marginTop: 22 }}>
+      <p className="muted mt-xl">
         These notes are written independently by NEXT GEN and are not official IIT Madras course material. Use them alongside the official lectures and notes.
       </p>
     </>

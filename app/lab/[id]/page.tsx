@@ -29,7 +29,7 @@ export default async function ProblemPage({ params }: { params: Promise<Params> 
 
   return (
     <>
-      <div className="crumb" style={{ marginBottom: 16 }}>
+      <div className="crumb page-crumb">
         <Link href="/lab">Coding Lab</Link><span className="sep">/</span>
         {setTitle}<span className="sep">/</span><strong>{problem.title}</strong>
       </div>

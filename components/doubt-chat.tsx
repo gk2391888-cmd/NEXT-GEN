@@ -116,7 +116,7 @@ export function DoubtChat() {
     return (
       <div className="card empty">
         <div className="empty-icon">✦</div>
-        <p style={{ marginBottom: 14 }}>Log in to ask the AI doubt solver. New accounts get {PRICING.trialDays} days of Pro, with unlimited doubts.</p>
+        <p>Log in to ask the AI doubt solver. New accounts get {PRICING.trialDays} days of Pro, with unlimited doubts.</p>
         <Link className="btn btn-primary" href="/login?next=/doubts">Log in to ask a doubt</Link>
       </div>
     );
@@ -141,7 +141,7 @@ export function DoubtChat() {
 
       <div className="chat-log" aria-live="polite">
         {turns.length === 0 && (
-          <p className="muted" style={{ textAlign: 'center', padding: '20px 0' }}>
+          <p className="muted chat-empty">
             Example: “Median aur mean mein outlier ka effect alag kyun hota hai?”
           </p>
         )}
@@ -181,7 +181,7 @@ export function DoubtChat() {
         />
         <button className="btn btn-primary" disabled={busy}>{busy ? '…' : 'Ask'}</button>
       </form>
-      <p className="muted" style={{ marginTop: 8 }}>AI answers can be wrong. Check important steps against your notes.</p>
+      <p className="muted mt-sm">AI answers can be wrong. Check important steps against your notes.</p>
     </div>
   );
 }

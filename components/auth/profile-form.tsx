@@ -28,9 +28,9 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
 
   if (!user) {
     return (
-      <div className="card empty" style={{ maxWidth: 520 }}>
+      <div className="card empty max-form">
         <div className="empty-icon">◎</div>
-        <p style={{ marginBottom: 14 }}>Log in to view your profile.</p>
+        <p>Log in to view your profile.</p>
         <Link className="btn btn-primary" href="/login?next=/profile">Login</Link>
       </div>
     );
@@ -71,20 +71,20 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
   return (
     <>
       <PageHead kicker="Account" title="My profile" description="Choose your subjects for this term. They appear first on your Overview and Mock Tests pages." />
-      <form className="card" style={{ maxWidth: 760, padding: 24 }} onSubmit={save} noValidate>
-        <div className="grid grid-2" style={{ marginBottom: 18 }}>
+      <form className="card card-loose max-reading" onSubmit={save} noValidate>
+        <div className="grid grid-2 mb-lg">
           <div>
             <label className="field-label" htmlFor="name">Name</label>
-            <input id="name" className="input" style={{ margin: 0 }} value={name} maxLength={80} autoComplete="name" onChange={(e) => { setName(e.target.value); setError(''); setMessage(''); }} aria-invalid={Boolean(error)} />
+            <input id="name" className="input" value={name} maxLength={80} autoComplete="name" onChange={(e) => { setName(e.target.value); setError(''); setMessage(''); }} aria-invalid={Boolean(error)} />
           </div>
           <div>
             <label className="field-label" htmlFor="email">Email</label>
-            <input id="email" className="input" style={{ margin: 0, background: 'var(--bg)' }} value={user.email ?? ''} disabled />
+            <input id="email" className="input" value={user.email ?? ''} disabled />
           </div>
         </div>
 
-        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="field-label" style={{ marginBottom: 8 }}>Subjects this term</legend>
+        <fieldset className="fieldset">
+          <legend className="field-label mb-sm">Subjects this term</legend>
           <div className="check-grid">
             {subjects.map((s) => (
               <label key={s.id} className="check">
@@ -95,12 +95,12 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
           </div>
         </fieldset>
 
-        {error && <p className="field-error" role="alert" style={{ marginTop: 14 }}>{error}</p>}
+        {error && <p className="field-error mt-lg" role="alert">{error}</p>}
         <div className="notes-foot">
           <button type="button" className="btn btn-danger" onClick={deleteAccount} disabled={deleting}>
             {deleting ? 'Deleting…' : 'Delete my account'}
           </button>
-          <div className="btn-group" style={{ alignItems: 'center' }}>
+          <div className="btn-group">
             {message && <span className="muted" role="status">✓ {message}</span>}
             <button className="btn btn-primary">Save changes</button>
           </div>

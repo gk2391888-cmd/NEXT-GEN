@@ -18,7 +18,7 @@ export default function DoubtsPage() {
       <Suspense>
         <DoubtChat />
       </Suspense>
-      <h2 style={{ margin: '30px 0 12px' }}>Quick concept answers</h2>
+      <h2 className="section-heading">Quick concept answers</h2>
       <DoubtSearch faqs={faqs} />
     </>
   );

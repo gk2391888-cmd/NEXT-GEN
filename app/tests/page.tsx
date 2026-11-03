@@ -22,7 +22,7 @@ export default function TestsPage() {
       ) : (
         <TestList subjects={subjects} tests={MOCK_TESTS} />
       )}
-      <div className="alert" style={{ marginTop: 20 }}>
+      <div className="alert mt-xl">
         These are original practice tests, not actual IIT Madras quizzes or previous-year papers. Questions are drawn fresh from the question bank each time, so you can retake them.
       </div>
     </>

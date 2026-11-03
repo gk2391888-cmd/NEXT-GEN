@@ -5,7 +5,7 @@ import { useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent } from '@/lib/progress/insights';
 import type { Subject, WeekRef } from '@/lib/types';
-import { ProgressBar, SubjectIcon } from '@/components/ui';
+import { ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
 
 export function LibraryGrid({ subjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
@@ -21,7 +21,7 @@ export function LibraryGrid({ subjects, catalog }: { subjects: Subject[]; catalo
           <div key={s.id} className="card stack">
             <div className="subject-row">
               <SubjectIcon subject={s} />
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="flex-1">
                 <h3>{s.name}</h3>
                 <div className="muted">{s.code} · {weeks.length ? `${weeks.length} weeks` : 'Notes coming soon'}</div>
               </div>
@@ -29,14 +29,14 @@ export function LibraryGrid({ subjects, catalog }: { subjects: Subject[]; catalo
             {weeks.length > 0 && (
               <>
                 <div className="subject-row">
-                  <ProgressBar value={percent(done, weeks.length)} color={s.color} />
+                  <ProgressBar value={percent(done, weeks.length)} color={subjectColor(s.id)} />
                   <span className="muted">{done}/{weeks.length} done</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <div className="flex-between">
                   <span className="muted">
                     {done === weeks.length ? 'All weeks complete. Take a mock test to revise.' : `Next: Week ${next.week} · ${next.title}`}
                   </span>
-                  <div className="btn-group" style={{ alignItems: 'center' }}>
+                  <div className="btn-group">
                     <Link className="link" href={`/library/${s.id}/formulas`}>Formula sheet</Link>
                     <Link className="btn btn-secondary" href={`/library/${s.id}/${next.week}`}>
                       {done ? 'Continue' : 'Start week 1'} →

@@ -32,7 +32,7 @@ export default async function TestPage({ params }: { params: Promise<Params> }) 
 
   return (
     <>
-      <div className="crumb" style={{ marginBottom: 16 }}>
+      <div className="crumb page-crumb">
         <Link href="/tests">Mock Tests</Link><span className="sep">/</span>
         {subject.short}<span className="sep">/</span><strong>{test.title}</strong>
       </div>

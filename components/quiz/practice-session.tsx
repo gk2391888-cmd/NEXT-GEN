@@ -6,7 +6,7 @@ import { progress } from '@/lib/progress/store';
 import { useCorrectedQuestions } from '@/lib/overrides';
 import { percent } from '@/lib/progress/insights';
 import type { Question } from '@/lib/types';
-import { InlineText, ProgressBar } from '@/components/ui';
+import { accuracyTone, InlineText, ProgressBar } from '@/components/ui';
 import { Explanation, QuestionView } from './question-view';
 
 type Props = { subjectId: string; subjectName: string; week: number; weekTitle: string; questions: Question[] };
@@ -48,14 +48,14 @@ export function PracticeSession({ subjectId, subjectName, week, weekTitle, quest
     const accuracy = percent(correct, questions.length);
     return (
       <div className="quiz-wrap stack">
-        <div className="card" style={{ textAlign: 'center', padding: 28 }}>
+        <div className="card card-center">
           <div className="kicker">Week {week} result</div>
-          <div style={{ font: '800 44px var(--font-head)', color: accuracy >= 75 ? 'var(--green)' : accuracy >= 50 ? 'var(--yellow-dark)' : 'var(--red)' }}>{accuracy}%</div>
+          <div className={`score-display ${accuracyTone(accuracy)}`}>{accuracy}%</div>
           <h2>{correct} of {questions.length} correct</h2>
-          <p style={{ marginTop: 6 }}>
+          <p className="mt-sm">
             {accuracy === 100 ? 'Perfect score. You have a strong grasp of this week.' : accuracy >= 70 ? 'Good work. Review the explanations for the questions you missed.' : 'Revise this week’s notes, then try the practice again.'}
           </p>
-          <div className="btn-group" style={{ justifyContent: 'center', marginTop: 18 }}>
+          <div className="btn-group justify-center mt-lg">
             <button className="btn btn-primary" onClick={restart}>Practice again</button>
             <Link className="btn btn-secondary" href={`/library/${subjectId}/${week}`}>Revise week {week} notes</Link>
             <Link className="btn btn-secondary" href="/practice">Choose another week</Link>
@@ -64,7 +64,7 @@ export function PracticeSession({ subjectId, subjectName, week, weekTitle, quest
         {questions.map((q, i) => (
           <div key={q.id} className="review">
             <div className="review-head">
-              <strong style={{ fontSize: 13.5 }}>Q{i + 1}. <InlineText text={q.question} /></strong>
+              <strong>Q{i + 1}. <InlineText text={q.question} /></strong>
               <span className={`chip ${picks[i] === q.answer ? 'chip-teal' : 'chip-red'}`}>{picks[i] === q.answer ? 'CORRECT' : 'WRONG'}</span>
             </div>
             <Explanation question={q} selected={picks[i]} />
@@ -80,8 +80,8 @@ export function PracticeSession({ subjectId, subjectName, week, weekTitle, quest
         <span className="chip chip-blue">{subjectName.toUpperCase()} · WEEK {week}</span>
         <span className="muted">Question {index + 1} of {questions.length}</span>
       </div>
-      <ProgressBar value={percent(index, questions.length)} color="var(--primary)" />
-      <div className="card" style={{ marginTop: 14, padding: '22px 24px' }}>
+      <ProgressBar value={percent(index, questions.length)} color="var(--color-accent-solid)" />
+      <div className="card quiz-card">
         <div className="quiz-top">
           <span className="muted">{weekTitle}</span>
           <span className={`chip ${question.difficulty === 'hard' ? 'chip-red' : question.difficulty === 'medium' ? 'chip-yellow' : 'chip-teal'}`}>{question.difficulty.toUpperCase()}</span>

@@ -43,22 +43,26 @@ export function Announcements() {
   }
 
   return (
-    <div className="row" style={{ alignItems: 'flex-start' }}>
-      <form className="card" style={{ width: 360, flex: 'none' }} onSubmit={create}>
-        <h3 style={{ marginBottom: 10 }}>New announcement</h3>
-        <label className="field-label" htmlFor="an-title">Title</label>
-        <input id="an-title" className="input" style={{ margin: '0 0 10px' }} maxLength={120} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Quiz 2 practice tests are live" />
-        <label className="field-label" htmlFor="an-body">Message (optional)</label>
-        <textarea id="an-body" className="input" style={{ margin: '0 0 10px', minHeight: 80 }} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} />
+    <div className="row">
+      <form className="card row-aside" onSubmit={create}>
+        <h3 className="mb-md">New announcement</h3>
+        <div className="field">
+          <label className="field-label" htmlFor="an-title">Title</label>
+          <input id="an-title" className="input" maxLength={120} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Quiz 2 practice tests are live" />
+        </div>
+        <div className="field">
+          <label className="field-label" htmlFor="an-body">Message (optional)</label>
+          <textarea id="an-body" className="input" maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} />
+        </div>
         <button className="btn btn-primary">Post</button>
-        {status && <p className="muted" role="status" style={{ marginTop: 8 }}>{status}</p>}
+        {status && <p className="muted mt-sm" role="status">{status}</p>}
       </form>
-      <div className="card" style={{ flex: 1, minWidth: 0 }}>
-        <h3 style={{ marginBottom: 6 }}>All announcements</h3>
+      <div className="card row-main">
+        <h3 className="card-title">All announcements</h3>
         {items.length === 0 && <p className="muted">None yet.</p>}
         {items.map((a) => (
           <div key={a.id} className="weak-row">
-            <div style={{ minWidth: 0 }}>
+            <div className="min-w-0">
               <strong>{a.title}</strong> {!a.active && <span className="chip chip-gray">HIDDEN</span>}
               {a.body && <div className="muted">{a.body}</div>}
             </div>

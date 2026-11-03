@@ -72,20 +72,20 @@ export function QuestionEditor({ bank, initialId, describe, userId, onSaved }: P
   const preview = selected && draft ? { ...selected, ...draft, code: draft.code || undefined } : null;
 
   return (
-    <div className="row" style={{ alignItems: 'flex-start' }}>
-      <div className="card" style={{ width: 320, flex: 'none' }}>
+    <div className="row">
+      <div className="card row-aside">
         <label className="field-label" htmlFor="q-search">Find a question</label>
-        <input id="q-search" className="input" style={{ margin: '0 0 8px' }} placeholder="ID (stat1-w3-q4) or text" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <input id="q-search" className="input mb-sm" placeholder="ID (stat1-w3-q4) or text" value={query} onChange={(e) => setQuery(e.target.value)} />
         {!bank && <p className="muted">Loading questions…</p>}
         {matches.map((q) => (
           <button key={q.id} className={`menu-item${q.id === selectedId ? ' active-item' : ''}`} onClick={() => setSelectedId(q.id)}>
-            <strong style={{ display: 'block', fontSize: 12 }}>{q.id} · {describe(q)}</strong>
+            <strong className="block text-meta">{q.id} · {describe(q)}</strong>
             <span className="muted">{q.question.slice(0, 80)}</span>
           </button>
         ))}
       </div>
 
-      <div className="card" style={{ flex: 1, minWidth: 0 }}>
+      <div className="card row-main">
         {!selected || !draft ? (
           <div className="empty">Search for a question, or choose “Fix” on a report.</div>
         ) : (
@@ -95,19 +95,19 @@ export function QuestionEditor({ bank, initialId, describe, userId, onSaved }: P
               {getOverride(selected.id) && <span className="chip chip-blue">EDITED</span>}
             </div>
             <label className="field-label" htmlFor="ed-q">Question</label>
-            <textarea id="ed-q" className="input" style={{ margin: '0 0 10px', minHeight: 70 }} value={draft.question} onChange={(e) => setDraft({ ...draft, question: e.target.value })} />
+            <textarea id="ed-q" className="input mb-md" value={draft.question} onChange={(e) => setDraft({ ...draft, question: e.target.value })} />
             <label className="field-label" htmlFor="ed-code">Code (optional)</label>
-            <textarea id="ed-code" className="input" style={{ margin: '0 0 10px', fontFamily: 'var(--font-mono)', minHeight: 50 }} value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value })} />
+            <textarea id="ed-code" className="input code-input mb-md" value={draft.code} onChange={(e) => setDraft({ ...draft, code: e.target.value })} />
             <span className="field-label">Options (select the correct one)</span>
             {draft.options.map((opt, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+              <div key={i} className="option-edit">
                 <input type="radio" name="answer" aria-label={`Option ${'ABCD'[i]} is correct`} checked={draft.answer === i} onChange={() => setDraft({ ...draft, answer: i })} />
-                <input className="input" style={{ margin: 0 }} value={opt} onChange={(e) => setDraft({ ...draft, options: draft.options.map((o, j) => (j === i ? e.target.value : o)) })} />
+                <input className="input" value={opt} onChange={(e) => setDraft({ ...draft, options: draft.options.map((o, j) => (j === i ? e.target.value : o)) })} />
               </div>
             ))}
-            <label className="field-label" htmlFor="ed-ex" style={{ marginTop: 8 }}>Explanation</label>
-            <textarea id="ed-ex" className="input" style={{ margin: '0 0 10px', minHeight: 80 }} value={draft.explanation} onChange={(e) => setDraft({ ...draft, explanation: e.target.value })} />
-            <div className="notes-foot" style={{ marginTop: 6 }}>
+            <label className="field-label mt-sm" htmlFor="ed-ex">Explanation</label>
+            <textarea id="ed-ex" className="input mb-md" value={draft.explanation} onChange={(e) => setDraft({ ...draft, explanation: e.target.value })} />
+            <div className="notes-foot">
               <span className="muted" role="status">{status}</span>
               <div className="btn-group">
                 {getOverride(selected.id) && <button className="btn btn-secondary" onClick={revert}>Revert to original</button>}
@@ -115,7 +115,7 @@ export function QuestionEditor({ bank, initialId, describe, userId, onSaved }: P
               </div>
             </div>
             {preview && (
-              <div style={{ marginTop: 18 }}>
+              <div className="mt-lg">
                 <span className="field-label">Preview</span>
                 <QuestionView question={preview} selected={preview.answer} reveal />
                 <Explanation question={preview} selected={preview.answer} />

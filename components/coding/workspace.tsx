@@ -87,14 +87,14 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
   const allPassed = submitted && !submitted.error && passed === problem.tests.length;
 
   return (
-    <div className="row" style={{ alignItems: 'flex-start' }}>
-      <div className="card" style={{ flex: 1, minWidth: 0 }}>
+    <div className="row">
+      <div className="card row-main">
         <div className="quiz-top">
           <span className={`chip ${problem.difficulty === 'hard' ? 'chip-red' : problem.difficulty === 'medium' ? 'chip-yellow' : 'chip-teal'}`}>{problem.difficulty.toUpperCase()}</span>
           <span className="muted">Problem {position} of {total}{solved && ' · ✓ Solved'}</span>
         </div>
-        <h2 style={{ marginBottom: 6 }}>{problem.title}</h2>
-        <p style={{ color: 'var(--body)' }}><InlineText text={problem.statement} /></p>
+        <h2 className="mb-sm">{problem.title}</h2>
+        <p className="text-body"><InlineText text={problem.statement} /></p>
 
         <div className="editor-wrap">
           <textarea
@@ -124,15 +124,15 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
             <button className="text-btn" onClick={reset}>Reset code</button>
           </div>
         </div>
-        <p className="muted" style={{ marginTop: 8 }}>
+        <p className="muted mt-sm">
           {pythonState === 'loading' && 'Loading Python… (first time takes a few seconds)'}
           {pythonState === 'failed' && 'Python couldn’t load. Check your connection and refresh the page.'}
           {pythonState === 'ready' && 'Tip: Ctrl + Enter runs your code. Your code is saved on this device.'}
         </p>
-        {showHint && <div className="mistake" style={{ marginTop: 10 }}><strong>Hint:</strong> <InlineText text={problem.hint} /></div>}
+        {showHint && <div className="mistake mt-md"><strong>Hint:</strong> <InlineText text={problem.hint} /></div>}
 
         {output && (
-          <div style={{ marginTop: 14 }}>
+          <div className="mt-lg">
             <span className="field-label">Output</span>
             {output.stdout && <pre className="code-block">{output.stdout}</pre>}
             {output.error ? (
@@ -173,7 +173,7 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
           );
         })}
         {submitted && (
-          <div className={`explain${allPassed ? '' : ' bad'}`} style={{ marginTop: 12 }}>
+          <div className={`explain mt-md${allPassed ? '' : ' bad'}`}>
             {submitted.error ? (
               <strong>Your code has an error. Fix it and submit again.</strong>
             ) : allPassed ? (

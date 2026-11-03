@@ -26,11 +26,11 @@ export default async function FormulaSheetPage({ params }: { params: Promise<Par
 
   return (
     <>
-      <div className="crumb no-print" style={{ marginBottom: 16 }}>
+      <div className="crumb page-crumb no-print">
         <Link href="/library">Study Library</Link><span className="sep">/</span>
         <Link href={`/library/${subject.id}`}>{subject.short}</Link><span className="sep">/</span><strong>Formula sheet</strong>
       </div>
-      <article className="card legal" style={{ maxWidth: 900 }}>
+      <article className="card legal wide">
         <PageHead
           kicker={subject.code}
           title={`${subject.name}: quick revision sheet`}

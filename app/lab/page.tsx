@@ -18,8 +18,8 @@ export default function LabPage() {
       />
       <ProblemList problems={summary} sets={OPPE_SETS} />
 
-      <h2 style={{ margin: '30px 0 6px' }}>Predict the output</h2>
-      <p className="muted" style={{ marginBottom: 14 }}>Dry-run each snippet in your head before revealing the answer.</p>
+      <h2 className="section-heading mb-xs">Predict the output</h2>
+      <p className="muted mb-lg">Dry-run each snippet in your head before revealing the answer.</p>
       <div className="grid grid-2">
         {labs.map((lab, i) => <LabCard key={lab.id} lab={lab} number={i + 1} />)}
       </div>
