@@ -1,0 +1,126 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getSupabase } from '@/lib/supabase/client';
+import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
+import type { Subject } from '@/lib/types';
+import { PageHead } from '@/components/ui';
+import { useAuth } from '@/components/auth/auth-provider';
+import { QuestionEditor } from './question-editor';
+import { Announcements } from './announcements';
+
+type Report = { id: number; question_id: string; kind: string; message: string; created_at: string };
+type Tab = 'reports' | 'edit' | 'announcements';
+
+const KIND_LABEL: Record<string, string> = { wrong_answer: 'Wrong answer', unclear: 'Unclear', typo: 'Typo', other: 'Other' };
+
+export function AdminPanel({ subjects }: { subjects: Subject[] }) {
+  const { user, ready, isAdmin } = useAuth();
+  const bank = useQuestionBank();
+  const [tab, setTab] = useState<Tab>('reports');
+  const [editing, setEditing] = useState<string | null>(null);
+  const [reports, setReports] = useState<Report[] | null>(null);
+  const [error, setError] = useState('');
+
+  const subjectName = useMemo(() => new Map(subjects.map((s) => [s.id, s.short])), [subjects]);
+  const byId = useMemo(() => new Map((bank ?? []).map((q) => [q.id, q])), [bank]);
+  const describe = (q?: BankQuestion) => (q ? `${subjectName.get(q.subjectId)} · Week ${q.week}` : 'Unknown question');
+
+  const loadReports = useCallback(async () => {
+    const { data, error } = await getSupabase()
+      .from('reports')
+      .select('id, question_id, kind, message, created_at')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    if (error) setError('Could not load reports.');
+    setReports(data ?? []);
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin) loadReports();
+  }, [isAdmin, loadReports]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, Report[]>();
+    for (const r of reports ?? []) map.set(r.question_id, [...(map.get(r.question_id) ?? []), r]);
+    return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
+  }, [reports]);
+
+  async function closeReports(questionId: string, status: 'fixed' | 'dismissed') {
+    const { error } = await getSupabase().from('reports').update({ status }).eq('question_id', questionId).eq('status', 'open');
+    if (error) setError('Could not update the reports.');
+    await loadReports();
+  }
+
+  if (!ready) return null;
+  if (!user || !isAdmin) {
+    return (
+      <div className="card empty" style={{ maxWidth: 520 }}>
+        <div className="empty-icon">⚙</div>
+        This page is only for NEXT GEN admins.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <PageHead kicker="Admin" title="Admin panel" description="Review reported questions, correct content and post announcements. Changes go live immediately." />
+      <div className="filters" style={{ marginBottom: 16 }}>
+        <button className={tab === 'reports' ? 'on' : ''} onClick={() => setTab('reports')}>Reports ({grouped.length})</button>
+        <button className={tab === 'edit' ? 'on' : ''} onClick={() => setTab('edit')}>Edit questions</button>
+        <button className={tab === 'announcements' ? 'on' : ''} onClick={() => setTab('announcements')}>Announcements</button>
+      </div>
+      {error && <p className="field-error" role="alert">{error}</p>}
+
+      {tab === 'reports' && (
+        <div className="card">
+          {reports === null ? (
+            <p className="muted">Loading reports…</p>
+          ) : grouped.length === 0 ? (
+            <div className="empty"><div className="empty-icon">✓</div>No open reports.</div>
+          ) : (
+            <div className="table-scroll">
+              <table className="table">
+                <thead><tr><th>Question</th><th>Issues</th><th>Latest note</th><th /></tr></thead>
+                <tbody>
+                  {grouped.map(([qid, list]) => {
+                    const q = byId.get(qid);
+                    const kinds = [...new Set(list.map((r) => KIND_LABEL[r.kind] ?? r.kind))].join(', ');
+                    const note = list.find((r) => r.message)?.message;
+                    return (
+                      <tr key={qid}>
+                        <td style={{ maxWidth: 320 }}>
+                          <strong>{describe(q)}</strong>
+                          <div className="muted">{q ? q.question.slice(0, 110) : qid}</div>
+                        </td>
+                        <td><span className="chip chip-red">{list.length}×</span> <span className="muted">{kinds}</span></td>
+                        <td className="muted" style={{ maxWidth: 260 }}>{note ? `“${note.slice(0, 140)}”` : '—'}</td>
+                        <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          <button className="btn btn-secondary" onClick={() => { setEditing(qid); setTab('edit'); }}>Fix</button>{' '}
+                          <button className="btn btn-secondary" onClick={() => closeReports(qid, 'dismissed')}>Dismiss</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'edit' && (
+        <QuestionEditor
+          bank={bank}
+          initialId={editing}
+          describe={describe}
+          userId={user.id}
+          onSaved={(qid) => closeReports(qid, 'fixed')}
+        />
+      )}
+
+      {tab === 'announcements' && <Announcements />}
+    </>
+  );
+}

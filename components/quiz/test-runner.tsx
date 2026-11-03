@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { progress, useProgress } from '@/lib/progress/store';
+import { useCorrectedQuestions } from '@/lib/overrides';
+import { usePlan } from '@/lib/plan';
+import { ProTag } from '@/components/pro-lock';
 import { percent } from '@/lib/progress/insights';
 import type { ActiveTest, NewAnswer, TestAttempt } from '@/lib/progress/types';
 import { pickQuestions, testKey, type MockTest } from '@/lib/tests';
@@ -12,7 +15,8 @@ import { Explanation, letter, QuestionView } from './question-view';
 
 type Props = { subject: Subject; test: MockTest; pool: Question[]; weekTitles: Record<number, string> };
 
-export function TestRunner({ subject, test, pool, weekTitles }: Props) {
+export function TestRunner({ subject, test, pool: original, weekTitles }: Props) {
+  const pool = useCorrectedQuestions(original);
   const state = useProgress();
   const key = testKey(subject.id, test.id);
   const active = state.active[key];
@@ -100,7 +104,21 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
   const current = Math.min(active.current, questions.length - 1);
   const question = questions[current];
 
-  const save = (patch: Partial<ActiveTest>) => progress.saveActiveTest(storeKey, { ...active, ...patch });
+  // Time on the current question is added when the student moves away from it or submits.
+  const enteredAt = useRef(Date.now());
+  useEffect(() => {
+    enteredAt.current = Date.now();
+  }, [current]);
+  const withElapsed = useCallback(() => {
+    const spent = active.questionIds.map((_, i) => active.timeSpent?.[i] ?? 0);
+    spent[current] += Math.round((Date.now() - enteredAt.current) / 1000);
+    return spent;
+  }, [active, current]);
+
+  const save = (patch: Partial<ActiveTest>) => {
+    const moving = patch.current !== undefined && patch.current !== current;
+    progress.saveActiveTest(storeKey, { ...active, ...patch, ...(moving ? { timeSpent: withElapsed() } : {}) });
+  };
 
   const submit = useCallback(() => {
     if (submitted.current) return;
@@ -120,6 +138,7 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
       responses: active.responses,
       correct,
       total: active.questionIds.length,
+      timeSpent: withElapsed(),
     };
     // Skipped questions don't count towards weak-topic detection; only answered ones do.
     const answers: NewAnswer[] = qs.flatMap((q, i) =>
@@ -129,7 +148,7 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
     );
     onSubmitted(attempt.id);
     progress.submitTest(storeKey, attempt, answers);
-  }, [active, byId, onSubmitted, storeKey]);
+  }, [active, byId, onSubmitted, storeKey, withElapsed]);
 
   useEffect(() => {
     const tick = () => {
@@ -230,9 +249,13 @@ type Filter = 'all' | 'wrong' | 'skipped';
 
 function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProps) {
   const [filter, setFilter] = useState<Filter>('all');
+  const { isPro } = usePlan();
   const rows = attempt.questionIds
-    .map((id, i) => ({ q: byId.get(id), pick: attempt.responses[i], n: i + 1 }))
-    .filter((r): r is { q: Question; pick: number | null; n: number } => Boolean(r.q));
+    .map((id, i) => ({ q: byId.get(id), pick: attempt.responses[i], n: i + 1, secs: attempt.timeSpent?.[i] }))
+    .filter((r): r is { q: Question; pick: number | null; n: number; secs: number | undefined } => Boolean(r.q));
+  const timed = rows.filter((r) => r.secs !== undefined);
+  const slowest = [...timed].sort((a, b) => (b.secs ?? 0) - (a.secs ?? 0)).slice(0, 3);
+  const avgSecs = timed.length ? Math.round(timed.reduce((n, r) => n + (r.secs ?? 0), 0) / timed.length) : 0;
 
   const wrong = rows.filter((r) => r.pick !== null && r.pick !== r.q.answer);
   const skipped = rows.filter((r) => r.pick === null);
@@ -285,6 +308,21 @@ function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProp
             )}
             <button className="btn btn-secondary btn-block" onClick={onRetake}>Take a new test</button>
           </div>
+          <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 14 }}>
+            <h3 style={{ marginBottom: 8 }}>Time per question {!isPro && <ProTag />}</h3>
+            {!isPro ? (
+              <p className="muted">See how long you spent on each question and which ones slowed you down. <Link href="/pricing">Go Pro</Link></p>
+            ) : timed.length === 0 ? (
+              <p className="muted">Timing is recorded from your next test.</p>
+            ) : (
+              <>
+                <p className="muted">Average {avgSecs}s per question. Slowest:</p>
+                {slowest.map((r) => (
+                  <div key={r.q.id} className="weak-row"><span>Q{r.n} · Week {r.q.week}</span><b>{r.secs}s</b></div>
+                ))}
+              </>
+            )}
+          </div>
         </div>
 
         <div className="card" style={{ flex: 1, minWidth: 0 }}>
@@ -297,13 +335,16 @@ function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProp
             </div>
           </div>
           {shown.length === 0 && <div className="empty">No questions match this filter.</div>}
-          {shown.map(({ q, pick, n }) => {
+          {shown.map(({ q, pick, n, secs }) => {
             const status = pick === null ? 'SKIPPED' : pick === q.answer ? 'CORRECT' : 'WRONG';
             return (
               <div key={q.id} className="review">
                 <div className="review-head">
                   <strong style={{ fontSize: 13.5 }}>Q{n} · <InlineText text={q.question} /></strong>
-                  <span className={`chip ${status === 'CORRECT' ? 'chip-teal' : status === 'WRONG' ? 'chip-red' : 'chip-gray'}`}>{status}</span>
+                  <span style={{ display: 'flex', gap: 6, flex: 'none' }}>
+                    {isPro && secs !== undefined && <span className="chip chip-gray">⏱ {secs}s</span>}
+                    <span className={`chip ${status === 'CORRECT' ? 'chip-teal' : status === 'WRONG' ? 'chip-red' : 'chip-gray'}`}>{status}</span>
+                  </span>
                 </div>
                 {q.code && <pre className="code-block">{q.code}</pre>}
                 <div className="muted" style={{ marginTop: 6 }}>

@@ -27,6 +27,8 @@ export type TestAttempt = {
   responses: (number | null)[];
   correct: number;
   total: number;
+  /** Seconds spent on each question, in questionIds order. */
+  timeSpent?: number[];
 };
 
 /** A mock test the student has started but not submitted, so a refresh doesn't lose it. Device-only. */
@@ -39,6 +41,7 @@ export type ActiveTest = {
   current: number;
   startedAt: number;
   endsAt: number;
+  timeSpent?: number[];
 };
 
 export type WeekStatus = { done?: boolean; saved?: boolean };
@@ -47,6 +50,12 @@ export type LastVisited = { subjectId: string; week: number; at: string };
 
 export type Profile = { fullName: string; subjects: string[] };
 
+/** Plan dates come from the server and can't be changed by the student. */
+export type PlanDates = { trialEndsAt?: string; proUntil?: string };
+
+/** The exam the planner works towards; `date` is YYYY-MM-DD. */
+export type ExamTarget = { name: string; date: string };
+
 /** A change waiting to be uploaded. Applied locally first, then sent in order. */
 export type SyncOp =
   | { kind: 'answers'; records: AnswerRecord[] }
@@ -54,6 +63,7 @@ export type SyncOp =
   | { kind: 'test'; attempt: TestAttempt }
   | { kind: 'visit'; lastVisited: LastVisited }
   | { kind: 'profile'; profile: Profile }
+  | { kind: 'exam'; exam: ExamTarget | null }
   | { kind: 'reset' };
 
 export type ProgressState = {
@@ -66,6 +76,10 @@ export type ProgressState = {
   active: Record<string, ActiveTest>;
   lastVisited?: LastVisited;
   profile?: Profile;
+  plan?: PlanDates;
+  exam?: ExamTarget;
+  /** Coding Lab problems solved on this device, keyed by problem id. */
+  coding?: Record<string, { solvedAt: string }>;
   /** Logged-in only: changes not yet confirmed by the server. */
   pending: SyncOp[];
   /** Logged-in only: the "save this device's progress?" question has been answered. */

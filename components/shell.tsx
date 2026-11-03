@@ -5,14 +5,17 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AccountMenu } from './auth/account-menu';
 import { useAuth } from './auth/auth-provider';
+import { PRICING, usePlan } from '@/lib/plan';
 
 const NAV = [
   { href: '/', label: 'Overview', icon: '◈' },
   { href: '/library', label: 'Study Library', icon: '▣' },
   { href: '/practice', label: 'Practice Quiz', icon: '▤' },
-  { href: '/tests', label: 'Mock Tests', icon: '◷', tag: 'NEW' },
-  { href: '/lab', label: 'Python & CT Lab', icon: '⌘' },
-  { href: '/doubts', label: 'Doubt Help', icon: '◇' },
+  { href: '/mistakes', label: 'My Mistakes', icon: '↻' },
+  { href: '/tests', label: 'Mock Tests', icon: '◷' },
+  { href: '/lab', label: 'Coding Lab', icon: '⌘', tag: 'NEW' },
+  { href: '/doubts', label: 'AI Doubt Solver', icon: '✦', tag: 'NEW' },
+  { href: '/planner', label: 'Exam Planner', icon: '▦' },
   { href: '/progress', label: 'My Progress', icon: '▥' },
 ];
 
@@ -21,7 +24,8 @@ const isActive = (pathname: string, href: string) => (href === '/' ? pathname ==
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { user, ready } = useAuth();
+  const { user, ready, isAdmin } = useAuth();
+  const plan = usePlan();
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -50,12 +54,24 @@ export function Shell({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          {isAdmin && (
+            <Link href="/admin" className={`nav-item${isActive(pathname, '/admin') ? ' active' : ''}`}>
+              <span className="nav-icon" aria-hidden="true">⚙</span>
+              Admin
+            </Link>
+          )}
         </nav>
         <div className="sidebar-bottom">
           {ready && !user && (
             <Link href={`/login?next=${encodeURIComponent(pathname)}`} className="sidebar-login">
               <strong>Log in to save progress</strong>
               <span>Keep your progress on every device</span>
+            </Link>
+          )}
+          {ready && user && !plan.isPro && (
+            <Link href="/pricing" className="sidebar-pro">
+              <strong>Go Pro for ₹{PRICING.proMonthlyInr}/month</strong>
+              <span>Unlimited AI doubts and End term tests</span>
             </Link>
           )}
           <div className="sidebar-info">

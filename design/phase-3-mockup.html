@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXT GEN Phase 3 design</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--nav:#0d1a33;--bg:#f5f7fb;--ink:#14213a;--muted:#718099;--border:#e4eaf2;--primary:#5364ef;--teal:#20c8ba;--red:#e9506c;--yellow:#f6b84b}
+*{box-sizing:border-box}
+body{margin:0;background:#e9edf4;color:var(--ink);font:14px/1.55 'DM Sans',sans-serif;padding:32px 16px}
+h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif;margin:0;line-height:1.25}
+p{margin:0;color:#596982}
+.label{max-width:1180px;margin:0 auto 10px;font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--muted)}
+.label b{color:var(--primary)}
+.note{max-width:1180px;margin:0 auto 40px;font-size:13px;color:#596982}
+.frame{max-width:1180px;margin:0 auto 14px;display:flex;background:var(--bg);border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+.side{width:210px;background:var(--nav);color:#fff;padding:22px 12px;flex:none}
+.brand{display:flex;gap:10px;align-items:center;margin:0 6px 26px}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(130deg,#60d6ee,#6254ef);display:grid;place-items:center;font:800 20px 'Plus Jakarta Sans';color:#fff}
+.nav{padding:9px 12px;border-radius:10px;color:#a6b4d2;font-weight:600;margin:2px 0;font-size:13px;display:flex;justify-content:space-between}
+.nav.on{background:#283957;color:#fff;box-shadow:inset 3px 0 0 #36d6c5}
+.nav i{font-style:normal;font-size:9.5px;background:#36d6c5;color:#08332f;border-radius:6px;padding:1px 6px;font-weight:800}
+.main{flex:1;min-width:0;padding:24px 28px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap}
+.crumb{font-size:11px;letter-spacing:1.4px;color:var(--muted);font-weight:700}
+.crumb b{color:var(--ink)}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;border-radius:10px;padding:9px 15px;font-weight:700;font-size:13px}
+.p{background:var(--teal);color:#06302c}.s{background:#fff;border-color:var(--border);color:var(--ink)}
+.chip{display:inline-block;font-size:11px;font-weight:700;border-radius:7px;padding:3px 8px}
+.blue{background:#eef0fe;color:#3d4bc4}.teal{background:#dff7f2;color:#127a6c}.red{background:#fdecef;color:#a3203a}.yel{background:#fff3df;color:#8a5a10}.gray{background:#eef2f7;color:#3c4a63}
+.muted{color:var(--muted);font-size:12.5px}
+.row{display:flex;gap:16px}
+.pro{background:linear-gradient(120deg,#13234a,#2b4a94);color:#fff}
+.pro p{color:#c7d3ee}
+ul{margin:10px 0 0;padding-left:0;list-style:none}
+li{padding:5px 0;font-size:13.5px;color:#3c4a63}
+.pro li{color:#e2e9fb}
+li:before{content:"✓ ";color:var(--teal);font-weight:800}
+li.x{color:#a1acbf}li.x:before{content:"– ";color:#c3cbd8}
+.bubble{border-radius:14px;padding:12px 14px;max-width:80%;font-size:13.5px}
+.me{background:var(--primary);color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+.ai{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px;color:#3c4a63}
+.code{background:#0f1b33;color:#d6e2ff;border-radius:12px;padding:14px;font:13px/1.7 ui-monospace,Consolas,monospace;white-space:pre}
+.out{background:#f3f6fb;border-radius:10px;padding:10px 12px;font:12.5px ui-monospace,Consolas,monospace}
+.t{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--border);border-radius:10px;margin-top:8px;font-size:13px;background:#fff}
+.day{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--border)}
+.day:first-child{border-top:0}
+.date{width:54px;flex:none;text-align:center;background:#f5f7fb;border-radius:10px;padding:6px 0;font-weight:800;font-size:15px}
+.date small{display:block;font-size:10px;color:var(--muted);font-weight:700}
+.date.today{background:var(--primary);color:#fff}.date.today small{color:#dfe3ff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:10.5px;letter-spacing:1px;color:var(--muted);padding:8px 6px;border-bottom:1px solid var(--border)}
+td{padding:10px 6px;border-bottom:1px solid var(--border)}
+.modalbg{background:rgba(9,18,36,.45);padding:40px 16px;display:grid;place-items:center;flex:1}
+textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px;font:inherit;min-height:70px}
+@media(max-width:860px){.side{display:none}.row{flex-direction:column}.main{padding:18px 16px}}
+</style>
+</head>
+<body>
+
+<div class="label">SCREEN 1 · <b>PRICING</b> · free vs Pro ₹99/month, 7-day free trial</div>
+<div class="frame">
+  <div class="main">
+    <div style="text-align:center;margin:6px 0 22px">
+      <span class="chip teal">7 DAYS OF PRO FREE · NO CARD NEEDED</span>
+      <h1 style="font-size:28px;margin:12px 0 6px">Simple pricing for every student</h1>
+      <p>Everything you need to study is free. Go Pro for unlimited AI help and exam-level practice.</p>
+    </div>
+    <div class="row" style="max-width:820px;margin:0 auto;align-items:stretch">
+      <div class="card" style="flex:1;padding:24px">
+        <h2>Free</h2>
+        <div style="font:800 32px 'Plus Jakarta Sans';margin:8px 0 2px">₹0</div>
+        <p class="muted">Forever</p>
+        <ul>
+          <li>All 96 weeks of notes and formula sheets</li>
+          <li>All 576 practice questions</li>
+          <li>Quiz 1 and Quiz 2 mock tests</li>
+          <li>My Mistakes revision and Exam Planner</li>
+          <li>Python Coding Lab</li>
+          <li>5 AI doubts per day</li>
+          <li class="x">End term mock tests</li>
+          <li class="x">OPPE-style coding tests</li>
+        </ul>
+        <span class="btn s" style="width:100%;margin-top:16px">Your current plan</span>
+      </div>
+      <div class="card pro" style="flex:1;padding:24px;border:0">
+        <div style="display:flex;justify-content:space-between"><h2 style="color:#fff">Pro</h2><span class="chip teal">MOST POPULAR</span></div>
+        <div style="font:800 32px 'Plus Jakarta Sans';margin:8px 0 2px">₹99<span style="font-size:15px;color:#c7d3ee"> / month</span></div>
+        <p>Cancel anytime · UPI, cards, net banking</p>
+        <ul>
+          <li>Everything in Free</li>
+          <li>Unlimited AI doubts</li>
+          <li>End term and full-length mock papers</li>
+          <li>OPPE-style coding tests with auto-checking</li>
+          <li>Detailed analytics: time per question, grade estimate</li>
+          <li>Download notes as PDF</li>
+        </ul>
+        <span class="btn p" style="width:100%;margin-top:16px">Start 7-day free trial</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Trial: signup pe 7 din Pro apne aap milega, card nahi chahiye. Trial ke baad free plan, koi auto-charge nahi. Pro lene pe Razorpay ka payment page khulega (UPI/card). Topbar mein "Pro · 5 days left" jaisa chip dikhega.</div>
+
+<div class="label">SCREEN 2 · <b>AI DOUBT SOLVER</b> · step-by-step Hinglish, daily limit for Free</div>
+<div class="frame">
+  <div class="side">
+    <div class="brand"><div class="logo">N</div><b>NEXT GEN</b></div>
+    <div class="nav">Overview</div><div class="nav">Study Library</div><div class="nav">Practice Quiz</div><div class="nav">My Mistakes</div><div class="nav">Mock Tests</div><div class="nav">Coding Lab</div><div class="nav on">AI Doubt Solver <i>NEW</i></div><div class="nav">Exam Planner</div><div class="nav">My Progress</div>
+  </div>
+  <div class="main">
+    <div class="top"><span class="crumb">STUDENT WORKSPACE / <b>AI DOUBT SOLVER</b></span><span class="chip blue">3 of 5 free doubts left today</span></div>
+    <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px;min-height:360px">
+      <div class="bubble me">Median aur mean mein outlier ka effect alag kyun hota hai? Example ke saath samjhao.</div>
+      <div class="bubble ai">
+        <b>Short answer:</b> Mean har value ko use karta hai, isliye ek badi value usse kheench leti hai. Median sirf beech wali position dekhta hai.<br><br>
+        <b>Step 1:</b> Data lo 2, 4, 6, 8, 100.<br>
+        <b>Step 2:</b> Mean = 120 / 5 = 24 (100 ne mean ko upar kheench liya).<br>
+        <b>Step 3:</b> Median = 6 (sorted list ka beech wala number, 100 se fark nahi pada).<br><br>
+        <span class="muted">Related notes: Statistics I · Week 3 →</span>
+      </div>
+      <div style="margin-top:auto;display:flex;gap:8px">
+        <input style="flex:1;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font:inherit" value="" placeholder="Type your doubt… (Hinglish ya English)">
+        <span class="btn p">Ask</span>
+      </div>
+      <p class="muted">AI answers can be wrong. Check important steps against your notes.</p>
+    </div>
+  </div>
+</div>
+<div class="note">Har MCQ ki explanation ke neeche "Explain more with AI" button bhi hoga, jo wahi question saath bhej dega. Free: 5 doubts/din, Pro: unlimited (fair use).</div>
+
+<div class="label">SCREEN 3 · <b>CODING LAB</b> · Python runs in the browser, auto-checked tests</div>
+<div class="frame">
+  <div class="main">
+    <div class="top"><span class="crumb">CODING LAB / PYTHON / <b>SUM OF EVEN NUMBERS</b></span><span class="chip yel">OPPE-STYLE · PRO</span></div>
+    <div class="row" style="align-items:flex-start">
+      <div class="card" style="flex:1;min-width:0">
+        <h3>Sum of even numbers</h3>
+        <p style="margin:6px 0 12px">Write a function <code>sum_even(nums)</code> jo list ke saare even numbers ka sum return kare.</p>
+        <div class="code">def sum_even(nums):
+    total = 0
+    for n in nums:
+        if n % 2 == 0:
+            total += n
+    return total</div>
+        <div style="display:flex;gap:8px;margin-top:12px"><span class="btn s">▶ Run</span><span class="btn p">Submit tests</span></div>
+      </div>
+      <div class="card" style="width:330px;flex:none">
+        <h3>Test cases</h3>
+        <div class="t"><span>sum_even([1, 2, 3, 4])</span><span class="chip teal">PASS · 6</span></div>
+        <div class="t"><span>sum_even([])</span><span class="chip teal">PASS · 0</span></div>
+        <div class="t"><span>sum_even([-2, 5, 8])</span><span class="chip teal">PASS · 6</span></div>
+        <div class="t"><span>Hidden test 1</span><span class="chip red">FAIL</span></div>
+        <div class="out" style="margin-top:12px">3 of 4 passed · Hint: big lists ke liye bhi check karo</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Python seedha browser mein chalega (Pyodide), koi server cost nahi. Free: practice problems with sample tests. Pro: OPPE-style timed sets with hidden tests.</div>
+
+<div class="label">SCREEN 4 · <b>MY MISTAKES</b> + <b>EXAM PLANNER</b></div>
+<div class="frame">
+  <div class="main">
+    <div class="row" style="align-items:flex-start">
+      <div class="card" style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h3>My Mistakes</h3><span class="chip red">12 due today</span></div>
+        <p class="muted" style="margin:4px 0 12px">Questions you got wrong come back after 1, 3 and 7 days until you get them right.</p>
+        <table>
+          <tr><th>Subject</th><th>Week</th><th>Wrong</th><th></th></tr>
+          <tr><td>Statistics I</td><td>Week 3</td><td>4</td><td style="text-align:right"><span class="btn s">Revise</span></td></tr>
+          <tr><td>Python</td><td>Week 7</td><td>3</td><td style="text-align:right"><span class="btn s">Revise</span></td></tr>
+          <tr><td>Maths I</td><td>Week 9</td><td>5</td><td style="text-align:right"><span class="btn s">Revise</span></td></tr>
+        </table>
+        <span class="btn p" style="margin-top:14px">Revise all 12 →</span>
+      </div>
+      <div class="card" style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h3>Exam Planner</h3><span class="chip blue">Quiz 2 in 9 days</span></div>
+        <p class="muted" style="margin:4px 0 8px">Based on your exam date and the weeks you haven't finished.</p>
+        <div class="day"><div class="date today">14<small>TODAY</small></div><div><b>Stats I · Week 5 notes</b><div class="muted">+ 10 practice questions · 40 min</div></div></div>
+        <div class="day"><div class="date">15<small>SAT</small></div><div><b>Maths I · Week 6 + revise mistakes</b><div class="muted">45 min</div></div></div>
+        <div class="day"><div class="date">16<small>SUN</small></div><div><b>Quiz 2 mock test (Stats I)</b><div class="muted">25 min</div></div></div>
+        <span class="btn s" style="margin-top:10px">Change exam date</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Exam dates student khud daalega (ya admin "suggested dates" set karega). Hum IITM ki official dates guarantee nahi karenge.</div>
+
+<div class="label">SCREEN 5 · <b>REPORT AN ERROR</b> + <b>ADMIN PANEL</b></div>
+<div class="frame">
+  <div class="modalbg" style="flex:0 0 420px">
+    <div class="card" style="width:100%;max-width:380px">
+      <h3>Report a problem with this question</h3>
+      <p class="muted" style="margin:4px 0 12px">Statistics I · Week 3 · Q4</p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"><span class="chip blue">Wrong answer</span><span class="chip gray">Unclear question</span><span class="chip gray">Typo</span><span class="chip gray">Other</span></div>
+      <textarea>Option B bhi sahi lag raha hai kyunki…</textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px"><span class="btn s">Cancel</span><span class="btn p">Send report</span></div>
+    </div>
+  </div>
+  <div class="main" style="border-left:1px solid var(--border)">
+    <div class="top"><span class="crumb">ADMIN / <b>REPORTS</b></span><span class="chip red">ADMIN ONLY</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px"><span class="btn p">Reports (7)</span><span class="btn s">Edit content</span><span class="btn s">Announcements</span><span class="btn s">Students</span></div>
+    <div class="card">
+      <table>
+        <tr><th>Question</th><th>Issue</th><th>Reports</th><th></th></tr>
+        <tr><td>Stats I · W3 · Q4</td><td><span class="chip red">Wrong answer</span></td><td>3</td><td style="text-align:right"><span class="btn s">Open</span></td></tr>
+        <tr><td>Python · W6 · Q6</td><td><span class="chip gray">Unclear</span></td><td>1</td><td style="text-align:right"><span class="btn s">Open</span></td></tr>
+        <tr><td>English I · W9 · Q3</td><td><span class="chip gray">Typo</span></td><td>1</td><td style="text-align:right"><span class="btn s">Open</span></td></tr>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:10px">"Open" se question edit hoga: text, options, sahi answer, explanation. Save hote hi site pe update.</p>
+  </div>
+</div>
+<div class="note">Admin panel sirf Gaurav ke account ko dikhega. Content edits database mein save honge, isliye naye notes/questions ke liye code deploy nahi karna padega.</div>
+
+</body>
+</html>

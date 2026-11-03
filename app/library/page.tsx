@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { getCatalog, getSubjects } from '@/lib/content';
 import { PageHead } from '@/components/ui';
 import { LibraryGrid } from '@/components/library/library-grid';
@@ -16,6 +17,7 @@ export default function LibraryPage() {
         kicker="Learn week by week"
         title="Study Library"
         description={`Week-by-week notes for all 8 Foundation subjects, each with key concepts, a solved example, common mistakes and quick revision points. ${totalWeeks} weeks available.`}
+        action={<Link className="btn btn-secondary" href="/search">⌕ Search notes</Link>}
       />
       <LibraryGrid subjects={subjects} catalog={catalog} />
       <p className="muted" style={{ marginTop: 22 }}>

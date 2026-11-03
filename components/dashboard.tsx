@@ -7,6 +7,8 @@ import { percent, score, studyStreak, weakWeeks } from '@/lib/progress/insights'
 import { orderSubjects } from '@/lib/subjects';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar, SubjectIcon } from '@/components/ui';
+import { AnnouncementBar } from '@/components/announcement-bar';
+import { computeMistakes, isDue } from '@/lib/progress/mistakes';
 
 export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
@@ -17,6 +19,7 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
   const weeksDone = Object.values(state.weeks).filter((w) => w.done).length;
   const streak = studyStreak(state.answers);
   const weak = weakWeeks(state.answers).slice(0, 3);
+  const dueMistakes = computeMistakes(state.answers).filter((m) => isDue(m)).length;
   const subjectById = new Map(subjects.map((s) => [s.id, s]));
   const titleOf = (subjectId: string, week: number) => catalog[subjectId]?.find((w) => w.week === week)?.title ?? '';
 
@@ -25,6 +28,7 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
 
   return (
     <>
+      <AnnouncementBar />
       <div className="kicker">Your learning dashboard</div>
       <section className="hero">
         <div>
@@ -93,9 +97,20 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
 
         <section className="card">
           <h3 style={{ marginBottom: 6 }}>Quick actions</h3>
+          <QuickAction
+            href="/mistakes"
+            icon="↻"
+            title={dueMistakes ? `Revise ${dueMistakes} mistake${dueMistakes === 1 ? '' : 's'}` : 'My Mistakes'}
+            text={dueMistakes ? 'Due today for revision' : 'Wrong answers come back here for revision'}
+          />
+          <QuickAction
+            href="/planner"
+            icon="▦"
+            title={state.exam ? `${state.exam.name}: ${new Date(state.exam.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'Plan for your exam'}
+            text={state.exam ? 'See today’s study plan' : 'Get a day-by-day plan to your exam date'}
+          />
+          <QuickAction href="/doubts" icon="✦" title="Ask a doubt" text="Step-by-step answers from the AI doubt solver" />
           <QuickAction href="/practice" icon="▤" title="Practice a week" text={`${totalQuestions} original MCQs with Hinglish explanations`} />
-          <QuickAction href="/tests" icon="◷" title="Take a mock test" text="Timed Quiz 1, Quiz 2 and End term tests" />
-          <QuickAction href="/progress" icon="▥" title="View your progress" text="Week-wise accuracy and test history" />
         </section>
       </div>
     </>

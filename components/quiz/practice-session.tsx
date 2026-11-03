@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { progress } from '@/lib/progress/store';
+import { useCorrectedQuestions } from '@/lib/overrides';
 import { percent } from '@/lib/progress/insights';
 import type { Question } from '@/lib/types';
 import { InlineText, ProgressBar } from '@/components/ui';
@@ -10,7 +11,8 @@ import { Explanation, QuestionView } from './question-view';
 
 type Props = { subjectId: string; subjectName: string; week: number; weekTitle: string; questions: Question[] };
 
-export function PracticeSession({ subjectId, subjectName, week, weekTitle, questions }: Props) {
+export function PracticeSession({ subjectId, subjectName, week, weekTitle, questions: original }: Props) {
+  const questions = useCorrectedQuestions(original);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);

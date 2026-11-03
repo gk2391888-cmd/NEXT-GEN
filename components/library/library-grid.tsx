@@ -36,9 +36,12 @@ export function LibraryGrid({ subjects, catalog }: { subjects: Subject[]; catalo
                   <span className="muted">
                     {done === weeks.length ? 'All weeks complete. Take a mock test to revise.' : `Next: Week ${next.week} · ${next.title}`}
                   </span>
-                  <Link className="btn btn-secondary" href={`/library/${s.id}/${next.week}`}>
-                    {done ? 'Continue' : 'Start week 1'} →
-                  </Link>
+                  <div className="btn-group" style={{ alignItems: 'center' }}>
+                    <Link className="link" href={`/library/${s.id}/formulas`}>Formula sheet</Link>
+                    <Link className="btn btn-secondary" href={`/library/${s.id}/${next.week}`}>
+                      {done ? 'Continue' : 'Start week 1'} →
+                    </Link>
+                  </div>
                 </div>
               </>
             )}

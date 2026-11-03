@@ -6,6 +6,7 @@ import {
   weekKey,
   type ActiveTest,
   type AnswerRecord,
+  type ExamTarget,
   type NewAnswer,
   type Profile,
   type ProgressState,
@@ -97,6 +98,8 @@ export function applyOp(s: ProgressState, op: SyncOp): ProgressState {
       return { ...s, lastVisited: op.lastVisited };
     case 'profile':
       return { ...s, profile: op.profile };
+    case 'exam':
+      return { ...s, exam: op.exam ?? undefined };
     case 'reset':
       return { ...s, weeks: {}, answers: [], tests: [], lastVisited: undefined };
   }
@@ -162,6 +165,16 @@ export const progress = {
     dispatch({ kind: 'profile', profile });
   },
 
+  markSolved(problemId: string) {
+    const s = getSnapshot();
+    if (s.coding?.[problemId]) return;
+    commit({ ...s, coding: { ...s.coding, [problemId]: { solvedAt: new Date().toISOString() } } });
+  },
+
+  setExam(exam: ExamTarget | null) {
+    dispatch({ kind: 'exam', exam });
+  },
+
   reset() {
     dispatch({ kind: 'reset' });
   },
@@ -194,7 +207,7 @@ export const progress = {
     }
     dispatch(...ops);
     const s = getSnapshot();
-    commit({ ...s, active: { ...guest.active, ...s.active }, guestImportHandled: true });
+    commit({ ...s, active: { ...guest.active, ...s.active }, coding: { ...guest.coding, ...s.coding }, guestImportHandled: true });
     write(GUEST_KEY, emptyProgress());
   },
 
@@ -217,6 +230,7 @@ export const progress = {
       active: local.active,
       pending: local.pending,
       guestImportHandled: local.guestImportHandled,
+      coding: local.coding,
     };
     for (const op of local.pending) next = applyOp(next, op);
     commit(next);
@@ -229,4 +243,6 @@ export type ServerProgress = {
   tests: TestAttempt[];
   lastVisited?: ProgressState['lastVisited'];
   profile?: Profile;
+  plan?: ProgressState['plan'];
+  exam?: ExamTarget;
 };

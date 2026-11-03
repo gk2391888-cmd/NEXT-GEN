@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import type { Question } from '@/lib/types';
+import { ReportButton } from './report-button';
 import { InlineText } from '@/components/ui';
 
 const LETTERS = ['A', 'B', 'C', 'D'];
@@ -53,6 +55,10 @@ export function Explanation({ question, selected }: { question: Question; select
         {!right && `Correct answer: ${letter(question.answer)}. `}
       </strong>
       <InlineText text={question.explanation} />
+      <div className="explain-actions">
+        <Link className="text-btn" href={`/doubts?question=${encodeURIComponent(question.id)}`}>✦ Explain more with AI</Link>
+        <ReportButton questionId={question.id} label={question.question.slice(0, 90)} />
+      </div>
     </div>
   );
 }

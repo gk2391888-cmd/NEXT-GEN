@@ -22,6 +22,15 @@ export function getSupabase(): SupabaseClient {
   return client;
 }
 
+/** fetch() to our own API routes as the signed-in student. */
+export async function authedFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const { data } = await getSupabase().auth.getSession();
+  const headers = new Headers(init.headers);
+  if (data.session) headers.set('Authorization', `Bearer ${data.session.access_token}`);
+  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  return fetch(path, { ...init, headers });
+}
+
 /** Which login providers are switched on in the Supabase dashboard (Google needs setup first). */
 export async function getAuthProviders(): Promise<{ google: boolean; email: boolean }> {
   try {

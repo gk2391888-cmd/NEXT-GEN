@@ -9,12 +9,14 @@ export type MockTest = {
   toWeek: number;
   questionCount: number;
   minutes: number;
+  /** Only for Pro (and trial) students. */
+  pro?: boolean;
 };
 
 export const MOCK_TESTS: MockTest[] = [
   { id: 'quiz-1', title: 'Quiz 1 practice', fromWeek: 1, toWeek: 4, questionCount: 15, minutes: 25 },
   { id: 'quiz-2', title: 'Quiz 2 practice', fromWeek: 5, toWeek: 8, questionCount: 15, minutes: 25 },
-  { id: 'end-term', title: 'End term practice', fromWeek: 1, toWeek: 12, questionCount: 30, minutes: 60 },
+  { id: 'end-term', title: 'End term practice', fromWeek: 1, toWeek: 12, questionCount: 30, minutes: 60, pro: true },
 ];
 
 export function getMockTest(id: string): MockTest | undefined {

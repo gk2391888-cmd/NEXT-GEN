@@ -105,6 +105,10 @@ async function sendOne(userId: string, op: Exclude<SyncOp, { kind: 'answers' }>)
       return check(
         await db.from('profiles').update({ full_name: op.profile.fullName, subjects: op.profile.subjects, updated_at: new Date().toISOString() }).eq('id', userId),
       );
+    case 'exam':
+      return check(
+        await db.from('profiles').update({ exam_name: op.exam?.name ?? null, exam_date: op.exam?.date ?? null, updated_at: new Date().toISOString() }).eq('id', userId),
+      );
     case 'reset':
       check(await db.from('answers').delete().eq('user_id', userId));
       check(await db.from('test_attempts').delete().eq('user_id', userId));
@@ -136,6 +140,7 @@ const testRow = (userId: string, t: TestAttempt) => ({
   responses: t.responses,
   correct: t.correct,
   total: t.total,
+  time_spent: t.timeSpent ?? null,
 });
 
 /* ---------------- download ---------------- */
@@ -158,7 +163,7 @@ type WeekRow = { subject_id: string; week: number; done: boolean; saved: boolean
 async function pullAll(userId: string) {
   const db = getSupabase();
   const [profileRes, weeks, answers, tests] = await Promise.all([
-    db.from('profiles').select('full_name, subjects, last_visited').eq('id', userId).maybeSingle(),
+    db.from('profiles').select('full_name, subjects, last_visited, trial_ends_at, pro_until, exam_name, exam_date').eq('id', userId).maybeSingle(),
     fetchAll<WeekRow>('week_status', userId, 'subject_id'),
     fetchAll<AnswerRow>('answers', userId, 'answered_at'),
     fetchAll<TestRow>('test_attempts', userId, 'submitted_at'),
@@ -187,9 +192,12 @@ async function pullAll(userId: string) {
       responses: t.responses,
       correct: t.correct,
       total: t.total,
+      timeSpent: t.time_spent ?? undefined,
     })),
     lastVisited: profileRes.data?.last_visited ?? undefined,
     profile: profileRes.data ? { fullName: profileRes.data.full_name ?? '', subjects: profileRes.data.subjects ?? [] } : undefined,
+    plan: profileRes.data ? { trialEndsAt: profileRes.data.trial_ends_at ?? undefined, proUntil: profileRes.data.pro_until ?? undefined } : undefined,
+    exam: profileRes.data?.exam_date ? { name: profileRes.data.exam_name ?? 'Exam', date: profileRes.data.exam_date } : undefined,
   };
   // The user may have switched accounts while this was loading.
   if (progress.getScope() === userId) progress.replaceFromServer(server);

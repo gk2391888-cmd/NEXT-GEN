@@ -13,10 +13,12 @@ type AuthState = {
   ready: boolean;
   /** True once the first download after login has finished. */
   loaded: boolean;
+  /** Can use the admin panel (checked by the database, see is_admin()). */
+  isAdmin: boolean;
   signOut: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthState>({ user: null, ready: false, loaded: false, signOut: async () => {} });
+const AuthContext = createContext<AuthState>({ user: null, ready: false, loaded: false, isAdmin: false, signOut: async () => {} });
 
 export const useAuth = () => useContext(AuthContext);
 
@@ -27,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const userId = user?.id ?? null;
 
   useEffect(() => {
@@ -47,9 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!ready) return;
     progress.setScope(userId);
     setLoaded(false);
+    setIsAdmin(false);
     if (!userId) return;
     let cancelled = false;
     sync(userId).finally(() => !cancelled && setLoaded(true));
+    getSupabase().rpc('is_admin').then(({ data }) => !cancelled && setIsAdmin(data === true));
     return () => {
       cancelled = true;
     };
@@ -85,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   return (
-    <AuthContext.Provider value={{ user, ready, loaded, signOut }}>
+    <AuthContext.Provider value={{ user, ready, loaded, isAdmin, signOut }}>
       {children}
       {userId && loaded && <ImportPrompt user={user!} />}
     </AuthContext.Provider>

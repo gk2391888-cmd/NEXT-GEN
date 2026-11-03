@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getQuestionsForWeeks, getSubject, getSubjects, getWeekRefs, getWeeks } from '@/lib/content';
 import { getMockTest, MOCK_TESTS } from '@/lib/tests';
 import { TestRunner } from '@/components/quiz/test-runner';
+import { ProLock } from '@/components/pro-lock';
 
 type Params = { subject: string; test: string };
 
@@ -35,7 +36,13 @@ export default async function TestPage({ params }: { params: Promise<Params> }) 
         <Link href="/tests">Mock Tests</Link><span className="sep">/</span>
         {subject.short}<span className="sep">/</span><strong>{test.title}</strong>
       </div>
-      <TestRunner subject={subject} test={test} pool={pool} weekTitles={weekTitles} />
+      {test.pro ? (
+        <ProLock feature="The End term mock test">
+          <TestRunner subject={subject} test={test} pool={pool} weekTitles={weekTitles} />
+        </ProLock>
+      ) : (
+        <TestRunner subject={subject} test={test} pool={pool} weekTitles={weekTitles} />
+      )}
     </>
   );
 }

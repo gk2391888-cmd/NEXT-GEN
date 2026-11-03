@@ -1,21 +1,25 @@
 import type { Metadata } from 'next';
 import labs from '@/content/lab.json';
+import { OPPE_SETS, PROBLEMS } from '@/lib/coding';
 import { PageHead } from '@/components/ui';
 import { LabCard } from '@/components/lab-card';
+import { ProblemList } from '@/components/coding/problem-list';
 
-export const metadata: Metadata = { title: 'Python & CT Lab' };
+export const metadata: Metadata = { title: 'Coding Lab' };
 
 export default function LabPage() {
+  const summary = PROBLEMS.map(({ id, tier, set, week, title, difficulty }) => ({ id, tier, set, week, title, difficulty }));
   return (
     <>
       <PageHead
         kicker="Learn by doing"
-        title="Python & CT Practice Lab"
-        description="Dry-run each snippet and predict its output before revealing the solution. Each Python week in Practice has more output-based questions."
+        title="Python Coding Lab"
+        description="Write Python right in your browser and check it against test cases instantly. Practice problems are free; OPPE-style sets with hidden tests are part of Pro."
       />
-      <div className="alert alert-warn" style={{ marginBottom: 16 }}>
-        An in-browser coding lab is coming soon. Until then, run these examples in Python on your own computer to check your answers.
-      </div>
+      <ProblemList problems={summary} sets={OPPE_SETS} />
+
+      <h2 style={{ margin: '30px 0 6px' }}>Predict the output</h2>
+      <p className="muted" style={{ marginBottom: 14 }}>Dry-run each snippet in your head before revealing the answer.</p>
       <div className="grid grid-2">
         {labs.map((lab, i) => <LabCard key={lab.id} lab={lab} number={i + 1} />)}
       </div>

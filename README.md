@@ -30,6 +30,38 @@ Each student can only read and write their own rows. This is enforced by Row Lev
 
 The Supabase URL and publishable key default to the production project (`lib/supabase/client.ts`); set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to point at another project. Never put the `service_role`/secret key in this app.
 
+## Phase 3: Pro, AI and practice tools
+
+| Feature | Free | Pro (₹99 / 30 days, 7-day trial on sign-up) |
+| --- | --- | --- |
+| Notes, formula sheets, search, practice | ✓ | ✓ |
+| Quiz 1 / Quiz 2 mock tests | ✓ | ✓ |
+| End term mock tests | | ✓ |
+| My Mistakes (spaced revision), Exam Planner | ✓ | ✓ |
+| Coding Lab practice problems (Python in the browser via Pyodide) | ✓ | ✓ |
+| OPPE-style coding sets with hidden tests | | ✓ |
+| AI Doubt Solver (Gemini) | 5 / day | 200 / day fair use |
+| Time per question in test results, Save as PDF | | ✓ |
+
+- **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), post announcements.
+- **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. The AI limit is enforced in the database (`consume_doubt()`).
+- **Payments**: Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup), both granting 30 days via the service-role key.
+
+### Environment variables (Vercel → Settings → Environment Variables)
+
+| Name | Needed for |
+| --- | --- |
+| `GEMINI_API_KEY` | AI Doubt Solver (from aistudio.google.com) |
+| `GEMINI_MODEL` | Optional, defaults to `gemini-2.5-flash` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Payments (granting Pro). Never expose it to the browser. |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Payments |
+| `RAZORPAY_WEBHOOK_SECRET` | Payment webhook (`<site>/api/payments/webhook`, event `payment.captured`) |
+| `PRO_PRICE_INR` | Optional, defaults to 99 |
+
+Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
+
+Migrations: run `supabase/migrations/0001…0003` in order in the Supabase SQL Editor.
+
 ## Run it
 
 ```bash

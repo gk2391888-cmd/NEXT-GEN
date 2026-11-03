@@ -7,6 +7,7 @@ import { testKey, type MockTest } from '@/lib/tests';
 import { orderSubjects } from '@/lib/subjects';
 import type { Subject } from '@/lib/types';
 import { accuracyColor, SubjectIcon } from '@/components/ui';
+import { ProTag } from '@/components/pro-lock';
 
 export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]; tests: MockTest[] }) {
   const state = useProgress();
@@ -31,7 +32,7 @@ export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]
               return (
                 <div key={t.id} className="card test-card" style={{ background: 'var(--bg)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                    <strong>{t.title}</strong>
+                    <strong>{t.title} {t.pro && <ProTag />}</strong>
                     {inProgress && <span className="chip chip-yellow">IN PROGRESS</span>}
                   </div>
                   <div className="test-meta">

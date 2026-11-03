@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useProgress } from '@/lib/progress/store';
 import { useSyncStatus } from '@/lib/sync';
+import { usePlan } from '@/lib/plan';
 import { initials, useAuth } from './auth-provider';
 
 const STATUS_TEXT = { idle: '', syncing: 'Saving…', synced: '✓ Synced', offline: 'Offline · will sync later' } as const;
@@ -14,6 +15,7 @@ export function AccountMenu() {
   const { user, ready, signOut } = useAuth();
   const state = useProgress();
   const status = useSyncStatus();
+  const plan = usePlan();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -46,7 +48,10 @@ export function AccountMenu() {
 
   return (
     <div className="account" ref={ref}>
-      {STATUS_TEXT[status] && <span className={`sync-chip ${status}`}>{STATUS_TEXT[status]}</span>}
+      {STATUS_TEXT[status] && <span className={`sync-chip hide-mobile ${status}`}>{STATUS_TEXT[status]}</span>}
+      {plan.tier === 'trial' && <Link href="/pricing" className="plan-chip pro">Pro trial · {plan.daysLeft}d left</Link>}
+      {plan.tier === 'pro' && <span className="plan-chip pro">Pro</span>}
+      {plan.tier === 'free' && <Link href="/pricing" className="plan-chip">Upgrade</Link>}
       <button className="avatar" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label="Account menu">
         {initials(user, fullName)}
       </button>
@@ -61,6 +66,7 @@ export function AccountMenu() {
           </div>
           <Link role="menuitem" className="menu-item" href="/profile">My profile</Link>
           <Link role="menuitem" className="menu-item" href="/progress">My progress</Link>
+          <Link role="menuitem" className="menu-item" href="/pricing">Plan and billing</Link>
           <button role="menuitem" className="menu-item danger" onClick={() => signOut()}>Logout</button>
         </div>
       )}

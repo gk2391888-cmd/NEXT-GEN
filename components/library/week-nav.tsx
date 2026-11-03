@@ -18,6 +18,7 @@ export function WeekNav({ subject, weeks, current }: { subject: Subject; weeks: 
         <h3>{subject.name}</h3>
         <div className="muted" style={{ marginBottom: 8 }}>{subject.code} · {doneCount} of {weeks.length} done</div>
         <ProgressBar value={percent(doneCount, weeks.length)} color={subject.color} />
+        <Link className="link" style={{ display: 'inline-block', marginTop: 10 }} href={`/library/${subject.id}/formulas`}>Formula sheet →</Link>
       </div>
       {weeks.map((w) => {
         const active = w.week === current;
