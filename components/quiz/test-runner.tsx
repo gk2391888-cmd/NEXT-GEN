@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { progress, useProgress } from '@/lib/progress/store';
 import { percent } from '@/lib/progress/insights';
-import type { ActiveTest, AnswerRecord, TestAttempt } from '@/lib/progress/types';
+import type { ActiveTest, NewAnswer, TestAttempt } from '@/lib/progress/types';
 import { pickQuestions, testKey, type MockTest } from '@/lib/tests';
 import type { Question, Subject } from '@/lib/types';
 import { accuracyColor, InlineText, ProgressBar } from '@/components/ui';
@@ -52,10 +52,10 @@ export function TestRunner({ subject, test, pool, weekTitles }: Props) {
         <h1 style={{ margin: '12px 0 6px' }}>{test.title}</h1>
         <p>{subject.name} · {test.questionCount} questions · {test.minutes} minutes</p>
         <ul style={{ margin: '16px 0' }}>
-          <li>Timer start hote hi chalta rahega. Time khatam hone par test apne aap submit ho jayega.</li>
-          <li>Kisi bhi question pe palette se jump kar sakte ho. Doubt ho to <strong>Mark for review</strong> karo.</li>
-          <li>Har sahi answer ka 1 mark, galat ya skip ka 0. Negative marking nahi hai.</li>
-          <li>Page refresh ya band ho jaye to bhi test yahin se resume hoga.</li>
+          <li>The timer starts as soon as you begin. The test is submitted automatically when time runs out.</li>
+          <li>Use the question palette to jump to any question, and <strong>Mark for review</strong> anything you want to revisit.</li>
+          <li>Each correct answer scores 1 mark. Wrong or skipped answers score 0; there is no negative marking.</li>
+          <li>If the page is refreshed or closed, the test resumes where you left off.</li>
         </ul>
         <button className="btn btn-primary" onClick={start}>Start test →</button>
       </div>
@@ -122,7 +122,7 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
       total: active.questionIds.length,
     };
     // Skipped questions don't count towards weak-topic detection; only answered ones do.
-    const answers: AnswerRecord[] = qs.flatMap((q, i) =>
+    const answers: NewAnswer[] = qs.flatMap((q, i) =>
       q && active.responses[i] !== null
         ? [{ questionId: q.id, subjectId: active.subjectId, week: q.week ?? 0, correct: active.responses[i] === q.answer, mode: 'test' as const, at: submittedAt }]
         : [],
@@ -148,8 +148,8 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
   function confirmSubmit() {
     const unanswered = questions.length - answered;
     const message = unanswered
-      ? `${unanswered} question${unanswered > 1 ? 's' : ''} abhi bhi unanswered hain. Phir bhi submit karein?`
-      : 'Test submit karein? Submit ke baad answers change nahi honge.';
+      ? `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Submit anyway?`
+      : 'Submit the test? You can’t change your answers after submitting.';
     if (window.confirm(message)) submit();
   }
 
@@ -296,7 +296,7 @@ function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProp
               <button className={filter === 'skipped' ? 'on' : ''} onClick={() => setFilter('skipped')}>Skipped {skipped.length}</button>
             </div>
           </div>
-          {shown.length === 0 && <div className="empty">Is filter mein koi question nahi hai.</div>}
+          {shown.length === 0 && <div className="empty">No questions match this filter.</div>}
           {shown.map(({ q, pick, n }) => {
             const status = pick === null ? 'SKIPPED' : pick === q.answer ? 'CORRECT' : 'WRONG';
             return (

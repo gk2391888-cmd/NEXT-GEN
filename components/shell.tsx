@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { AccountMenu } from './auth/account-menu';
+import { useAuth } from './auth/auth-provider';
 
 const NAV = [
   { href: '/', label: 'Overview', icon: '◈' },
@@ -19,8 +21,12 @@ const isActive = (pathname: string, href: string) => (href === '/' ? pathname ==
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { user, ready } = useAuth();
 
   useEffect(() => setOpen(false), [pathname]);
+
+  // The login screen is full-page, without the workspace chrome.
+  if (pathname === '/login') return <>{children}</>;
 
   return (
     <div className="shell">
@@ -46,6 +52,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="sidebar-bottom">
+          {ready && !user && (
+            <Link href={`/login?next=${encodeURIComponent(pathname)}`} className="sidebar-login">
+              <strong>Log in to save progress</strong>
+              <span>Keep your progress on every device</span>
+            </Link>
+          )}
           <div className="sidebar-info">
             <div className="status-light" />
             <div>
@@ -71,7 +83,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <strong>{NAV.find((n) => isActive(pathname, n.href))?.label ?? 'NEXT GEN'}</strong>
             </span>
           </div>
-          <span className="tag-local" title="Progress is saved in this browser until student accounts launch">● Progress saved on this device</span>
+          <AccountMenu />
         </header>
         <main className="content" id="content">{children}</main>
         <footer className="footer">

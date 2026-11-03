@@ -51,7 +51,7 @@ export function PracticeSession({ subjectId, subjectName, week, weekTitle, quest
           <div style={{ font: '800 44px var(--font-head)', color: accuracy >= 75 ? 'var(--green)' : accuracy >= 50 ? 'var(--yellow-dark)' : 'var(--red)' }}>{accuracy}%</div>
           <h2>{correct} of {questions.length} correct</h2>
           <p style={{ marginTop: 6 }}>
-            {accuracy === 100 ? 'Perfect! Ye week strong hai.' : accuracy >= 70 ? 'Accha hai. Galat answers ki explanation ek baar aur padh lo.' : 'Notes dobara revise karo, phir practice repeat karo.'}
+            {accuracy === 100 ? 'Perfect score. You have a strong grasp of this week.' : accuracy >= 70 ? 'Good work. Review the explanations for the questions you missed.' : 'Revise this week’s notes, then try the practice again.'}
           </p>
           <div className="btn-group" style={{ justifyContent: 'center', marginTop: 18 }}>
             <button className="btn btn-primary" onClick={restart}>Practice again</button>

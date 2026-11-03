@@ -1,8 +1,11 @@
 /**
- * Student progress model. Phase 1 keeps it in the browser (localStorage);
- * Phase 2 moves the same records to Supabase tables of the same names.
+ * Student progress model. The browser keeps a copy (localStorage) so the app
+ * is instant and works offline; for logged-in students every change is also
+ * queued in `pending` and pushed to Supabase tables of the same shape.
  */
 export type AnswerRecord = {
+  /** Generated on the device so retried uploads never duplicate a row. */
+  id: string;
   questionId: string;
   subjectId: string;
   week: number;
@@ -10,6 +13,8 @@ export type AnswerRecord = {
   mode: 'practice' | 'test';
   at: string;
 };
+
+export type NewAnswer = Omit<AnswerRecord, 'id'>;
 
 export type TestAttempt = {
   id: string;
@@ -24,7 +29,7 @@ export type TestAttempt = {
   total: number;
 };
 
-/** A mock test the student has started but not submitted, so a refresh doesn't lose it. */
+/** A mock test the student has started but not submitted, so a refresh doesn't lose it. Device-only. */
 export type ActiveTest = {
   subjectId: string;
   testId: string;
@@ -40,6 +45,17 @@ export type WeekStatus = { done?: boolean; saved?: boolean };
 
 export type LastVisited = { subjectId: string; week: number; at: string };
 
+export type Profile = { fullName: string; subjects: string[] };
+
+/** A change waiting to be uploaded. Applied locally first, then sent in order. */
+export type SyncOp =
+  | { kind: 'answers'; records: AnswerRecord[] }
+  | { kind: 'week'; subjectId: string; week: number; status: Required<WeekStatus> }
+  | { kind: 'test'; attempt: TestAttempt }
+  | { kind: 'visit'; lastVisited: LastVisited }
+  | { kind: 'profile'; profile: Profile }
+  | { kind: 'reset' };
+
 export type ProgressState = {
   version: 2;
   /** Keyed by `${subjectId}:${week}`. */
@@ -49,8 +65,16 @@ export type ProgressState = {
   /** Keyed by `${subjectId}/${testId}`. */
   active: Record<string, ActiveTest>;
   lastVisited?: LastVisited;
+  profile?: Profile;
+  /** Logged-in only: changes not yet confirmed by the server. */
+  pending: SyncOp[];
+  /** Logged-in only: the "save this device's progress?" question has been answered. */
+  guestImportHandled?: boolean;
 };
 
 export const weekKey = (subjectId: string, week: number) => `${subjectId}:${week}`;
 
-export const emptyProgress = (): ProgressState => ({ version: 2, weeks: {}, answers: [], tests: [], active: {} });
+export const emptyProgress = (): ProgressState => ({ version: 2, weeks: {}, answers: [], tests: [], active: {}, pending: [] });
+
+export const hasProgress = (s: ProgressState) =>
+  s.answers.length > 0 || s.tests.length > 0 || Object.values(s.weeks).some((w) => w.done || w.saved);

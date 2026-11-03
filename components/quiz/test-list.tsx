@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { useProgress } from '@/lib/progress/store';
 import { percent } from '@/lib/progress/insights';
 import { testKey, type MockTest } from '@/lib/tests';
+import { orderSubjects } from '@/lib/subjects';
 import type { Subject } from '@/lib/types';
 import { accuracyColor, SubjectIcon } from '@/components/ui';
 
-export function TestList({ subjects, tests }: { subjects: Subject[]; tests: MockTest[] }) {
+export function TestList({ subjects: allSubjects, tests }: { subjects: Subject[]; tests: MockTest[] }) {
   const state = useProgress();
+  const subjects = orderSubjects(allSubjects, state.profile?.subjects);
 
   return (
     <div className="stack">

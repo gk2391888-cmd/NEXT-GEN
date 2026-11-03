@@ -12,7 +12,7 @@ export default function ProgressPage() {
       <PageHead
         kicker="Personal learning insights"
         title="My Progress"
-        description="Subject-wise accuracy, weak weeks aur mock test history. Abhi ye sab isi browser mein save hota hai; student login aane ke baad cloud mein sync hoga."
+        description="Your accuracy by subject, weeks to revise and mock test history. Log in to keep it in sync across devices."
       />
       <ProgressView subjects={getSubjects()} catalog={getCatalog()} testTitles={Object.fromEntries(MOCK_TESTS.map((t) => [t.id, t.title]))} />
     </>

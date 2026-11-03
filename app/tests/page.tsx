@@ -13,17 +13,17 @@ export default function TestsPage() {
   return (
     <>
       <PageHead
-        kicker="Exam jaisi practice"
+        kicker="Exam-style practice"
         title="Mock Tests"
-        description="Har subject ke liye Quiz 1, Quiz 2 aur End term practice tests. Timer chalega, question palette milega, aur submit karne ke baad poora result Hinglish explanations ke saath."
+        description="Timed Quiz 1, Quiz 2 and End term practice tests for every subject, with a question palette and a detailed result with explanations."
       />
       {subjects.length === 0 ? (
-        <div className="card empty"><div className="empty-icon">◷</div>Mock tests jaldi aa rahe hain.</div>
+        <div className="card empty"><div className="empty-icon">◷</div>Mock tests are coming soon.</div>
       ) : (
         <TestList subjects={subjects} tests={MOCK_TESTS} />
       )}
       <div className="alert" style={{ marginTop: 20 }}>
-        Ye original practice tests hain, IITM ke actual quiz ya PYQ nahi. Har baar question bank se naye questions aate hain, isliye test repeat kar sakte ho.
+        These are original practice tests, not actual IIT Madras quizzes or previous-year papers. Questions are drawn fresh from the question bank each time, so you can retake them.
       </div>
     </>
   );

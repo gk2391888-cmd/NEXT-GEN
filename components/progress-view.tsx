@@ -6,11 +6,13 @@ import { weekKey } from '@/lib/progress/types';
 import { percent, score, weakWeeks } from '@/lib/progress/insights';
 import type { Subject, WeekRef } from '@/lib/types';
 import { accuracyColor, ProgressBar, SubjectIcon } from '@/components/ui';
+import { useAuth } from '@/components/auth/auth-provider';
 
 type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]>; testTitles: Record<string, string> };
 
 export function ProgressView({ subjects, catalog, testTitles }: Props) {
   const state = useProgress();
+  const { user } = useAuth();
   const totals = score(state.answers);
   const weak = weakWeeks(state.answers);
   const subjectById = new Map(subjects.map((s) => [s.id, s]));
@@ -23,7 +25,8 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
     });
 
   function reset() {
-    if (window.confirm('Is browser se saari progress (answers, tests, completed weeks) delete ho jayegi. Ye undo nahi hoga. Continue?')) {
+    const where = user ? 'your account (on all devices)' : 'this browser';
+    if (window.confirm(`This will permanently delete all progress (answers, tests and completed weeks) from ${where}. This can’t be undone. Continue?`)) {
       progress.reset();
     }
   }
@@ -67,11 +70,11 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
 
         <section className="card">
           <h3 style={{ marginBottom: 6 }}>Weak weeks to revise</h3>
-          <p className="muted" style={{ marginBottom: 8 }}>Kam se kam 3 answers aur 60% se kam accuracy wale weeks.</p>
+          <p className="muted" style={{ marginBottom: 8 }}>Weeks with at least 3 answers and accuracy below 60%.</p>
           {weak.length === 0 ? (
             <div className="empty">
               <div className="empty-icon">◇</div>
-              {totals.attempted ? 'Abhi koi weak week nahi hai. Great!' : 'Practice ya mock test do, weak weeks yahan dikhenge.'}
+              {totals.attempted ? 'No weak weeks right now. Great work!' : 'Practise or take a mock test, and your weak weeks will appear here.'}
             </div>
           ) : (
             weak.map((w) => (
@@ -95,7 +98,7 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
         <section className="card">
           <h3 style={{ marginBottom: 8 }}>Mock test history</h3>
           {state.tests.length === 0 ? (
-            <div className="empty"><div className="empty-icon">◷</div>Abhi tak koi mock test nahi diya. <Link href="/tests">Start one →</Link></div>
+            <div className="empty"><div className="empty-icon">◷</div>You haven’t taken a mock test yet. <Link href="/tests">Start one →</Link></div>
           ) : (
             <div className="table-scroll">
               <table className="table">
@@ -117,7 +120,7 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
         <section className="card">
           <h3 style={{ marginBottom: 8 }}>Saved for revision</h3>
           {saved.length === 0 ? (
-            <div className="empty"><div className="empty-icon">☆</div>Notes page pe “Revise later” dabao, wo weeks yahan aayenge.</div>
+            <div className="empty"><div className="empty-icon">☆</div>Select “Revise later” on any notes page to save the week here.</div>
           ) : (
             saved.map((s) => (
               <div key={`${s.subjectId}:${s.week}`} className="weak-row">
@@ -133,7 +136,11 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
       </div>
 
       <div className="alert" style={{ marginTop: 16 }}>
-        Privacy: abhi progress sirf is browser ke local storage mein hai. Ye doosre devices pe sync nahi hoti, aur browser data clear karne se mit sakti hai.
+        {user ? (
+          <>Your progress is saved to your account and is visible only to you. Log in on any device to continue.</>
+        ) : (
+          <>Your progress is currently saved only in this browser and will be lost if you clear browser data. <Link href="/login?next=/progress">Log in</Link> to save it across devices.</>
+        )}
       </div>
       <button className="btn btn-danger" style={{ marginTop: 12 }} onClick={reset}>Reset my progress</button>
     </>

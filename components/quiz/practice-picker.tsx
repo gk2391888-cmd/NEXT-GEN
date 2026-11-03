@@ -26,7 +26,7 @@ export function PracticePicker({ subjects, catalog }: { subjects: Subject[]; cat
       </div>
 
       {weeks.length === 0 ? (
-        <div className="empty"><div className="empty-icon">◇</div>Is subject ke questions jaldi aa rahe hain.</div>
+        <div className="empty"><div className="empty-icon">◇</div>Questions for this subject are coming soon.</div>
       ) : (
         <div className="table-scroll" style={{ marginTop: 16 }}>
           <table className="table">

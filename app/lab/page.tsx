@@ -11,10 +11,10 @@ export default function LabPage() {
       <PageHead
         kicker="Learn by doing"
         title="Python & CT Practice Lab"
-        description="Code ka output pehle khud dry run karke predict karo, phir solution dekho. Har Python week ke practice questions mein aur bhi output-based problems hain."
+        description="Dry-run each snippet and predict its output before revealing the solution. Each Python week in Practice has more output-based questions."
       />
       <div className="alert alert-warn" style={{ marginBottom: 16 }}>
-        Browser mein code run karne wala Coding Lab Phase 3 mein aayega. Tab tak in examples ko apne computer ke Python mein chala ke check karo.
+        An in-browser coding lab is coming soon. Until then, run these examples in Python on your own computer to check your answers.
       </div>
       <div className="grid grid-2">
         {labs.map((lab, i) => <LabCard key={lab.id} lab={lab} number={i + 1} />)}

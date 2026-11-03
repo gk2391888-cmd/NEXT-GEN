@@ -12,14 +12,14 @@ export function DoubtSearch({ faqs }: { faqs: Faq[] }) {
 
   return (
     <div className="card">
-      <span className="chip chip-yellow">AI TUTOR · COMING IN PHASE 3</span>
+      <span className="chip chip-yellow">AI TUTOR · COMING SOON</span>
       <h3 style={{ margin: '12px 0 2px' }}>Search the concept help library</h3>
       <p className="muted">Try: determinant, range, independent events, grammar, Python loop.</p>
       <input className="input" type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search concepts…" aria-label="Search doubt help topics" />
       {matches.length === 0 ? (
         <div className="empty">
           <div className="empty-icon">⌕</div>
-          Koi match nahi mila. Doosra keyword try karo, ya <Link href="/library">Study Library</Link> mein us week ke notes dekho.
+          No matches found. Try another keyword, or check that week’s notes in the <Link href="/library">Study Library</Link>.
         </div>
       ) : (
         matches.map((f) => (

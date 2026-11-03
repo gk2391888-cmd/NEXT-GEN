@@ -34,7 +34,7 @@ export function LibraryGrid({ subjects, catalog }: { subjects: Subject[]; catalo
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span className="muted">
-                    {done === weeks.length ? 'Sab weeks complete. Revision ke liye mock test do.' : `Next: Week ${next.week} · ${next.title}`}
+                    {done === weeks.length ? 'All weeks complete. Take a mock test to revise.' : `Next: Week ${next.week} · ${next.title}`}
                   </span>
                   <Link className="btn btn-secondary" href={`/library/${s.id}/${next.week}`}>
                     {done ? 'Continue' : 'Start week 1'} →

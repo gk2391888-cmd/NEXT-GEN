@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXT GEN Phase 2 design</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--nav:#0d1a33;--bg:#f5f7fb;--ink:#14213a;--muted:#718099;--border:#e4eaf2;--primary:#5364ef;--teal:#20c8ba;--red:#e9506c}
+*{box-sizing:border-box}
+body{margin:0;background:#e9edf4;color:var(--ink);font:14px/1.55 'DM Sans',sans-serif;padding:32px 16px}
+h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif;margin:0;line-height:1.25}
+p{margin:0;color:#596982}
+.label{max-width:1180px;margin:0 auto 10px;font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--muted)}
+.label b{color:var(--primary)}
+.note{max-width:1180px;margin:0 auto 40px;font-size:13px;color:#596982}
+.frame{max-width:1180px;margin:0 auto 14px;display:flex;background:var(--bg);border-radius:16px;overflow:hidden;border:1px solid var(--border);min-height:560px}
+.side{width:220px;background:var(--nav);color:#fff;padding:24px 14px;flex:none}
+.brand{display:flex;gap:10px;align-items:center;margin:0 6px 30px}
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(130deg,#60d6ee,#6254ef);display:grid;place-items:center;font:800 22px 'Plus Jakarta Sans';color:#fff}
+.brand b{font-size:17px}
+.nav{padding:10px 12px;border-radius:10px;color:#a6b4d2;font-weight:600;margin:2px 0;font-size:13.5px}
+.nav.on{background:#283957;color:#fff;box-shadow:inset 3px 0 0 #36d6c5}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;border-bottom:1px solid var(--border)}
+.crumb{font-size:11px;letter-spacing:1.4px;color:var(--muted);font-weight:700}
+.crumb b{color:var(--ink)}
+.body{padding:26px 30px;flex:1;position:relative}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:10px;padding:10px 16px;font-weight:700;font-size:13px}
+.btn.p{background:var(--teal);color:#06302c}
+.btn.s{background:#fff;border-color:var(--border);color:var(--ink)}
+.btn.g{background:#fff;border:1.5px solid #d6dde8;color:var(--ink);width:100%;padding:12px}
+.chip{display:inline-block;font-size:11px;font-weight:700;border-radius:7px;padding:3px 8px}
+.muted{color:var(--muted);font-size:12.5px}
+.input{width:100%;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font:inherit;background:#fff}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:16px 0}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--border)}
+.otp{display:flex;gap:8px;margin:14px 0}
+.otp span{width:44px;height:50px;border:1.5px solid var(--border);border-radius:10px;display:grid;place-items:center;font:800 20px 'Plus Jakarta Sans';background:#fff}
+.otp span.f{border-color:var(--primary)}
+.avatar{width:34px;height:34px;border-radius:50%;background:#e6e9fd;color:#3d4bc4;display:grid;place-items:center;font-weight:800;font-size:13px}
+.menu{position:absolute;right:26px;top:6px;width:260px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 14px 40px rgba(19,33,67,.12);padding:8px}
+.menu .item{padding:9px 10px;border-radius:9px;font-size:13.5px}
+.menu .item:hover{background:#f5f7fb}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#127a6c;background:#dff7f2;border-radius:20px;padding:5px 11px}
+.overlay{position:absolute;inset:0;background:rgba(9,18,36,.45);display:grid;place-items:center;padding:20px}
+.stat{background:#f5f7fb;border-radius:10px;padding:10px 12px;text-align:center}
+.stat b{display:block;font:800 20px 'Plus Jakarta Sans'}
+.subj{display:flex;align-items:center;gap:10px;border:1.5px solid var(--border);border-radius:11px;padding:10px 12px;font-size:13px;background:#fff}
+.subj.on{border-color:var(--primary);background:#f2f3ff}
+.box{width:18px;height:18px;border-radius:5px;border:1.5px solid #c3cbd8;display:grid;place-items:center;font-size:11px;color:#fff;flex:none}
+.subj.on .box{background:var(--primary);border-color:var(--primary)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:860px){.side{display:none}.body{padding:18px 16px}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="label">SCREEN 1 · <b>LOGIN</b> · Google ya email code, password nahi</div>
+<div class="frame" style="min-height:600px;background:linear-gradient(120deg,#13234a,#233a7a 60%,#2b4a94)">
+  <div style="flex:1;display:grid;place-items:center;padding:30px 16px">
+    <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:flex-start">
+      <div class="card" style="width:380px;max-width:100%;padding:28px">
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:22px"><div class="logo">N</div><b style="font:800 18px 'Plus Jakarta Sans'">NEXT GEN</b></div>
+        <h2 style="font-size:22px">Login karo, progress kabhi nahi khoyegi</h2>
+        <p style="margin:6px 0 20px">Phone, laptop, kahin se bhi login karo, notes aur tests wahin se continue.</p>
+        <button class="btn g"><span style="font:800 16px Arial;color:#4285f4">G</span> Continue with Google</button>
+        <div class="or">ya email se</div>
+        <input class="input" value="student@example.com" aria-label="Email">
+        <button class="btn p" style="width:100%;margin-top:10px;padding:12px">Email pe code bhejo →</button>
+        <p class="muted" style="margin-top:16px">Login ke bina bhi sab padh aur practice kar sakte ho. Tab progress sirf isi device pe save hogi.</p>
+      </div>
+      <div class="card" style="width:380px;max-width:100%;padding:28px">
+        <span class="chip" style="background:#eef0fe;color:#3d4bc4">STEP 2</span>
+        <h2 style="font-size:22px;margin-top:12px">Code daalo</h2>
+        <p style="margin-top:6px">student@example.com pe 6-digit code bheja hai.</p>
+        <div class="otp"><span>4</span><span>8</span><span>1</span><span class="f">2</span><span></span><span></span></div>
+        <button class="btn p" style="width:100%;padding:12px">Verify &amp; login</button>
+        <p class="muted" style="margin-top:14px">Code nahi aaya? Spam folder dekho · <a href="#" style="color:var(--primary);font-weight:700">Dobara bhejo (0:42)</a></p>
+        <p class="muted" style="margin-top:4px"><a href="#" style="color:var(--primary);font-weight:700">← Email badlo</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Naya student pehli baar login kare to account apne aap ban jayega, alag "signup" page nahi chahiye. Login page ka link sidebar aur topbar dono mein hoga.</div>
+
+<div class="label">SCREEN 2 · <b>TOPBAR</b> · logged out vs logged in</div>
+<div class="frame" style="min-height:0;flex-direction:column">
+  <div class="top" style="background:#fff"><span class="crumb">STUDENT WORKSPACE / <b>OVERVIEW</b></span>
+    <div style="display:flex;gap:10px;align-items:center"><span class="muted">Progress sirf is device pe hai</span><span class="btn p">Login to save progress</span></div></div>
+  <div class="top" style="border-bottom:0"><span class="crumb">STUDENT WORKSPACE / <b>OVERVIEW</b></span>
+    <div style="display:flex;gap:10px;align-items:center"><span class="sync">✓ Synced</span><div class="avatar">RK</div></div></div>
+</div>
+<div class="note">Logged out: "Progress saved on this device" ki jagah login ka button. Logged in: sync status aur student ka avatar. Offline ho to "Offline · baad mein sync hoga" dikhega, aur answers save hote rahenge.</div>
+
+<div class="label">SCREEN 3 · <b>PROFILE MENU</b> + <b>PEHLE LOGIN PE PURANI PROGRESS</b></div>
+<div class="frame">
+  <div class="side">
+    <div class="brand"><div class="logo">N</div><b>NEXT GEN</b></div>
+    <div class="nav on">Overview</div><div class="nav">Study Library</div><div class="nav">Practice Quiz</div><div class="nav">Mock Tests</div><div class="nav">Python &amp; CT Lab</div><div class="nav">Doubt Help</div><div class="nav">My Progress</div>
+  </div>
+  <div class="main">
+    <div class="top"><span class="crumb">STUDENT WORKSPACE / <b>OVERVIEW</b></span><div style="display:flex;gap:10px;align-items:center"><span class="sync">✓ Synced</span><div class="avatar">RK</div></div></div>
+    <div class="body" style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start">
+      <div class="card" style="width:270px;padding:8px;box-shadow:0 14px 40px rgba(19,33,67,.12)">
+        <div style="display:flex;gap:10px;align-items:center;padding:10px">
+          <div class="avatar" style="width:40px;height:40px">RK</div>
+          <div><b>Rahul Kumar</b><div class="muted">rahul@gmail.com</div></div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:4px 0"></div>
+        <div class="menu-item" style="padding:9px 10px">My profile</div>
+        <div style="padding:9px 10px">My progress</div>
+        <div style="height:1px;background:var(--border);margin:4px 0"></div>
+        <div style="padding:9px 10px;color:#a3203a">Logout</div>
+      </div>
+
+      <div class="card" style="width:420px;max-width:100%;padding:24px;box-shadow:0 14px 40px rgba(19,33,67,.12)">
+        <span class="chip" style="background:#dff7f2;color:#127a6c">WELCOME, RAHUL</span>
+        <h2 style="font-size:20px;margin:12px 0 6px">Is device pe purani progress mili</h2>
+        <p>Login se pehle ki gayi practice account mein save kar lo, taaki doosre devices pe bhi dikhe.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0">
+          <div class="stat"><b>42</b><span class="muted">answers</span></div>
+          <div class="stat"><b>2</b><span class="muted">mock tests</span></div>
+          <div class="stat"><b>5</b><span class="muted">weeks done</span></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="btn p">Account mein save karo</span><span class="btn s">Nahi, fresh start</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Ye popup sirf tab aayega jab device pe login se pehle ki progress ho. "Save" karne pe wo account ki progress mein jud jaati hai, kuch delete nahi hota.</div>
+
+<div class="label">SCREEN 4 · <b>MY PROFILE</b> · naam aur is term ke subjects</div>
+<div class="frame">
+  <div class="side">
+    <div class="brand"><div class="logo">N</div><b>NEXT GEN</b></div>
+    <div class="nav">Overview</div><div class="nav">Study Library</div><div class="nav">Practice Quiz</div><div class="nav">Mock Tests</div><div class="nav">Python &amp; CT Lab</div><div class="nav">Doubt Help</div><div class="nav">My Progress</div>
+  </div>
+  <div class="main">
+    <div class="top"><span class="crumb">STUDENT WORKSPACE / <b>MY PROFILE</b></span><div style="display:flex;gap:10px;align-items:center"><span class="sync">✓ Synced</span><div class="avatar">RK</div></div></div>
+    <div class="body">
+      <div class="card" style="max-width:720px;padding:24px">
+        <h2>My profile</h2>
+        <p style="margin:4px 0 18px">Is term ke subjects choose karo. Overview aur Mock Tests mein yahi subjects upar dikhenge.</p>
+        <div class="grid2" style="margin-bottom:16px">
+          <div><div class="muted" style="margin-bottom:5px;font-weight:700">Name</div><input class="input" value="Rahul Kumar"></div>
+          <div><div class="muted" style="margin-bottom:5px;font-weight:700">Email</div><input class="input" value="rahul@gmail.com" disabled style="background:#f5f7fb"></div>
+        </div>
+        <div class="muted" style="margin-bottom:8px;font-weight:700">Is term ke subjects</div>
+        <div class="grid2">
+          <div class="subj on"><span class="box">✓</span>Mathematics for Data Science I</div>
+          <div class="subj on"><span class="box">✓</span>Statistics for Data Science I</div>
+          <div class="subj on"><span class="box">✓</span>Computational Thinking</div>
+          <div class="subj on"><span class="box">✓</span>English I</div>
+          <div class="subj"><span class="box"></span>Mathematics for Data Science II</div>
+          <div class="subj"><span class="box"></span>Statistics for Data Science II</div>
+          <div class="subj"><span class="box"></span>Programming in Python</div>
+          <div class="subj"><span class="box"></span>English II</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+          <span class="btn s" style="color:#a3203a;border-color:#f3c3cd">Delete my account</span>
+          <span class="btn p">Save changes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Baaki subjects bhi hamesha khule rahenge, bas neeche dikhenge. "Delete my account" se student ka saara data hamesha ke liye mit jayega (confirm ke baad). Students ka data sirf unhe khud dikhega, koi doosra student nahi dekh sakta.</div>
+
+</body>
+</html>

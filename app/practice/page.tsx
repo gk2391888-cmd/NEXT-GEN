@@ -11,7 +11,7 @@ export default function PracticePage() {
       <PageHead
         kicker="Build confidence"
         title="Practice Quiz"
-        description="Week choose karo aur MCQs solve karo. Har answer ke turant baad Hinglish explanation milega, aur galat answers weak topics mein track honge."
+        description="Pick a week and solve its MCQs. Each answer is followed by an explanation, and mistakes feed into your weak-topic report."
       />
       <PracticePicker subjects={getSubjects()} catalog={getCatalog()} />
     </>

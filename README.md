@@ -11,7 +11,24 @@ An independent learning and exam-preparation site for IITM BS Foundation student
 - **Mock Tests**: Quiz 1 (weeks 1–4), Quiz 2 (weeks 5–8) and End term (all weeks) per subject, with timer, question palette, mark-for-review, auto-submit, resume after refresh, and a result page with week-wise performance and answer review.
 - **My Progress**: accuracy by subject, weak weeks, mock test history, weeks saved for revision.
 
-Progress is stored in the browser (`localStorage`) for now. Phase 2 moves it to Supabase with student login; the record shapes in `lib/progress/types.ts` are designed to map to tables directly.
+## Phase 2: student accounts
+
+- **Login** with an emailed link (no passwords), an emailed code once the template includes it, or Google once it's switched on in Supabase. The first login creates the account.
+- **Cloud progress**: answers, mock tests, completed/saved weeks and the profile sync to Supabase. The browser keeps a copy, so the app stays instant and works offline; changes queue in `pending` and upload when the network is back.
+- **First login on a device** offers to move that device's logged-out progress into the account.
+- **My profile**: name, current-term subjects (shown first on Overview and Mock Tests), and delete account.
+- Logged-out students can still use everything; their progress stays on the device.
+
+Each student can only read and write their own rows. This is enforced by Row Level Security in the database, not just by the app.
+
+### One-time Supabase setup
+
+1. **SQL Editor** → paste `supabase/migrations/0001_student_accounts.sql` → **Run**.
+2. **Authentication → URL Configuration**: Site URL = the live site URL; Redirect URLs = `<live site>/**` and `http://localhost:3200/**`. (Done for the current project.)
+3. **Emails**: Supabase's built-in mailer sends only a handful of emails per hour and its templates can't be edited. Before launch, set up custom SMTP (e.g. Resend) under **Authentication → Emails → SMTP Settings**; then you can also add `{{ .Token }}` to the **Magic link or OTP** and **Confirm sign up** templates so students get a code as well as the link.
+4. *(Optional, Google login)* Create an OAuth client in Google Cloud, then **Authentication → Sign In / Providers → Google**: paste the client ID and secret. The login page shows the Google button automatically once it's enabled.
+
+The Supabase URL and publishable key default to the production project (`lib/supabase/client.ts`); set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to point at another project. Never put the `service_role`/secret key in this app.
 
 ## Run it
 

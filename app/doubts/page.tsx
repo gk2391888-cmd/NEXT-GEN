@@ -11,7 +11,7 @@ export default function DoubtsPage() {
       <PageHead
         kicker="Guided support"
         title="Doubt Help"
-        description="Common concepts ki quick explanations search karo. Step-by-step Hinglish AI Doubt Solver Phase 3 mein aayega."
+        description="Search quick explanations of common concepts. A step-by-step AI doubt solver is coming soon."
       />
       <DoubtSearch faqs={faqs} />
     </>

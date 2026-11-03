@@ -49,7 +49,7 @@ export function Explanation({ question, selected }: { question: Question; select
   return (
     <div className={`explain${right ? '' : ' bad'}`}>
       <strong>
-        {selected === null ? 'Skipped. ' : right ? '✓ Sahi jawab! ' : '✗ Galat. '}
+        {selected === null ? 'Skipped. ' : right ? '✓ Correct. ' : '✗ Incorrect. '}
         {!right && `Correct answer: ${letter(question.answer)}. `}
       </strong>
       <InlineText text={question.explanation} />

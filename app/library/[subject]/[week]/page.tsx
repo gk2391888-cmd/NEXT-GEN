@@ -78,7 +78,7 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
           </section>
 
           <div className="notes-foot no-print">
-            <span className="muted">Padh liya? Ab {week.questions.length} questions se check karo.</span>
+            <span className="muted">Finished reading? Check your understanding with {week.questions.length} questions.</span>
             <div className="btn-group">
               <WeekActions subjectId={subject.id} week={week.week} variant="done" />
               <Link className="btn btn-primary" href={`/practice/${subject.id}/${week.week}`}>Practice week {week.week} →</Link>

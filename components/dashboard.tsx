@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent, score, studyStreak, weakWeeks } from '@/lib/progress/insights';
+import { orderSubjects } from '@/lib/subjects';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar, SubjectIcon } from '@/components/ui';
 
-export function Dashboard({ subjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
+export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
+  const subjects = orderSubjects(allSubjects, state.profile?.subjects);
   const totals = score(state.answers);
   const totalWeeks = Object.values(catalog).reduce((n, w) => n + w.length, 0);
   const totalQuestions = Object.values(catalog).reduce((n, weeks) => n + weeks.reduce((m, w) => m + w.questionCount, 0), 0);
@@ -28,7 +30,7 @@ export function Dashboard({ subjects, catalog }: { subjects: Subject[]; catalog:
         <div>
           <span className="hero-label">✦ WELCOME TO NEXT GEN</span>
           <h1>Smarter learning starts here.</h1>
-          <p>Week-wise notes padho, MCQs practice karo, mock tests do, aur Hinglish explanations se concepts strong karo.</p>
+          <p>Study week-by-week notes, practise MCQs, take timed mock tests and strengthen every concept with clear explanations.</p>
           <div className="hero-actions">
             {last && lastSubject ? (
               <Link className="btn btn-primary" href={`/library/${last.subjectId}/${last.week}`}>Continue {lastSubject.short} week {last.week} →</Link>
@@ -74,7 +76,7 @@ export function Dashboard({ subjects, catalog }: { subjects: Subject[]; catalog:
           <h3 style={{ marginBottom: 6 }}>Topics to revisit</h3>
           {weak.length === 0 ? (
             <p className="muted" style={{ padding: '10px 0' }}>
-              {totals.attempted ? 'Koi weak week nahi mila. Keep practising!' : 'Practice questions solve karo, weak weeks yahan dikhenge.'}
+              {totals.attempted ? 'No weak weeks found. Keep practising!' : 'Answer some practice questions and your weak weeks will appear here.'}
             </p>
           ) : (
             weak.map((w) => (
@@ -92,8 +94,8 @@ export function Dashboard({ subjects, catalog }: { subjects: Subject[]; catalog:
         <section className="card">
           <h3 style={{ marginBottom: 6 }}>Quick actions</h3>
           <QuickAction href="/practice" icon="▤" title="Practice a week" text={`${totalQuestions} original MCQs with Hinglish explanations`} />
-          <QuickAction href="/tests" icon="◷" title="Take a mock test" text="Quiz 1, Quiz 2 aur End term, timer ke saath" />
-          <QuickAction href="/progress" icon="▥" title="View your progress" text="Week-wise accuracy aur test history" />
+          <QuickAction href="/tests" icon="◷" title="Take a mock test" text="Timed Quiz 1, Quiz 2 and End term tests" />
+          <QuickAction href="/progress" icon="▥" title="View your progress" text="Week-wise accuracy and test history" />
         </section>
       </div>
     </>
