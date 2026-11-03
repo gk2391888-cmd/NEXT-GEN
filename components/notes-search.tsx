@@ -8,6 +8,7 @@ import { useQuestionLang } from '@/lib/question-lang';
 import { localize } from '@/lib/question-text';
 import { LanguageSwitch } from '@/components/quiz/language-switch';
 import { useChoice } from '@/lib/programme-choice';
+import { LevelComingSoon } from '@/components/coming-soon';
 
 export type SearchEntry = { subjectId: string; subject: string; week: number; title: string; summary: string; text: string };
 
@@ -56,6 +57,8 @@ export function NotesSearch({ entries: allEntries }: { entries: SearchEntry[] })
   }, [allEntries, level]);
   const results = useMemo(() => search(entries, query), [entries, query]);
   const subjectNames = useMemo(() => new Map(entries.map((e) => [e.subjectId, e.subject])), [entries]);
+
+  if (entries.length === 0) return <LevelComingSoon action="search" />;
 
   return (
     <div className="card">

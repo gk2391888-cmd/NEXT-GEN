@@ -10,11 +10,13 @@ import { QUALIFIER_PATH, termSubjects } from '@/lib/programmes';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar, SubjectIcon, subjectColor, weekCount } from '@/components/ui';
 import { AnnouncementBar } from '@/components/announcement-bar';
+import { LevelComingSoon, useLevelComingSoon } from '@/components/coming-soon';
 import { computeMistakes, isDue } from '@/lib/progress/mistakes';
 
 export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
   const choice = useChoice();
+  const comingSoon = useLevelComingSoon(catalog);
   const subjects = orderSubjects(useChoiceSubjects(allSubjects), termSubjects(state.profile?.subjects));
   const totals = score(state.answers);
   const programmeWeeks = subjects.map((s) => catalog[s.id] ?? []);
@@ -57,6 +59,8 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
         </div>
         <div className="hero-art" aria-hidden="true"><span className="logo">N</span></div>
       </section>
+
+      {comingSoon && <div className="mt-lg"><LevelComingSoon action="study" /></div>}
 
       <section className="grid grid-4 mt-lg" aria-label="Your progress">
         <Metric icon="▣" tone={1} value={`${weeksDone}/${totalWeeks}`} label="Weeks completed" />
