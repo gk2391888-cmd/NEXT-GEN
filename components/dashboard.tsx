@@ -5,22 +5,27 @@ import { useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent, score, studyStreak, weakWeeks } from '@/lib/progress/insights';
 import { orderSubjects } from '@/lib/subjects';
+import { useChoice, useChoiceSubjects } from '@/lib/programme-choice';
+import { QUALIFIER_PATH, termSubjects } from '@/lib/programmes';
 import type { Subject, WeekRef } from '@/lib/types';
-import { ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
+import { ProgressBar, SubjectIcon, subjectColor, weekCount } from '@/components/ui';
 import { AnnouncementBar } from '@/components/announcement-bar';
 import { computeMistakes, isDue } from '@/lib/progress/mistakes';
 
 export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
-  const subjects = orderSubjects(allSubjects, state.profile?.subjects);
+  const choice = useChoice();
+  const subjects = orderSubjects(useChoiceSubjects(allSubjects), termSubjects(state.profile?.subjects));
   const totals = score(state.answers);
-  const totalWeeks = Object.values(catalog).reduce((n, w) => n + w.length, 0);
-  const totalQuestions = Object.values(catalog).reduce((n, weeks) => n + weeks.reduce((m, w) => m + w.questionCount, 0), 0);
-  const weeksDone = Object.values(state.weeks).filter((w) => w.done).length;
+  const programmeWeeks = subjects.map((s) => catalog[s.id] ?? []);
+  const totalWeeks = programmeWeeks.reduce((n, w) => n + w.length, 0);
+  const totalQuestions = programmeWeeks.reduce((n, weeks) => n + weeks.reduce((m, w) => m + w.questionCount, 0), 0);
+  const weeksDone = subjects.reduce((n, s) => n + (catalog[s.id] ?? []).filter((w) => state.weeks[weekKey(s.id, w.week)]?.done).length, 0);
   const streak = studyStreak(state.answers);
-  const weak = weakWeeks(state.answers).slice(0, 3);
+  const weak = weakWeeks(state.answers).filter((w) => subjects.some((s) => s.id === w.subjectId)).slice(0, 3);
   const dueMistakes = computeMistakes(state.answers).filter((m) => isDue(m)).length;
-  const subjectById = new Map(subjects.map((s) => [s.id, s]));
+  // Every subject, so "Continue" and weak weeks still name a subject from another programme.
+  const subjectById = new Map(allSubjects.map((s) => [s.id, s]));
   const titleOf = (subjectId: string, week: number) => catalog[subjectId]?.find((w) => w.week === week)?.title ?? '';
 
   const last = state.lastVisited;
@@ -29,6 +34,12 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
   return (
     <>
       <AnnouncementBar />
+      {choice.qualifier && (
+        <div className="alert mb-lg flex-between">
+          <span>You’re preparing for the qualifier exam. Its weeks are the first Foundation weeks of the subjects below.</span>
+          <Link className="btn btn-primary" href={QUALIFIER_PATH}>Qualifier prep →</Link>
+        </div>
+      )}
       <div className="kicker">Your learning dashboard</div>
       <section className="hero">
         <div>
@@ -67,7 +78,7 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
               <SubjectIcon subject={s} />
               <div>
                 <strong>{s.name}</strong>
-                <div className="muted">{s.code} · {weeks.length ? `${weeks.length} weeks` : 'Coming soon'}</div>
+                <div className="muted">{s.code} · {weeks.length ? weekCount(s, weeks.length) : 'Coming soon'}</div>
               </div>
               {weeks.length > 0 && <ProgressBar value={percent(done, weeks.length)} color={subjectColor(s.id)} />}
             </Link>

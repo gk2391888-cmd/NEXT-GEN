@@ -18,6 +18,10 @@ export function InlineText({ text }: { text: string }) {
 /** A subject's identity colour token (`solid` for glyphs and bars, `soft` for tiles). */
 export const subjectColor = (subjectId: string, variant: 'solid' | 'soft' = 'solid') => token(`color-subject-${subjectId}-${variant}` as Token);
 
+/** "12 weeks", or "4 of 12 weeks" while a subject's later weeks are still being written. */
+export const weekCount = (subject: Subject, weeks: number) =>
+  subject.status === 'partial' ? `${weeks} of 12 weeks` : `${weeks} week${weeks === 1 ? '' : 's'}`;
+
 /** `lg` (44px) on cards, `md` (36px) in lists, `sm` (28px) in tables. */
 export function SubjectIcon({ subject, size = 'lg' }: { subject: Subject; size?: 'sm' | 'md' | 'lg' }) {
   return (
@@ -27,7 +31,7 @@ export function SubjectIcon({ subject, size = 'lg' }: { subject: Subject; size?:
   );
 }
 
-export function PageHead({ kicker, title, description, action }: { kicker: string; title: string; description?: string; action?: React.ReactNode }) {
+export function PageHead({ kicker, title, description, action }: { kicker: React.ReactNode; title: string; description?: string; action?: React.ReactNode }) {
   return (
     <div className="page-head">
       <div>

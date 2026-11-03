@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'NEXT GEN · Student Learning Hub',
     short_name: 'NEXT GEN',
-    description: 'Week-wise notes, practice, mock tests and AI doubt help for IITM BS Foundation students.',
+    description: 'Week-wise notes, practice, mock tests and AI doubt help for IITM BS students.',
     start_url: '/',
     display: 'standalone',
     background_color: RAW['color-bg-canvas'],

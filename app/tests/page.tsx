@@ -20,7 +20,7 @@ export default function TestsPage() {
       {subjects.length === 0 ? (
         <div className="card empty"><div className="empty-icon">◷</div>Mock tests are coming soon.</div>
       ) : (
-        <TestList subjects={subjects} tests={MOCK_TESTS} />
+        <TestList subjects={subjects} catalog={catalog} tests={MOCK_TESTS} />
       )}
       <div className="alert mt-xl">
         These are original practice tests, not actual IIT Madras quizzes or previous-year papers. Questions are drawn fresh from the question bank each time, so you can retake them.

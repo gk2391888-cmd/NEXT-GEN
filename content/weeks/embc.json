@@ -1,0 +1,1445 @@
+{
+  "subjectId": "embc",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Embedded Systems and Microcontrollers",
+      "summary": "Is week aap embedded system kya hota hai, MCU aur MPU ka fark, Flash/SRAM aur memory map, program sections, aur cross-compilation wala toolchain seekhoge.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Embedded system** ek chhota computer hai jo kisi bade product ke andar ek fixed kaam ke liye laga hota hai: washing machine ka controller, car ka ABS, smartwatch, drone ka flight controller. Iski khaas baatein: kam memory, kam power, real-time deadlines, aur aksar koi operating system nahi hota.",
+        "**MCU vs MPU**: Microcontroller (MCU) me CPU core, Flash, SRAM aur peripherals (GPIO, timers, UART, ADC) sab ek hi chip par hote hain, isliye ek chhoti board par seedha chal jaata hai. Microprocessor (MPU) me mainly fast CPU hota hai; RAM aur storage bahar lagte hain aur usually Linux jaisa OS chalta hai. STM32 ek MCU family hai jiske andar ARM Cortex-M core hai.",
+        "**Flash aur SRAM**: Flash non-volatile hai (power jaane par bhi data rehta hai), isliye program code aur constants yahan rehte hain. SRAM volatile aur fast hai; variables, stack aur heap yahan rehte hain. MCU me Flash kuch KB se kuch MB tak hota hai, SRAM usse kaafi kam.",
+        "**Memory map**: Cortex-M ka 32-bit address space (4 GB) alag regions me bata hota hai: code/Flash, SRAM, peripherals, aur core ke system registers. STM32-style chips me Flash aksar 0x08000000 se, SRAM 0x20000000 se aur peripherals 0x40000000 ke aas-paas shuru hote hain (exact addresses datasheet se dekho).",
+        "**Memory-mapped I/O**: har peripheral register ek fixed address par hota hai. Isliye C me us address par pointer se read/write karna hi hardware ko control karna hai, koi special instruction nahi chahiye.",
+        "**Program sections**: linker program ko sections me baantta hai: `.text` (code, Flash me), `.rodata` (const data, Flash me), `.data` (initialised globals: initial values Flash me, runtime copy SRAM me), `.bss` (zero-initialised globals, sirf SRAM me). Flash usage = text + rodata + data, aur SRAM usage = data + bss (stack/heap alag se).",
+        "**Cross-compilation aur toolchain**: code PC (x86) par likha aur compile hota hai par chalta ARM chip par hai, isliye cross-compiler (jaise `arm-none-eabi-gcc`) chahiye. Steps: preprocess → compile → assemble → link (linker script addresses decide karti hai) → `.elf`/`.bin` file → debugger/programmer (jaise ST-LINK) se Flash me load."
+      ],
+      "example": {
+        "problem": "Ek STM32-style MCU me Flash 0x08000000 se shuru hota hai aur size 256 KB hai. Flash ka last byte kis address par hoga?",
+        "steps": [
+          "Size bytes me: 256 KB = 256 × 1024 = 262144 bytes.",
+          "Hex me: 262144 = 0x40000.",
+          "Last address = start + size − 1 (kyunki pehla byte start par hi hai).",
+          "0x08000000 + 0x40000 − 1 = 0x0803FFFF.",
+          "Answer: **0x0803FFFF**."
+        ]
+      },
+      "mistakes": [
+        "Hex range ka size nikalte waqt +1 bhool jaana. 0x20000000 se 0x2001FFFF tak ka size 0x20000 bytes hai, 0x1FFFF nahi. Formula: size = last − first + 1.",
+        "`.bss` ko Flash usage me jod dena. `.bss` ki values sirf zero hoti hain, startup code SRAM ko zero kar deta hai, isliye Flash me uske liye jagah nahi lagti.",
+        "Ye sochna ki Flash variable ki tarah likhi ja sakti hai. Flash me runtime par likhne ke liye erase/program sequence chahiye; normal variables SRAM me hi rehte hain."
+      ],
+      "revision": [
+        "MCU = CPU + Flash + SRAM + peripherals ek chip par; MPU ko bahar RAM/storage chahiye.",
+        "Flash non-volatile (code, const), SRAM volatile (variables, stack, heap).",
+        "Peripheral registers memory map me fixed addresses par hote hain.",
+        "Flash = text + rodata + data; SRAM = data + bss (+ stack/heap).",
+        "Cross-compiler host par chalta hai par target CPU ke liye code banata hai."
+      ],
+      "questions": [
+        {
+          "id": "embc-w1-q1",
+          "question": "Microcontroller (MCU) ki sabse sahi pehchaan kya hai?",
+          "options": [
+            "Sirf CPU core hota hai; RAM aur storage hamesha bahar lagte hain",
+            "Ye hamesha Linux jaisa full operating system chalata hai",
+            "CPU, Flash, SRAM aur peripherals ek hi chip par hote hain",
+            "Isme Flash nahi hota, program har baar PC se load hota hai"
+          ],
+          "answer": 2,
+          "explanation": "MCU ka matlab hi hai poora chhota computer ek chip par: CPU core, program ke liye Flash, variables ke liye SRAM, aur GPIO/timer/UART jaise peripherals. Pehla option MPU ka description hai, MCU ka nahi. Bahut se MCU bina kisi OS ke (bare-metal) chalte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w1-q2",
+          "question": "Aap Windows laptop (x86) par code compile karke ek STM32 (ARM Cortex-M) board par chalate ho. Is tarah compile karne ko kya kehte hain?",
+          "options": [
+            "Cross-compilation",
+            "Interpretation",
+            "Native compilation",
+            "Decompilation"
+          ],
+          "answer": 0,
+          "explanation": "Jab compiler ek machine (host, yahan x86) par chale par output doosre CPU (target, yahan ARM) ke liye bane, use cross-compilation kehte hain, jaise `arm-none-eabi-gcc`. Native compilation tab hota jab code usi machine par chalta jis par compile hua. Trap: 'compile to hua hi hai' soch kar native chun lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w1-q3",
+          "question": "Ek MCU ke memory map me SRAM address 0x20000000 se 0x2001FFFF tak hai. SRAM ka size kitna hai?",
+          "options": [
+            "64 KB",
+            "131 KB",
+            "256 KB",
+            "128 KB"
+          ],
+          "answer": 3,
+          "explanation": "Size = last − first + 1 = 0x2001FFFF − 0x20000000 + 1 = 0x20000 = 131072 bytes. 131072 / 1024 = 128 KB. Trap: 131072 ko 1000 se divide karke 131 KB bolna; memory sizes me 1 KB = 1024 bytes hota hai. 64 KB tab aata jab range sirf 0xFFFF tak hoti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w1-q4",
+          "question": "Ek typical MCU build me global variable `int count = 5;` ke baare me kya sahi hai?",
+          "options": [
+            "Variable aur uski value 5 sirf SRAM me rehte hain, aur power off hone par bhi 5 bacha rehta hai",
+            "Initial value 5 Flash me store hoti hai, aur startup code use SRAM me copy karta hai",
+            "Variable sirf Flash me rehta hai, isliye `count++` kaam nahi karega",
+            "Ye `.bss` section me jaata hai aur startup par zero ho jaata hai"
+          ],
+          "answer": 1,
+          "explanation": "Initialised global `.data` section me jaata hai: uski initial value Flash me rakhi jaati hai (kyunki SRAM power off par mit jaati hai), aur reset ke baad startup code use SRAM me copy kar deta hai, jahan program use badal sakta hai. `.bss` sirf un globals ke liye hai jo zero ya bina initialiser ke hain. Trap: SRAM ko non-volatile maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w1-q5",
+          "question": "Ek C program LED on karne ke liye ek fixed address par pointer se value likhta hai, aur LED jal jaati hai. Ye kaam kyun karta hai?",
+          "options": [
+            "Compiler LED ke liye ek special CPU instruction bana deta hai",
+            "Ek operating system driver beech me call hota hai",
+            "Value Flash me likhi jaati hai aur reset par LED update hoti hai",
+            "Peripheral registers address space me map hote hain, isliye normal memory write se hi hardware control hota hai"
+          ],
+          "answer": 3,
+          "explanation": "Ye memory-mapped I/O hai: GPIO jaise peripherals ke control registers memory map me fixed addresses par hote hain. CPU unhe usi load/store instruction se access karta hai jisse SRAM ko, aur register ka bit badalte hi pin ka level badal jaata hai. Bare-metal MCU par koi OS driver beech me nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w1-q6",
+          "question": "Ek program me code (`.text`) 9000 bytes ka hai. Iske alawa ye globals hain: `const uint16_t lut[256];` (values diye hue), `uint8_t rx[1024];` (bina initialiser), aur `uint32_t gain = 3;`. Stack/heap ignore karo. Flash aur SRAM usage kitna hoga?",
+          "options": [
+            "Flash 9516 bytes, SRAM 1028 bytes",
+            "Flash 9512 bytes, SRAM 1540 bytes",
+            "Flash 10540 bytes, SRAM 1028 bytes",
+            "Flash 9516 bytes, SRAM 1540 bytes"
+          ],
+          "answer": 0,
+          "explanation": "`lut` const hai → `.rodata` → sirf Flash: 256 × 2 = 512 bytes. `rx` bina initialiser → `.bss` → sirf SRAM: 1024 bytes. `gain` initialised → `.data` → Flash me 4 bytes (initial value) aur SRAM me 4 bytes. Flash = 9000 + 512 + 4 = 9516, SRAM = 1024 + 4 = 1028. Traps: const table ko SRAM me bhi gin lena (1540), ya `.bss` array ko Flash me jod dena (10540).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Embedded C Basics: Fixed-Width Types, volatile and Bit Masks",
+      "summary": "Is week aap `stdint.h` ke fixed-width types, `volatile` ka asli kaam, registers par bit set/clear/toggle/check, multi-bit fields update karna, aur `const` data kahan rehta hai, ye seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Fixed-width types** (`<stdint.h>`): `int` ka size compiler aur CPU par depend karta hai (8-bit AVR par 16-bit, Cortex-M par 32-bit). Registers aur protocol frames me exact width chahiye, isliye `uint8_t`, `int16_t`, `uint32_t` use karo. Unsigned overflow wrap hota hai: `uint8_t` me 255 + 1 = 0.",
+        "**volatile**: compiler ko batata hai ki ye value program ke bahar se (hardware ya ISR) badal sakti hai. Isliye compiler har access par sach me memory se padhta/likhta hai, value ko CPU register me cache nahi karta, aur 'bekaar' lagne wale reads/writes hataata nahi. Hardware registers aur ISR ke saath share hone wale flags hamesha `volatile`.",
+        "**Register access pattern**: `#define GPIOA_ODR (*(volatile uint32_t *)0x40020014)` matlab address ko `volatile uint32_t *` me cast karo aur dereference karo. Ab `GPIOA_ODR |= 1U;` seedha us register ko likhta hai. (Is course me addresses illustrative hain; real address datasheet/reference manual se lo.)",
+        "**Set, clear, toggle**: set `reg |= (1U << n);`, clear `reg &= ~(1U << n);`, toggle `reg ^= (1U << n);`. Yaad rakho: OR 1 se bit 1 ho jaata hai, AND 0 se bit 0, XOR 1 se bit palat jaata hai, aur baaki bits par koi asar nahi.",
+        "**Bit check**: `if (reg & (1U << n))` nonzero ho to bit set hai. C me `==` ki precedence `&` se zyada hai, isliye `reg & MASK == MASK` galat padha jaata hai. Hamesha brackets: `if ((reg & MASK) == MASK)`.",
+        "**Multi-bit field update**: field ko pehle clear karo, phir naya value OR karo: `reg = (reg & ~(MASK << POS)) | ((val & MASK) << POS);`. Sirf OR karne se field ke purane 1 bits reh jaate hain aur galat value ban jaati hai.",
+        "**const aur memory placement**: global `const` data usually Flash (`.rodata`) me jaata hai aur SRAM bachata hai, isliye badi lookup tables `const` banao. `const volatile` bhi valid hai: jaise read-only status register, jise program likh nahi sakta par hardware badal sakta hai.",
+        "**1U vs 1**: `1 << 31` signed `int` me overflow hai (undefined behaviour). Register masks me hamesha unsigned literal (`1U << 31`) likho."
+      ],
+      "example": {
+        "problem": "`uint8_t reg = 0x3C;` hai. Lower 4 bits toggle karo, phir batao naya value kya hai aur bit 0 set hai ya nahi.",
+        "steps": [
+          "0x3C binary me: 0011 1100.",
+          "Lower 4 bits ka mask 0x0F = 0000 1111. Toggle ke liye XOR: `reg ^= 0x0F;`.",
+          "0011 1100 XOR 0000 1111 = 0011 0011.",
+          "0011 0011 = 0x33.",
+          "Bit 0 check: `reg & (1U << 0)` = 0x33 & 0x01 = 1, yaani nonzero.",
+          "Answer: **0x33**, aur bit 0 set hai."
+        ],
+        "code": "uint8_t reg = 0x3C;        /* 0011 1100 */\nreg ^= 0x0F;               /* 0011 0011 = 0x33 */\nif (reg & (1U << 0)) {\n    /* bit 0 set hai */\n}"
+      },
+      "mistakes": [
+        "Bit clear karte waqt `~` bhool jaana: `reg &= (1U << n);` baaki saare bits zero kar deta hai. Sahi: `reg &= ~(1U << n);`.",
+        "Register ko `reg = (1U << n);` se likhna. Isse sirf bit n set hota hai aur baaki configuration mit jaati hai. Read-modify-write (`|=`) use karo jab tak poora register likhna intended na ho.",
+        "ISR flag ko `volatile` na banana. Optimisation on hone par main loop flag ko ek hi baar padh kar hamesha ke liye atak sakta hai."
+      ],
+      "revision": [
+        "Set: `|= (1U << n)`, clear: `&= ~(1U << n)`, toggle: `^= (1U << n)`.",
+        "`==` ki precedence `&` se zyada hai, brackets lagao.",
+        "Field update: pehle clear, phir OR.",
+        "`volatile` = har baar memory se padho; hardware registers aur ISR flags ke liye.",
+        "`uint8_t` 255 ke baad 0 par wrap hota hai.",
+        "Global `const` tables Flash me jaati hain, SRAM bachti hai."
+      ],
+      "questions": [
+        {
+          "id": "embc-w2-q1",
+          "question": "32-bit register `reg` me sirf bit 5 ko 1 karna hai, baaki koi bit nahi badalni chahiye. Sahi statement kaunsa hai?",
+          "options": [
+            "`reg = (1U << 5);`",
+            "`reg &= (1U << 5);`",
+            "`reg ^= (1U << 5);`",
+            "`reg |= (1U << 5);`"
+          ],
+          "answer": 3,
+          "explanation": "OR karne se mask wali bit 1 ho jaati hai aur baaki bits jaisi thi waisi rehti hain. `=` baaki saari bits zero kar deta hai, `&=` bit 5 ke alawa sab clear karta hai, aur `^=` bit ko toggle karta hai, yaani agar pehle se 1 thi to 0 ho jaayegi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w2-q2",
+          "question": "Inme se kis variable ko `volatile` declare karna sabse zaroori hai?",
+          "options": [
+            "Ek loop counter jo sirf `main` ke andar use hota hai",
+            "Ek flag jo timer ISR set karta hai aur main loop padhta hai",
+            "Ek `const` lookup table jo kabhi nahi badalti",
+            "Ek function ka local temporary variable"
+          ],
+          "answer": 1,
+          "explanation": "ISR wala flag normal program flow ke bahar badalta hai. `volatile` ke bina compiler soch sakta hai ki loop ke andar ye badalta nahi, value ek baar register me rakh lega aur ISR ka update kabhi nahi dikhega. Baaki teen variables sirf program khud badalta hai (ya kabhi nahi), unhe `volatile` ki zaroorat nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w2-q3",
+          "question": "Is code ke baad `reg` ki value kya hogi?",
+          "code": "uint8_t reg = 0xA5;\nreg &= ~(1U << 2);",
+          "options": [
+            "0xA1",
+            "0xA4",
+            "0xA7",
+            "0x04"
+          ],
+          "answer": 0,
+          "explanation": "0xA5 = 1010 0101. Bit 2 ka mask 0000 0100 hai, `~` se 1111 1011. AND karne par sirf bit 2 clear hoti hai: 1010 0001 = 0xA1. Trap: `~` bhool kar AND karna, jisse sirf bit 2 bachti hai aur 0x04 aata hai. 0xA4 tab aata jab bit 0 clear hoti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w2-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "uint8_t x = 250;\nx = x + 10;\nprintf(\"%u\\n\", x);",
+          "options": [
+            "260",
+            "255",
+            "4",
+            "-6"
+          ],
+          "answer": 2,
+          "explanation": "`x + 10` int me 260 banta hai, par `uint8_t` me wapas store karte waqt value modulo 256 ho jaati hai: 260 − 256 = 4. Unsigned types wrap karte hain, saturate nahi (isliye 255 nahi). 260 tab aata jab variable 8-bit se bada hota. -6 ka sawaal hi nahi, type unsigned hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w2-q5",
+          "question": "Register ke bits [7:4] me value 0xA likhni hai. Is code ke baad `reg` kya hoga?",
+          "code": "uint16_t reg = 0xF0F0;\nreg = (reg & ~(0xFU << 4)) | (0xAU << 4);",
+          "options": [
+            "0xF0F0",
+            "0x00A0",
+            "0xFAF0",
+            "0xF0A0"
+          ],
+          "answer": 3,
+          "explanation": "`0xFU << 4` = 0x00F0, uska `~` bits [7:4] ko clear karta hai: 0xF0F0 → 0xF000. Phir `0xAU << 4` = 0x00A0 OR karne par 0xF0A0. Baaki bits (0xF000 aur lower nibble 0) same rehti hain. Trap: clear wala step skip karna, tab 0xF0F0 | 0x00A0 = 0xF0F0 hi rehta, kyunki purane 1 bits mitte nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w2-q6",
+          "question": "Is code ka output kya hoga?",
+          "code": "uint8_t status = 0x08;\nif (status & 0x08 == 0x08)\n    puts(\"READY\");\nelse\n    puts(\"BUSY\");",
+          "options": [
+            "READY",
+            "BUSY",
+            "Compile error aayega",
+            "READY aur BUSY dono print honge"
+          ],
+          "answer": 1,
+          "explanation": "C me `==` ki precedence `&` se zyada hai, isliye condition `status & (0x08 == 0x08)` ban jaati hai. `0x08 == 0x08` ka value 1 hai, aur 0x08 & 1 = 0, isliye `else` chalta hai aur BUSY print hota hai. Ye valid C hai (compiler sirf warning de sakta hai). Fix: `if ((status & 0x08) == 0x08)`. Trap: maths ki tarah left se padh kar READY bolna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Cortex-M Basics: Clocks, Reset and GPIO Setup",
+      "summary": "Is week aap Cortex-M core ki basic structure, clock tree aur PLL/prescaler calculation, reset ke baad vector table aur startup code kya karte hain, aur GPIO pin ko mode, output type aur pull-up/pull-down ke saath configure karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Cortex-M core**: ARM ki 32-bit core family (M0/M0+, M3, M4, M7) jo microcontrollers ke liye bani hai. Ye load/store architecture hai, registers R0–R12 ke saath SP (stack pointer), LR (link register) aur PC hote hain, Thumb instruction set chalta hai, aur core ke andar hi interrupt controller (NVIC) aur SysTick timer hote hain. Chip vendor (jaise ST) is core ke chaaron taraf apne peripherals lagata hai.",
+        "**Clock tree**: MCU ka har hissa kisi clock se chalta hai. Sources: internal RC oscillator (HSI: turant ready, kam accurate), external crystal (HSE: accurate), aur **PLL** jo frequency ko divide/multiply karke high SYSCLK banata hai. Uske baad **prescalers** (AHB, APB1, APB2) bus clocks ko divide karte hain. Timer ya UART ki calculation tabhi sahi hogi jab aapko us peripheral ka actual clock pata ho.",
+        "**PLL aur prescaler maths** (generic form): PLL output = input ÷ M × N ÷ P. Example: 8 MHz ÷ 8 × 336 ÷ 2 = 168 MHz. APB1 prescaler 4 ho to APB1 clock = 168 ÷ 4 = 42 MHz. Kisi bhi peripheral ko use karne se pehle uska **clock enable** bit (RCC jaise register me) set karna padta hai, warna uske registers par likhne ka koi asar nahi hota.",
+        "**Reset aur vector table**: reset par Cortex-M vector table ki pehli word (address 0x00000000 par mapped) se initial stack pointer load karta hai, aur doosri word se **Reset_Handler** ka address PC me daalta hai. Baaki entries exceptions aur interrupts ke handler addresses hain.",
+        "**Startup code** (Reset_Handler) `main` se pehle chalta hai: `.data` ki initial values Flash se SRAM me copy, `.bss` ko zero, clock/system init (jaise `SystemInit`), phir `main()` call. Local variables isme initialise nahi hote; woh stack par bante hain aur bina initialiser ke garbage rakhte hain.",
+        "**GPIO mode**: har pin input, output, alternate function (UART/SPI/timer ke liye) ya analog (ADC ke liye) mode me ho sakti hai. STM32-style chips me mode register me har pin ke 2 bits hote hain (00 input, 01 output, 10 alternate, 11 analog), to pin n ke bits 2n aur 2n+1 par hote hain.",
+        "**Output type**: **push-pull** output pin ko high aur low dono taraf drive karta hai. **Open-drain** sirf low kheench sakta hai; '1' likhne par pin chhod deta hai (high-impedance), isliye high level ke liye pull-up resistor chahiye. I2C aur wired-AND lines yahi use karti hain.",
+        "**Pull-up / pull-down**: input pin ko kabhi floating mat chhodo, noise se random 0/1 padhega. Internal **pull-up** enable karke button ko pin aur GND ke beech lagao: na dabane par 1, dabane par 0 (active-low). Pull-down ke saath button pin aur VDD ke beech lagta hai."
+      ],
+      "example": {
+        "problem": "External crystal 8 MHz hai. PLL settings: M = 8, N = 336, P = 2. APB1 prescaler = 4. SYSCLK aur APB1 clock batao.",
+        "steps": [
+          "Pehle input ko M se divide: 8 MHz ÷ 8 = 1 MHz.",
+          "N se multiply: 1 MHz × 336 = 336 MHz.",
+          "P se divide: 336 MHz ÷ 2 = 168 MHz. Ye SYSCLK hai (AHB prescaler 1 maan kar HCLK bhi 168 MHz).",
+          "APB1 = 168 MHz ÷ 4 = 42 MHz.",
+          "Answer: **SYSCLK = 168 MHz, APB1 = 42 MHz**."
+        ]
+      },
+      "mistakes": [
+        "Peripheral ka clock enable kiye bina uske registers likhna. Code compile ho jaata hai par pin ya UART kuch nahi karta. Pehla step hamesha clock enable.",
+        "Mode register me pin n ke liye shift n rakhna. Har pin ke 2 bits hain, isliye shift 2n hona chahiye (pin 5 ke liye 10).",
+        "Field ko clear kiye bina sirf OR karna. Agar pin pehle analog (11) thi, to output (01) OR karne par bhi 11 hi rahega."
+      ],
+      "revision": [
+        "Vector table: word 0 = initial SP, word 1 = Reset_Handler address.",
+        "Startup: `.data` copy, `.bss` zero, system init, phir `main()`.",
+        "PLL = in ÷ M × N ÷ P; bus clock = HCLK ÷ APB prescaler.",
+        "Mode register: pin n → bits 2n, 2n+1.",
+        "Open-drain ko high ke liye pull-up chahiye.",
+        "Pull-up + button to GND = active-low (dabao to 0)."
+      ],
+      "questions": [
+        {
+          "id": "embc-w3-q1",
+          "question": "Reset ke turant baad Cortex-M core vector table ki pehli entry (offset 0) se kya load karta hai?",
+          "options": [
+            "Reset_Handler ka address",
+            "Initial stack pointer (MSP) ki value",
+            "`main()` ka address",
+            "Clock configuration ki value"
+          ],
+          "answer": 1,
+          "explanation": "Cortex-M vector table ki word 0 initial stack pointer hai, isliye core sabse pehle SP set karta hai. Word 1 (offset 4) me Reset_Handler ka address hota hai jo PC me jaata hai. Trap: pehli entry ko hi reset handler maan lena. `main()` ko to startup code baad me call karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w3-q2",
+          "question": "Ek GPIO pin open-drain output mode me hai aur us line par koi pull-up resistor (internal ya external) nahi hai. Output register me '1' likhne par pin ka kya hoga?",
+          "options": [
+            "Pin strongly VDD (jaise 3.3 V) par drive hoga",
+            "Pin 0 V par pull ho jaayega",
+            "Pin floating rahega, uska voltage defined nahi hoga",
+            "MCU reset ho jaayega"
+          ],
+          "answer": 2,
+          "explanation": "Open-drain output sirf low kheench sakta hai. '1' likhne par transistor off ho jaata hai aur pin high-impedance ho jaati hai; koi pull-up na ho to line floating rehti hai. Isiliye I2C jaisi open-drain lines par pull-up resistors zaroori hain. Trap: push-pull ki tarah high drive maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w3-q3",
+          "question": "External crystal 25 MHz hai. PLL: M = 25, N = 400, P = 4. AHB prescaler 1 aur APB1 prescaler 2 hai. APB1 bus clock kitna hoga?",
+          "options": [
+            "50 MHz",
+            "100 MHz",
+            "25 MHz",
+            "200 MHz"
+          ],
+          "answer": 0,
+          "explanation": "25 ÷ 25 = 1 MHz, × 400 = 400 MHz, ÷ 4 = 100 MHz (SYSCLK = HCLK). APB1 = 100 ÷ 2 = 50 MHz. Trap: SYSCLK 100 MHz par ruk jaana aur APB1 prescaler bhool jaana. 200 MHz tab aata jab P = 2 le liya jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w3-q4",
+          "question": "Ek push-button GPIO pin aur GND ke beech laga hai, aur pin par internal pull-up enable hai. Pin ka logic level kya padha jaayega?",
+          "options": [
+            "Dabane par 1, chhodne par 0",
+            "Dono haalat me hamesha 1",
+            "Dabane par 1, chhodne par floating",
+            "Dabane par 0, chhodne par 1"
+          ],
+          "answer": 3,
+          "explanation": "Button na daba ho to pull-up resistor pin ko VDD ki taraf kheenchta hai, isliye 1. Dabane par button pin ko seedha GND se jod deta hai, isliye 0. Is wiring ko active-low kehte hain. Trap: 'dabaya = 1' wali intuition; woh tab sahi hoti jab pull-down ho aur button VDD se juda ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w3-q5",
+          "question": "Ek typical Reset_Handler (startup code) `main()` call karne se pehle inme se kaunsa kaam NAHI karta?",
+          "options": [
+            "`.data` section ki initial values Flash se SRAM me copy karna",
+            "`.bss` section ko zero se bharna",
+            "Har function ke local variables ko zero karna",
+            "System/clock init function call karna"
+          ],
+          "answer": 2,
+          "explanation": "Startup code sirf global/static data sambhalta hai: `.data` copy aur `.bss` zero, phir system init aur `main()`. Local variables function call hone par stack par bante hain, isliye unhe pehle se zero karna possible hi nahi; bina initialiser ke unme garbage value hoti hai. Trap: sochna ki C har variable ko automatically zero karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w3-q6",
+          "question": "Mode register me har pin ke 2 bits hain (00 input, 01 output, 10 alternate, 11 analog). Abhi register ki value 0x00000F00 hai. Is code ke baad register ki value kya hogi?",
+          "code": "#define GPIOA_MODER (*(volatile uint32_t *)0x40020000)  /* address illustrative */\n\nGPIOA_MODER &= ~(3U << (5 * 2));\nGPIOA_MODER |=  (1U << (5 * 2));",
+          "options": [
+            "0x00000700",
+            "0x00000400",
+            "0x00000F00",
+            "0x00000F20"
+          ],
+          "answer": 0,
+          "explanation": "0x00000F00 me bits 8–11 set hain, yaani pin 4 (bits 8, 9) aur pin 5 (bits 10, 11) dono analog (11). `3U << 10` = 0xC00; clear karne par 0x300 bachta hai (pin 4 abhi bhi analog). Phir `1U << 10` = 0x400 OR karke 0x700, yaani pin 5 output (01). Traps: poora register clear maan lena (0x400), clear step ka asar na samajhna (0xF00), ya shift 2n ki jagah n lena (0xF20).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Interrupts, the NVIC and Hardware Timers",
+      "summary": "Is week aap polling aur interrupts ka fark, ISR likhne ke rules, NVIC priorities aur nesting, button debouncing, aur timer ke prescaler/ARR se period aur frequency nikalna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Polling vs interrupts**: polling me CPU baar-baar flag ya pin check karta hai. Ye simple hai, par CPU time waste hota hai aur response loop ki speed par depend karta hai. Interrupt me hardware event aate hi CPU current kaam rok kar ISR chalata hai aur phir wahin wapas aata hai. Rare, urgent ya miss na hone wale events ke liye interrupts better hain.",
+        "**ISR (Interrupt Service Routine)**: Cortex-M par ISR ek normal `void f(void)` function hai jiska address vector table me hota hai (jaise `EXTI0_IRQHandler`). Hardware khud kuch registers stack par save/restore karta hai. ISR chhota rakho: flag set karo ya data copy karo, peripheral ka interrupt flag clear karo, aur return. Flag clear na kiya to wahi interrupt turant dobara fire hota rahega.",
+        "**NVIC**: Nested Vectored Interrupt Controller har interrupt ko enable/disable karta hai aur priority deta hai. Cortex-M par **kam number = zyada priority**. Zyada priority wala interrupt kam priority wale ISR ko beech me rok (preempt) sakta hai, isiliye 'nested'. Same ya kam priority wala interrupt pending rehta hai jab tak current ISR khatam na ho.",
+        "**ISR aur main ke beech data**: shared variable `volatile` hona chahiye. Saath hi `count++` jaise read-modify-write ya multi-byte updates interrupt aane par beech me toot sakte hain; inhe chhote critical section (thodi der interrupts band) se bachaya jaata hai.",
+        "**Button bounce aur debouncing**: mechanical button dabane par contacts kuch milliseconds tak bounce karte hain, isliye ek press par kai edges aur kai interrupts aa sakte hain. Fix: har 5–10 ms par pin sample karo aur state tabhi maano jab kuch consecutive readings same hon, ya pehle edge ke baad ~20 ms tak naye edges ignore karo, ya hardware RC filter lagao. ISR ke andar lamba delay daal kar debounce mat karo.",
+        "**Timer basics**: timer ek hardware counter hai. Counter clock = f_timer ÷ (PSC + 1). Up-counting mode me counter 0 se ARR tak ginta hai, phir 0 par wapas aate waqt **update event** (aur interrupt) deta hai, to ek cycle me (ARR + 1) ticks hote hain. Update frequency = f_timer ÷ ((PSC + 1) × (ARR + 1)), aur period = 1 ÷ frequency.",
+        "**Design steps aur limits**: pehle ek aasaan counter clock choose karo (jaise 10 kHz ya 1 MHz) aur PSC = f_timer ÷ counter clock − 1 rakho. Phir ARR = counter clock ÷ desired frequency − 1. 16-bit timer me PSC aur ARR dono maximum 65535 ho sakte hain, isliye lambe periods ke liye prescaler badhana padta hai."
+      ],
+      "example": {
+        "problem": "Timer clock 84 MHz hai. Har 1 second me ek update interrupt chahiye (16-bit timer). PSC aur ARR choose karo.",
+        "steps": [
+          "Counter clock 10 kHz rakhte hain: PSC + 1 = 84,000,000 ÷ 10,000 = 8400, isliye PSC = 8399 (16-bit me fit).",
+          "1 s me 10 kHz par 10,000 ticks chahiye, to ARR + 1 = 10,000, yaani ARR = 9999 (fit).",
+          "Check: 84 MHz ÷ (8400 × 10000) = 1 Hz.",
+          "PSC = 0 rakhte to ARR = 83,999,999 chahiye hota, jo 16-bit (65535) me fit nahi hota.",
+          "Answer: **PSC = 8399, ARR = 9999**."
+        ],
+        "code": "/* Register names STM32-style, addresses illustrative */\n#define TIM_PSC (*(volatile uint32_t *)0x40000028)\n#define TIM_ARR (*(volatile uint32_t *)0x4000002C)\n\nTIM_PSC = 8399;   /* 84 MHz / 8400 = 10 kHz */\nTIM_ARR = 9999;   /* 10 kHz / 10000 = 1 Hz */"
+      },
+      "mistakes": [
+        "PSC aur ARR me +1 bhool jaana. Counter clock f ÷ (PSC + 1) hai aur ek cycle (ARR + 1) ticks ki hoti hai; ARR = 10000 likhne se period thoda lamba ho jaata hai.",
+        "ISR me interrupt flag clear na karna. ISR return hote hi wahi interrupt phir pending milta hai aur program ISR me hi ghoomta rehta hai.",
+        "Debounce ke liye ISR ke andar `delay(20)` daalna. Isse baaki interrupts block hote hain; timer-based sampling ya timestamp check use karo."
+      ],
+      "revision": [
+        "Counter clock = f ÷ (PSC + 1); update rate = f ÷ ((PSC + 1)(ARR + 1)).",
+        "ARR = counter clock ÷ desired frequency − 1.",
+        "Cortex-M NVIC: kam priority number = zyada urgent; higher priority preempt karta hai.",
+        "ISR chhota, flag clear, shared data `volatile`.",
+        "Button bounce: ~5–20 ms; sampling ya ignore-window se debounce."
+      ],
+      "questions": [
+        {
+          "id": "embc-w4-q1",
+          "question": "Ek achhe ISR ke liye sabse sahi guideline kaunsi hai?",
+          "options": [
+            "Chhota rakho: flag/data update karo, interrupt flag clear karo aur jaldi return karo",
+            "Debounce ke liye ISR ke andar lamba delay daalo",
+            "ISR ke andar hi poora display update aur `printf` karo",
+            "ISR ke end me infinite loop rakho taaki interrupt dobara na aaye"
+          ],
+          "answer": 0,
+          "explanation": "ISR chalte waqt main code aur barabar ya kam priority ke interrupts ruke rehte hain, isliye ISR jitna chhota ho utna accha. Bhaari kaam (display, printf) main loop me flag dekh kar karo. Delay ISR me doosre events miss karwata hai, aur infinite loop program ko wahin rok deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w4-q2",
+          "question": "Ek sensor din me kuch hi baar ek chhoti pulse deta hai jo miss nahi honi chahiye. Baaki samay CPU ko doosre kaam karne hain ya sleep karna hai. Sabse sahi approach kaunsa hai?",
+          "options": [
+            "Main loop me lagatar pin ko poll karna",
+            "Har 1 second par ek baar pin check karna",
+            "Pin ko analog mode me rakh kar ADC se padhna",
+            "Pin par edge-triggered external interrupt use karna"
+          ],
+          "answer": 3,
+          "explanation": "Edge-triggered interrupt pulse aate hi ISR chalata hai, chahe CPU kuch aur kar raha ho ya sleep me ho, aur pulse miss nahi hoti. Lagatar polling CPU ko busy rakhti hai aur sleep nahi hone deti. Har 1 second par check karne se chhoti pulse beech me aakar chali jaayegi (trap).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w4-q3",
+          "question": "Timer clock 16 MHz hai, PSC = 1599 aur ARR = 999 (up-counting). Update interrupts ke beech kitna time hoga?",
+          "options": [
+            "10 ms",
+            "100 ms",
+            "1 s",
+            "0.1 ms"
+          ],
+          "answer": 1,
+          "explanation": "Counter clock = 16 MHz ÷ (1599 + 1) = 10 kHz, yaani har tick 0.1 ms. Ek cycle = ARR + 1 = 1000 ticks, to period = 1000 × 0.1 ms = 100 ms (10 Hz). Trap: sirf ek tick ka time (0.1 ms) bol dena aur ARR ko ignore karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w4-q4",
+          "question": "Timer clock 48 MHz hai aur PSC = 47 set hai. Update interrupt exactly 1 kHz par chahiye. ARR kya hona chahiye?",
+          "options": [
+            "1000",
+            "47999",
+            "999",
+            "99"
+          ],
+          "answer": 2,
+          "explanation": "Counter clock = 48 MHz ÷ (47 + 1) = 1 MHz. 1 kHz ke liye ek cycle me 1,000,000 ÷ 1000 = 1000 ticks chahiye, aur ticks = ARR + 1, isliye ARR = 999. Trap: ARR = 1000 likhna, jisse 1001 ticks aur ~999 Hz milta. 47999 tab sahi hota jab PSC = 0 hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w4-q5",
+          "question": "Cortex-M par ISR_A (priority 3) chal raha hai. Tabhi interrupt B (priority 1) aur interrupt C (priority 5) dono aa jaate hain. Kya hoga?",
+          "options": [
+            "Dono A khatam hone ka wait karenge, phir C pehle chalega",
+            "B turant A ko preempt karega; C tab tak pending rahega jab tak A khatam na ho",
+            "C turant A ko preempt karega kyunki uska number bada hai",
+            "B aur C dono ignore ho jaayenge kyunki ek ISR pehle se chal raha hai"
+          ],
+          "answer": 1,
+          "explanation": "Cortex-M NVIC me chhota number = zyada priority. B (1) ki priority A (3) se zyada hai, isliye B, A ko beech me rok kar turant chalega (nesting). C (5) ki priority A se kam hai, to woh pending rahega aur A ke khatam hone ke baad chalega. Trap: bada number = bada priority maan lena. Interrupts ignore nahi hote, pending rehte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w4-q6",
+          "question": "Ek 16-bit timer (PSC aur ARR max 65535) ka clock 84 MHz hai. Exactly 0.5 s ka update period chahiye. Kaunsa setting sahi hai?",
+          "options": [
+            "PSC = 0, ARR = 41999999",
+            "PSC = 8399, ARR = 5000",
+            "PSC = 839, ARR = 4999",
+            "PSC = 8399, ARR = 4999"
+          ],
+          "answer": 3,
+          "explanation": "PSC = 8399 se counter clock = 84 MHz ÷ 8400 = 10 kHz. ARR = 4999 matlab 5000 ticks = 5000 ÷ 10,000 = 0.5 s. ARR = 5000 se 5001 ticks = 0.5001 s (+1 wala trap). PSC = 839 se counter 100 kHz ho jaata hai aur period sirf 0.05 s. PSC = 0 ke saath ARR 41,999,999 chahiye jo 16-bit register me fit hi nahi hota.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Serial Protocols: UART, SPI and I2C",
+      "summary": "Is week aap UART ka frame aur baud rate, SPI ki lines aur CPOL/CPHA modes, I2C ki addressing, ACK aur open-drain pull-ups, aur teeno protocols ko kab kaunsa use karna hai, ye seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Serial communication**: bits ek wire par ek ke baad ek jaate hain. **Synchronous** protocols (SPI, I2C) me ek alag clock line hoti hai jo batati hai bit kab padhna hai. **Asynchronous** (UART) me clock line nahi hoti; dono side pehle se ek hi baud rate par agree karte hain.",
+        "**UART frame**: idle line high rehti hai. Har byte: 1 start bit (0), phir data bits (usually 8, LSB pehle), optional parity bit, phir 1 ya 2 stop bits (1). '8N1' = 8 data, no parity, 1 stop, yaani har byte ke liye 10 bits. Baud rate = bits per second (9600, 115200 jaise), to 8N1 me maximum throughput = baud ÷ 10 bytes/s.",
+        "**UART wiring aur baud mismatch**: ek ka TX doosre ke RX par, RX doosre ke TX par, aur common GND. Ye point-to-point aur full-duplex hai. Dono side ke baud rates me kuch percent se zyada fark ho to bits galat jagah sample hote hain aur garbage characters aate hain.",
+        "**SPI**: ek master, ek ya zyada slaves. Lines: SCLK (clock, master deta hai), MOSI (master out), MISO (master in), aur har slave ke liye alag **CS/SS** (chip select, usually active-low). Har clock par ek bit jaata hai aur ek aata hai, isliye full-duplex. Koi address ya ACK nahi, isliye simple aur fast (kai MHz). N slaves ke liye 3 shared lines + N CS lines.",
+        "**SPI modes (CPOL/CPHA)**: CPOL = clock ka idle level (0 = low, 1 = high). CPHA = sampling kis edge par (0 = pehla/leading edge, 1 = doosra/trailing edge). Mode 0 (0,0): rising par sample. Mode 1 (0,1): falling. Mode 2 (1,0): falling. Mode 3 (1,1): rising. Master aur slave ka mode match hona zaroori hai.",
+        "**I2C**: sirf 2 wires, SDA (data) aur SCL (clock), dono **open-drain** with pull-up resistors, aur ek hi bus par kai devices. Transfer: START (SCL high rehte SDA high→low), phir address byte = 7-bit address << 1 | R/W (0 = write, 1 = read), receiver ka **ACK** (SDA low) ya NACK, phir data bytes (har byte ke baad ACK), aur STOP (SCL high rehte SDA low→high).",
+        "**Kaunsa kab**: UART: 2 data wires, clock nahi, do devices ke beech (debug console, GPS, Bluetooth module). SPI: 4+ wires, sabse fast, full-duplex (display, SD card, external flash). I2C: 2 wires, address se kai devices, slower (100 kHz standard, 400 kHz fast mode), half-duplex, ACK se pata chalta hai device ne suna ya nahi (sensors, EEPROM, RTC)."
+      ],
+      "example": {
+        "problem": "UART 9600 baud, 8N1 par character 'A' (0x41) bhejna hai. Line par bits kis order me jaayenge aur ek character me kitna time lagega?",
+        "steps": [
+          "0x41 binary me 0100 0001 hai.",
+          "UART LSB pehle bhejta hai, to data bits order: 1, 0, 0, 0, 0, 0, 1, 0.",
+          "Poora frame: start bit 0, phir ye 8 data bits, phir stop bit 1. Total 10 bits.",
+          "Ek bit ka time = 1 ÷ 9600 s ≈ 104.2 µs.",
+          "Frame time = 10 × 104.2 µs ≈ 1.042 ms.",
+          "Answer: **0, 1,0,0,0,0,0,1,0, 1** (start, data LSB-first, stop), aur **≈ 1.04 ms** per character."
+        ]
+      },
+      "mistakes": [
+        "UART throughput nikalte waqt sirf 8 bits per byte ginna. 8N1 me start aur stop milakar 10 bits lagte hain, isliye 115200 baud = 11520 bytes/s, 14400 nahi.",
+        "I2C address byte me 7-bit address ko shift karna bhool jaana. 0x48 ka read byte 0x91 hai (0x48 << 1 | 1), 0x49 nahi.",
+        "UART me TX ko TX se jodna, ya GND common na karna. TX hamesha doosre ke RX se, aur dono ka ground ek."
+      ],
+      "revision": [
+        "8N1 = 10 bits per byte; bytes/s = baud ÷ 10.",
+        "SPI: SCLK, MOSI, MISO + har slave ka CS; full-duplex, no ACK.",
+        "CPOL = idle level, CPHA = sampling edge (0 leading, 1 trailing).",
+        "I2C: SDA + SCL, open-drain + pull-ups, address byte = addr << 1 | R/W.",
+        "UART async (no clock), SPI/I2C sync (clock line)."
+      ],
+      "questions": [
+        {
+          "id": "embc-w5-q1",
+          "question": "UART 8N1 format me ek byte bhejne ke liye line par total kitne bits jaate hain?",
+          "options": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ],
+          "answer": 2,
+          "explanation": "8N1 = 1 start bit + 8 data bits + no parity + 1 stop bit = 10 bits. Trap: sirf data bits (8) ginna. 11 tab hota jab parity bit bhi hoti (8E1 ya 8O1).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w5-q2",
+          "question": "I2C bus ke baare me kaunsa statement sahi hai?",
+          "options": [
+            "SDA aur SCL open-drain hote hain, isliye dono lines par pull-up resistors chahiye",
+            "Har slave ke liye ek alag chip-select line chahiye",
+            "Ye asynchronous hai, isliye isme koi clock line nahi hoti",
+            "Ye full-duplex hai: ek hi samay par bhejna aur lena dono hota hai"
+          ],
+          "answer": 0,
+          "explanation": "I2C me devices sirf line ko low kheench sakte hain (open-drain); high level pull-up resistor deta hai. Isi se kai devices ek bus share kar paate hain bina short ke. Chip-select per slave SPI ki pehchaan hai, I2C address use karta hai. I2C me SCL clock line hai, aur data ek hi SDA par aata-jaata hai, isliye half-duplex.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w5-q3",
+          "question": "UART 115200 baud, 8N1 par 100 bytes bina kisi gap ke lagataar bheje jaate hain. Kitna time lagega (approx)?",
+          "options": [
+            "6.94 ms",
+            "86.8 ms",
+            "0.87 ms",
+            "8.68 ms"
+          ],
+          "answer": 3,
+          "explanation": "Har byte = 10 bits (start + 8 data + stop), to 100 bytes = 1000 bits. Time = 1000 ÷ 115200 s ≈ 8.68 ms. Trap: 8 bits per byte lena, tab 800 ÷ 115200 ≈ 6.94 ms aata hai, jo start/stop bits bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w5-q4",
+          "question": "Ek I2C sensor ka 7-bit address 0x48 hai. Master usse data READ karna chahta hai. START ke baad bus par pehla byte kya jaayega?",
+          "options": [
+            "0x48",
+            "0x91",
+            "0x90",
+            "0x49"
+          ],
+          "answer": 1,
+          "explanation": "Address byte = (7-bit address << 1) | R/W. 0x48 << 1 = 0x90, aur read ke liye R/W = 1, to 0x91. 0x90 write ke liye hota. Trap: shift kiye bina sirf 1 jod dena (0x49), ya 7-bit address ko waise hi bhej dena (0x48).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w5-q5",
+          "question": "Ek MCU (SPI master) se 4 alag SPI slave devices jodne hain, har ek ka apna chip-select. GND chhod kar total kitni signal lines lagengi?",
+          "options": [
+            "7",
+            "16",
+            "4",
+            "8"
+          ],
+          "answer": 0,
+          "explanation": "SCLK, MOSI aur MISO saare slaves share karte hain (3 lines), aur har slave ko ek alag CS chahiye (4 lines). Total 3 + 4 = 7. Trap: har slave ke liye poori 4-wire set alag maan lena (16). CS line hi decide karti hai ki kaunsa slave abhi baat kar raha hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w5-q6",
+          "question": "Ek SPI slave ki datasheet kehti hai: clock idle state me HIGH rehta hai, aur data clock ke pehle (leading) edge par sample hota hai. Master ko kaunsa mode set karna chahiye, aur sampling kis edge par hogi?",
+          "options": [
+            "Mode 0, rising edge",
+            "Mode 3, rising edge",
+            "Mode 2, falling edge",
+            "Mode 1, falling edge"
+          ],
+          "answer": 2,
+          "explanation": "Idle HIGH matlab CPOL = 1. Leading edge par sample matlab CPHA = 0. CPOL = 1, CPHA = 0 = Mode 2. Clock high se shuru hota hai, to pehla edge high→low yaani falling hai. Trap: Mode 3 chunna; usme bhi idle high hai par sampling trailing (rising) edge par hoti hai. Mode 0 aur Mode 1 me clock idle LOW hota hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "ADC, PWM, DAC and DMA",
+      "summary": "Is week aap ADC ki resolution, reference voltage aur code se voltage nikalna, timer se PWM banana (frequency aur duty cycle), DAC output, aur DMA se CPU ke bina data move karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**ADC (Analog-to-Digital Converter)**: analog voltage ko number me badalta hai. N-bit ADC ke 2ᴺ levels hote hain: 12-bit → 4096 codes (0 se 4095). **Reference voltage** (Vref) full-scale decide karta hai. Voltage ≈ code × Vref ÷ 2ᴺ. (Kuch datasheets 2ᴺ − 1 se divide karti hain; fark sirf ek LSB jitna hai.)",
+        "**Resolution aur LSB**: 1 LSB = Vref ÷ 2ᴺ, yaani sabse chhota voltage step jo ADC pehchaan sakta hai. 12-bit, 3.3 V par 1 LSB ≈ 0.806 mV; 10-bit, 5 V par ≈ 4.88 mV. Vref se zyada input full-scale code par clip ho jaata hai, aur pin ki maximum rating se zyada voltage chip ko kharab kar sakta hai.",
+        "**Conversion process**: MCU ADC aksar SAR type hota hai: sample-and-hold capacitor voltage pakadta hai, phir bit-by-bit compare karke code banta hai. Total time = sampling time + conversion time. Modes: single, continuous, aur scan (kai channels ek ke baad ek). Sampling rate signal ki sabse badi frequency ka kam se kam 2 guna (Nyquist) hona chahiye, practice me usse zyada.",
+        "**PWM (Pulse Width Modulation)**: pin ko tezi se on/off karna. **Duty cycle** = on-time ÷ period. Average voltage ≈ duty × VDD, isliye LED brightness, motor speed ya filtered analog level control hota hai. Timer se: PWM frequency = f_timer ÷ ((PSC + 1)(ARR + 1)), aur edge-aligned mode me output high rehta hai jab tak CNT < CCR, to duty = CCR ÷ (ARR + 1).",
+        "**PWM ke common uses**: LED dimming (kuch kHz), DC motor speed (H-bridge ke saath), hobby servo (50 Hz, 1–2 ms pulse se angle), buzzer tone (frequency hi note hai). Duty badlo to average badalta hai, frequency nahi.",
+        "**DAC (Digital-to-Analog Converter)**: number se voltage banata hai: Vout ≈ code × Vref ÷ 2ᴺ. 12-bit DAC 3.3 V par 1.0 V ke liye code ≈ 1241. Jis MCU me DAC na ho, wahan PWM + RC low-pass filter ek saste DAC jaisa kaam karta hai.",
+        "**DMA (Direct Memory Access)**: ek alag controller jo CPU ke bina data copy karta hai: peripheral → memory (ADC samples buffer me), memory → peripheral (UART se string bhejna), ya memory → memory. CPU sirf source, destination aur count set karta hai, aur transfer complete (ya half complete) hone par ek interrupt leta hai. **Circular mode** me buffer baar-baar bharta rehta hai, high-rate data ke liye per-sample interrupt se bahut kam CPU load."
+      ],
+      "example": {
+        "problem": "Timer clock 72 MHz hai. LED ke liye 1 kHz PWM chahiye, 30% duty cycle ke saath (edge-aligned, output high jab CNT < CCR). PSC, ARR aur CCR nikaalo.",
+        "steps": [
+          "Counter clock 1 MHz rakhte hain: PSC + 1 = 72 MHz ÷ 1 MHz = 72, isliye PSC = 71.",
+          "1 kHz ke liye ek period me 1,000,000 ÷ 1000 = 1000 ticks, to ARR = 999.",
+          "Duty = CCR ÷ (ARR + 1), to CCR = 0.30 × 1000 = 300.",
+          "Check: output 300 ticks (0.3 ms) high, 700 ticks low; period 1 ms.",
+          "Answer: **PSC = 71, ARR = 999, CCR = 300**."
+        ],
+        "code": "/* STM32-style names, addresses illustrative */\n#define TIM_PSC  (*(volatile uint32_t *)0x40000028)\n#define TIM_ARR  (*(volatile uint32_t *)0x4000002C)\n#define TIM_CCR1 (*(volatile uint32_t *)0x40000034)\n\nTIM_PSC  = 71;    /* 72 MHz -> 1 MHz */\nTIM_ARR  = 999;   /* 1000 ticks -> 1 kHz */\nTIM_CCR1 = 300;   /* 30% duty */"
+      },
+      "mistakes": [
+        "ADC ke maximum code (4095) ko levels ki ginti samajhna. 12-bit ADC me 4096 levels hain; codes 0 se 4095 tak.",
+        "PWM duty badalne ke liye ARR badalna. ARR badalne se frequency badalti hai; duty ke liye CCR badlo.",
+        "ADC ke har sample par interrupt lena jab sample rate bahut high ho. CPU interrupts me hi phasa rehta hai; DMA circular buffer use karo."
+      ],
+      "revision": [
+        "N-bit ADC: 2ᴺ levels, 1 LSB = Vref ÷ 2ᴺ.",
+        "Voltage ≈ code × Vref ÷ 2ᴺ; DAC me ulta.",
+        "PWM frequency = f ÷ ((PSC + 1)(ARR + 1)); duty = CCR ÷ (ARR + 1).",
+        "Duty badlo → average badalta hai; ARR badlo → frequency badalti hai.",
+        "DMA = CPU ke bina data transfer; complete/half-complete interrupt."
+      ],
+      "questions": [
+        {
+          "id": "embc-w6-q1",
+          "question": "Ek 12-bit ADC kitne alag-alag output codes de sakta hai?",
+          "options": [
+            "12",
+            "4096",
+            "4095",
+            "1024"
+          ],
+          "answer": 1,
+          "explanation": "N-bit ADC ke 2ᴺ codes hote hain: 2¹² = 4096 (0 se 4095 tak). Trap: sabse bada code 4095 ko ginti samajh lena; 0 bhi ek code hai. 1024 10-bit ADC ka hota.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w6-q2",
+          "question": "Timer edge-aligned PWM mode me hai: output high rehta hai jab tak counter < CCR. ARR = 999 aur CCR = 250 hai. Duty cycle kitna hai?",
+          "options": [
+            "75%",
+            "50%",
+            "2.5%",
+            "25%"
+          ],
+          "answer": 3,
+          "explanation": "Ek period me ARR + 1 = 1000 ticks hain. Counter 0 se 249 tak (250 ticks) output high rehta hai. Duty = 250 ÷ 1000 = 25%. Trap: low time ko duty samajh lena (75%), ya ARR ko period na maan kar galat scale lagana.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w6-q3",
+          "question": "12-bit ADC ka reference 3.3 V hai. Ek reading ka code 3072 aaya. Input voltage lagbhag kitna hai?",
+          "options": [
+            "≈ 2.48 V",
+            "≈ 3.07 V",
+            "≈ 1.65 V",
+            "≈ 0.75 V"
+          ],
+          "answer": 0,
+          "explanation": "Voltage ≈ code × Vref ÷ 4096 = 3072 × 3.3 ÷ 4096 ≈ 2.475 V, yaani ≈ 2.48 V (4095 se divide karo to bhi ≈ 2.48 V). Trap: 3072 ÷ 4096 = 0.75 nikaal kar Vref se multiply karna bhool jaana. 1.65 V half-scale (code 2048) ka hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w6-q4",
+          "question": "Timer clock 84 MHz hai, PSC = 83 aur ARR = 499. Is timer se bane PWM signal ki frequency kya hogi?",
+          "options": [
+            "1 kHz",
+            "500 Hz",
+            "2 kHz",
+            "1 MHz"
+          ],
+          "answer": 2,
+          "explanation": "Counter clock = 84 MHz ÷ (83 + 1) = 1 MHz. Ek PWM period = ARR + 1 = 500 ticks, to frequency = 1,000,000 ÷ 500 = 2 kHz. Trap: counter clock (1 MHz) ko hi PWM frequency samajhna, ya 500 ticks ko 500 Hz padh lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w6-q5",
+          "question": "ADC 100,000 samples/s le raha hai aur har sample RAM ke buffer me jaana chahiye. CPU ko saath me filtering bhi karni hai. Sabse efficient design kaunsa hai?",
+          "options": [
+            "Har conversion par ADC interrupt lo aur ISR me sample buffer me copy karo",
+            "Main loop me ADC ka 'conversion done' flag poll karo",
+            "ADC resolution ghata kar 8-bit kar do",
+            "DMA ko ADC data register se RAM buffer (circular mode) me copy karne do, aur half/full complete interrupt par processing karo"
+          ],
+          "answer": 3,
+          "explanation": "DMA har sample ko bina CPU ke buffer me daal deta hai; CPU ko sirf buffer ka aadha ya poora bharne par interrupt milta hai aur woh us block ko process karta hai jabki DMA doosra aadha bharta hai. Per-sample interrupt se 100,000 ISRs per second aate hain, aur polling CPU ko poora gher leta hai. Resolution ghataane se transfer ka load kam nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w6-q6",
+          "question": "Hobby servo ko 50 Hz PWM aur 1.5 ms high pulse chahiye. Timer ka counter clock (prescaler ke baad) 1 MHz hai, edge-aligned mode, output high jab CNT < CCR. ARR aur CCR kya hone chahiye?",
+          "options": [
+            "ARR = 19999, CCR = 1500",
+            "ARR = 20000, CCR = 1500",
+            "ARR = 19999, CCR = 150",
+            "ARR = 1999, CCR = 1500"
+          ],
+          "answer": 0,
+          "explanation": "1 MHz par ek tick = 1 µs. 50 Hz ka period 20 ms = 20,000 ticks, to ARR + 1 = 20000 → ARR = 19999. 1.5 ms = 1500 µs = 1500 ticks, to CCR = 1500 (CNT 0 se 1499 tak high). Traps: ARR = 20000 se period 20.001 ms ho jaata hai; CCR = 150 sirf 0.15 ms ka pulse deta; ARR = 1999 se frequency 500 Hz ho jaati.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Problem-Solving: Timing, Bit Fields and Protocol Maths",
+      "summary": "Is week aap pichhle topics ko mila kar calculation wale sawaal solve karna seekhoge: register fields nikalna, ADC LSB, UART baud divisor aur error, SPI/UART transfer time, aur input capture me counter wrap sambhalna.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Field extraction**: `(reg >> POS) & MASK`. Pehle shift karke field ko bit 0 par laao, phir mask lagao. Example: 0x1A40 ke bits [11:8] = (0x1A40 >> 8) & 0xF = 0x1A & 0xF = 0xA. Order ulta karoge (pehle mask bina shift kiye) to value galat jagah par rahegi.",
+        "**Hex aur masks fast**: har hex digit = 4 bits. Single bit n ka mask `1U << n`. k continuous bits ka mask (1 << k) − 1: 4 bits → 0xF, 3 bits → 0x7. Field [hi:lo] ki width = hi − lo + 1.",
+        "**UART baud divisor (generic, 16× oversampling)**: divisor = f_clk ÷ (16 × baud). Agar sirf integer divisor allowed hai, to nearest integer lo, phir actual baud = f_clk ÷ (16 × divisor) aur error % = (actual − desired) ÷ desired × 100. Kuch percent (lagbhag 2–3%) tak error usually chal jaata hai, usse zyada par characters bigadte hain.",
+        "**Transfer time budget**: SPI me koi start/stop bit nahi, to time = bytes × 8 ÷ SCLK. UART 8N1 me time = bytes × 10 ÷ baud. I2C me har byte 9 clocks (8 data + ACK) leta hai, plus address byte aur START/STOP ka overhead.",
+        "**Input capture**: timer kisi edge par counter ki value latch kar leta hai. Do lagataar rising edges ke captures ka difference = period ticks, aur frequency = counter clock ÷ ticks. 16-bit counter beech me wrap ho sakta hai, isliye difference `uint16_t` me nikaalo: (new − old) mod 65536 automatic sahi aata hai.",
+        "**Tick counter overflow**: `uint32_t` millisecond counter 2³² ms ≈ 49.7 din baad wrap hota hai, `uint16_t` 65.536 s baad. Timeout check hamesha `(now − start) >= delay` (unsigned) se karo; `now >= start + delay` wrap ke paas galat ho jaata hai.",
+        "**Unit sanity check**: 1 MHz par tick = 1 µs, 10 kHz par 100 µs, 1 kHz par 1 ms. Answer nikaal kar unit ke saath ek baar dobara socho: factor 10 ya 1000 ki galti sabse common hai."
+      ],
+      "example": {
+        "problem": "UART peripheral ka clock 16 MHz hai, 16× oversampling aur sirf integer divisor. 9600 baud ke liye divisor, actual baud aur error % nikaalo.",
+        "steps": [
+          "Ideal divisor = 16,000,000 ÷ (16 × 9600) = 16,000,000 ÷ 153,600 ≈ 104.17.",
+          "Nearest integer = 104.",
+          "Actual baud = 16,000,000 ÷ (16 × 104) = 16,000,000 ÷ 1664 ≈ 9615.4.",
+          "Error = (9615.4 − 9600) ÷ 9600 × 100 ≈ +0.16%.",
+          "Ye bahut chhota hai, link theek chalega.",
+          "Answer: **divisor 104, ≈ 9615 baud, error ≈ 0.16%**."
+        ]
+      },
+      "mistakes": [
+        "Input capture me seedha `t2 − t1` signed int me nikaalna. Counter wrap hone par result negative ya bahut bada aata hai; difference ko counter ki width (`uint16_t`) me cast karo.",
+        "SPI time me UART ki tarah 10 bits per byte lagana. SPI me start/stop bits nahi hote, sirf 8 clocks per byte (gaps alag).",
+        "Divisor round karke wahi baud maan lena. Hamesha actual baud aur error % nikaal kar check karo."
+      ],
+      "revision": [
+        "Field = `(reg >> POS) & MASK`; k bits ka mask = (1 << k) − 1.",
+        "Divisor = f ÷ (16 × baud); error = (actual − desired) ÷ desired.",
+        "SPI: bytes × 8 ÷ SCLK; UART 8N1: bytes × 10 ÷ baud.",
+        "Capture period = (new − old) mod 2ⁿ ticks.",
+        "Elapsed time: `now − start` unsigned, wrap-safe."
+      ],
+      "questions": [
+        {
+          "id": "embc-w7-q1",
+          "question": "Expression `(0xB4 >> 4) & 0x0F` ki value kya hai?",
+          "options": [
+            "0x4",
+            "0xB4",
+            "0x0F",
+            "0xB"
+          ],
+          "answer": 3,
+          "explanation": "0xB4 = 1011 0100. 4 se right shift: 0000 1011 = 0x0B. Phir & 0x0F se 0xB hi rehta hai. Ye upper nibble nikaalne ka standard tareeka hai. Trap: bina shift ke mask lagana, `0xB4 & 0x0F` = 0x4 (lower nibble).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w7-q2",
+          "question": "Ek 10-bit ADC ka reference 5 V hai. Uska 1 LSB (sabse chhota step) lagbhag kitna hai?",
+          "options": [
+            "≈ 4.88 mV",
+            "≈ 0.5 V",
+            "≈ 1.22 mV",
+            "≈ 19.5 mV"
+          ],
+          "answer": 0,
+          "explanation": "1 LSB = Vref ÷ 2ᴺ = 5 V ÷ 1024 ≈ 4.88 mV. 1.22 mV 12-bit ADC (5 ÷ 4096) ka hota, aur 19.5 mV 8-bit (5 ÷ 256) ka. 0.5 V tab aata jab 5 ko 10 se divide kar diya, yaani bits ko levels samajh liya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w7-q3",
+          "question": "UART clock 8 MHz hai, 16× oversampling, aur divisor sirf integer ho sakta hai. 115200 baud ke liye nearest divisor lene par actual baud aur error kya hoga?",
+          "options": [
+            "115200 baud, 0% error",
+            "125000 baud, ≈ 0.16% error",
+            "125000 baud, ≈ 8.5% error",
+            "100000 baud, ≈ 13.2% error"
+          ],
+          "answer": 2,
+          "explanation": "Ideal divisor = 8,000,000 ÷ (16 × 115200) ≈ 4.34, nearest integer 4. Actual baud = 8,000,000 ÷ 64 = 125000. Error = (125000 − 115200) ÷ 115200 ≈ 8.5%, jo reliable UART ke liye bahut zyada hai; isliye clock ya baud badalna padega. Trap: 4.34 ko seedha use maan kar 0% bolna. 100000 tab aata jab divisor 5 liya jaata, jo 4.34 se door hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w7-q4",
+          "question": "SPI clock 8 MHz hai. 512 bytes lagataar (bytes ke beech koi gap nahi) bhejne me kitna time lagega?",
+          "options": [
+            "64 µs",
+            "512 µs",
+            "640 µs",
+            "4.096 ms"
+          ],
+          "answer": 1,
+          "explanation": "SPI me har byte = 8 clocks, koi start/stop nahi. 512 × 8 = 4096 bits. Time = 4096 ÷ 8,000,000 s = 512 µs. Trap: UART ki tarah 10 bits per byte lena (640 µs). 4.096 ms tab aata jab clock 1 MHz maana jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w7-q5",
+          "question": "Status register ke bits [11:8] me ek 4-bit 'mode' field hai. Is code ke baad `mode` ki value kya hogi?",
+          "code": "uint32_t st = 0x00001A40;\nuint32_t mode = (st >> 8) & 0xFU;",
+          "options": [
+            "0xA",
+            "0x1A",
+            "0x4",
+            "0xA00"
+          ],
+          "answer": 0,
+          "explanation": "0x1A40 >> 8 = 0x1A. Lower 4 bits ke liye & 0xF: 0x1A & 0xF = 0xA. Trap: sirf shift karke ruk jaana (0x1A), jisme upar wala bit 12 bhi aa jaata hai. 0xA00 tab aata jab bina shift ke `st & 0xF00` liya jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w7-q6",
+          "question": "Ek 16-bit free-running timer 1 MHz par chal raha hai aur input capture se ek signal ke do lagataar rising edges pakde gaye. Beech me counter ek baar wrap hua. Signal ki frequency lagbhag kya hai?",
+          "code": "uint16_t t1 = 64000;   /* pehla rising edge */\nuint16_t t2 = 1464;    /* agla rising edge */\nuint16_t ticks = (uint16_t)(t2 - t1);",
+          "options": [
+            "≈ 16.0 Hz",
+            "≈ 683 Hz",
+            "≈ 15.3 Hz",
+            "≈ 333 Hz"
+          ],
+          "answer": 3,
+          "explanation": "Counter 64000 se 65535 tak gaya (1536 ticks), wrap hua, phir 0 se 1464 tak (1464 ticks): total 3000 ticks. `uint16_t` cast yahi deta hai: (1464 − 64000) mod 65536 = 3000. Period = 3000 µs, frequency = 1,000,000 ÷ 3000 ≈ 333 Hz. Traps: 64000 − 1464 = 62536 lena (≈ 16.0 Hz), sirf t2 lena (≈ 683 Hz), ya poora 65536 ka cycle lena (≈ 15.3 Hz).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Firmware Design: Super-Loops, State Machines and Ring Buffers",
+      "summary": "Is week aap super-loop architecture aur non-blocking tasks, C me enum + switch se state machine, layered drivers/HAL aur modular design, aur ISR se main tak data le jaane wala ring buffer seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Super-loop**: `main` me pehle init, phir `while (1) { task_a(); task_b(); task_c(); }`. Koi OS nahi, samajhna aasaan. Kamzori: agar ek task block kare (busy-wait delay), to baaki saare tasks bhi ruk jaate hain, aur kisi event ka response time poore loop ke worst-case time jitna ho sakta hai. Urgent kaam ISR me (sirf flag set karke) aur baaki loop me.",
+        "**Non-blocking timing**: busy-wait delay ki jagah start tick yaad rakho aur har loop me check karo: `if ((now - start) >= PERIOD) { start = now; do_work(); }`. Isse alag-alag tasks alag rates par chal sakte hain aur loop kabhi atakta nahi.",
+        "**Finite State Machine (FSM)**: system ek samay par ek hi state me hota hai aur events se doosri state me jaata hai. C me states ke liye `enum` aur logic ke liye `switch (state)`. Har state me sirf woh events handle karo jo wahan matter karte hain; baaki events ignore. FSM se code predictable aur testable banta hai.",
+        "**Layered design aur HAL**: application → device driver (jaise `temp_read()`) → HAL (`gpio_write()`, `i2c_read()`) → registers. Upar ki layers hardware details nahi jaanti, isliye naye MCU par port karne ke liye mainly sabse neeche ki layer badalni padti hai, aur PC par testing ke liye HAL ko fake (mock) kiya ja sakta hai.",
+        "**Modular C**: har module ka `.h` (public functions aur types) aur `.c` (implementation). Module ke private globals aur helper functions `static` banao taaki doosri files unhe seedha na chhu sakein. Chhote, saaf interfaces bugs kam karte hain.",
+        "**Ring (circular) buffer**: fixed array + `head` (yahan likho) + `tail` (yahan se padho). Producer (jaise UART RX ISR) head par likhta hai, consumer (main loop) tail se padhta hai, aur index `(i + 1) % SIZE` se wrap hota hai. Empty: `head == tail`. Ek slot khaali rakhne wale design me full: `(head + 1) % SIZE == tail`, isliye maximum SIZE − 1 items. Items ki ginti = (head − tail + SIZE) % SIZE.",
+        "**Power-of-two trick**: SIZE 2 ki power ho (8, 16, 64) to `% SIZE` ki jagah `& (SIZE - 1)` likh sakte ho, jo fast hai. SIZE 2 ki power na ho to ye mask galat indices deta hai, isliye ye trick sirf power-of-two sizes ke saath.",
+        "**Single producer, single consumer**: agar sirf ISR `head` badle aur sirf main `tail` badle, to ring buffer bina lock ke safe chalta hai (indices `volatile` aur ek hi instruction me read/write hone wale size ke hon)."
+      ],
+      "example": {
+        "problem": "SIZE = 8 ka ring buffer khaali hai (head = tail = 0). 'a', 'b', 'c' push karo, phir ek pop karo. head, tail, popped value aur bache items batao.",
+        "steps": [
+          "Push 'a': buf[0] = 'a', head = 1.",
+          "Push 'b': buf[1] = 'b', head = 2.",
+          "Push 'c': buf[2] = 'c', head = 3.",
+          "Pop: buf[tail] = buf[0] = 'a' milta hai, tail = 1.",
+          "Count = (head − tail + 8) % 8 = (3 − 1 + 8) % 8 = 2.",
+          "Answer: **head = 3, tail = 1, popped 'a', 2 items bache**."
+        ],
+        "code": "#define SIZE 8\nstatic volatile uint8_t buf[SIZE];\nstatic volatile uint8_t head = 0, tail = 0;\n\nint push(uint8_t c) {              /* ISR se call */\n    uint8_t next = (head + 1) % SIZE;\n    if (next == tail) return 0;    /* full */\n    buf[head] = c;\n    head = next;\n    return 1;\n}\n\nint pop(uint8_t *c) {              /* main se call */\n    if (head == tail) return 0;    /* empty */\n    *c = buf[tail];\n    tail = (tail + 1) % SIZE;\n    return 1;\n}"
+      },
+      "mistakes": [
+        "Super-loop ke kisi task me busy-wait delay daalna. Poora system us delay jitna slow ho jaata hai; tick-based non-blocking check use karo.",
+        "Ring buffer me items ginne ke liye `head - tail` seedha lena. head wrap hokar tail se chhota ho sakta hai; `(head - tail + SIZE) % SIZE` lo.",
+        "Non-power-of-two SIZE ke saath `& (SIZE - 1)` lagana. Index kuch hi values ke beech ghoomta reh jaata hai aur data overwrite hota hai."
+      ],
+      "revision": [
+        "Super-loop me kuch bhi block na kare; urgent kaam ISR + flag.",
+        "FSM = `enum` states + `switch`; har state me sirf relevant events.",
+        "HAL/driver layers se porting aur testing aasaan.",
+        "Ring buffer: empty `head == tail`, full `(head + 1) % SIZE == tail`, capacity SIZE − 1.",
+        "`& (SIZE - 1)` sirf jab SIZE 2 ki power ho."
+      ],
+      "questions": [
+        {
+          "id": "embc-w8-q1",
+          "question": "Ek super-loop (bina OS) me teen tasks hain. Ek task ke andar kisi ne `delay_ms(500);` (busy-wait) daal diya. Iska kya asar hoga?",
+          "options": [
+            "Har loop iteration me baaki tasks ki baari bhi kam se kam 500 ms der se aayegi",
+            "Sirf wahi task slow hoga, baaki tasks parallel chalte rahenge",
+            "Compiler busy-wait ko optimise karke hata dega",
+            "Saare interrupts hamesha ke liye disable ho jaayenge"
+          ],
+          "answer": 0,
+          "explanation": "Super-loop me tasks ek ke baad ek chalte hain; koi parallelism nahi hai. Jab ek task 500 ms busy-wait karta hai, loop wahin ruk jaata hai aur baaki tasks ka response 500 ms+ late ho jaata hai. Interrupts phir bhi chalte hain (ISR theek hain), par main-loop ka kaam ruka rehta hai. Trap: OS jaisa parallel execution maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w8-q2",
+          "question": "Sensor driver ko seedha registers ki jagah ek HAL layer (`i2c_read()`, `gpio_write()`) ke upar likhne ka sabse bada fayda kya hai?",
+          "options": [
+            "Code hamesha registers wale code se fast chalega",
+            "Program ka Flash usage zero ho jaata hai",
+            "Naye MCU par port karne ke liye mainly HAL layer badalni padti hai, driver aur app logic waise hi rehte hain",
+            "Interrupts ki zaroorat khatam ho jaati hai"
+          ],
+          "answer": 2,
+          "explanation": "Layering ka maqsad hardware details ko ek jagah band karna hai. Driver sirf HAL functions jaanta hai, isliye chip badalne par HAL ka naya implementation likho aur upar ka code same chalega; PC par testing ke liye HAL ko mock bhi kar sakte ho. Extra layer se code thoda slow ya bada ho sakta hai, fast nahi (trap).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w8-q3",
+          "question": "SIZE = 8 ke ring buffer me abhi `head = 3` aur `tail = 6` hai (head = agla write index, tail = agla read index). Buffer me kitne items hain?",
+          "options": [
+            "3",
+            "5",
+            "-3",
+            "8"
+          ],
+          "answer": 1,
+          "explanation": "Count = (head − tail + SIZE) % SIZE = (3 − 6 + 8) % 8 = 5. Head wrap hokar aage nikal chuka hai: items index 6, 7, 0, 1, 2 par hain, yaani 5. Trap: 6 − 3 = 3 lena, jo khaali slots ki ginti ke kareeb hai, items ki nahi. -3 tab aata jab `+ SIZE` aur `%` bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w8-q4",
+          "question": "Ek ring buffer ye full/empty checks use karta hai. Ek samay par isme maximum kitne items store ho sakte hain?",
+          "code": "#define SIZE 16\nint is_full(void)  { return ((head + 1) % SIZE) == tail; }\nint is_empty(void) { return head == tail; }",
+          "options": [
+            "16",
+            "17",
+            "8",
+            "15"
+          ],
+          "answer": 3,
+          "explanation": "Agar saare 16 slots bhar dete to head ghoom kar tail ke barabar ho jaata, aur `head == tail` empty jaisa dikhta, full aur empty me fark nahi rehta. Isliye ye design ek slot hamesha khaali rakhta hai: full tab jab head, tail se ek peeche ho. Maximum = SIZE − 1 = 15. Trap: array size 16 ko hi capacity maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w8-q5",
+          "question": "State machine shuru me IDLE me hai. Events is order me aate hain: 'P', 'S', 'P', 'S', 'X', 'P'. Saare events ke baad state kya hogi?",
+          "code": "typedef enum { IDLE, RUNNING, PAUSED } state_t;\nstate_t s = IDLE;\n\nvoid on_event(char e) {\n    switch (s) {\n    case IDLE:\n        if (e == 'S') s = RUNNING;\n        break;\n    case RUNNING:\n        if (e == 'P') s = PAUSED;\n        else if (e == 'X') s = IDLE;\n        break;\n    case PAUSED:\n        if (e == 'S') s = RUNNING;\n        else if (e == 'X') s = IDLE;\n        break;\n    }\n}",
+          "options": [
+            "RUNNING",
+            "PAUSED",
+            "IDLE",
+            "Compile error, kyunki `switch` me `enum` use nahi ho sakta"
+          ],
+          "answer": 2,
+          "explanation": "Trace: IDLE me 'P' ignore → IDLE. 'S' → RUNNING. 'P' → PAUSED. 'S' → RUNNING. 'X' → IDLE. Aakhri 'P' IDLE me ignore hota hai → IDLE. Trap: aakhri event 'P' dekh kar PAUSED bolna; FSM me event ka asar current state par depend karta hai. `enum` values integers hain, `switch` me bilkul valid.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w8-q6",
+          "question": "Ek programmer ne ring buffer index ke liye power-of-two trick use ki, par SIZE 6 rakh diya. Is code ka output kya hoga?",
+          "code": "#define SIZE 6\nuint8_t idx = 0;\nfor (int k = 0; k < 5; k++) {\n    idx = (idx + 1) & (SIZE - 1);\n    printf(\"%u \", idx);\n}",
+          "options": [
+            "1 0 1 0 1",
+            "1 2 3 4 5",
+            "1 2 3 4 0",
+            "1 2 0 1 2"
+          ],
+          "answer": 0,
+          "explanation": "SIZE − 1 = 5 = 101 (binary). idx = 0: (1) & 101 = 1. idx = 1: (2 = 010) & 101 = 0. Phir wahi cycle: 1, 0, 1. Index sirf 0 aur 1 ke beech ghoomta hai, baaki slots kabhi use nahi hote. `& (SIZE - 1)` tabhi `% SIZE` ke barabar hai jab SIZE 2 ki power ho. Trap: maan lena ki ye `% 6` jaisa kaam karega (1 2 3 4 5).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Real-Time Operating Systems: Tasks, Scheduling and Synchronisation",
+      "summary": "Is week aap RTOS me tasks aur unki states, preemptive priority scheduling aur tick-based delays, semaphore, mutex aur queue ka sahi use, priority inversion, aur rate-monotonic utilisation check seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Real-time ka matlab**: sirf sahi result nahi, sahi samay par sahi result. **Hard real-time** me deadline miss = failure (airbag, motor control), **soft real-time** me miss chal jaata hai par quality girti hai (audio, display). RTOS ka kaam hai predictable (deterministic) scheduling dena.",
+        "**Task**: ek independent function (aksar infinite loop) jiska apna stack hota hai. States: **Running** (abhi CPU par), **Ready** (chal sakta hai, CPU ka wait), **Blocked** (delay, semaphore ya queue ka wait), **Suspended**. Har task ka stack alag RAM leta hai, isliye stack size soch kar do.",
+        "**Preemptive priority scheduler**: hamesha sabse high priority wala Ready task chalta hai. Koi higher-priority task Ready hote hi (jaise ISR ne semaphore diya) scheduler current task ko turant preempt kar deta hai. Same priority ke tasks time-slicing (round-robin) se baari-baari chalte hain. Task badalne ko **context switch** kehte hain (registers save/restore).",
+        "**Tick aur delays**: scheduler ek periodic **tick** interrupt (jaise SysTick, 1 kHz) se time ginta hai. Delay function (jaise `vTaskDelay(n)`) task ko n ticks ke liye Blocked kar deta hai aur CPU doosre tasks ko milta hai, busy-wait nahi hota. Time = ticks ÷ tick rate: 100 Hz tick par 50 ticks = 500 ms. Fixed-rate periodic tasks ke liye absolute 'delay until' use karo taaki time drift na ho.",
+        "**Semaphore aur mutex**: **binary semaphore** signalling ke liye hai: ISR 'give' karta hai, task 'take' par wait karta hai (interrupt ka bhaari kaam task me). **Counting semaphore** N resources ya pending events ginta hai. **Mutex** shared resource (UART, I2C bus, shared struct) ki mutual exclusion ke liye hai: jo task lock kare wahi unlock kare, aur usually **priority inheritance** ke saath aata hai. ISR me mutex kabhi mat lo.",
+        "**Queue**: tasks (aur ISR se task) ke beech data bhejne ka safe tareeka. Items copy hoke jaate hain aur queue ki length fixed hoti hai. Queue full ho to sender timeout tak block hota hai (timeout 0 ho to turant fail), aur queue empty ho to receiver block hota hai.",
+        "**Priority inversion**: Low task L ne mutex liya. High task H usi mutex par block ho gaya. Ab Medium task M (jise mutex nahi chahiye) L ko preempt kar leta hai, L mutex chhod nahi paata, aur H asal me M ki wajah se ruka rehta hai. Fix: **priority inheritance**, jisme L temporarily H ki priority le leta hai jab tak mutex na chhode.",
+        "**Rate-monotonic (RM) check**: periodic tasks me chhote period wale ko zyada priority. Utilisation U = Σ (Cᵢ ÷ Tᵢ), jahan C = execution time, T = period. Agar U ≤ n × (2 ka n-th root − 1) (n = 3 ke liye ≈ 0.78, bahut tasks ke liye ≈ 0.69), to RM saari deadlines guarantee karta hai. Bound se zyada U ka matlab zaroori fail nahi, bas guarantee nahi; U > 1 matlab pakka overload."
+      ],
+      "example": {
+        "problem": "Tick 1 kHz hai. Task A (high priority) har 10 ms par jaagta hai aur 2 ms CPU leta hai, phir 'delay until' se agle period tak block. Task B (low priority) hamesha Ready rehta hai (background kaam). B ko CPU ka kitna hissa milta hai, aur t = 10 ms par kya hota hai?",
+        "steps": [
+          "t = 0 par A Ready hai aur higher priority hai, isliye 0–2 ms A chalta hai.",
+          "2 ms par A block hota hai, B chalta hai 2–10 ms.",
+          "t = 10 ms par tick A ko Ready banata hai; A ki priority zyada hai, to B preempt hota hai aur A 10–12 ms chalta hai.",
+          "Har 10 ms me A ko 2 ms, B ko 8 ms milte hain.",
+          "A ka utilisation = 2 ÷ 10 = 0.2.",
+          "Answer: **B ko 80% CPU milta hai; t = 10 ms par A, B ko preempt karta hai**."
+        ]
+      },
+      "mistakes": [
+        "Task ke andar busy-wait loop se delay karna. Isse low priority tasks ko CPU milta hi nahi; RTOS ka delay use karo jo task ko Blocked karta hai.",
+        "Shared resource ke liye binary semaphore use karna. Usme ownership aur priority inheritance nahi hote; mutual exclusion ke liye mutex lo.",
+        "ISR se blocking call (mutex take, queue send with wait) karna. ISR block nahi ho sakta; ISR-safe 'from ISR' versions use karo."
+      ],
+      "revision": [
+        "Highest-priority Ready task chalta hai; higher priority Ready hote hi preempt.",
+        "Delay ticks ÷ tick rate = time; delay task ko Blocked karta hai.",
+        "Semaphore = signalling, mutex = mutual exclusion (+ priority inheritance), queue = data.",
+        "Priority inversion: L ke paas mutex, M beech me, H atka; fix inheritance.",
+        "RM: U = Σ C/T; n = 3 par bound ≈ 0.78."
+      ],
+      "questions": [
+        {
+          "id": "embc-w9-q1",
+          "question": "Preemptive priority-based RTOS scheduler me kisi bhi samay kaunsa task CPU par chalta hai?",
+          "options": [
+            "Jo task sabse pehle create hua tha",
+            "Ready state wale tasks me sabse high priority wala",
+            "Jiska stack sabse bada hai",
+            "Blocked tasks me sabse high priority wala"
+          ],
+          "answer": 1,
+          "explanation": "Scheduler sirf Ready tasks me se chunta hai, aur unme sabse high priority wala chalta hai. Blocked task (delay ya semaphore ka wait) chahe kitni bhi high priority ka ho, tab tak nahi chalta jab tak Ready na ho. Creation order ya stack size ka priority se lena-dena nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w9-q2",
+          "question": "Do tasks ek hi UART par messages print karte hain, aur dono ke messages aapas me mix nahi hone chahiye. Iske liye sabse sahi RTOS primitive kaunsa hai?",
+          "options": [
+            "Ek binary semaphore jise ISR give karta hai",
+            "Ek global flag variable",
+            "Ek counting semaphore jiska initial count 10 ho",
+            "Ek mutex (priority inheritance ke saath)"
+          ],
+          "answer": 3,
+          "explanation": "Shared resource ko ek samay par ek hi task use kare, ye mutual exclusion hai, aur iske liye mutex bana hai: ownership hoti hai (jo lock kare wahi unlock kare) aur priority inheritance se priority inversion kam hota hai. Plain flag me check aur set ke beech task switch ho sakta hai (race). Count 10 wala semaphore ek saath 10 tasks ko andar aane dega.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w9-q3",
+          "question": "RTOS ka tick rate 100 Hz hai. Ek task `delay(50)` call karta hai, jahan argument ticks me hai. Task lagbhag kitni der Blocked rahega?",
+          "options": [
+            "500 ms",
+            "50 ms",
+            "5 s",
+            "0.5 ms"
+          ],
+          "answer": 0,
+          "explanation": "100 Hz tick = har tick 10 ms. 50 ticks × 10 ms = 500 ms. Trap: argument ko seedha milliseconds maan lena (50 ms); ye tabhi sahi hota jab tick 1 kHz hota. Isiliye portable code ticks ko time se convert karne wala macro use karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w9-q4",
+          "question": "Task L (low priority) ne ek mutex liya. Phir task H (high) Ready hua aur usi mutex par block ho gaya. Ab task M (medium, jise mutex nahi chahiye) Ready hota hai aur bahut der tak chalta hai. Priority inheritance ke BINA kya hoga?",
+          "options": [
+            "H turant M ko preempt karke chalega, kyunki H ki priority sabse zyada hai",
+            "Ye deadlock hai: L aur H dono hamesha ke liye atak jaayenge chahe M ho ya na ho",
+            "M, L ko preempt karega, L mutex release nahi kar paayega, aur H asal me M ki wajah se rukta rahega",
+            "H ke block hote hi L apne aap mutex chhod dega"
+          ],
+          "answer": 2,
+          "explanation": "H Blocked hai (mutex ka wait), isliye Ready tasks me M sabse high hai aur woh L ko preempt kar leta hai. L ko CPU nahi milta, to mutex nahi chhutta, aur H ek medium task ki wajah se der tak ruka rehta hai. Ye priority inversion hai. Priority inheritance me L ki priority temporarily H jitni ho jaati, M usse preempt na kar paata, aur L jaldi mutex chhod deta. Ye deadlock nahi hai: M khatam hote hi sab chal padta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w9-q5",
+          "question": "Ek queue ki length 5 hai aur abhi khaali hai. Ek high-priority producer task lagataar 8 items bhejta hai, har send ka timeout 0, aur is beech consumer task ko chalne ka mauka nahi milta. Kya hoga?",
+          "options": [
+            "Saare 8 items chale jaayenge, koi send fail nahi hoga",
+            "5 sends successful honge, aakhri 3 fail honge",
+            "3 sends successful honge, 5 fail honge",
+            "Queue ke overflow se pehle 5 items overwrite hokar sirf aakhri 5 bachenge, aur sab sends successful dikhenge"
+          ],
+          "answer": 1,
+          "explanation": "Queue me sirf 5 jagah hain aur consumer kuch nikaal nahi raha. Pehle 5 sends jagah paate hain. 6th se queue full hai; timeout 0 hai, to sender wait nahi karta aur send turant fail (error return) hota hai, isliye 3 fail. Normal RTOS queue purana data chupchap overwrite nahi karta. Trap: queue ko infinite maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w9-q6",
+          "question": "Teen periodic tasks rate-monotonic priorities ke saath chal rahe hain: T1 (C = 2 ms, T = 10 ms), T2 (C = 4 ms, T = 20 ms), T3 (C = 10 ms, T = 40 ms). 3 tasks ke liye RM utilisation bound ≈ 0.78 hai. Sahi conclusion kya hai?",
+          "options": [
+            "U ≈ 0.23; bound se kam, isliye schedulable",
+            "U = 0.65; bound se zyada, isliye deadlines miss hongi",
+            "U = 0.80; bound se zyada, isliye guarantee nahi",
+            "U = 0.65; bound se kam, isliye RM saari deadlines guarantee karta hai"
+          ],
+          "answer": 3,
+          "explanation": "U = 2/10 + 4/20 + 10/40 = 0.20 + 0.20 + 0.25 = 0.65. Ye 0.78 se kam hai, isliye Liu–Layland test pass: RM ke saath saari deadlines guaranteed. Traps: saare C jod kar saare T se divide karna (16/70 ≈ 0.23, ye galat formula hai); 10/40 ko 0.4 padh lena (0.80); ya 0.65 aur 0.78 ki comparison ulti kar dena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Advanced Embedded C: Callbacks, Register Structs and Critical Sections",
+      "summary": "Is week aap function pointers aur callbacks, dispatch tables, struct se register map banana, bit-fields aur struct padding ke portability issues, `inline` aur optimisation, aur ISR ke saath shared data ke liye critical sections seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Function pointers**: `void (*fp)(int);` ka matlab: `fp` ek pointer hai jo aise function ko point karta hai jo `int` leta hai aur kuch return nahi karta. Call: `fp(5);`. Readable banane ke liye `typedef void (*handler_t)(void);`. Cortex-M ki vector table bhi asal me function pointers ki array hai.",
+        "**Callbacks**: driver ko ek function pointer de do (jaise `uart_set_rx_callback(on_byte)`), aur event aane par driver use call karta hai. Driver ko application ke baare me kuch pata nahi hota, isliye code loosely coupled rehta hai. Call karne se pehle pointer `NULL` to nahi, ye check karo.",
+        "**Dispatch table**: `handler_t table[] = { cmd_a, cmd_b, cmd_c };` aur `table[cmd]();` bade `switch` ki jagah kaam karta hai. Index hamesha range-check karo, warna galat address par jump hoga.",
+        "**Struct-based register map**: ek peripheral ke registers lagataar fixed offsets par hote hain, isliye unhe struct se map karte hain: `typedef struct { volatile uint32_t MODER; volatile uint32_t OTYPER; ... } GPIO_Regs;` aur `#define GPIOA ((GPIO_Regs *)0x40020000)`. Ab `GPIOA->ODR` ka address = base + us member ka offset (har `uint32_t` member 4 bytes).",
+        "**Bit-fields aur portability**: `struct { uint32_t en : 1; uint32_t mode : 3; }` saaf dikhta hai, par bits LSB se bharenge ya MSB se, padding aur storage unit kya hogi, ye **implementation-defined** hai; compiler ya target badalne par layout badal sakta hai. Bit-field me likhna andar se read-modify-write banta hai, jo kuch hardware registers ke liye khatarnaak hai. Registers ke liye masks aur shifts zyada portable hain.",
+        "**Struct padding**: compiler har member ko uske natural alignment par rakhta hai (`uint32_t` 4-byte boundary par) aur struct ke end me bhi padding daal sakta hai. Typical 32-bit ARM par `{ uint8_t a; uint32_t b; uint16_t c; }` = 12 bytes, par members ko bade se chhote order me rakho to 8 bytes. Isliye protocol packet ko seedha struct me cast karna risky hai.",
+        "**inline aur optimisation**: `static inline` chhote functions (jaise `led_on()`) ko call overhead ke bina expand karne ka hint deta hai (order nahi). Optimisation (-O2, -Os) code chhota aur fast karta hai, par `volatile` bina wale hardware/ISR variables ke reads/writes hata bhi deta hai, isliye kuch bugs sirf optimised build me dikhte hain.",
+        "**Critical section**: `count++` asal me teen steps hai: load, add, store. Agar beech me ISR bhi `count` badle, to ek update kho jaata hai (race condition). Fix: shared data ke operation ke aas-paas interrupts thodi der band karo (Cortex-M par jaise `__disable_irq()`), phir pehle wali state restore karo. Critical section jitna chhota ho sake utna accha, warna interrupt latency badhti hai."
+      ],
+      "example": {
+        "problem": "Neeche GPIO register struct diya hai, base address 0x40020000 (illustrative). `GPIOA->ODR` kis address par hoga?",
+        "steps": [
+          "Har member `volatile uint32_t` hai, yaani 4 bytes, aur sab bina gap ke lage hain.",
+          "Offsets: MODER 0x00, OTYPER 0x04, OSPEEDR 0x08, PUPDR 0x0C, IDR 0x10, ODR 0x14.",
+          "ODR chhatha member hai (index 5), offset = 5 × 4 = 20 = 0x14.",
+          "Address = 0x40020000 + 0x14 = 0x40020014.",
+          "Answer: **0x40020014** (wahi address jo week 2 ke `#define GPIOA_ODR` me tha)."
+        ],
+        "code": "typedef struct {\n    volatile uint32_t MODER;    /* 0x00 */\n    volatile uint32_t OTYPER;   /* 0x04 */\n    volatile uint32_t OSPEEDR;  /* 0x08 */\n    volatile uint32_t PUPDR;    /* 0x0C */\n    volatile uint32_t IDR;      /* 0x10 */\n    volatile uint32_t ODR;      /* 0x14 */\n} GPIO_Regs;\n\n#define GPIOA ((GPIO_Regs *)0x40020000)   /* address illustrative */\n\nGPIOA->ODR |= (1U << 5);   /* pin 5 high */"
+      },
+      "mistakes": [
+        "Register struct me members ko `volatile` na banana. Compiler repeated reads (jaise status poll) ko ek hi read me badal sakta hai.",
+        "Bit-field struct ko alag compilers ke beech binary data share karne ke liye use karna. Layout implementation-defined hai; explicit shifts/masks se pack karo.",
+        "Critical section me lamba kaam (printf, loops) daalna. Interrupts der tak band rehte hain aur events miss hote hain; sirf shared variable wala chhota hissa protect karo."
+      ],
+      "revision": [
+        "`void (*fp)(int);` = int lene wale void function ka pointer.",
+        "Callback = driver app ka function pointer call karta hai; `NULL` check.",
+        "Register struct: address = base + member offset.",
+        "Bit-field layout implementation-defined; registers ke liye masks.",
+        "Padding: typical ARM par `{u8, u32, u16}` = 12 bytes.",
+        "Shared ISR data par read-modify-write = critical section me."
+      ],
+      "questions": [
+        {
+          "id": "embc-w10-q1",
+          "question": "Kaunsa declaration `fp` ko aise function ka pointer banata hai jo ek `int` leta hai aur kuch return nahi karta?",
+          "options": [
+            "`void *fp(int);`",
+            "`void fp(int *);`",
+            "`void (*fp)(int);`",
+            "`void (fp*)(int);`"
+          ],
+          "answer": 2,
+          "explanation": "`(*fp)` ke brackets batate hain ki `fp` pointer hai, aur `(int)` batata hai ki woh jis function ko point karta hai woh int leta hai, return `void`. Bina brackets `void *fp(int);` ek function declare karta hai jo `void *` return karta hai (sabse common trap). `void fp(int *);` int-pointer lene wala function hai, aur `(fp*)` invalid syntax hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w10-q2",
+          "question": "Is register map me `UART1->CR1` kis address par hai?",
+          "code": "typedef struct {\n    volatile uint32_t SR;\n    volatile uint32_t DR;\n    volatile uint32_t BRR;\n    volatile uint32_t CR1;\n} UART_Regs;\n\n#define UART1 ((UART_Regs *)0x40011000)   /* address illustrative */",
+          "options": [
+            "0x4001100C",
+            "0x40011003",
+            "0x40011004",
+            "0x40011010"
+          ],
+          "answer": 0,
+          "explanation": "Har member 4 bytes ka hai: SR offset 0x0, DR 0x4, BRR 0x8, CR1 0xC. Address = 0x40011000 + 0xC = 0x4001100C. Trap: member ka number (3) seedha bytes me jod dena (0x40011003); struct offsets bytes me hote hain, har `uint32_t` 4 bytes. 0x40011010 agle (paanchve) register ka hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w10-q3",
+          "question": "Hardware register ko bit-field struct se map karna kam portable kyun maana jaata hai?",
+          "options": [
+            "Bit-fields C standard me allowed hi nahi hain",
+            "Bit-fields hamesha normal variables se zyada memory lete hain",
+            "Bit-field members `volatile` nahi ho sakte",
+            "Bits ka order aur packing implementation-defined hai, isliye compiler ya target badalne par layout badal sakta hai"
+          ],
+          "answer": 3,
+          "explanation": "C standard bit-fields allow karta hai, par yeh tay nahi karta ki pehla field LSB se shuru hoga ya MSB se, aur unit/padding kaisi hogi. Ek compiler par sahi kaam karne wala register map doosre par galat bits chhu sakta hai. Bit-fields `volatile` ho sakte hain aur aksar memory bachaate hain, isliye baaki options galat hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w10-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "void a(void) { printf(\"A\"); }\nvoid b(void) { printf(\"B\"); }\nvoid c(void) { printf(\"C\"); }\n\nvoid (*table[])(void) = { c, a, b };\n\nint main(void) {\n    int seq[] = { 2, 0, 1, 2 };\n    for (int i = 0; i < 4; i++)\n        table[seq[i]]();\n    return 0;\n}",
+          "options": [
+            "CABC",
+            "BCAB",
+            "ABCA",
+            "CAB"
+          ],
+          "answer": 1,
+          "explanation": "Table ka order `{ c, a, b }` hai: table[0] = c, table[1] = a, table[2] = b. seq = 2, 0, 1, 2 → b, c, a, b → BCAB. Trap: index ko seedha a, b, c ke order se jodna (2 → c, 0 → a ...), jisse CABC aata; table me functions jis order me rakhe hain wahi matter karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w10-q5",
+          "question": "Timer ISR har 1 ms par `count++` karta hai, aur main loop kabhi-kabhi `count = count + 10;` karta hai. `count` `volatile uint32_t` hai. Testing me kabhi-kabhi ISR ka ek increment gayab ho jaata hai. Sabse sahi wajah aur fix kya hai?",
+          "options": [
+            "Main ka update load-add-store hai; ISR beech me aaye to uska increment overwrite ho jaata hai. Fix: us statement ke aas-paas interrupts thodi der band karo",
+            "`volatile` ki wajah se compiler value cache karta hai. Fix: `volatile` hata do",
+            "32-bit variable overflow ho raha hai. Fix: `uint64_t` use karo",
+            "ISR ki priority bahut high hai. Fix: use sabse low priority do"
+          ],
+          "answer": 0,
+          "explanation": "Main `count` ko register me load karta hai, 10 jodta hai, aur store karta hai. Agar load ke baad aur store se pehle ISR chal kar `count++` kare, to main ka store purani value + 10 likh deta hai aur ISR ka +1 kho jaata hai. `volatile` sirf caching rokta hai, atomic nahi banata; ise hatane se problem aur badhegi. Fix: chhota critical section (ya atomic instruction).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w10-q6",
+          "question": "Typical 32-bit ARM compiler (natural alignment, koi packing attribute nahi) par is code ka output kya hoga?",
+          "code": "struct pkt {\n    uint8_t  id;\n    uint32_t value;\n    uint16_t crc;\n};\n\nprintf(\"%u\\n\", (unsigned)sizeof(struct pkt));",
+          "options": [
+            "7",
+            "8",
+            "12",
+            "16"
+          ],
+          "answer": 2,
+          "explanation": "`id` offset 0 par (1 byte), phir `value` ko 4-byte boundary chahiye, isliye 3 bytes padding aur `value` offset 4–7 par. `crc` offset 8–9 par. Struct ka size uske sabse bade alignment (4) ka multiple hona chahiye, isliye end me 2 bytes padding: total 12. Trap: sirf members ke size jodna (1 + 4 + 2 = 7). 8 tab aata jab members `value, crc, id` order me hote.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Tools and Debugging: Build Output, Debug Probes and Watchdogs",
+      "summary": "Is week aap build pipeline (compiler, linker, map file), JTAG/SWD debug probe se breakpoints aur watchpoints, oscilloscope aur logic analyser ka sahi use, aur watchdog timer ka timeout calculate karna aur sahi tarah feed karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Build pipeline**: preprocessor (`#include`, `#define`) → compiler (har `.c` file se alag `.o` object) → linker (saare `.o` aur libraries jod kar final addresses assign karta hai) → `.elf` (code + debug symbols) → `.bin`/`.hex` (Flash me jaane wale raw bytes). Syntax error compiler deta hai; 'undefined reference' linker deta hai jab koi function kahin define hi nahi mila.",
+        "**Linker script aur map file**: linker script batati hai Flash aur RAM kahan se shuru hain, kitne bade hain, aur kaunsa section kahan jaayega. **Map file** har section aur symbol ka address aur size dikhati hai, jisse memory overflow, sabse badi functions ya galat placement pakde jaate hain. `size` jaisa tool text/data/bss ka total deta hai.",
+        "**JTAG vs SWD**: debug probe (jaise ST-LINK) chip ke debug port se judta hai. JTAG me 4–5 pins (TCK, TMS, TDI, TDO, optional TRST) aur kai chips ki daisy-chain. **SWD** (Serial Wire Debug) ARM ka 2-pin interface hai: SWDIO aur SWCLK, Cortex-M par sabse common. Dono se Flash program karna, CPU halt/step karna aur registers/memory dekhna hota hai.",
+        "**Breakpoints aur watchpoints**: Flash me chal rahe code ko debugger aasaani se patch nahi kar sakta, isliye core ke **hardware breakpoint** units use hote hain, jo gine-chune hote hain (chip par depend, aksar kuch hi). **Watchpoint** kisi address par read/write hote hi CPU rok deta hai, jisse pata chalta hai kaun sa code variable ko kharab kar raha hai.",
+        "**Oscilloscope vs logic analyser**: scope analog waveform dikhata hai: voltage levels, rise time, noise, ringing. Logic analyser kai digital lines ko 0/1 me record karta hai aur UART/SPI/I2C ko decode kar deta hai. Sampling rate signal ki sabse fast frequency se kaafi zyada (kam se kam 4 guna) rakho. Timing naapne ke liye code me ek GPIO toggle karke use scope par dekhna bahut useful trick hai.",
+        "**printf debugging ki seemayein**: UART par print aasaan hai, par slow hai aur timing badal deta hai; ISR ya tight loops me isse bug chhup bhi sakta hai. Timing-sensitive bugs ke liye GPIO toggle, trace, ya debugger behtar hain.",
+        "**Watchdog timer**: ek independent counter jo time-out hone par MCU reset kar deta hai. Software ko time-out se pehle use 'feed/refresh' karna hota hai. Program hang ho jaaye to feed nahi hoga, reset hoga, aur system recover karega. Timeout = counts × (prescaler ÷ watchdog clock). Feed sirf healthy main path se karo; timer ISR se bina soche feed karna watchdog ko bekaar kar deta hai, kyunki main hang ho tab bhi ISR chalta rehta hai.",
+        "**Optimisation se badalne wale bugs**: -O0 (debug) me chalne wala code -O2 me fail ho to pehle check karo: missing `volatile`, uninitialised variables, aur undefined behaviour (jaise array bounds ke bahar likhna)."
+      ],
+      "example": {
+        "problem": "Watchdog ka clock 32 kHz hai, prescaler 64, aur counter 1000 counts ke baad reset karta hai. Timeout kitna hai? Main loop worst-case 1.5 s leta hai aur har iteration me ek baar feed karta hai. Kya reset aayega?",
+        "steps": [
+          "Watchdog counter clock = 32,000 ÷ 64 = 500 Hz, yaani ek count = 2 ms.",
+          "Timeout = 1000 counts × 2 ms = 2000 ms = 2 s.",
+          "Do feeds ke beech maximum gap = worst-case loop time = 1.5 s.",
+          "1.5 s < 2 s, isliye normal operation me reset nahi aayega; 0.5 s ka margin hai.",
+          "Answer: **timeout = 2 s; normal chalne par reset nahi**, par loop 2 s se zyada atka to reset."
+        ]
+      },
+      "mistakes": [
+        "Watchdog ko periodic timer ISR se feed karna. Main loop hang ho jaaye tab bhi ISR feed karta rahega aur watchdog kabhi reset nahi karega.",
+        "Watchdog timeout ko worst-case loop time ke bilkul barabar ya kam rakhna. Kabhi-kabhi lamba chalne wale path (Flash erase, retries) par bina wajah reset aate hain; margin rakho.",
+        "'undefined reference' ko compiler error samajh kar header file me dhoondhna. Ye linker error hai: function ki definition wali `.c` file ya library build me shaamil karo."
+      ],
+      "revision": [
+        "Compiler → `.o`, linker → `.elf` (addresses + symbols), map file = har section/symbol ka address aur size.",
+        "SWD = 2 pins (SWDIO, SWCLK); JTAG = 4–5 pins.",
+        "Flash code par hardware breakpoints, count limited; watchpoint = data access par stop.",
+        "Scope = analog detail, logic analyser = kai digital lines + protocol decode.",
+        "Watchdog timeout = counts × prescaler ÷ clock; feed sirf healthy path se."
+      ],
+      "questions": [
+        {
+          "id": "embc-w11-q1",
+          "question": "Cortex-M chip ko SWD se debug karne ke liye (GND aur power ke alawa) kaunse do signals chahiye?",
+          "options": [
+            "TX aur RX",
+            "SDA aur SCL",
+            "MOSI aur MISO",
+            "SWDIO aur SWCLK"
+          ],
+          "answer": 3,
+          "explanation": "SWD (Serial Wire Debug) sirf do lines use karta hai: SWDIO (bidirectional data) aur SWCLK (clock). Baaki options UART, I2C aur SPI ke signals hain, debug port ke nahi. JTAG ko 4–5 lines chahiye, isliye pin-limited Cortex-M boards par SWD common hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w11-q2",
+          "question": "Build ke dauraan error aaya: \"undefined reference to `uart_init`\". Ye error kis stage par aata hai?",
+          "options": [
+            "Preprocessor",
+            "Linker",
+            "Compiler ka syntax check",
+            "Flash programming"
+          ],
+          "answer": 1,
+          "explanation": "Compiler har `.c` file ko alag compile karta hai; agar prototype mil gaya to woh function call ko accept kar leta hai. Linker jab saare `.o` jodta hai aur `uart_init` ki definition kahin nahi milti, tab 'undefined reference' deta hai. Fix: woh `.c` file ya library build me jodo. Trap: header include ko problem samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w11-q3",
+          "question": "Watchdog ka clock 40 kHz hai, prescaler 16, aur 500 counts ke baad reset hota hai. Main loop har iteration me ek baar feed karta hai, aur loop ka worst-case time 250 ms hai. Kya hoga?",
+          "options": [
+            "Timeout 2 s hai, koi reset nahi hoga",
+            "Timeout 200 ms hai, par loop har baar feed karta hai isliye reset nahi hoga",
+            "Timeout 200 ms hai, worst-case loop par watchdog reset kar dega",
+            "Timeout 20 ms hai, har iteration me reset hoga"
+          ],
+          "answer": 2,
+          "explanation": "Counter clock = 40,000 ÷ 16 = 2500 Hz, ek count = 0.4 ms. Timeout = 500 × 0.4 ms = 200 ms. Worst-case me do feeds ke beech 250 ms ka gap hai, jo 200 ms se zyada hai, isliye kabhi-kabhi reset aayega. Trap: 'har loop me feed hai to safe hai' sochna; feed ka gap timeout se chhota hona chahiye, margin ke saath.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w11-q4",
+          "question": "Logic analyser par UART TX line ki sabse chhoti pulse (ek bit) ki width 104 µs naapi gayi. Baud rate lagbhag kya hai?",
+          "options": [
+            "≈ 9600",
+            "≈ 104",
+            "≈ 960",
+            "≈ 115200"
+          ],
+          "answer": 0,
+          "explanation": "Baud = 1 ÷ bit time = 1 ÷ 104 µs ≈ 9615, yaani standard 9600 baud. 115200 baud par ek bit ≈ 8.68 µs hota. Trap: bit width ko hi baud bol dena (104), ya 10 bits per frame ka factor bit time par laga dena (960).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w11-q5",
+          "question": "Debugger se Flash me chal rahe code par 10 breakpoints lagane ki koshish ki, par sirf kuch hi lag paaye aur baaki par error aaya. Iski sabse sahi wajah kya hai?",
+          "options": [
+            "Flash me chal rahe code par breakpoint lag hi nahi sakta",
+            "SWD protocol sirf 1 breakpoint allow karta hai",
+            "Compiler optimisation breakpoints ko delete kar deta hai",
+            "Flash code ke liye core ke hardware breakpoint units use hote hain, jo gine-chune hote hain"
+          ],
+          "answer": 3,
+          "explanation": "RAM me debugger instruction ko ek breakpoint instruction se badal sakta hai (software breakpoint), par Flash me aisa karna practical nahi. Isliye Flash code par core ke hardware comparators use hote hain, aur unki ginti chip par depend karti hai (aksar kuch hi). Breakpoint lagte to hain, bas limited; SWD khud koi '1 breakpoint' limit nahi lagata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w11-q6",
+          "question": "Map file se sizes mile: `.text` = 0x3A20, `.rodata` = 0x0400, `.data` = 0x0120, `.bss` = 0x0860 bytes. Linker script RAM me stack ke liye 0x0400 bytes reserve karti hai. MCU me 16 KB Flash aur 4 KB RAM hai. Sahi conclusion kya hai?",
+          "options": [
+            "Flash 15904 bytes, RAM 3456 bytes; dono fit",
+            "Flash 16192 bytes, RAM 3456 bytes; dono fit",
+            "Flash 18336 bytes; Flash overflow",
+            "Flash 16192 bytes, RAM 4480 bytes; RAM overflow"
+          ],
+          "answer": 1,
+          "explanation": "Flash = text + rodata + data = 0x3A20 + 0x0400 + 0x0120 = 0x3F40 = 16192 bytes, jo 16384 me fit hai (sirf 192 bytes bache). RAM = data + bss + stack = 0x0120 + 0x0860 + 0x0400 = 0xD80 = 3456 bytes, jo 4096 me fit hai. Traps: `.data` ki initial values ko Flash me na ginna (15904), `.bss` ko Flash me jodna (18336), ya `.rodata` ko RAM me bhi gin lena (4480).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Safe, Tested and Responsible Embedded Engineering",
+      "summary": "Is week aap defensive coding, MISRA-C jaisi coding guidelines ka idea, C ke integer pitfalls, fail-safe design, testing ke tareeke, aur ek embedded engineer ki professional aur ethical zimmedariyan seekhoge.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Safety-critical systems**: pacemaker, car brakes, insulin pump, aircraft controls: yahan bug ka matlab kisi ki jaan ka khatra ho sakta hai. Aise domains ke standards (jaise industrial ke liye IEC 61508, automotive ke liye ISO 26262) process, testing aur documentation maangte hain. Engineer ka kaam hai risks pehchaanna aur unhe design se kam karna.",
+        "**Defensive coding**: har input validate karo (range, `NULL`, length), function ke return values check karo, array index ki bounds check karo, `switch` me `default` rakho, aur har hardware wait par timeout lagao: koi bhi loop jo 'flag aane tak' ruke, hamesha ke liye atak sakta hai. 'Impossible' conditions ke liye `assert` debug builds me bugs jaldi pakadta hai.",
+        "**MISRA-C ka idea**: C ka ek safer subset (guidelines) jo risky features ko limit karta hai: dynamic memory (`malloc`/`free`) aur recursion avoid, har `if ... else if` chain ke end me `else`, implicit signed/unsigned conversions par dhyaan, `goto` restricted. Static analysis tools in rules ko automatically check karte hain. Exact rule numbers nahi, 'kyun' samjho: predictable, analysable code.",
+        "**Integer pitfalls**: signed aur unsigned compare karne par signed value unsigned me convert hoti hai, isliye `-1 < 1U` false hai. Overflow, zero se divide, aur type width ke barabar ya zyada shift bhi galat results dete hain. Compiler warnings (`-Wall -Wextra`) on rakho aur warnings ko errors jaisa treat karo.",
+        "**Fail-safe design**: fault aane par system ek **safe state** me jaaye: motor off, valve band, heater off. Iske tools: watchdog, brown-out detection, sensor plausibility checks (out-of-range reading = fault), redundant sensors, aur reset par safe default outputs. 'Last good value par chalte raho' aksar unsafe hota hai.",
+        "**Testing**: unit tests (PC par, HAL ko mock karke), **boundary value testing** (limit par aur limit ke just andar/bahar), integration tests, hardware-in-the-loop (HIL), aur fault injection (sensor nikaal do, corrupt message bhejo). Code review aur static analysis bugs ko hardware tak pahunchne se pehle pakadte hain.",
+        "**Ethics aur professional practice**: safety problem ko chhupao mat aur deadline ke pressure me testing skip mat karo. Apni limits honestly batao. Connected devices me security (default passwords, bina signature ke firmware updates) aur user privacy ka dhyaan rakho. Requirements → design → tests ki traceability aur saaf documentation rakho, taaki koi bhi verify kar sake ki system kya karta hai."
+      ],
+      "example": {
+        "problem": "Function `set_motor_speed(int pct)` motor ki PWM duty set karta hai. Valid range 0–100 hai. Ise defensive tarah se likho.",
+        "steps": [
+          "Pehle input check karo: `pct < 0` ya `pct > 100` ho to kuch mat badlo aur error return karo.",
+          "Silently clamp karne ke bajay error return karna behtar hai, taaki caller ka bug chhupe nahi.",
+          "Valid input par duty set karo: CCR = pct × (ARR + 1) ÷ 100.",
+          "Success par 0 return karo, aur caller is return value ko check kare.",
+          "Answer: **validate → reject with error → tabhi hardware likho**."
+        ],
+        "code": "#define TIM_CCR1 (*(volatile uint32_t *)0x40000034)  /* address illustrative */\n#define PWM_ARR 999U\n\nint set_motor_speed(int pct)\n{\n    if (pct < 0 || pct > 100) {\n        return -1;              /* invalid input: koi change nahi */\n    }\n    TIM_CCR1 = ((uint32_t)pct * (PWM_ARR + 1U)) / 100U;\n    return 0;\n}"
+      },
+      "mistakes": [
+        "Hardware flag ke liye bina timeout ke `while` loop likhna. Device disconnect hote hi poora system atak jaata hai; timeout counter aur error path rakho.",
+        "Signed aur unsigned ko compare karna aur warning ignore karna. Negative value bahut bada unsigned number ban jaata hai aur condition ulti ho jaati hai.",
+        "Sensor fault par 'last good value' se control chalate rehna. Fault pehchaano aur safe state me jaao."
+      ],
+      "revision": [
+        "Har input validate, har return value check, har wait par timeout.",
+        "MISRA idea: dynamic memory/recursion avoid, final `else`, conversions par dhyaan.",
+        "`int` aur `unsigned` compare → int unsigned ban jaata hai.",
+        "Fault → safe state (motor off, valve band).",
+        "Boundary tests: limit par aur limit ke just bahar."
+      ],
+      "questions": [
+        {
+          "id": "embc-w12-q1",
+          "question": "Ek heater controller ka temperature sensor disconnect ho jaata hai aur 12-bit ADC lagataar 4095 (full-scale) padh raha hai, jo is system me physically possible nahi. Sabse sahi fail-safe response kya hai?",
+          "options": [
+            "Heater band karo aur fault indicate karo",
+            "Aakhri valid reading ke saath heater chalate raho",
+            "Heater ko full power par chala do",
+            "Reading ignore karke temperature 25 °C maan lo"
+          ],
+          "answer": 0,
+          "explanation": "Out-of-range reading sensor fault ka sign hai. Heater ke liye safe state 'off' hai, kyunki bina sahi temperature ke heating jaari rakhna overheating ya aag ka risk hai. Last valid value ya koi made-up value (25 °C) maan kar chalana fault ko chhupata hai. Full power sabse unsafe choice hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w12-q2",
+          "question": "Safety-critical embedded C (jaise MISRA-style guidelines) me dynamic memory (`malloc`/`free`) aksar avoid kyun kiya jaata hai?",
+          "options": [
+            "`malloc` C standard library ka hissa nahi hai",
+            "`malloc` hamesha zero se bhari memory deta hai, jo slow hai",
+            "Fragmentation aur unpredictable timing/allocation failure ki wajah se behaviour deterministic aur analysable nahi rehta",
+            "`malloc` sirf operating system wale computers par kaam karta hai"
+          ],
+          "answer": 2,
+          "explanation": "Lambe samay tak chalne wale device me baar-baar allocate/free se heap fragment hota hai, aur kisi din allocation fail ho sakti hai, ya uska time badal sakta hai. Ye pehle se prove karna mushkil hai. Static (compile-time) allocation se memory usage fixed aur analysable rehta hai. `malloc` standard ka hissa hai aur bare-metal par bhi chalta hai, isliye A aur D galat; zero se bharna `calloc` karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w12-q3",
+          "question": "Is function ke bounds check me kya bug hai?",
+          "code": "#define N 8\nuint8_t buf[N];\n\nint store(int i, uint8_t v)\n{\n    if (i < 0 || i > N) return -1;\n    buf[i] = v;\n    return 0;\n}",
+          "options": [
+            "Koi bug nahi, check bilkul sahi hai",
+            "`i > N` ki jagah `i >= N` hona chahiye; i = 8 par buf[8] me out-of-bounds write hota hai",
+            "`i < 0` wala check galat hai, use hata dena chahiye",
+            "Return values ulte hain: success par -1 aana chahiye"
+          ],
+          "answer": 1,
+          "explanation": "8 elements ke array ke valid indices 0 se 7 hain. Check `i > N` sirf 9 aur upar ko rokta hai, to i = 8 pass ho jaata hai aur buf[8] array ke bahar likhta hai, jo kisi doosre variable ko kharab kar sakta hai. Sahi: `if (i < 0 || i >= N)`. Negative index check zaroori hai, aur return convention (0 success) theek hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w12-q4",
+          "question": "Function `set_level(int x)` ka valid input range 0 se 100 (dono shaamil) hai; baaki inputs reject hone chahiye. Boundary value testing ke liye sabse accha test set kaunsa hai?",
+          "options": [
+            "50, 60, 70",
+            "0, 100",
+            "-1000, 1000",
+            "-1, 0, 100, 101"
+          ],
+          "answer": 3,
+          "explanation": "Bugs aksar limits par hote hain (jaise `>` vs `>=`). Isliye har boundary par aur uske just bahar test karo: -1 (reject), 0 (accept), 100 (accept), 101 (reject). Sirf 0 aur 100 test karne se off-by-one wala reject bug pakda nahi jaata. Beech ki values ya bahut door ki values boundary ko test hi nahi karti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w12-q5",
+          "question": "Ek I2C driver me ye code hai. Agar sensor ka wire nikal jaaye aur ACK kabhi na aaye, to kya hoga aur behtar design kya hai?",
+          "code": "#define I2C_SR (*(volatile uint32_t *)0x40005414)  /* address illustrative */\n#define ACK_FLAG (1U << 1)\n\nwhile (!(I2C_SR & ACK_FLAG)) {\n    /* ACK ka wait */\n}",
+          "options": [
+            "Loop hamesha ke liye atak jaayega; timeout counter lagao aur error return karke recovery karo",
+            "Hardware khud ACK flag set kar dega, isliye koi problem nahi",
+            "Compiler is loop ko optimise karke hata dega kyunki body khaali hai",
+            "Loop ek iteration ke baad apne aap ruk jaata hai"
+          ],
+          "answer": 0,
+          "explanation": "Flag kabhi set nahi hoga, to `while` hamesha chalta rahega aur poora firmware (ya ek RTOS task) atak jaayega; watchdog ho to reset loop ban sakta hai. Har hardware wait par timeout lagao (counter ya tick-based) aur error return karo taaki upar wala code bus reset ya fault report kar sake. Register `volatile` hai, isliye compiler loop nahi hata sakta (trap).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w12-q6",
+          "question": "32-bit `int` wale target par is code ka output kya hoga?",
+          "code": "int temp = -5;\nunsigned int limit = 10;\n\nif (temp < limit)\n    puts(\"OK\");\nelse\n    puts(\"TOO HIGH\");",
+          "options": [
+            "OK",
+            "Compile error",
+            "TOO HIGH",
+            "Undefined behaviour, kuch bhi print ho sakta hai"
+          ],
+          "answer": 2,
+          "explanation": "`int` aur `unsigned int` compare karne par C ke usual arithmetic conversions `temp` ko unsigned me badal dete hain: -5 ban jaata hai 2³² − 5 = 4294967291, jo 10 se bada hai. Isliye condition false aur TOO HIGH print hota hai. Ye conversion well-defined hai (undefined nahi), aur compiler sirf sign-compare warning deta hai. Trap: maths ki tarah -5 < 10 maan kar OK bolna. Fix: dono ko same signed type me compare karo.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

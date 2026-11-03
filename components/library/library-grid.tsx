@@ -4,10 +4,25 @@ import Link from 'next/link';
 import { useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent } from '@/lib/progress/insights';
+import { useChoice, useChoiceSubjects } from '@/lib/programme-choice';
 import type { Subject, WeekRef } from '@/lib/types';
-import { ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
+import { ProgressBar, SubjectIcon, subjectColor, weekCount } from '@/components/ui';
 
 export function LibraryGrid({ subjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
+  const choice = useChoice();
+  const list = useChoiceSubjects(subjects);
+
+  return (
+    <section aria-label={`${choice.programme.short} ${choice.level.name} subjects`}>
+      <p className="muted mb-md">
+        Showing <strong>{choice.programme.short} – {choice.level.name}</strong>. Change it with the “Preparing for” menu or in <Link className="link" href="/profile">My profile</Link>.
+      </p>
+      <SubjectCards subjects={list} catalog={catalog} />
+    </section>
+  );
+}
+
+function SubjectCards({ subjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
 
   return (
@@ -23,7 +38,7 @@ export function LibraryGrid({ subjects, catalog }: { subjects: Subject[]; catalo
               <SubjectIcon subject={s} />
               <div className="flex-1">
                 <h3>{s.name}</h3>
-                <div className="muted">{s.code} · {weeks.length ? `${weeks.length} weeks` : 'Notes coming soon'}</div>
+                <div className="muted">{s.code} · {weeks.length ? weekCount(s, weeks.length) : 'Notes coming soon'}</div>
               </div>
             </div>
             {weeks.length > 0 && (

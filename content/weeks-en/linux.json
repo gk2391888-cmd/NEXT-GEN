@@ -1,0 +1,725 @@
+{
+  "subjectId": "linux",
+  "questions": {
+    "linux-w1-q1": {
+      "question": "Which of these paths is **absolute**?",
+      "options": [
+        "`docs/notes.txt`",
+        "`./notes.txt`",
+        "`/home/asha/notes.txt`",
+        "`../notes.txt`"
+      ],
+      "explanation": "An absolute path always starts at the root `/`, so `/home/asha/notes.txt` names the same file from any current directory. `./notes.txt` also contains a slash, but it starts from `.` (the current directory), so it is relative."
+    },
+    "linux-w1-q2": {
+      "question": "After these commands, what does `pwd` print?",
+      "options": [
+        "/usr/share/lib",
+        "/usr/lib",
+        "/lib",
+        "/usr/share/../lib"
+      ],
+      "explanation": "`cd ../lib` first uses `..` to go to the parent of `/usr/share`, which is `/usr`, then into `lib`, giving `/usr/lib`. `pwd` prints the clean absolute path, not the raw path with `..`. Trap: ignoring the `..` and answering `/usr/share/lib`."
+    },
+    "linux-w1-q3": {
+      "question": "These commands are run in an empty directory. What does the last `ls` show?",
+      "options": [
+        "b.txt and src",
+        "a.txt, b.txt and src",
+        "a.txt and src",
+        "Only src"
+      ],
+      "explanation": "`cp a.txt src/` puts a copy inside `src`, and the original `a.txt` stays. Then `mv a.txt b.txt` renames that same file, so `proj` no longer has `a.txt`. So `ls` shows `b.txt` and `src`. Trap: treating `mv` like a copy and counting `a.txt` too."
+    },
+    "linux-w1-q4": {
+      "question": "What happens when these two commands are run?",
+      "options": [
+        "The `data` directory is deleted",
+        "`data` is moved to a trash folder",
+        "The shell asks for confirmation first, then deletes it",
+        "An error, because `rm` without `-r` does not delete a directory"
+      ],
+      "explanation": "Without options, `rm` removes only files. Given a directory it prints `rm: cannot remove 'data': Is a directory` and deletes nothing. You need `rm -r data`, or `rmdir data` for an empty directory. Trap: expecting a trash bin or a confirmation like Windows; plain `rm` has neither."
+    },
+    "linux-w1-q5": {
+      "question": "Assume all these directories exist. What does the last `pwd` print?",
+      "options": [
+        "/home/ravi/asha",
+        "/home/ravi/projects/asha",
+        "/home/asha",
+        "/asha"
+      ],
+      "explanation": "From `/home/ravi/projects`, `.` stays put, the first `..` goes to `/home/ravi`, the second `..` goes to `/home`, and then into `asha`. The result is `/home/asha`. Trap: counting only one `..` (giving `/home/ravi/asha`) or treating `.` as one more level up."
+    },
+    "linux-w1-q6": {
+      "question": "These commands are run in an empty directory. What does the last `ls dst` show?",
+      "options": [
+        "f.txt",
+        "f.txt and src",
+        "Only src",
+        "An error, because dst already exists"
+      ],
+      "explanation": "The first time, `dst` does not exist, so `cp -r src dst` creates a new `dst` that is a copy of `src` (containing `f.txt`). The second time `dst` already exists, so `cp` copies the whole `src` inside `dst`, creating `dst/src`. So `ls dst` shows `f.txt` and `src`. Trap: thinking the second copy just overwrites the first."
+    },
+    "linux-w2-q1": {
+      "question": "After editing a file in vim (in Normal mode), what do you type to **save and quit**?",
+      "options": [
+        "`:q!`",
+        "`Ctrl+X`",
+        "`:w`",
+        "`:wq`"
+      ],
+      "explanation": "`:wq` first writes (saves) and then quits. `:q!` quits without saving and the changes are lost. `:w` only saves and vim stays open. `Ctrl+X` is nano's exit, not vim's."
+    },
+    "linux-w2-q2": {
+      "question": "What happens when you run `ping -c 4 192.168.1.1` on Linux?",
+      "options": [
+        "It sends 4 echo packets and then stops on its own",
+        "Ping runs for 4 seconds, then stops",
+        "Ping checks 4 different IP addresses",
+        "Ping runs until you press Ctrl+C, but sends one packet every 4 seconds"
+      ],
+      "explanation": "`-c` means count: send this many echo requests, print a summary and stop. Without `-c`, Linux ping keeps running forever. The gap between packets is set with `-i` and a time limit with `-w`, so both 'every 4 seconds' and 'for 4 seconds' are wrong."
+    },
+    "linux-w2-q3": {
+      "question": "You want to copy `firmware.bin` from your laptop into the `/home/pi/fw/` directory of a Raspberry Pi (user `pi`, IP 192.168.1.50). Which command do you run on the laptop?",
+      "options": [
+        "`scp pi@192.168.1.50:/home/pi/fw/ firmware.bin`",
+        "`scp firmware.bin pi@192.168.1.50/home/pi/fw/`",
+        "`scp firmware.bin pi@192.168.1.50:/home/pi/fw/`",
+        "`ssh firmware.bin pi@192.168.1.50:/home/pi/fw/`"
+      ],
+      "explanation": "The scp format is `scp source destination`. The source is the local `firmware.bin` and the destination is remote, written as `user@host:path`. Without the colon (`pi@192.168.1.50/home/pi/fw/`) scp treats it as a local path. The first option is the reverse direction, and `ssh` does not copy files."
+    },
+    "linux-w2-q4": {
+      "question": "A board's web server serves `http://192.168.1.50/status.txt`. You run just `curl http://192.168.1.50/status.txt`. What happens?",
+      "options": [
+        "`status.txt` is saved in the current directory",
+        "The file's content is printed on the terminal and no file is saved",
+        "`status.txt` is saved in the home directory",
+        "An error, because curl needs an output file name"
+      ],
+      "explanation": "By default curl writes the downloaded data to standard output (the terminal). To save a file you need `curl -O URL` (remote name) or `curl -o name URL`. Trap: expecting wget's behaviour; it is `wget URL` that saves a file by default."
+    },
+    "linux-w2-q5": {
+      "question": "The output of `ip addr` has the line `inet 10.21.4.17/16`. What is this interface's netmask?",
+      "options": [
+        "255.255.255.0",
+        "255.255.0.0",
+        "255.0.0.0",
+        "255.255.255.16"
+      ],
+      "explanation": "`/16` means the first 16 bits are 1: 11111111.11111111.00000000.00000000, which is 255.255.0.0. With `/24` it would be 255.255.255.0. Trap: turning `/16` into 16 in the last octet; the number counts bits, it is not an octet value."
+    },
+    "linux-w2-q6": {
+      "question": "This 5-line file is open in vim with the cursor on line `l2` (Normal mode). You press `2dd`, then `G`, then `p`. How does the file look now (top to bottom)?",
+      "options": [
+        "l1 l4 l5 l2 l3",
+        "l1 l4 l2 l3 l5",
+        "l1 l3 l4 l5 l2",
+        "l2 l3 l1 l4 l5"
+      ],
+      "explanation": "`2dd` cuts 2 lines from the cursor line (`l2`, `l3`), leaving `l1 l4 l5`. `G` moves to the last line, `l5`. `p` pastes the cut lines **below** the cursor line, so the result is `l1 l4 l5 l2 l3`. Trap: treating `2dd` as a single line (`l1 l3 l4 l5 l2`) or thinking `p` pastes above."
+    },
+    "linux-w3-q1": {
+      "question": "These commands are run in an empty directory. What does `cat f.txt` show?",
+      "options": [
+        "one / two / three (three lines)",
+        "three",
+        "two / three (two lines)",
+        "one / three (two lines)"
+      ],
+      "explanation": "The first `>` writes 'one' to the file. The second `>` empties the file first and then writes 'two', so 'one' is gone. `>>` appends 'three' at the end. Result: two, three. Trap: treating `>` as an append too, which would give all three lines."
+    },
+    "linux-w3-q2": {
+      "question": "After `chmod 754 run.sh`, what permission string does `ls -l` show?",
+      "options": [
+        "`-rwxr-xr--`",
+        "`-rwxrw-r--`",
+        "`-rw-r-xr--`",
+        "`-rwxr--r-x`"
+      ],
+      "explanation": "Each digit is one group, with r=4, w=2, x=1. 7 = 4+2+1 = `rwx` (owner), 5 = 4+1 = `r-x` (group), 4 = `r--` (others). So `-rwxr-xr--`. Trap: reading 5 as `rw-` (which would be 6) instead of 4+1."
+    },
+    "linux-w3-q3": {
+      "question": "What does running `sudo apt update` on Ubuntu do?",
+      "options": [
+        "All installed packages are upgraded to newer versions",
+        "A new Ubuntu release is installed",
+        "apt downloads a newer version of itself",
+        "The list of available packages is refreshed from the repositories; nothing is installed or upgraded"
+      ],
+      "explanation": "`apt update` only downloads the package index (which packages and versions are available). The actual upgrade is done by `sudo apt upgrade`, and a new package by `sudo apt install name`. The name 'update' suggests everything gets updated; that is the most common trap."
+    },
+    "linux-w3-q4": {
+      "question": "File `f` currently has permissions `-rw-r--r--`. What is the permission string after `chmod u+x,g-r,o=w f`?",
+      "options": [
+        "`-rwxr---w-`",
+        "`-rwx---rw-`",
+        "`-rwx---w--`",
+        "`-rwx---w-`"
+      ],
+      "explanation": "The three parts apply separately. `u+x`: owner goes from `rw-` to `rwx`. `g-r`: group goes from `r--` to `---`. `o=w`: `=` removes the old permissions and sets exactly w, so others become `-w-`. Result `-rwx---w-`. Trap: reading `o=w` as `o+w`, which would make others `rw-`."
+    },
+    "linux-w3-q5": {
+      "question": "A program is running as PID 2345. Which signal does `kill 2345` (with no signal number) send?",
+      "options": [
+        "SIGKILL (9)",
+        "SIGTERM (15)",
+        "SIGINT (2)",
+        "SIGSTOP (19)"
+      ],
+      "explanation": "The default signal of `kill` is SIGTERM (15), which politely asks the program to stop; the program can clean up or even ignore it. SIGKILL (9) is sent when you write `kill -9`; it cannot be blocked. SIGINT (2) is what Ctrl+C sends."
+    },
+    "linux-w3-q6": {
+      "question": "The directory has `good.txt` but no `nofile`. When these commands run, what appears on the terminal, and what ends up in `out.txt`?",
+      "options": [
+        "Nothing on the terminal; `out.txt` has both `good.txt` and the 'No such file' error",
+        "The 'No such file' error on the terminal; `out.txt` has `good.txt`",
+        "`good.txt` on the terminal; `out.txt` has the 'No such file' error",
+        "Both on the terminal; `out.txt` is empty"
+      ],
+      "explanation": "Redirections apply left to right. At the moment of `2>&1`, stdout still points to the terminal, so stderr is tied to the terminal too. Then `> out.txt` sends only stdout to the file. So the error appears on the terminal and `good.txt` goes into the file. To get both in the file write `> out.txt 2>&1`; the first option is that result."
+    },
+    "linux-w4-q1": {
+      "question": "A directory has `a1.txt`, `a2.txt`, `a10.txt`, `b1.txt` and `notes.md`. What does `ls a?.txt` show?",
+      "options": [
+        "a1.txt a2.txt a10.txt",
+        "a1.txt a10.txt",
+        "a1.txt a2.txt a10.txt b1.txt",
+        "a1.txt a2.txt"
+      ],
+      "explanation": "In a glob, `?` matches exactly one character. `a1.txt` and `a2.txt` have exactly one character after `a`. `a10.txt` has two (`10`), so it does not match. Trap: treating `?` like `*`, 'any number of characters'."
+    },
+    "linux-w4-q2": {
+      "question": "What is the output of this command?",
+      "options": [
+        "2",
+        "3",
+        "1",
+        "5"
+      ],
+      "explanation": "`^#` matches only lines that **start** with `#`: '# comment' and '#end', so the count is 2. In 'mode=fast # fast' the `#` is in the middle, so because of the `^` anchor it is not counted. Trap: ignoring `^` and counting every line with a `#` (3)."
+    },
+    "linux-w4-q3": {
+      "question": "`words.txt` has 5 lines. What does `grep -c 'ab*c' words.txt` print?",
+      "options": [
+        "2",
+        "5",
+        "3",
+        "4"
+      ],
+      "explanation": "In a regex `b*` means 'b zero or more times'. So `abc` (one b), `ac` (zero b) and `abbc` (two b) match: 3. In `a.c` and `axc` the a is not followed by b or c. Trap: reading `*` as 'anything' like a glob; then `ac` gets missed and the answer looks like 2."
+    },
+    "linux-w4-q4": {
+      "question": "A bill-of-materials file has these lines. What does the command print?",
+      "options": [
+        "3",
+        "2",
+        "4",
+        "1"
+      ],
+      "explanation": "`^R[0-9]{2,} ` means: the line starts with R, then **at least 2** digits, then a space. `R22` (2 digits) and `R105` (3 digits) match, so 2. `R1` and `R7` have only 1 digit and `C3` does not start with R. Trap: reading `{2,}` as 'exactly 2', which drops R105 (1)."
+    },
+    "linux-w4-q5": {
+      "question": "`t.txt` has three lines: `aab`, `a+b`, `ab`. What do the two commands print (top to bottom)?",
+      "options": [
+        "1 and 2",
+        "2 and 2",
+        "2 and 1",
+        "1 and 1"
+      ],
+      "explanation": "Plain `grep` uses Basic RE, where `+` is an ordinary character, so `'a+b'` looks for the literal text `a+b`: 1 line. In `grep -E`, `+` means 'one or more', so `a+b` = one or more a followed by b: `aab` and `ab` match (2). The `a+b` line has no `b` right after an `a`. Trap: treating `+` as special in BRE too."
+    },
+    "linux-w4-q6": {
+      "question": "These commands are run in an empty directory. What do the two `echo` commands print?",
+      "options": [
+        "`file1.txt file2.txt file3.txt` both times",
+        "`file1.txt file3.txt` both times",
+        "First `file1.txt file3.txt`, then `file1.txt file2.txt file3.txt`",
+        "First `file[1-3].txt`, then `file1.txt file2.txt file3.txt`"
+      ],
+      "explanation": "`file[1-3].txt` is a glob, which matches only existing files: `file1.txt` and `file3.txt` (file2 was never created). `file{1..3}.txt` is brace expansion, which generates all three names without looking at files. The glob would stay literal only if no file matched at all, which is not the case here."
+    },
+    "linux-w5-q1": {
+      "question": "What is the output of this script?",
+      "options": [
+        "Hi Asha / Hi Asha",
+        "Hi $name / Hi Asha",
+        "Hi Asha / Hi $name",
+        "Hi $name / Hi $name"
+      ],
+      "explanation": "Inside single quotes `$` is not special, so the first line prints `Hi $name` literally. Inside double quotes the variable expands, so the second line is `Hi Asha`. Trap: treating both kinds of quotes the same."
+    },
+    "linux-w5-q2": {
+      "question": "What happens when this line is run in the terminal?",
+      "options": [
+        "Variable `count` gets the value 5",
+        "Variable `count` gets the value ' 5' (with a space)",
+        "Nothing; the line is ignored",
+        "An error `count: command not found`, because the shell treats `count` as a command"
+      ],
+      "explanation": "Because of the spaces the shell splits the line into three words: `count`, `=`, `5`. The first word is taken as a command, and there is no command called `count`, so you get an error. For an assignment write `count=5`, with no spaces."
+    },
+    "linux-w5-q3": {
+      "question": "What is the output of this script?",
+      "options": [
+        "3.5 1 / 8",
+        "3 1 / 8",
+        "3 1 / 7+1",
+        "3.5 1 / 7+1"
+      ],
+      "explanation": "`$(( ))` does integer maths: 7 / 2 = 3 (the decimal is dropped) and 7 % 2 = 1. But `n=$a+1` is not an arithmetic context; `$a` is replaced by 7 and you just get the string `7+1`. To compute it write `n=$((a + 1))`. Trap: expecting `/` to give a decimal or `$a+1` to add."
+    },
+    "linux-w5-q4": {
+      "question": "What is the output of this script?",
+      "options": [
+        "x=10 y=20",
+        "x= y=",
+        "x= y=20",
+        "x=10 y="
+      ],
+      "explanation": "`bash -c` runs a new child shell. The child only receives exported variables. `y` was exported, so `y=20` shows; `x` is just an ordinary variable of the parent shell, so it is empty in the child. Because of the single quotes, `$x` and `$y` are not expanded by the parent but by the child."
+    },
+    "linux-w5-q5": {
+      "question": "What is the output of this script? (`printf` produces 'a', three spaces, 'b', a newline, 'c'.)",
+      "options": [
+        "First `a b c` on one line; then `a   b` and `c` on two lines (spaces kept)",
+        "`a   b` and `c` on two lines both times",
+        "`a b c` on one line both times",
+        "First `a   b` and `c` on two lines; then `a b c` on one line"
+      ],
+      "explanation": "Unquoted, `$files` undergoes word splitting into three words `a`, `b`, `c`; the extra spaces and the newline vanish and echo joins the words with single spaces: `a b c`. `\"$files\"` keeps the value exactly, so the three spaces and the newline both survive. Trap: thinking it is the quotes that remove the spaces."
+    },
+    "linux-w5-q6": {
+      "question": "What is the output of this script?",
+      "options": [
+        "[5_V] [5_V] [5]V",
+        "[] [5_V] [5]V",
+        "[5] [5_V] [5V]",
+        "[] [5_V] [5V]"
+      ],
+      "explanation": "In `$v_V` the shell takes the whole `v_V` as the variable name (underscore is allowed in names). It is not set, so it is empty: `[]`. In `${v}_V` the braces stop the name at `v`: `[5_V]`. In `\"[$v]V\"` the `]` cannot be part of a name, so `$v` = 5 and the `V` sits outside: `[5]V`. Trap: reading `$v_V` as `5_V`."
+    },
+    "linux-w6-q1": {
+      "question": "What does this pipeline print? (`seq 10` prints the numbers 1 to 10, one per line.)",
+      "options": [
+        "8 9 10",
+        "7 8 9",
+        "5 6 7",
+        "1 2 3"
+      ],
+      "explanation": "`head -7` gives the first 7 lines: 1 to 7. From those, `tail -3` takes the last 3: 5, 6, 7 (each on its own line). Trap: applying `tail -3` to the whole of `seq 10` (8 9 10)."
+    },
+    "linux-w6-q2": {
+      "question": "The executable script `s.sh` is run as `./s.sh red green \"light blue\"`. What is the output?",
+      "options": [
+        "4 red light",
+        "3 red light blue",
+        "3 s.sh green",
+        "4 red blue"
+      ],
+      "explanation": "The quoted `\"light blue\"` is a single argument, so `$#` = 3. `$1` = red and `$3` = light blue. Trap: counting 4 arguments because of the space, which would make `$3` just 'light'."
+    },
+    "linux-w6-q3": {
+      "question": "What is the output of this script?",
+      "options": [
+        "9 / 100",
+        "10 / 100",
+        "9 / 25",
+        "10 / 25"
+      ],
+      "explanation": "Plain `sort` compares like text, first character first: '1' < '2' < '9', and between `10` and `100` the shorter prefix `10` comes first, so the order is 10, 100, 25, 9 and `head -1` = 10. `sort -n` sorts as numbers: 9, 10, 25, 100, so `tail -1` = 100. Trap: assuming plain sort is numeric too and answering 9."
+    },
+    "linux-w6-q4": {
+      "question": "What is the output of this script?",
+      "options": [
+        "3 / 3",
+        "6 / 3",
+        "4 / 3",
+        "5 / 3"
+      ],
+      "explanation": "`uniq` removes only adjacent duplicates. The file order is ece, cse, ece, ece, me, cse; only the two `ece` in the middle collapse into one, so 5 lines remain. After sorting, equal values sit together, so `uniq` gives 3 unique lines. Trap: thinking `uniq` alone removes all duplicates (3 / 3)."
+    },
+    "linux-w6-q5": {
+      "question": "What is the output of this command?",
+      "options": [
+        "10k:0.25W",
+        "10k",
+        "R1:10k",
+        "0.25W"
+      ],
+      "explanation": "`-d:` makes colon the separator, so the fields are R1, 10k, 0.25W. `-f2-` means field 2 **to the end**, and cut keeps the separator in between: `10k:0.25W`. Trap: reading `-f2-` as `-f2` (just 10k)."
+    },
+    "linux-w6-q6": {
+      "question": "There are two executable scripts. What three lines are printed by `./wrap.sh a \"b c\"`?",
+      "options": [
+        "2 / 2 / 2",
+        "3 / 1 / 3",
+        "2 / 1 / 2",
+        "2 / 1 / 3"
+      ],
+      "explanation": "`wrap.sh` received two arguments: `a` and `b c`. `\"$@\"` keeps both separate and intact: 2. `\"$*\"` joins them into one string `a b c`: 1. Unquoted `$@` undergoes word splitting into `a`, `b`, `c`: 3. Trap: treating unquoted `$@` like `\"$@\"` (2 / 1 / 2)."
+    },
+    "linux-w7-q1": {
+      "question": "What is the output of this script?",
+      "options": [
+        "a b c",
+        "a-b-c-",
+        "-a-b-c",
+        "a-b-c"
+      ],
+      "explanation": "The loop runs three times and each time `echo -n` (no newline) writes `a-`, `b-`, `c-`, all on one line. The final `echo` just adds a newline. The dash comes **after** each word, so there is one at the end too: `a-b-c-`. Trap: forgetting the last dash."
+    },
+    "linux-w7-q2": {
+      "question": "What is the output of this script (two lines)?",
+      "options": [
+        "0 / 1",
+        "1 / 1",
+        "0 / 0",
+        "1 / 0"
+      ],
+      "explanation": "5 < 3 is false, so `[ ]` fails: exit status 1. \"abc\" = \"abc\" is true: exit status 0. In the shell 0 means success and non-zero means failure, the opposite of true=1 in C/Python. That reversed convention is why people pick 0 / 1."
+    },
+    "linux-w7-q3": {
+      "question": "What is the output of this script?",
+      "options": [
+        "Verilog",
+        "Verilog / backup (two lines)",
+        "backup",
+        "other"
+      ],
+      "explanation": "A `case` pattern must match the **whole** value. `notes.v.bak` ends in `.bak`, not `.v`, so `*.v` does not match. The next pattern `*.bak` matches, so `backup`. `case` runs only one block, so two lines never appear. Trap: seeing `.v` in the name and answering Verilog."
+    },
+    "linux-w7-q4": {
+      "question": "What is the output of this script?",
+      "options": [
+        "9 7",
+        "15 6",
+        "9 5",
+        "4 5"
+      ],
+      "explanation": "The loop runs for n = 1, 3, 5 (n goes up by 2): sum = 1 + 3 + 5 = 9. After the third round n becomes 7, `7 -le 5` is false and the loop ends. So `9 7`. Trap: taking n as 5 after the loop; it has already been increased once more."
+    },
+    "linux-w7-q5": {
+      "question": "What is the output of this script?",
+      "options": [
+        "high / low / 2",
+        "high / low / maybe / 3",
+        "high / 3",
+        "high / low / 3"
+      ],
+      "explanation": "The function's exit status is that of its last command, `[ \"$1\" -gt 50 ]`. `check 80` succeeds, so `high` runs after `&&`. `check 20` fails, so `low` runs after `||`. `check 10` fails, so the `maybe` after `&&` does not run. `count` goes up in all three calls and it is global, so 3. Trap: thinking failing calls don't increase the count (2)."
+    },
+    "linux-w7-q6": {
+      "question": "What is the output of this script (three lines)?",
+      "options": [
+        "A / C / E",
+        "B / C / E",
+        "A / D / F",
+        "B / D / E"
+      ],
+      "explanation": "In `[[ $a > $b ]]`, `>` is a **string** comparison: first character '1' < '9', so \"10\" counts as smaller, false, `B`. `(( a > b ))` is arithmetic: 10 > 9 is true, `C`. `[ $a -gt $b ]` is a numeric test, true, `E`. Trap: treating the `>` inside `[[ ]]` as numeric and choosing A / C / E."
+    },
+    "linux-w8-q1": {
+      "question": "When will this crontab line run the script?",
+      "options": [
+        "On the 1st of every month at 02:30",
+        "Every day at 02:30",
+        "Every Monday at 02:30",
+        "Every Monday at 30 minutes past every hour"
+      ],
+      "explanation": "The fields are minute=30, hour=2, day-of-month=*, month=*, day-of-week=1. Weekday 1 is Monday, so every Monday at 02:30. Trap: reading the last field `1` as the day of the month; that is the third field, which is `*` here."
+    },
+    "linux-w8-q2": {
+      "question": "What is the output of this command?",
+      "options": [
+        "1 off on off",
+        "1 off 1 off",
+        "on off 1 off",
+        "on off on off"
+      ],
+      "explanation": "Without the `g` flag, `s` replaces only the **first** match on each line. This is a single line, so only the first `on` becomes `1`. To replace all you would write `s/on/1/g`. Trap: treating `s` as find-and-replace-all."
+    },
+    "linux-w8-q3": {
+      "question": "What is the output of this command? (`seq 4` prints the numbers 1 to 4 on separate lines.)",
+      "options": [
+        "2",
+        "1 / 3 / 4",
+        "1 / 2 / 3 / 4",
+        "1 / 2 / 2 / 3 / 4"
+      ],
+      "explanation": "Without `-n`, sed prints every line at the end anyway. `2p` adds one extra print on line 2, so 2 appears twice: 1, 2, 2, 3, 4. To get only line 2 write `sed -n '2p'`. Trap: thinking `p` means 'show only this line'."
+    },
+    "linux-w8-q4": {
+      "question": "How many times will this crontab entry run the script on one day (a Monday)?",
+      "options": [
+        "32",
+        "36",
+        "9",
+        "40"
+      ],
+      "explanation": "`*/15` in the minute field means 0, 15, 30, 45: 4 times an hour. `9-17` covers hours 9, 10, ..., 17, which is 9 hours (both ends included). Monday falls in `1-5`. Total 9 × 4 = 36. Trap: computing 17 − 9 = 8 hours and answering 32; 17 is part of the range, so the last run is at 17:45."
+    },
+    "linux-w8-q5": {
+      "question": "What is the output of this script?",
+      "options": [
+        "gain: 5 / mode: 2 (two lines)",
+        "gain: 5 / # note / mode: 2",
+        "gain: 5 / (empty line) / mode: 2",
+        "gain=5 / (empty line) / mode=2"
+      ],
+      "explanation": "`/^#/d` removes only the line that starts with `#`, so `# note` is gone. The empty line does not start with `#`, so it stays. `s/=/: /` changes the first `=` on each remaining line. Result: `gain: 5`, an empty line, `mode: 2`. Trap: assuming the empty line disappears too; that needs `/^$/d`."
+    },
+    "linux-w8-q6": {
+      "question": "What is the output of this command?",
+      "options": [
+        "temp=XC time=05m14h",
+        "temp=25C time=Xm14h",
+        "temp=XC time=Xm14h",
+        "temp=XC time=14m05h"
+      ],
+      "explanation": "The first `s` captures `14:05`: group 1 = 14, group 2 = 05, and the replacement `\\2m\\1h` writes `05m14h`. Then the second `s` looks for the **first** run of digits on the line, which is `25` (near the start), and turns only that into `X`. Trap: thinking the second `s` grabs the new `05`, or that all numbers change even without `g`."
+    },
+    "linux-w9-q1": {
+      "question": "What is the output of this command?",
+      "options": [
+        "R1 10k",
+        "10k R1",
+        "10kR1",
+        "10k 0.25W"
+      ],
+      "explanation": "Split on whitespace the fields are: `$1` = R1, `$2` = 10k, `$3` = 0.25W. `print $2, $1` writes 10k then R1, and the comma puts one space (OFS) between them. Without the comma you would get `10kR1`."
+    },
+    "linux-w9-q2": {
+      "question": "What is the output of this command (two lines)?",
+      "options": [
+        "3 1 / 2 2",
+        "1 2 / 2 3",
+        "0 3 / 1 2",
+        "1 3 / 2 2"
+      ],
+      "explanation": "`NR` is the record (line) number starting from 1, and `NF` is the number of fields on that line. Line 1 `a b c` has 3 fields: `1 3`. Line 2 `d e` has 2 fields: `2 2`. Trap: starting NR at 0 or swapping NR and NF."
+    },
+    "linux-w9-q3": {
+      "question": "What is the output of this script?",
+      "options": [
+        "3 3.2",
+        "5 5.32",
+        "3 9.6",
+        "1 3.3"
+      ],
+      "explanation": "The action runs only on lines where `$1` is \"ch1\": 3.3, 3.1, 3.2. So n = 3 and s = 9.6. In `END`, `s/n` = 9.6 / 3 = 3.2. Trap: ignoring the pattern and averaging all 5 lines (5.32), or printing just the sum (9.6)."
+    },
+    "linux-w9-q4": {
+      "question": "What is the output of this command?",
+      "options": [
+        "4 run.sh home",
+        "4 run.sh asha",
+        "5 run.sh home",
+        "5 lab home"
+      ],
+      "explanation": "The line starts with `/`, so splitting on `/` gives an empty first field: \"\", home, asha, lab, run.sh. So NF = 5, `$NF` = run.sh and `$2` = home. Trap: not counting the empty first field, which makes NF look like 4 and `$2` look like asha."
+    },
+    "linux-w9-q5": {
+      "question": "`marks.csv` has a header and 4 students. What does the script print?",
+      "options": [
+        "3",
+        "2",
+        "1",
+        "4"
+      ],
+      "explanation": "`NR > 1` skips the header. Among the students, `$3 >= 80` is true only for ravi (91) and meena (80), so c = 2. 80 is included because of `>=`. Trap: without `NR > 1`, the header text `marks` would compare as a string 'greater' than 80 and the count would become 3."
+    },
+    "linux-w9-q6": {
+      "question": "What is the output of this command (two lines)?",
+      "options": [
+        "a,b,c / a,X,c",
+        "a,b,c / a,b,c",
+        "a b c / a X c",
+        "a,b,c / a X c"
+      ],
+      "explanation": "The first `print $0` gives the original line: `a,b,c`. As soon as `$2 = \"X\"` is assigned, awk rebuilds `$0` from the fields with OFS between them, and OFS is a single space by default, not a comma. So `a X c`. `-F,` changes only the input separator; for commas in the output write `BEGIN {OFS=\",\"}`."
+    },
+    "linux-w10-q1": {
+      "question": "You have edited the tracked file `main.c`. What is the right order to save this change as a new snapshot in the repository?",
+      "options": [
+        "`git commit -m \"msg\"`, then `git add main.c`",
+        "`git init`, then `git commit -m \"msg\"`",
+        "`git add main.c`, then `git commit -m \"msg\"`",
+        "`git log`, then `git add main.c`"
+      ],
+      "explanation": "First `git add` puts the change in the staging area, then `git commit` takes a snapshot of the staged changes. The other way round, nothing (or an older staged part) is committed. `git init` creates a new repo and `git log` only shows history."
+    },
+    "linux-w10-q2": {
+      "question": "Which command is the best way to see how much space is free on the root filesystem `/` of a Raspberry Pi's SD card?",
+      "options": [
+        "`free -h`",
+        "`df -h /`",
+        "`du -sh /`",
+        "`lscpu`"
+      ],
+      "explanation": "`df -h` shows the size, used and available space of mounted filesystems. `du -sh /` takes very long adding up every file and does not report free space. `free -h` is about RAM, not disk; that is the most common trap."
+    },
+    "linux-w10-q3": {
+      "question": "What do the last two commands of this script print?",
+      "options": [
+        "v2 / v2",
+        "v1 / v1",
+        "An error, because the file changed after commit",
+        "v1 / v2"
+      ],
+      "explanation": "`git add` staged the content at that moment, `v1`. The file then became `v2` but was not added again, so the commit got `v1`: `git show HEAD:a.txt` → v1. The file in the working directory is still `v2`, so `cat` → v2. Trap: thinking a commit always takes what is on disk (v2 / v2)."
+    },
+    "linux-w10-q4": {
+      "question": "User `asha` on machine `lab` is in `/home/asha/proj` (home is `/home/asha`). After setting `PS1='\\u@\\h:\\w\\$ '`, what does the prompt look like?",
+      "options": [
+        "`asha@lab:~/proj$`",
+        "`asha@lab:/home/asha/proj$`",
+        "`asha@lab:proj$`",
+        "`lab@asha:~/proj#`"
+      ],
+      "explanation": "`\\u` = asha, `\\h` = lab, and `\\w` gives the full path but shortens home to `~`: `~/proj`. `\\$` is `$` for a normal user. Just `proj` would appear only with `\\W`. Trap: assuming `\\w` always shows the full absolute path."
+    },
+    "linux-w10-q5": {
+      "question": "This is the output of `free -h`. Roughly how much RAM can new programs get without using swap?",
+      "options": [
+        "3.0Gi",
+        "7.6Gi",
+        "2.5Gi",
+        "5.1Gi"
+      ],
+      "explanation": "The `available` column estimates how much memory new programs can get: it includes free RAM plus cache the kernel will drop when needed. So 5.1Gi. `free` (3.0Gi) is only completely unused RAM, which understates the real capacity; that is the most common trap."
+    },
+    "linux-w10-q6": {
+      "question": "What do the last two commands of this script print?",
+      "options": [
+        "3 / f.txt g.txt",
+        "3 / f.txt",
+        "4 / f.txt g.txt",
+        "4 / f.txt"
+      ],
+      "explanation": "Commits: `base`, then `add g` on feature, then `fix f` on main. Both branches have different new commits, so the merge cannot fast-forward and a new merge commit is created. History: base, add g, fix f, merge = 4. After the merge, `g.txt` is also on main. Trap: not counting the merge commit (3)."
+    },
+    "linux-w11-q1": {
+      "question": "What is the output of this script?",
+      "options": [
+        "Hello guest / Hello asha",
+        "Hello guest / Hello guest",
+        "Hello / Hello asha",
+        "Hello ${name:-guest} / Hello asha"
+      ],
+      "explanation": "`${name:-guest}` means: 'guest' if `name` is unset or empty, otherwise the value of `name`. The first time name is unset: `Hello guest`. The second time name = asha: `Hello asha`. The expansion happens inside double quotes, so the literal text is not printed."
+    },
+    "linux-w11-q2": {
+      "question": "This executable script `cp2.sh` is run as `./cp2.sh a.txt`. What happens?",
+      "options": [
+        "`copying a.txt to` is printed and the exit status is 0",
+        "Nothing is printed and the exit status is 0",
+        "The usage message goes to stderr and the exit status is 1",
+        "The usage message goes to stdout and the exit status is 2"
+      ],
+      "explanation": "Only one argument was given, so `$#` = 1, which is not equal to 2. The `if` body runs, `>&2` sends the usage message to stderr, and `exit 1` stops the script right there; the `copying` line never runs. Trap: ignoring the argument check and expecting the last echo to run."
+    },
+    "linux-w11-q3": {
+      "question": "What is the output of this script?",
+      "options": [
+        "start / end",
+        "start",
+        "Nothing",
+        "start / false / end"
+      ],
+      "explanation": "With `set -e`, the script stops as soon as any simple command fails (non-zero status). `false` always returns status 1, so `echo end` is never reached; the script ends with status 1. `false` prints nothing. Trap: thinking of the behaviour without `set -e` (start / end)."
+    },
+    "linux-w11-q4": {
+      "question": "What is the output of this script? (`/dev/null` is always empty.)",
+      "options": [
+        "Nothing; the script stops as soon as `grep` fails",
+        "not found",
+        "not found / A / done",
+        "not found / done"
+      ],
+      "explanation": "`grep -q` does not find `xyz` in the empty file, status 1. But it is part of an `||` list, so `set -e` does not stop the script and `not found` is printed. A failing `if false` condition does not trigger `set -e` either; `A` just isn't printed. Then `done`. Trap: assuming `set -e` stops on every failure."
+    },
+    "linux-w11-q5": {
+      "question": "This script runs in an empty directory. What does the final `ls` show?",
+      "options": [
+        "Nothing, the file was deleted",
+        "Two files, `my` and `file.txt`",
+        "`my file.txt` (the file survived)",
+        "`file.txt`"
+      ],
+      "explanation": "`touch \"$f\"` is quoted, so one file `my file.txt` is created. `rm $f` is unquoted, so word splitting gives `rm` two arguments: `my` and `file.txt`. Neither file exists, so there are two errors and the real file survives. The right way is `rm \"$f\"`."
+    },
+    "linux-w11-q6": {
+      "question": "What is the output of this script (two lines)?",
+      "options": [
+        "0 / 0",
+        "1 / 0",
+        "1 / 1",
+        "0 / 1"
+      ],
+      "explanation": "Normally a pipeline's status is that of its last command only: `false | true` → 0. With `pipefail` on, if any command fails the pipeline takes that failure's status (here 1). The first time pipefail is on: 1. `set +o pipefail` turns it off: 0. Trap: reading `+o` as 'on', or giving the pipeline the first command's status."
+    },
+    "linux-w12-q1": {
+      "question": "What is the output of this command?",
+      "options": [
+        "3",
+        "7",
+        "2",
+        "4"
+      ],
+      "explanation": "`grep -v INFO` gives the lines that do **not** contain INFO: two WARN and two ERROR, so 4. `wc -l` counts them. Trap: forgetting `-v` and counting the INFO lines (3), or counting the whole file (7)."
+    },
+    "linux-w12-q2": {
+      "question": "What is the output of this command?",
+      "options": [
+        "INFO / WARN / ERROR",
+        "ERROR / INFO / WARN",
+        "ERROR / WARN",
+        "All the times, like 10:00:01 / 10:00:05 / ..."
+      ],
+      "explanation": "Split on spaces, field 1 is the date, field 2 the time and field 3 the level. `sort -u` sorts the levels alphabetically and removes duplicates: ERROR, INFO, WARN. Trap: giving the order of first appearance in the file (INFO, WARN, ERROR), or counting fields from 0 and picking the times."
+    },
+    "linux-w12-q3": {
+      "question": "What is the output of this pipeline?",
+      "options": [
+        "74",
+        "71",
+        "74C",
+        "512"
+      ],
+      "explanation": "`grep WARN` gives two lines. Their 5th field is `71C` and `74C`. `tr -d 'C'` removes the C: 71, 74. `sort -n` goes smallest to largest and `tail -1` takes the largest: 74. Trap: forgetting `tr` and writing `74C`, or taking the first value (71) instead of using `tail`."
+    },
+    "linux-w12-q4": {
+      "question": "What does this awk command print for `readings.csv`?",
+      "options": [
+        "53.2",
+        "49",
+        "49.0",
+        "147.0"
+      ],
+      "explanation": "`NR > 1` drops the header and `$2 == \"temp\"` keeps only temp rows: 48, 52, 47. s = 147, n = 3, average 49. `%.1f` prints one decimal place: `49.0`. Trap: averaging all 5 readings (53.2), or forgetting the format and writing `49`."
+    },
+    "linux-w12-q5": {
+      "question": "What is the output of this awk command?",
+      "options": [
+        "2 3 0",
+        "2 3",
+        "3 2 0",
+        "2 3 1"
+      ],
+      "explanation": "`c[$3]++` keeps a count per level: ERROR 2, INFO 3, WARN 2. DEBUG never appears, so `c[\"DEBUG\"]` is an empty string, but `+ 0` turns it into the number 0. So `2 3 0`. Trap: ignoring the `+ 0` and assuming the third value vanishes, or swapping the ERROR and INFO counts."
+    },
+    "linux-w12-q6": {
+      "question": "What is the output of this command?",
+      "options": [
+        "2",
+        "5",
+        "4",
+        "7"
+      ],
+      "explanation": "The range starts at the first ERROR line (10:01:10) and ends at the first WARN line after it, which is the last line (10:04:45). The second ERROR in between does not start a new range; it is simply inside it. Lines 3 to 7, both ends included: 5. Trap: counting only the ERROR lines (2), or leaving out the closing WARN line (4)."
+    }
+  }
+}

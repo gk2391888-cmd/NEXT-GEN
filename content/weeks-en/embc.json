@@ -1,0 +1,725 @@
+{
+  "subjectId": "embc",
+  "questions": {
+    "embc-w1-q1": {
+      "question": "Which is the most accurate description of a microcontroller (MCU)?",
+      "options": [
+        "It has only a CPU core; RAM and storage are always external",
+        "It always runs a full operating system like Linux",
+        "CPU, Flash, SRAM and peripherals are on a single chip",
+        "It has no Flash, so the program is loaded from a PC every time"
+      ],
+      "explanation": "An MCU is a whole small computer on one chip: a CPU core, Flash for the program, SRAM for variables, and peripherals such as GPIO, timers and UART. The first option describes an MPU, not an MCU. Many MCUs run with no OS at all (bare-metal)."
+    },
+    "embc-w1-q2": {
+      "question": "You compile code on a Windows laptop (x86) and run it on an STM32 (ARM Cortex-M) board. What is this kind of compilation called?",
+      "options": [
+        "Cross-compilation",
+        "Interpretation",
+        "Native compilation",
+        "Decompilation"
+      ],
+      "explanation": "When the compiler runs on one machine (the host, here x86) but produces code for a different CPU (the target, here ARM), it is cross-compilation, for example with `arm-none-eabi-gcc`. Native compilation would mean the code runs on the same machine it was compiled on. Trap: picking native just because compiling happened."
+    },
+    "embc-w1-q3": {
+      "question": "In an MCU's memory map, SRAM occupies addresses 0x20000000 to 0x2001FFFF. What is the SRAM size?",
+      "options": [
+        "64 KB",
+        "131 KB",
+        "256 KB",
+        "128 KB"
+      ],
+      "explanation": "Size = last − first + 1 = 0x2001FFFF − 0x20000000 + 1 = 0x20000 = 131072 bytes. 131072 / 1024 = 128 KB. Trap: dividing 131072 by 1000 to get 131 KB; for memory sizes 1 KB = 1024 bytes. 64 KB would be the answer only if the range ended at 0xFFFF."
+    },
+    "embc-w1-q4": {
+      "question": "In a typical MCU build, what is true about the global variable `int count = 5;`?",
+      "options": [
+        "The variable and its value 5 live only in SRAM, and 5 survives a power-off",
+        "The initial value 5 is stored in Flash, and startup code copies it into SRAM",
+        "The variable lives only in Flash, so `count++` will not work",
+        "It goes into the `.bss` section and is set to zero at startup"
+      ],
+      "explanation": "An initialised global goes into the `.data` section: its initial value is kept in Flash (because SRAM is lost at power-off), and after reset the startup code copies it into SRAM, where the program can change it. `.bss` is only for globals that are zero or have no initialiser. Trap: treating SRAM as non-volatile."
+    },
+    "embc-w1-q5": {
+      "question": "A C program writes a value through a pointer to a fixed address to switch an LED on, and the LED lights up. Why does this work?",
+      "options": [
+        "The compiler generates a special CPU instruction for the LED",
+        "An operating system driver is called in between",
+        "The value is written to Flash and the LED updates on reset",
+        "Peripheral registers are mapped into the address space, so an ordinary memory write controls the hardware"
+      ],
+      "explanation": "This is memory-mapped I/O: the control registers of peripherals such as GPIO sit at fixed addresses in the memory map. The CPU reaches them with the same load/store instructions it uses for SRAM, and changing a register bit changes the pin level. On a bare-metal MCU no OS driver sits in between."
+    },
+    "embc-w1-q6": {
+      "question": "A program's code (`.text`) is 9000 bytes. It also has these globals: `const uint16_t lut[256];` (with values given), `uint8_t rx[1024];` (no initialiser), and `uint32_t gain = 3;`. Ignore stack/heap. What are the Flash and SRAM usages?",
+      "options": [
+        "Flash 9516 bytes, SRAM 1028 bytes",
+        "Flash 9512 bytes, SRAM 1540 bytes",
+        "Flash 10540 bytes, SRAM 1028 bytes",
+        "Flash 9516 bytes, SRAM 1540 bytes"
+      ],
+      "explanation": "`lut` is const → `.rodata` → Flash only: 256 × 2 = 512 bytes. `rx` has no initialiser → `.bss` → SRAM only: 1024 bytes. `gain` is initialised → `.data` → 4 bytes in Flash (initial value) and 4 bytes in SRAM. Flash = 9000 + 512 + 4 = 9516, SRAM = 1024 + 4 = 1028. Traps: also counting the const table in SRAM (1540), or adding the `.bss` array to Flash (10540)."
+    },
+    "embc-w2-q1": {
+      "question": "In a 32-bit register `reg`, you want to make only bit 5 equal to 1 without changing any other bit. Which statement is correct?",
+      "options": [
+        "`reg = (1U << 5);`",
+        "`reg &= (1U << 5);`",
+        "`reg ^= (1U << 5);`",
+        "`reg |= (1U << 5);`"
+      ],
+      "explanation": "OR-ing sets the masked bit to 1 and leaves every other bit as it was. `=` makes all other bits zero, `&=` clears everything except bit 5, and `^=` toggles the bit, so if it was already 1 it would become 0."
+    },
+    "embc-w2-q2": {
+      "question": "Which of these variables most needs to be declared `volatile`?",
+      "options": [
+        "A loop counter used only inside `main`",
+        "A flag set by a timer ISR and read by the main loop",
+        "A `const` lookup table that never changes",
+        "A local temporary variable inside a function"
+      ],
+      "explanation": "The ISR flag changes outside the normal program flow. Without `volatile`, the compiler may assume it does not change inside the loop, keep the value in a register, and never see the ISR's update. The other three are changed only by the program itself (or never), so they do not need `volatile`."
+    },
+    "embc-w2-q3": {
+      "question": "What is the value of `reg` after this code?",
+      "options": [
+        "0xA1",
+        "0xA4",
+        "0xA7",
+        "0x04"
+      ],
+      "explanation": "0xA5 = 1010 0101. The mask for bit 2 is 0000 0100, and `~` makes it 1111 1011. AND-ing clears only bit 2: 1010 0001 = 0xA1. Trap: forgetting the `~`, which keeps only bit 2 and gives 0x04. 0xA4 would come from clearing bit 0."
+    },
+    "embc-w2-q4": {
+      "question": "What does this code print?",
+      "options": [
+        "260",
+        "255",
+        "4",
+        "-6"
+      ],
+      "explanation": "`x + 10` is 260 as an int, but storing it back into a `uint8_t` takes the value modulo 256: 260 − 256 = 4. Unsigned types wrap around; they do not saturate (so not 255). 260 would need a variable wider than 8 bits, and -6 is impossible because the type is unsigned."
+    },
+    "embc-w2-q5": {
+      "question": "You want to write the value 0xA into bits [7:4] of a register. What is `reg` after this code?",
+      "options": [
+        "0xF0F0",
+        "0x00A0",
+        "0xFAF0",
+        "0xF0A0"
+      ],
+      "explanation": "`0xFU << 4` = 0x00F0, and its `~` clears bits [7:4]: 0xF0F0 → 0xF000. Then OR-ing `0xAU << 4` = 0x00A0 gives 0xF0A0. The other bits (0xF000 and the low nibble 0) stay the same. Trap: skipping the clear step; then 0xF0F0 | 0x00A0 is still 0xF0F0, because the old 1 bits are never removed."
+    },
+    "embc-w2-q6": {
+      "question": "What does this code print?",
+      "options": [
+        "READY",
+        "BUSY",
+        "Compile error",
+        "Both READY and BUSY"
+      ],
+      "explanation": "In C, `==` has higher precedence than `&`, so the condition becomes `status & (0x08 == 0x08)`. `0x08 == 0x08` is 1, and 0x08 & 1 = 0, so the `else` runs and BUSY is printed. This is valid C (the compiler may only warn). Fix: `if ((status & 0x08) == 0x08)`. Trap: reading it left to right like maths and answering READY."
+    },
+    "embc-w3-q1": {
+      "question": "Right after reset, what does a Cortex-M core load from the first entry (offset 0) of the vector table?",
+      "options": [
+        "The address of Reset_Handler",
+        "The initial stack pointer (MSP) value",
+        "The address of `main()`",
+        "A clock configuration value"
+      ],
+      "explanation": "Word 0 of the Cortex-M vector table is the initial stack pointer, so the core sets SP first. Word 1 (offset 4) holds the Reset_Handler address, which goes into the PC. Trap: assuming the first entry is the reset handler. `main()` is called later by the startup code."
+    },
+    "embc-w3-q2": {
+      "question": "A GPIO pin is in open-drain output mode and the line has no pull-up resistor (internal or external). What happens to the pin when '1' is written to the output register?",
+      "options": [
+        "The pin is strongly driven to VDD (such as 3.3 V)",
+        "The pin is pulled to 0 V",
+        "The pin floats and its voltage is undefined",
+        "The MCU resets"
+      ],
+      "explanation": "An open-drain output can only pull low. Writing '1' turns the transistor off and the pin goes high-impedance; with no pull-up, the line floats. That is why open-drain lines such as I2C need pull-up resistors. Trap: assuming it drives high like push-pull."
+    },
+    "embc-w3-q3": {
+      "question": "The external crystal is 25 MHz. PLL: M = 25, N = 400, P = 4. The AHB prescaler is 1 and the APB1 prescaler is 2. What is the APB1 bus clock?",
+      "options": [
+        "50 MHz",
+        "100 MHz",
+        "25 MHz",
+        "200 MHz"
+      ],
+      "explanation": "25 ÷ 25 = 1 MHz, × 400 = 400 MHz, ÷ 4 = 100 MHz (SYSCLK = HCLK). APB1 = 100 ÷ 2 = 50 MHz. Trap: stopping at SYSCLK = 100 MHz and forgetting the APB1 prescaler. 200 MHz would come from using P = 2."
+    },
+    "embc-w3-q4": {
+      "question": "A push-button is connected between a GPIO pin and GND, and the pin has its internal pull-up enabled. What logic level will be read?",
+      "options": [
+        "1 when pressed, 0 when released",
+        "Always 1 in both cases",
+        "1 when pressed, floating when released",
+        "0 when pressed, 1 when released"
+      ],
+      "explanation": "When the button is not pressed, the pull-up resistor pulls the pin towards VDD, so it reads 1. Pressing connects the pin straight to GND, so it reads 0. This wiring is called active-low. Trap: the 'pressed = 1' intuition; that holds with a pull-down and the button connected to VDD."
+    },
+    "embc-w3-q5": {
+      "question": "Which of these does a typical Reset_Handler (startup code) NOT do before calling `main()`?",
+      "options": [
+        "Copy the initial values of the `.data` section from Flash to SRAM",
+        "Fill the `.bss` section with zeros",
+        "Zero the local variables of every function",
+        "Call a system/clock init function"
+      ],
+      "explanation": "Startup code handles only global/static data: copying `.data` and zeroing `.bss`, then system init and `main()`. Local variables are created on the stack when a function is called, so they cannot be zeroed in advance; without an initialiser they hold garbage. Trap: thinking C zeroes every variable automatically."
+    },
+    "embc-w3-q6": {
+      "question": "The mode register has 2 bits per pin (00 input, 01 output, 10 alternate, 11 analog). The register currently holds 0x00000F00. What is its value after this code?",
+      "options": [
+        "0x00000700",
+        "0x00000400",
+        "0x00000F00",
+        "0x00000F20"
+      ],
+      "explanation": "0x00000F00 has bits 8–11 set, i.e. pin 4 (bits 8, 9) and pin 5 (bits 10, 11) are both analog (11). `3U << 10` = 0xC00; clearing it leaves 0x300 (pin 4 is still analog). Then OR-ing `1U << 10` = 0x400 gives 0x700, i.e. pin 5 is output (01). Traps: assuming the whole register is cleared (0x400), missing the effect of the clear step (0xF00), or shifting by n instead of 2n (0xF20)."
+    },
+    "embc-w4-q1": {
+      "question": "Which is the best guideline for a good ISR?",
+      "options": [
+        "Keep it short: update a flag/data, clear the interrupt flag and return quickly",
+        "Put a long delay inside the ISR for debouncing",
+        "Do the whole display update and `printf` inside the ISR",
+        "End the ISR with an infinite loop so the interrupt does not come again"
+      ],
+      "explanation": "While an ISR runs, the main code and interrupts of equal or lower priority are held up, so the shorter the ISR the better. Do heavy work (display, printf) in the main loop after checking a flag. A delay in the ISR makes other events get missed, and an infinite loop stops the program there."
+    },
+    "embc-w4-q2": {
+      "question": "A sensor gives a short pulse only a few times a day, and it must not be missed. The rest of the time the CPU has other work or should sleep. Which approach is best?",
+      "options": [
+        "Poll the pin continuously in the main loop",
+        "Check the pin once every 1 second",
+        "Put the pin in analog mode and read it with the ADC",
+        "Use an edge-triggered external interrupt on the pin"
+      ],
+      "explanation": "An edge-triggered interrupt runs the ISR as soon as the pulse arrives, even if the CPU is busy or asleep, so the pulse is not missed. Continuous polling keeps the CPU busy and prevents sleep. Checking every 1 second lets a short pulse come and go in between (the trap)."
+    },
+    "embc-w4-q3": {
+      "question": "The timer clock is 16 MHz, PSC = 1599 and ARR = 999 (up-counting). How much time passes between update interrupts?",
+      "options": [
+        "10 ms",
+        "100 ms",
+        "1 s",
+        "0.1 ms"
+      ],
+      "explanation": "Counter clock = 16 MHz ÷ (1599 + 1) = 10 kHz, so each tick is 0.1 ms. One cycle = ARR + 1 = 1000 ticks, so the period = 1000 × 0.1 ms = 100 ms (10 Hz). Trap: giving the time of a single tick (0.1 ms) and ignoring ARR."
+    },
+    "embc-w4-q4": {
+      "question": "The timer clock is 48 MHz and PSC = 47. You need the update interrupt at exactly 1 kHz. What should ARR be?",
+      "options": [
+        "1000",
+        "47999",
+        "999",
+        "99"
+      ],
+      "explanation": "Counter clock = 48 MHz ÷ (47 + 1) = 1 MHz. For 1 kHz each cycle needs 1,000,000 ÷ 1000 = 1000 ticks, and ticks = ARR + 1, so ARR = 999. Trap: writing ARR = 1000, which gives 1001 ticks and about 999 Hz. 47999 would be right only with PSC = 0."
+    },
+    "embc-w4-q5": {
+      "question": "On a Cortex-M, ISR_A (priority 3) is running. Interrupt B (priority 1) and interrupt C (priority 5) both arrive. What happens?",
+      "options": [
+        "Both wait for A to finish, then C runs first",
+        "B preempts A immediately; C stays pending until A finishes",
+        "C preempts A immediately because its number is larger",
+        "B and C are both ignored because an ISR is already running"
+      ],
+      "explanation": "In the Cortex-M NVIC a smaller number means higher priority. B (1) has higher priority than A (3), so B interrupts A and runs at once (nesting). C (5) has lower priority than A, so it stays pending and runs after A finishes. Trap: assuming a bigger number means higher priority. Interrupts are not ignored; they stay pending."
+    },
+    "embc-w4-q6": {
+      "question": "A 16-bit timer (PSC and ARR max 65535) runs from an 84 MHz clock. You need an update period of exactly 0.5 s. Which setting is correct?",
+      "options": [
+        "PSC = 0, ARR = 41999999",
+        "PSC = 8399, ARR = 5000",
+        "PSC = 839, ARR = 4999",
+        "PSC = 8399, ARR = 4999"
+      ],
+      "explanation": "PSC = 8399 gives a counter clock of 84 MHz ÷ 8400 = 10 kHz. ARR = 4999 means 5000 ticks = 5000 ÷ 10,000 = 0.5 s. ARR = 5000 gives 5001 ticks = 0.5001 s (the +1 trap). PSC = 839 makes the counter 100 kHz and the period only 0.05 s. With PSC = 0, ARR would need to be 41,999,999, which does not fit in a 16-bit register."
+    },
+    "embc-w5-q1": {
+      "question": "In UART 8N1 format, how many bits in total go on the line to send one byte?",
+      "options": [
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "explanation": "8N1 = 1 start bit + 8 data bits + no parity + 1 stop bit = 10 bits. Trap: counting only the data bits (8). It would be 11 with a parity bit as well (8E1 or 8O1)."
+    },
+    "embc-w5-q2": {
+      "question": "Which statement about the I2C bus is correct?",
+      "options": [
+        "SDA and SCL are open-drain, so both lines need pull-up resistors",
+        "Each slave needs its own chip-select line",
+        "It is asynchronous, so it has no clock line",
+        "It is full-duplex: sending and receiving happen at the same time"
+      ],
+      "explanation": "On I2C, devices can only pull a line low (open-drain); the pull-up resistor provides the high level. This is what lets many devices share a bus without shorting. A chip select per slave is a feature of SPI; I2C uses addresses. I2C has SCL as a clock line, and data goes both ways on the single SDA line, so it is half-duplex."
+    },
+    "embc-w5-q3": {
+      "question": "100 bytes are sent back-to-back with no gaps over UART at 115200 baud, 8N1. About how long does it take?",
+      "options": [
+        "6.94 ms",
+        "86.8 ms",
+        "0.87 ms",
+        "8.68 ms"
+      ],
+      "explanation": "Each byte = 10 bits (start + 8 data + stop), so 100 bytes = 1000 bits. Time = 1000 ÷ 115200 s ≈ 8.68 ms. Trap: using 8 bits per byte, which gives 800 ÷ 115200 ≈ 6.94 ms and forgets the start/stop bits."
+    },
+    "embc-w5-q4": {
+      "question": "An I2C sensor has the 7-bit address 0x48. The master wants to READ data from it. What is the first byte on the bus after START?",
+      "options": [
+        "0x48",
+        "0x91",
+        "0x90",
+        "0x49"
+      ],
+      "explanation": "Address byte = (7-bit address << 1) | R/W. 0x48 << 1 = 0x90, and R/W = 1 for a read, so 0x91. 0x90 would be for a write. Trap: adding 1 without shifting (0x49), or sending the 7-bit address as it is (0x48)."
+    },
+    "embc-w5-q5": {
+      "question": "An MCU (SPI master) must connect to 4 separate SPI slave devices, each with its own chip select. Not counting GND, how many signal lines are needed in total?",
+      "options": [
+        "7",
+        "16",
+        "4",
+        "8"
+      ],
+      "explanation": "SCLK, MOSI and MISO are shared by all slaves (3 lines), and each slave needs its own CS (4 lines). Total 3 + 4 = 7. Trap: assuming a full 4-wire set per slave (16). The CS line decides which slave is talking at the moment."
+    },
+    "embc-w5-q6": {
+      "question": "An SPI slave's datasheet says: the clock is HIGH when idle, and data is sampled on the first (leading) clock edge. Which mode should the master use, and on which edge is data sampled?",
+      "options": [
+        "Mode 0, rising edge",
+        "Mode 3, rising edge",
+        "Mode 2, falling edge",
+        "Mode 1, falling edge"
+      ],
+      "explanation": "Idle HIGH means CPOL = 1. Sampling on the leading edge means CPHA = 0. CPOL = 1, CPHA = 0 is Mode 2. The clock starts high, so the first edge is high→low, i.e. falling. Trap: choosing Mode 3; it also idles high but samples on the trailing (rising) edge. In Mode 0 and Mode 1 the clock idles LOW."
+    },
+    "embc-w6-q1": {
+      "question": "How many distinct output codes can a 12-bit ADC produce?",
+      "options": [
+        "12",
+        "4096",
+        "4095",
+        "1024"
+      ],
+      "explanation": "An N-bit ADC has 2ᴺ codes: 2¹² = 4096 (from 0 to 4095). Trap: taking the largest code, 4095, as the count; 0 is also a code. 1024 belongs to a 10-bit ADC."
+    },
+    "embc-w6-q2": {
+      "question": "A timer is in edge-aligned PWM mode: the output stays high while the counter < CCR. ARR = 999 and CCR = 250. What is the duty cycle?",
+      "options": [
+        "75%",
+        "50%",
+        "2.5%",
+        "25%"
+      ],
+      "explanation": "One period has ARR + 1 = 1000 ticks. The output is high for counter values 0 to 249 (250 ticks). Duty = 250 ÷ 1000 = 25%. Trap: taking the low time as the duty (75%), or using the wrong scale instead of treating ARR as the period."
+    },
+    "embc-w6-q3": {
+      "question": "A 12-bit ADC has a 3.3 V reference. A reading gives code 3072. Roughly what is the input voltage?",
+      "options": [
+        "≈ 2.48 V",
+        "≈ 3.07 V",
+        "≈ 1.65 V",
+        "≈ 0.75 V"
+      ],
+      "explanation": "Voltage ≈ code × Vref ÷ 4096 = 3072 × 3.3 ÷ 4096 ≈ 2.475 V, i.e. ≈ 2.48 V (dividing by 4095 also gives ≈ 2.48 V). Trap: computing 3072 ÷ 4096 = 0.75 and forgetting to multiply by Vref. 1.65 V is half-scale (code 2048)."
+    },
+    "embc-w6-q4": {
+      "question": "The timer clock is 84 MHz, PSC = 83 and ARR = 499. What is the frequency of the PWM signal from this timer?",
+      "options": [
+        "1 kHz",
+        "500 Hz",
+        "2 kHz",
+        "1 MHz"
+      ],
+      "explanation": "Counter clock = 84 MHz ÷ (83 + 1) = 1 MHz. One PWM period = ARR + 1 = 500 ticks, so the frequency = 1,000,000 ÷ 500 = 2 kHz. Trap: taking the counter clock (1 MHz) as the PWM frequency, or reading 500 ticks as 500 Hz."
+    },
+    "embc-w6-q5": {
+      "question": "An ADC takes 100,000 samples/s and every sample must go into a RAM buffer. The CPU also has to do filtering at the same time. Which design is most efficient?",
+      "options": [
+        "Take an ADC interrupt on every conversion and copy the sample to the buffer in the ISR",
+        "Poll the ADC 'conversion done' flag in the main loop",
+        "Reduce the ADC resolution to 8-bit",
+        "Let DMA copy from the ADC data register into a RAM buffer (circular mode), and process on half/full complete interrupts"
+      ],
+      "explanation": "DMA puts each sample into the buffer without the CPU; the CPU gets an interrupt only when half or all of the buffer is full and processes that block while DMA fills the other half. A per-sample interrupt means 100,000 ISRs per second, and polling ties up the CPU completely. Lowering the resolution does not reduce the transfer load."
+    },
+    "embc-w6-q6": {
+      "question": "A hobby servo needs 50 Hz PWM with a 1.5 ms high pulse. The timer's counter clock (after the prescaler) is 1 MHz, edge-aligned mode, output high while CNT < CCR. What should ARR and CCR be?",
+      "options": [
+        "ARR = 19999, CCR = 1500",
+        "ARR = 20000, CCR = 1500",
+        "ARR = 19999, CCR = 150",
+        "ARR = 1999, CCR = 1500"
+      ],
+      "explanation": "At 1 MHz one tick = 1 µs. The 50 Hz period is 20 ms = 20,000 ticks, so ARR + 1 = 20000 → ARR = 19999. 1.5 ms = 1500 µs = 1500 ticks, so CCR = 1500 (high for CNT 0 to 1499). Traps: ARR = 20000 makes the period 20.001 ms; CCR = 150 gives only a 0.15 ms pulse; ARR = 1999 makes the frequency 500 Hz."
+    },
+    "embc-w7-q1": {
+      "question": "What is the value of the expression `(0xB4 >> 4) & 0x0F`?",
+      "options": [
+        "0x4",
+        "0xB4",
+        "0x0F",
+        "0xB"
+      ],
+      "explanation": "0xB4 = 1011 0100. Shifting right by 4 gives 0000 1011 = 0x0B. Then & 0x0F keeps 0xB. This is the standard way to get the upper nibble. Trap: masking without the shift, `0xB4 & 0x0F` = 0x4 (the lower nibble)."
+    },
+    "embc-w7-q2": {
+      "question": "A 10-bit ADC has a 5 V reference. Roughly what is its 1 LSB (smallest step)?",
+      "options": [
+        "≈ 4.88 mV",
+        "≈ 0.5 V",
+        "≈ 1.22 mV",
+        "≈ 19.5 mV"
+      ],
+      "explanation": "1 LSB = Vref ÷ 2ᴺ = 5 V ÷ 1024 ≈ 4.88 mV. 1.22 mV would be a 12-bit ADC (5 ÷ 4096), and 19.5 mV an 8-bit one (5 ÷ 256). 0.5 V comes from dividing 5 by 10, i.e. treating the bit count as the number of levels."
+    },
+    "embc-w7-q3": {
+      "question": "The UART clock is 8 MHz, with 16× oversampling, and the divisor can only be an integer. Using the nearest divisor for 115200 baud, what are the actual baud rate and the error?",
+      "options": [
+        "115200 baud, 0% error",
+        "125000 baud, ≈ 0.16% error",
+        "125000 baud, ≈ 8.5% error",
+        "100000 baud, ≈ 13.2% error"
+      ],
+      "explanation": "Ideal divisor = 8,000,000 ÷ (16 × 115200) ≈ 4.34, nearest integer 4. Actual baud = 8,000,000 ÷ 64 = 125000. Error = (125000 − 115200) ÷ 115200 ≈ 8.5%, far too much for a reliable UART, so the clock or baud rate must change. Trap: using 4.34 directly and saying 0%. 100000 would come from a divisor of 5, which is further from 4.34."
+    },
+    "embc-w7-q4": {
+      "question": "The SPI clock is 8 MHz. How long does it take to send 512 bytes back-to-back (no gaps between bytes)?",
+      "options": [
+        "64 µs",
+        "512 µs",
+        "640 µs",
+        "4.096 ms"
+      ],
+      "explanation": "In SPI each byte = 8 clocks, with no start/stop bits. 512 × 8 = 4096 bits. Time = 4096 ÷ 8,000,000 s = 512 µs. Trap: using 10 bits per byte as in UART (640 µs). 4.096 ms would assume a 1 MHz clock."
+    },
+    "embc-w7-q5": {
+      "question": "Bits [11:8] of a status register hold a 4-bit 'mode' field. What is the value of `mode` after this code?",
+      "options": [
+        "0xA",
+        "0x1A",
+        "0x4",
+        "0xA00"
+      ],
+      "explanation": "0x1A40 >> 8 = 0x1A. For the lower 4 bits, & 0xF: 0x1A & 0xF = 0xA. Trap: stopping after the shift (0x1A), which also brings in bit 12 above the field. 0xA00 would come from `st & 0xF00` without the shift."
+    },
+    "embc-w7-q6": {
+      "question": "A 16-bit free-running timer runs at 1 MHz, and input capture records two consecutive rising edges of a signal. The counter wrapped once in between. Roughly what is the signal frequency?",
+      "options": [
+        "≈ 16.0 Hz",
+        "≈ 683 Hz",
+        "≈ 15.3 Hz",
+        "≈ 333 Hz"
+      ],
+      "explanation": "The counter went from 64000 to 65535 (1536 ticks), wrapped, then from 0 to 1464 (1464 ticks): 3000 ticks in total. The `uint16_t` cast gives exactly this: (1464 − 64000) mod 65536 = 3000. Period = 3000 µs, frequency = 1,000,000 ÷ 3000 ≈ 333 Hz. Traps: using 64000 − 1464 = 62536 (≈ 16.0 Hz), using only t2 (≈ 683 Hz), or taking a full 65536-tick cycle (≈ 15.3 Hz)."
+    },
+    "embc-w8-q1": {
+      "question": "A super-loop (no OS) has three tasks. Someone puts `delay_ms(500);` (busy-wait) inside one task. What is the effect?",
+      "options": [
+        "In every loop iteration the other tasks also get their turn at least 500 ms late",
+        "Only that task becomes slow; the other tasks keep running in parallel",
+        "The compiler optimises the busy-wait away",
+        "All interrupts are disabled permanently"
+      ],
+      "explanation": "In a super-loop the tasks run one after another; there is no parallelism. When one task busy-waits for 500 ms, the loop stops there and the other tasks respond 500 ms+ late. Interrupts still run (ISRs are fine), but main-loop work is held up. Trap: assuming OS-style parallel execution."
+    },
+    "embc-w8-q2": {
+      "question": "What is the biggest benefit of writing a sensor driver on top of a HAL layer (`i2c_read()`, `gpio_write()`) instead of directly on registers?",
+      "options": [
+        "The code always runs faster than register-level code",
+        "The program's Flash usage becomes zero",
+        "Porting to a new MCU mainly needs a new HAL layer; the driver and application logic stay the same",
+        "Interrupts are no longer needed"
+      ],
+      "explanation": "Layering is about keeping hardware details in one place. The driver knows only the HAL functions, so when the chip changes you write a new HAL implementation and the code above keeps working; you can also mock the HAL for testing on a PC. An extra layer can make code slightly slower or bigger, not faster (the trap)."
+    },
+    "embc-w8-q3": {
+      "question": "A ring buffer with SIZE = 8 currently has `head = 3` and `tail = 6` (head = next write index, tail = next read index). How many items are in the buffer?",
+      "options": [
+        "3",
+        "5",
+        "-3",
+        "8"
+      ],
+      "explanation": "Count = (head − tail + SIZE) % SIZE = (3 − 6 + 8) % 8 = 5. The head has wrapped around: the items are at indices 6, 7, 0, 1, 2, i.e. 5. Trap: taking 6 − 3 = 3, which is closer to the number of empty slots, not items. -3 comes from forgetting the `+ SIZE` and the `%`."
+    },
+    "embc-w8-q4": {
+      "question": "A ring buffer uses these full/empty checks. What is the maximum number of items it can hold at one time?",
+      "options": [
+        "16",
+        "17",
+        "8",
+        "15"
+      ],
+      "explanation": "If all 16 slots were filled, head would wrap round to equal tail, and `head == tail` would look like empty, so full and empty could not be told apart. So this design always keeps one slot free: it is full when head is one behind tail. Maximum = SIZE − 1 = 15. Trap: taking the array size 16 as the capacity."
+    },
+    "embc-w8-q5": {
+      "question": "The state machine starts in IDLE. Events arrive in this order: 'P', 'S', 'P', 'S', 'X', 'P'. What is the state after all the events?",
+      "options": [
+        "RUNNING",
+        "PAUSED",
+        "IDLE",
+        "Compile error, because an `enum` cannot be used in a `switch`"
+      ],
+      "explanation": "Trace: in IDLE, 'P' is ignored → IDLE. 'S' → RUNNING. 'P' → PAUSED. 'S' → RUNNING. 'X' → IDLE. The final 'P' is ignored in IDLE → IDLE. Trap: seeing the last event 'P' and answering PAUSED; in an FSM the effect of an event depends on the current state. `enum` values are integers and perfectly valid in a `switch`."
+    },
+    "embc-w8-q6": {
+      "question": "A programmer used the power-of-two trick for a ring buffer index but set SIZE to 6. What does this code print?",
+      "options": [
+        "1 0 1 0 1",
+        "1 2 3 4 5",
+        "1 2 3 4 0",
+        "1 2 0 1 2"
+      ],
+      "explanation": "SIZE − 1 = 5 = 101 (binary). idx = 0: (1) & 101 = 1. idx = 1: (2 = 010) & 101 = 0. Then the same cycle: 1, 0, 1. The index only moves between 0 and 1, and the other slots are never used. `& (SIZE - 1)` equals `% SIZE` only when SIZE is a power of 2. Trap: assuming it works like `% 6` (1 2 3 4 5)."
+    },
+    "embc-w9-q1": {
+      "question": "In a preemptive priority-based RTOS scheduler, which task runs on the CPU at any moment?",
+      "options": [
+        "The task that was created first",
+        "The highest-priority task among those in the Ready state",
+        "The task with the largest stack",
+        "The highest-priority task among the Blocked tasks"
+      ],
+      "explanation": "The scheduler chooses only among Ready tasks, and the highest-priority one runs. A Blocked task (waiting on a delay or semaphore) does not run, however high its priority, until it becomes Ready. Creation order and stack size have nothing to do with priority."
+    },
+    "embc-w9-q2": {
+      "question": "Two tasks print messages on the same UART, and their messages must not get mixed. Which RTOS primitive fits best?",
+      "options": [
+        "A binary semaphore given by an ISR",
+        "A global flag variable",
+        "A counting semaphore with an initial count of 10",
+        "A mutex (with priority inheritance)"
+      ],
+      "explanation": "Letting only one task use a shared resource at a time is mutual exclusion, which is what a mutex is for: it has ownership (whoever locks it unlocks it) and priority inheritance reduces priority inversion. A plain flag can be preempted between the check and the set (a race). A semaphore with count 10 would let 10 tasks in at once."
+    },
+    "embc-w9-q3": {
+      "question": "An RTOS has a tick rate of 100 Hz. A task calls `delay(50)`, where the argument is in ticks. Roughly how long does the task stay Blocked?",
+      "options": [
+        "500 ms",
+        "50 ms",
+        "5 s",
+        "0.5 ms"
+      ],
+      "explanation": "A 100 Hz tick means each tick is 10 ms. 50 ticks × 10 ms = 500 ms. Trap: taking the argument as milliseconds (50 ms); that is only right with a 1 kHz tick. This is why portable code uses a macro that converts time to ticks."
+    },
+    "embc-w9-q4": {
+      "question": "Task L (low priority) takes a mutex. Then task H (high) becomes Ready and blocks on the same mutex. Now task M (medium, does not need the mutex) becomes Ready and runs for a long time. What happens WITHOUT priority inheritance?",
+      "options": [
+        "H preempts M at once and runs, because H has the highest priority",
+        "It is a deadlock: L and H are stuck forever whether or not M exists",
+        "M preempts L, L cannot release the mutex, and H is effectively held up by M",
+        "L gives up the mutex automatically as soon as H blocks"
+      ],
+      "explanation": "H is Blocked (waiting for the mutex), so M is the highest Ready task and preempts L. L gets no CPU, the mutex is not released, and H waits a long time because of a medium task. This is priority inversion. With priority inheritance, L's priority would temporarily rise to H's, M could not preempt it, and L would release the mutex quickly. It is not a deadlock: once M finishes, everything proceeds."
+    },
+    "embc-w9-q5": {
+      "question": "A queue has length 5 and is currently empty. A high-priority producer task sends 8 items in a row, each send with timeout 0, and the consumer task gets no chance to run in between. What happens?",
+      "options": [
+        "All 8 items go through, no send fails",
+        "5 sends succeed, the last 3 fail",
+        "3 sends succeed, 5 fail",
+        "The queue overwrites the first 5 items so only the last 5 remain, and every send reports success"
+      ],
+      "explanation": "The queue has only 5 slots and the consumer is not removing anything. The first 5 sends find space. From the 6th the queue is full; with timeout 0 the sender does not wait and the send fails at once (returns an error), so 3 fail. A normal RTOS queue does not silently overwrite old data. Trap: treating the queue as unlimited."
+    },
+    "embc-w9-q6": {
+      "question": "Three periodic tasks run with rate-monotonic priorities: T1 (C = 2 ms, T = 10 ms), T2 (C = 4 ms, T = 20 ms), T3 (C = 10 ms, T = 40 ms). The RM utilisation bound for 3 tasks is ≈ 0.78. What is the correct conclusion?",
+      "options": [
+        "U ≈ 0.23; below the bound, so schedulable",
+        "U = 0.65; above the bound, so deadlines will be missed",
+        "U = 0.80; above the bound, so no guarantee",
+        "U = 0.65; below the bound, so RM guarantees every deadline"
+      ],
+      "explanation": "U = 2/10 + 4/20 + 10/40 = 0.20 + 0.20 + 0.25 = 0.65. This is below 0.78, so the Liu–Layland test passes: with RM every deadline is guaranteed. Traps: adding all C and dividing by the sum of all T (16/70 ≈ 0.23, a wrong formula); reading 10/40 as 0.4 (0.80); or reversing the comparison of 0.65 and 0.78."
+    },
+    "embc-w10-q1": {
+      "question": "Which declaration makes `fp` a pointer to a function that takes an `int` and returns nothing?",
+      "options": [
+        "`void *fp(int);`",
+        "`void fp(int *);`",
+        "`void (*fp)(int);`",
+        "`void (fp*)(int);`"
+      ],
+      "explanation": "The brackets in `(*fp)` say that `fp` is a pointer, and `(int)` says the function it points to takes an int and returns `void`. Without the brackets, `void *fp(int);` declares a function returning `void *` (the most common trap). `void fp(int *);` is a function taking an int pointer, and `(fp*)` is invalid syntax."
+    },
+    "embc-w10-q2": {
+      "question": "In this register map, at which address is `UART1->CR1`?",
+      "options": [
+        "0x4001100C",
+        "0x40011003",
+        "0x40011004",
+        "0x40011010"
+      ],
+      "explanation": "Each member is 4 bytes: SR at offset 0x0, DR 0x4, BRR 0x8, CR1 0xC. Address = 0x40011000 + 0xC = 0x4001100C. Trap: adding the member number (3) directly as bytes (0x40011003); struct offsets are in bytes and each `uint32_t` is 4 bytes. 0x40011010 would be the next (fifth) register."
+    },
+    "embc-w10-q3": {
+      "question": "Why is mapping a hardware register with a bit-field struct considered less portable?",
+      "options": [
+        "Bit-fields are not allowed by the C standard",
+        "Bit-fields always use more memory than normal variables",
+        "Bit-field members cannot be `volatile`",
+        "Bit order and packing are implementation-defined, so the layout can change with the compiler or target"
+      ],
+      "explanation": "The C standard allows bit-fields but does not fix whether the first field starts at the LSB or the MSB, or what the storage unit/padding will be. A register map that works on one compiler can touch the wrong bits on another. Bit-fields can be `volatile` and often save memory, so the other options are wrong."
+    },
+    "embc-w10-q4": {
+      "question": "What does this code print?",
+      "options": [
+        "CABC",
+        "BCAB",
+        "ABCA",
+        "CAB"
+      ],
+      "explanation": "The table order is `{ c, a, b }`: table[0] = c, table[1] = a, table[2] = b. seq = 2, 0, 1, 2 → b, c, a, b → BCAB. Trap: mapping the index straight to the order a, b, c (2 → c, 0 → a ...), which gives CABC; what matters is the order in which the functions are placed in the table."
+    },
+    "embc-w10-q5": {
+      "question": "A timer ISR does `count++` every 1 ms, and the main loop sometimes does `count = count + 10;`. `count` is `volatile uint32_t`. In testing, one ISR increment occasionally disappears. What is the best explanation and fix?",
+      "options": [
+        "The main update is load-add-store; if the ISR runs in between, its increment is overwritten. Fix: disable interrupts briefly around that statement",
+        "`volatile` makes the compiler cache the value. Fix: remove `volatile`",
+        "The 32-bit variable is overflowing. Fix: use `uint64_t`",
+        "The ISR priority is too high. Fix: give it the lowest priority"
+      ],
+      "explanation": "Main loads `count` into a register, adds 10, and stores it. If the ISR runs `count++` after the load but before the store, main's store writes old value + 10 and the ISR's +1 is lost. `volatile` only stops caching; it does not make the operation atomic, and removing it would make things worse. Fix: a short critical section (or an atomic instruction)."
+    },
+    "embc-w10-q6": {
+      "question": "On a typical 32-bit ARM compiler (natural alignment, no packing attribute), what does this code print?",
+      "options": [
+        "7",
+        "8",
+        "12",
+        "16"
+      ],
+      "explanation": "`id` sits at offset 0 (1 byte), then `value` needs a 4-byte boundary, so 3 bytes of padding and `value` at offsets 4–7. `crc` sits at offsets 8–9. The struct size must be a multiple of its largest alignment (4), so 2 bytes of padding at the end: 12 in total. Trap: just adding the member sizes (1 + 4 + 2 = 7). 8 would be the size with the members in the order `value, crc, id`."
+    },
+    "embc-w11-q1": {
+      "question": "To debug a Cortex-M chip over SWD (apart from GND and power), which two signals are needed?",
+      "options": [
+        "TX and RX",
+        "SDA and SCL",
+        "MOSI and MISO",
+        "SWDIO and SWCLK"
+      ],
+      "explanation": "SWD (Serial Wire Debug) uses only two lines: SWDIO (bidirectional data) and SWCLK (clock). The other options are UART, I2C and SPI signals, not debug-port signals. JTAG needs 4–5 lines, which is why SWD is common on pin-limited Cortex-M boards."
+    },
+    "embc-w11-q2": {
+      "question": "A build fails with: \"undefined reference to `uart_init`\". At which stage does this error come?",
+      "options": [
+        "Preprocessor",
+        "Linker",
+        "Compiler syntax check",
+        "Flash programming"
+      ],
+      "explanation": "The compiler compiles each `.c` file separately; if it sees a prototype, it accepts the function call. When the linker joins all the `.o` files and finds no definition of `uart_init` anywhere, it reports 'undefined reference'. Fix: add that `.c` file or library to the build. Trap: thinking the header include is the problem."
+    },
+    "embc-w11-q3": {
+      "question": "A watchdog runs from a 40 kHz clock with prescaler 16 and resets after 500 counts. The main loop feeds it once per iteration, and the worst-case loop time is 250 ms. What happens?",
+      "options": [
+        "The timeout is 2 s, so there is no reset",
+        "The timeout is 200 ms, but the loop feeds it every time so there is no reset",
+        "The timeout is 200 ms, so the watchdog resets on the worst-case loop",
+        "The timeout is 20 ms, so it resets on every iteration"
+      ],
+      "explanation": "Counter clock = 40,000 ÷ 16 = 2500 Hz, one count = 0.4 ms. Timeout = 500 × 0.4 ms = 200 ms. In the worst case there is a 250 ms gap between feeds, longer than 200 ms, so a reset will sometimes happen. Trap: thinking 'it feeds every loop, so it is safe'; the gap between feeds must be shorter than the timeout, with margin."
+    },
+    "embc-w11-q4": {
+      "question": "On a logic analyser, the narrowest pulse (one bit) on a UART TX line measures 104 µs wide. Roughly what is the baud rate?",
+      "options": [
+        "≈ 9600",
+        "≈ 104",
+        "≈ 960",
+        "≈ 115200"
+      ],
+      "explanation": "Baud = 1 ÷ bit time = 1 ÷ 104 µs ≈ 9615, i.e. the standard 9600 baud. At 115200 baud one bit would be ≈ 8.68 µs. Trap: giving the bit width itself as the baud (104), or applying the 10-bits-per-frame factor to the bit time (960)."
+    },
+    "embc-w11-q5": {
+      "question": "You try to set 10 breakpoints with a debugger on code running from Flash, but only a few are set and the rest give an error. What is the best explanation?",
+      "options": [
+        "Breakpoints can never be set on code running from Flash",
+        "The SWD protocol allows only 1 breakpoint",
+        "Compiler optimisation deletes the breakpoints",
+        "Flash code uses the core's hardware breakpoint units, which are limited in number"
+      ],
+      "explanation": "In RAM the debugger can replace an instruction with a breakpoint instruction (a software breakpoint), but doing that in Flash is not practical. So Flash code uses the core's hardware comparators, and their number depends on the chip (often only a few). Breakpoints do work, just in limited numbers; SWD itself imposes no '1 breakpoint' limit."
+    },
+    "embc-w11-q6": {
+      "question": "The map file gives these sizes: `.text` = 0x3A20, `.rodata` = 0x0400, `.data` = 0x0120, `.bss` = 0x0860 bytes. The linker script reserves 0x0400 bytes of RAM for the stack. The MCU has 16 KB Flash and 4 KB RAM. What is the correct conclusion?",
+      "options": [
+        "Flash 15904 bytes, RAM 3456 bytes; both fit",
+        "Flash 16192 bytes, RAM 3456 bytes; both fit",
+        "Flash 18336 bytes; Flash overflow",
+        "Flash 16192 bytes, RAM 4480 bytes; RAM overflow"
+      ],
+      "explanation": "Flash = text + rodata + data = 0x3A20 + 0x0400 + 0x0120 = 0x3F40 = 16192 bytes, which fits in 16384 (only 192 bytes left). RAM = data + bss + stack = 0x0120 + 0x0860 + 0x0400 = 0xD80 = 3456 bytes, which fits in 4096. Traps: not counting the `.data` initial values in Flash (15904), adding `.bss` to Flash (18336), or also counting `.rodata` in RAM (4480)."
+    },
+    "embc-w12-q1": {
+      "question": "A heater controller's temperature sensor gets disconnected and the 12-bit ADC keeps reading 4095 (full-scale), which is physically impossible in this system. What is the best fail-safe response?",
+      "options": [
+        "Switch the heater off and signal a fault",
+        "Keep running the heater using the last valid reading",
+        "Run the heater at full power",
+        "Ignore the reading and assume the temperature is 25 °C"
+      ],
+      "explanation": "An out-of-range reading signals a sensor fault. The safe state for a heater is 'off', because heating without a correct temperature risks overheating or fire. Running on the last valid value or a made-up value (25 °C) hides the fault. Full power is the least safe choice."
+    },
+    "embc-w12-q2": {
+      "question": "Why is dynamic memory (`malloc`/`free`) often avoided in safety-critical embedded C (such as MISRA-style guidelines)?",
+      "options": [
+        "`malloc` is not part of the C standard library",
+        "`malloc` always returns zero-filled memory, which is slow",
+        "Fragmentation and unpredictable timing/allocation failure make the behaviour non-deterministic and hard to analyse",
+        "`malloc` only works on computers with an operating system"
+      ],
+      "explanation": "In a long-running device, repeated allocate/free fragments the heap, and one day an allocation may fail or take a different time. That is hard to prove in advance. Static (compile-time) allocation keeps memory use fixed and analysable. `malloc` is part of the standard and works on bare-metal too, so A and D are wrong; zero-filling is what `calloc` does."
+    },
+    "embc-w12-q3": {
+      "question": "What is the bug in this function's bounds check?",
+      "options": [
+        "No bug; the check is correct",
+        "`i > N` should be `i >= N`; with i = 8, buf[8] is an out-of-bounds write",
+        "The `i < 0` check is wrong and should be removed",
+        "The return values are reversed: success should return -1"
+      ],
+      "explanation": "An array of 8 elements has valid indices 0 to 7. The check `i > N` only blocks 9 and above, so i = 8 passes and buf[8] writes past the array, which can corrupt another variable. Correct: `if (i < 0 || i >= N)`. The negative index check is needed, and the return convention (0 for success) is fine."
+    },
+    "embc-w12-q4": {
+      "question": "The function `set_level(int x)` accepts inputs from 0 to 100 (both included); all other inputs must be rejected. Which test set is best for boundary value testing?",
+      "options": [
+        "50, 60, 70",
+        "0, 100",
+        "-1000, 1000",
+        "-1, 0, 100, 101"
+      ],
+      "explanation": "Bugs often sit at the limits (such as `>` vs `>=`). So test at each boundary and just outside it: -1 (reject), 0 (accept), 100 (accept), 101 (reject). Testing only 0 and 100 does not catch an off-by-one rejection bug. Values in the middle or far away do not test the boundary at all."
+    },
+    "embc-w12-q5": {
+      "question": "An I2C driver contains this code. If the sensor wire comes loose and the ACK never arrives, what happens and what is a better design?",
+      "options": [
+        "The loop hangs forever; add a timeout counter and return an error so the code can recover",
+        "The hardware sets the ACK flag by itself, so there is no problem",
+        "The compiler optimises the loop away because the body is empty",
+        "The loop stops by itself after one iteration"
+      ],
+      "explanation": "The flag never gets set, so the `while` runs forever and the whole firmware (or one RTOS task) hangs; with a watchdog it may turn into a reset loop. Put a timeout on every hardware wait (counter or tick-based) and return an error so the code above can reset the bus or report a fault. The register is `volatile`, so the compiler cannot remove the loop (the trap)."
+    },
+    "embc-w12-q6": {
+      "question": "On a target with a 32-bit `int`, what does this code print?",
+      "options": [
+        "OK",
+        "Compile error",
+        "TOO HIGH",
+        "Undefined behaviour; anything may be printed"
+      ],
+      "explanation": "When an `int` is compared with an `unsigned int`, C's usual arithmetic conversions turn `temp` into unsigned: -5 becomes 2³² − 5 = 4294967291, which is greater than 10. So the condition is false and TOO HIGH is printed. This conversion is well-defined (not undefined), and the compiler only gives a sign-compare warning. Trap: treating it like maths, -5 < 10, and answering OK. Fix: compare both as the same signed type."
+    }
+  }
+}

@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <PageHead kicker="Legal" title="Privacy Policy" description="Last updated: 3 November 2026" />
 
       <p>
-        NEXT GEN (“we”, “us”) is an independent learning website run by THE TECH HUB for IIT Madras BS Foundation students. It is not
+        NEXT GEN (“we”, “us”) is an independent learning website run by THE TECH HUB for IIT Madras BS students. It is not
         affiliated with IIT Madras. This policy explains what we collect, why, and the choices you have.
       </p>
 

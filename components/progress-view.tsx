@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { progress, useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent, score, weakWeeks } from '@/lib/progress/insights';
+import { useChoiceSubjects } from '@/lib/programme-choice';
 import type { Subject, WeekRef } from '@/lib/types';
 import { accuracyTone, ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
 import { useAuth } from '@/components/auth/auth-provider';
@@ -11,20 +12,25 @@ import { useConfirm } from '@/components/confirm-dialog';
 
 type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]>; testTitles: Record<string, string> };
 
-export function ProgressView({ subjects, catalog, testTitles }: Props) {
+export function ProgressView({ subjects: allSubjects, catalog, testTitles }: Props) {
   const state = useProgress();
+  const subjects = useChoiceSubjects(allSubjects);
   const { user } = useAuth();
   const { confirm, dialog } = useConfirm();
   const totals = score(state.answers);
-  const weak = weakWeeks(state.answers);
-  const subjectById = new Map(subjects.map((s) => [s.id, s]));
+  // Weak and saved weeks only from the chosen level's subjects; totals and test history stay whole.
+  const inChoice = new Set(subjects.map((s) => s.id));
+  const weak = weakWeeks(state.answers).filter((w) => inChoice.has(w.subjectId));
+  // Every subject, so tests from another programme still show their subject.
+  const subjectById = new Map(allSubjects.map((s) => [s.id, s]));
   const titleOf = (subjectId: string, week: number) => catalog[subjectId]?.find((w) => w.week === week)?.title ?? '';
   const saved = Object.entries(state.weeks)
     .filter(([, w]) => w.saved)
     .map(([key]) => {
       const [subjectId, week] = key.split(':');
       return { subjectId, week: Number(week) };
-    });
+    })
+    .filter((w) => inChoice.has(w.subjectId));
 
   async function reset() {
     const where = user ? 'your account, on all your devices' : 'this browser';

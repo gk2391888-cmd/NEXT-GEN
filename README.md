@@ -2,12 +2,13 @@
 
 Powered by **THE TECH HUB** · Created by **GAURAV GUPTA**
 
-An independent learning and exam-preparation site for IITM BS Foundation students (not affiliated with IIT Madras).
+An independent learning and exam-preparation site for IIT Madras online BS students (not affiliated with IIT Madras).
 
 ## What's in Phase 1
 
-- **Study Library**: 8 Foundation subjects × 12 weeks of original Hinglish notes (concept, solved example, common mistakes, quick revision). "Save as PDF" prints a clean copy.
-- **Practice Quiz**: 6 MCQs per week (576 total) with instant explanations, in English or Hinglish: each student picks with the English / Hinglish switch on practice, mock tests, My Mistakes and search (English by default, remembered in the browser).
+- **Programmes**: right after sign-up (and once for existing students) NEXT GEN asks "What are you preparing for?": a programme level (Data Science Foundation or a Diploma, Electronic Systems, Aeronautics or Management & Data Science Foundation) or the qualifier exam. From then on every page lists only that level's subjects. See [Programmes](#programmes) below.
+- **Study Library**: 12 weeks of original Hinglish notes per subject (concept, solved example, common mistakes, quick revision) for the 8 Data Science Foundation subjects and the 9 Electronic Systems Foundation theory courses: 15 subjects, since English I/II are shared, with 1,080 questions. "Save as PDF" prints a clean copy.
+- **Practice Quiz**: 6 MCQs per week with instant explanations, in English or Hinglish: each student picks with the English / Hinglish switch on practice, mock tests, My Mistakes and search (English by default, remembered in the browser).
 - **Mock Tests**: Quiz 1 (weeks 1–4), Quiz 2 (weeks 5–8) and End term (all weeks) per subject, with timer, question palette, mark-for-review, auto-submit, resume after refresh, and a result page with week-wise performance and answer review.
 - **My Progress**: accuracy by subject, weak weeks, mock test history, weeks saved for revision.
 
@@ -138,7 +139,8 @@ Open http://localhost:3000.
 
 | Path | What it holds |
 | --- | --- |
-| `content/subjects.json` | The 8 subjects (code, name, colours) |
+| `content/programmes.json` | Programme → levels → subject ids, plus each programme's own course codes for shared subjects |
+| `content/subjects.json` | Every subject once (code, name, icon, `status`); colours live in `tokens/semantic/subject.json` |
 | `content/weeks/<subject>.json` | 12 weeks of notes and questions per subject (Hinglish) |
 | `content/weeks-en/<subject>.json` | The English text of every question (question, options, explanation), by question id |
 | `content/lab.json`, `content/faqs.json` | Python & CT lab exercises, Doubt Help answers |
@@ -149,6 +151,21 @@ Open http://localhost:3000.
 | `lib/tests.ts` | Mock test definitions and question picking |
 | `legacy/` | The original single-file prototype, kept for reference |
 
+## Programmes
+
+`content/programmes.json` lists each programme's levels (Foundation, Diplomas) and their subject ids. A subject used by two programmes (English I/II, the Electronic Systems courses Aeronautics shares) is one subject with one set of notes and one set of progress; `codes` gives the code each programme uses for it (English I is BSHS1001 in Data Science, HS1101 in Electronic Systems).
+
+- **Choosing**: a choice is `<programme>/<level>` (e.g. `es/foundation`) or `qualifier`.
+  - `components/programme-prompt.tsx` asks once: after sign-up (after the guest-progress import), to existing students with no choice (Data Science Foundation pre-selected, so confirming changes nothing), and to guests on the Overview. A guest's choice is copied to the account on sign-up instead of asking again. "Qualifier exam" goes to `/qualifier` (built on another branch).
+  - It can be changed any time with the sidebar's "Preparing for" menu or in My profile.
+  - Storage: a logged-in student's choice is a `programme:<choice>` entry in their profile's `subjects` (an existing text[] column, so **no migration** and it syncs like the rest of the profile); anything reading `subjects` as subject ids uses `termSubjects()`. A guest's is localStorage `nextgen-programme`. With no choice, Data Science Foundation is shown.
+  - Code: `lib/programmes.ts` (choices, parsing, shared helpers) and `lib/programme-choice.ts` (`useChoice()`, `useChoiceSubjects()`).
+- **What's listed**: Overview, Study Library, Practice, Mock Tests, Exam Planner, Search, My Progress and the profile show only the chosen level's subjects (subjects without notes say "Notes coming soon"); the qualifier shows Data Science Foundation's, plus a link to `/qualifier`. Week, practice and test pages exist for every subject, whatever the choice. The admin editor and PDF uploads list every subject, grouped by programme and level.
+- **Status**: in `content/subjects.json`, a subject without `status` has all 12 weeks; `"partial"` has weeks 1..n; `"planned"` has none yet.
+- **Coverage** and the research behind it (programmes, levels, official course codes, with sources): [docs/iitm-programmes.md](docs/iitm-programmes.md).
+
+To add a subject: add it to `content/subjects.json` (id: lowercase letters and digits), to a level in `content/programmes.json`, and a colour in `tokens/semantic/subject.json` (`npm run tokens`), then write `content/weeks/<id>.json` and `content/weeks-en/<id>.json`.
+
 ## Editing content
 
 Edit the JSON in `content/weeks/`, then check it:
@@ -157,7 +174,7 @@ Edit the JSON in `content/weeks/`, then check it:
 npm run validate:content
 ```
 
-The validator checks every week has the right fields, 6 questions with 4 distinct options, valid answer indexes and ids, and that correct answers aren't bunched on one option. `npm run build` runs it first, so broken content never deploys.
+The validator checks `content/programmes.json` (every level points at real subjects, every subject is in a programme), then that every week has the right fields, 6 questions with 4 distinct options, valid answer indexes and ids, and that correct answers aren't bunched on one option. `npm run build` runs it first, so broken content never deploys.
 
 Every question also needs its English text in `content/weeks-en/<subject>.json` (`question`, `options`, `explanation`; answer, code and difficulty are shared). The validator fails if one is missing, has a different number of options, or has different `` ` `` / `**` marks, and lists any question or option whose numbers differ between the two languages so you can check the translation. Keep the options in the same order: the answer index is the same in both languages.
 

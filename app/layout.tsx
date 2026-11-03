@@ -13,7 +13,7 @@ const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm-sans', display
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700', '800'], variable: '--font-jakarta', display: 'swap' });
 
 const DESCRIPTION =
-  'NEXT GEN by THE TECH HUB: week-wise Hinglish notes, practice questions and mock tests for IITM BS Foundation students.';
+  'NEXT GEN by THE TECH HUB: week-wise Hinglish notes, practice questions and mock tests for IITM BS students: Data Science and Electronic Systems.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

@@ -6,17 +6,19 @@ import { weekKey } from '@/lib/progress/types';
 import { percent } from '@/lib/progress/insights';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar, subjectColor } from '@/components/ui';
+import { useSubjectCode } from '@/lib/programme-choice';
 
 export function WeekNav({ subject, weeks, current }: { subject: Subject; weeks: WeekRef[]; current: number }) {
   const state = useProgress();
   const isDone = (week: number) => Boolean(state.weeks[weekKey(subject.id, week)]?.done);
   const doneCount = weeks.filter((w) => isDone(w.week)).length;
+  const code = useSubjectCode(subject);
 
   return (
     <nav className="card week-list" aria-label={`${subject.name} weeks`}>
       <div className="week-list-head">
         <h3>{subject.name}</h3>
-        <div className="muted mb-sm">{subject.code} · {doneCount} of {weeks.length} done</div>
+        <div className="muted mb-sm">{code} · {doneCount} of {weeks.length} done</div>
         <ProgressBar value={percent(doneCount, weeks.length)} color={subjectColor(subject.id)} />
         <Link className="link inline-block mt-md" href={`/library/${subject.id}/formulas`}>Formula sheet →</Link>
       </div>

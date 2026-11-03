@@ -1,0 +1,1489 @@
+{
+  "subjectId": "cprog",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Inside a Computer and Your First C Program",
+      "summary": "Is week aap samjhoge ki CPU aur memory milkar program kaise chalate hain, machine level par loop aur branch kaise bante hain, aur apna pehla C program likh kar chalaoge.",
+      "readMinutes": 12,
+      "concepts": [
+        "**CPU** computer ka dimaag hai. Isme **ALU** (arithmetic aur logic operations), **registers** (bahut tez, chhoti storage) aur **control unit** hote hain. CPU baar-baar ek hi cycle chalata hai: instruction **fetch** karo, **decode** karo, **execute** karo.",
+        "**Memory (RAM)** bytes ki ek lambi line hai. Har byte ka ek number hota hai jise **address** kehte hain. Agar address n bits ka hai to 2ⁿ alag bytes tak pahunch sakte hain, jaise 16-bit address se 65,536 bytes (64 KB). RAM volatile hai, power gayi to data gaya.",
+        "**Stored-program idea**: program ke instructions aur data dono memory mein rakhe jaate hain. CPU ka **Program Counter (PC)** register agle instruction ka address rakhta hai. Har fetch ke baad PC normally agle instruction par chala jaata hai.",
+        "**Branch aur loop machine level par**: ek **jump** instruction PC ko kisi naye address par set kar deta hai. **Conditional jump** (jaise \"agar register zero nahi hai to jump karo\") se `if` banta hai, aur peeche ki taraf jump karne se **loop** banta hai.",
+        "**I/O (Input/Output)**: keyboard, screen, disk jaise devices se data aata-jaata hai. Inko seedha program nahi chalata, **operating system (OS)** sambhalta hai. C mein `printf` text ko standard output (screen) par bhejta hai.",
+        "**Programming language aur C**: CPU sirf machine code (0 aur 1) samajhta hai. Hum C jaisi high-level language mein likhte hain aur **compiler** usse machine code mein badalta hai. C hardware ke kaafi paas hai, isliye OS, embedded systems aur drivers mein bahut use hota hai.",
+        "**Pehla C program**: `#include <stdio.h>` se `printf` ki declaration milti hai, `int main(void)` se program shuru hota hai, har statement `;` par khatam hota hai, aur `return 0;` OS ko batata hai ki program theek se khatam hua. `\\n` naya line deta hai."
+      ],
+      "example": {
+        "problem": "Neeche wala program kya print karega, aur har line ka kaam kya hai?",
+        "steps": [
+          "`#include <stdio.h>`: preprocessor standard I/O header ko jodta hai, jisme `printf` declared hai.",
+          "`int main(void)`: har C program yahin se chalna shuru hota hai. `void` ka matlab hai koi argument nahi.",
+          "`printf(\"Hello, C!\\n\");`: quotes ke andar ka text print hota hai, aur `\\n` cursor ko agli line par le jaata hai.",
+          "`return 0;`: main se 0 wapas OS ko jaata hai, matlab \"sab theek raha\".",
+          "Curly braces `{ }` main ki body ko gherte hain.",
+          "Answer: screen par **Hello, C!** aata hai aur cursor agli line par chala jaata hai."
+        ],
+        "code": "#include <stdio.h>\n\nint main(void)\n{\n    printf(\"Hello, C!\\n\");\n    return 0;\n}"
+      },
+      "mistakes": [
+        "Statement ke end mein `;` bhool jaana. Compiler agli line par error dikhata hai, isliye error wali line se ek line upar bhi dekho.",
+        "`Printf` ya `Main` likhna. C case-sensitive hai, sahi naam `printf` aur `main` hain.",
+        "`\\n` bhool jaana. Tab agla output usi line par chipak jaata hai. Jahan nayi line chahiye wahan `\\n` lagao."
+      ],
+      "revision": [
+        "CPU cycle: fetch → decode → execute.",
+        "PC = agle instruction ka address; jump instruction PC badal deta hai.",
+        "n-bit address → 2ⁿ bytes tak memory.",
+        "Instructions aur data dono memory mein (stored-program).",
+        "Compiler: C source → machine code. Har C program `main` se shuru hota hai."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w1-q1",
+          "question": "Stored-program computer mein kaunsa register **agle** instruction ka address rakhta hai?",
+          "options": [
+            "Instruction Register (IR)",
+            "Program Counter (PC)",
+            "Accumulator",
+            "Stack Pointer (SP)"
+          ],
+          "answer": 1,
+          "explanation": "Program Counter (PC) agle instruction ka address rakhta hai; fetch ke baad woh aage badh jaata hai aur jump instruction use naya address de deta hai. Trap: Instruction Register, par woh abhi chal rahe (fetch ho chuke) instruction ko rakhta hai, agle ka address nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w1-q2",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nint main(void)\n{\n    printf(\"IIT\");\n    printf(\"M\\n\");\n    printf(\"BS\");\n    return 0;\n}",
+          "options": [
+            "IIT / M / BS (teen lines)",
+            "IITMBS",
+            "IIT M BS",
+            "IITM / BS (do lines)"
+          ],
+          "answer": 3,
+          "explanation": "Har `printf` apne aap nayi line nahi deta. \"IIT\" ke turant baad \"M\" chipakta hai, phir `\\n` se line badalti hai, aur \"BS\" doosri line par aata hai. Trap: har `printf` ko alag line maan lena (teen lines wala option).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w1-q3",
+          "question": "Ek toy CPU ka program memory mein address 100 se rakha hai. HALT par pahunchne ke baad R1 mein kya value hogi?",
+          "code": "100: LOAD R1, 0      ; R1 = 0\n101: LOAD R2, 3      ; R2 = 3\n102: ADD  R1, R2     ; R1 = R1 + R2\n103: SUB  R2, 1      ; R2 = R2 - 1\n104: JNZ  R2, 102    ; if R2 != 0, jump to 102\n105: HALT",
+          "options": [
+            "6",
+            "5",
+            "3",
+            "9"
+          ],
+          "answer": 0,
+          "explanation": "Trace karo: R1 = 0, R2 = 3. Pehli baar ADD se R1 = 3, R2 = 2, jump. Doosri baar R1 = 5, R2 = 1, jump. Teesri baar R1 = 6, R2 = 0, ab JNZ jump nahi karta aur HALT aata hai. Answer 6 (3 + 2 + 1). Trap: 9, yeh maan kar ki R2 hamesha 3 hi rehta hai; ya 5, ek round pehle ruk jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w1-q4",
+          "question": "Ek computer mein memory address 16 bits ka hai aur har address ek byte ko point karta hai. Yeh computer zyada se zyada kitni bytes memory address kar sakta hai?",
+          "options": [
+            "16 bytes",
+            "32,768 bytes",
+            "65,536 bytes (64 KB)",
+            "1,048,576 bytes (1 MB)"
+          ],
+          "answer": 2,
+          "explanation": "16 bits se 2¹⁶ = 65,536 alag patterns bante hain, har pattern ek address, to 65,536 bytes = 64 KB. Trap: 32,768 (2¹⁵), yeh signed number ki range wali soch hai; addresses hamesha unsigned hote hain. 16 bytes bits ko hi bytes samajhna hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w1-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nint main(void)\n{\n    printf(\"start\\n\");\n    return 0;\n    printf(\"end\\n\");\n}",
+          "options": [
+            "start / end (do lines)",
+            "end",
+            "Compile error aayega",
+            "start"
+          ],
+          "answer": 3,
+          "explanation": "`return 0;` chalte hi `main` khatam ho jaata hai, isliye uske baad wala `printf(\"end\\n\")` kabhi execute nahi hota. Sirf \"start\" print hota hai. Return ke baad code likhna error nahi hai (bas unreachable code hai), isliye compile error wala option galat hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w1-q6",
+          "question": "Is toy program mein HALT samet kul kitne instructions execute honge, aur end mein R2 kya hoga?",
+          "code": "200: LOAD R1, 4      ; R1 = 4\n201: LOAD R2, 0      ; R2 = 0\n202: ADD  R2, R1     ; R2 = R2 + R1\n203: SUB  R1, 2      ; R1 = R1 - 2\n204: JNZ  R1, 202    ; if R1 != 0, jump to 202\n205: HALT",
+          "options": [
+            "9 instructions, R2 = 6",
+            "6 instructions, R2 = 6",
+            "12 instructions, R2 = 6",
+            "9 instructions, R2 = 4"
+          ],
+          "answer": 0,
+          "explanation": "2 LOAD chalte hain. Loop round 1: ADD (R2 = 4), SUB (R1 = 2), JNZ jump karta hai. Round 2: ADD (R2 = 6), SUB (R1 = 0), JNZ jump nahi karta. Phir HALT. Kul 2 + 3 + 3 + 1 = 9 instructions, R2 = 6. Trap: 6, har line ko ek hi baar ginna (loop dobara chalta hai yeh bhool jaana); 12, loop ko R1 = 0 par bhi ek baar aur chala dena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Bits, Bytes and Data Representation",
+      "summary": "Is week aap binary aur hex, two's complement se negative numbers, floating point ki basics, ASCII characters, instructions ki encoding, aur compiler aur OS ka role seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Binary aur hexadecimal**: computer sab kuch bits (0/1) mein rakhta hai. 8 bits = 1 byte. Hex base 16 hai (0–9, A–F) aur ek hex digit = 4 bits, isliye `0x2F` = 0010 1111 = 2·16 + 15 = 47. C mein hex likhne ke liye `0x` prefix lagta hai.",
+        "**Unsigned range**: n bits se 0 se 2ⁿ − 1 tak numbers bante hain. 8 bits: 0–255, 16 bits: 0–65535.",
+        "**Two's complement**: negative number banane ke liye saare bits ulto (invert) aur 1 jodo. Range −2ⁿ⁻¹ se 2ⁿ⁻¹ − 1, jaise 8-bit mein −128 se 127. Sabse left wala bit (MSB) 1 hai to number negative hai. Example: −5 = 1111 1011.",
+        "**Overflow**: fixed bits mein result fit na ho to bits wrap ho jaate hain. 8-bit hardware mein 127 + 1 ka bit pattern 1000 0000 = −128 banta hai. (C mein signed overflow undefined behaviour hai, isse kabhi rely mat karo.)",
+        "**Floating point (IEEE 754)**: number ko sign, exponent aur mantissa (fraction) mein rakha jaata hai. `float` 32 bits (~7 decimal digits), `double` 64 bits (~15–16 digits). 0.1 jaise numbers binary mein exact nahi bante, isliye floats ko `==` se compare karna risky hai.",
+        "**Characters aur ASCII**: `char` asal mein ek chhota integer hai. ASCII mein `'A'` = 65, `'a'` = 97, `'0'` = 48, aur letters/digits lagataar hote hain, isliye `'A' + 2` = `'C'` aur `'7' - '0'` = 7.",
+        "**Instruction encoding**: instructions bhi bit patterns hain. Ek instruction ke bits fields mein bante hain, jaise opcode (kaunsa kaam), register number aur immediate value. 4-bit opcode field ho to 2⁴ = 16 alag opcodes ho sakte hain.",
+        "**Compilation aur OS**: compiler C source ko machine code wali executable file mein badalta hai. Chalane par **OS** us file ko memory mein load karta hai, CPU time deta hai, aur I/O (screen, files) sambhalta hai."
+      ],
+      "example": {
+        "problem": "−20 ko 8-bit two's complement mein likho (binary aur hex dono).",
+        "steps": [
+          "Pehle +20 ko binary mein likho: 20 = 16 + 4, to 0001 0100.",
+          "Saare bits invert karo: 1110 1011.",
+          "1 jodo: 1110 1011 + 1 = 1110 1100.",
+          "4-4 bits ke group se hex: 1110 = E, 1100 = C, to 0xEC.",
+          "Check: 0xEC unsigned 236 hai, aur 236 − 256 = −20 ✓.",
+          "Answer: **−20 = 1110 1100 = 0xEC** (8-bit)."
+        ]
+      },
+      "mistakes": [
+        "Two's complement mein sirf bits invert karke ruk jaana. Woh one's complement hai; +1 jodna zaroori hai.",
+        "Negative number ko sign-magnitude ki tarah padhna (MSB = minus, baaki = value). 1111 1110 ka matlab −126 nahi, −2 hai.",
+        "`'5'` (character, value 53) aur `5` (integer) ko same samajhna. Digit character se number chahiye to `'5' - '0'` karo."
+      ],
+      "revision": [
+        "1 hex digit = 4 bits; `0x` prefix hex batata hai.",
+        "Two's complement: invert + 1; 8-bit range −128 se 127.",
+        "`float` ~7 digits, `double` ~15–16 digits; 0.1 exact nahi hota.",
+        "`'A'` = 65, `'a'` = 97, `'0'` = 48.",
+        "Instruction = bit fields (opcode, register, immediate)."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w2-q1",
+          "question": "Hexadecimal number `0x3A` ki decimal value kya hai?",
+          "options": [
+            "310",
+            "40",
+            "58",
+            "13"
+          ],
+          "answer": 2,
+          "explanation": "`0x3A` = 3·16 + A, aur A = 10, to 48 + 10 = 58. Trap: 310, digits ko decimal ki tarah jod dena (\"3\" aur \"10\"); 40, base 16 ki jagah base 10 use karna (3·10 + 10); 13, digits ko bas add kar dena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w2-q2",
+          "question": "8-bit two's complement mein bit pattern 1111 1110 kis number ko dikhata hai?",
+          "options": [
+            "−2",
+            "254",
+            "−126",
+            "−1"
+          ],
+          "answer": 0,
+          "explanation": "MSB 1 hai, to number negative hai. Magnitude nikalne ke liye invert + 1: 0000 0001 + 1 = 0000 0010 = 2, to value −2. Trap: −126, isse sign-magnitude ki tarah padhna; 254, unsigned value; −1, woh 1111 1111 hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w2-q3",
+          "question": "Is code ka output kya hoga? (ASCII maan kar)",
+          "code": "char ch = 'A' + 2;\nprintf(\"%c %d\\n\", ch, ch);",
+          "options": [
+            "A2 67",
+            "C 65",
+            "B 66",
+            "C 67"
+          ],
+          "answer": 3,
+          "explanation": "`'A'` ki ASCII value 65 hai, 65 + 2 = 67, jo `'C'` hai. `%c` same value ko character ki tarah (C) aur `%d` number ki tarah (67) dikhata hai. Trap: \"C 65\", yeh sochna ki `%d` original 'A' ki value dikhayega; ya +2 ko ek hi letter aage samajhna (B 66).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w2-q4",
+          "question": "16-bit two's complement integer ki range kya hai?",
+          "options": [
+            "−32767 se 32767",
+            "−32768 se 32767",
+            "0 se 65535",
+            "−65536 se 65535"
+          ],
+          "answer": 1,
+          "explanation": "n bits ke liye range −2ⁿ⁻¹ se 2ⁿ⁻¹ − 1 hai. n = 16: −32768 se 32767. Negative side par ek number zyada hai kyunki zero positive side ki jagah leta hai. Trap: −32767 se 32767, yeh one's complement / sign-magnitude ki range hai (jisme do zero hote hain); 0 se 65535 unsigned range hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w2-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "float f = 0.1f;\nif (f == 0.1)\n    printf(\"equal\\n\");\nelse\n    printf(\"not equal\\n\");",
+          "options": [
+            "not equal",
+            "equal",
+            "Compile error aayega",
+            "Kuch print nahi hoga"
+          ],
+          "answer": 0,
+          "explanation": "0.1 binary mein exact nahi banta. `0.1f` float (24-bit mantissa) mein round hota hai, lagbhag 0.100000001490116, jabki `0.1` ek double hai jo 0.1000000000000000055 ke kareeb hai. Comparison ke liye f ko double banaya jaata hai, par value wahi float wali rehti hai, isliye dono alag hain: \"not equal\". Trap: maths mein dono 0.1 hain, isliye \"equal\" lagna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w2-q6",
+          "question": "Ek toy CPU ke 16-bit instruction mein upar ke 4 bits opcode, agle 4 bits register number, aur neeche ke 8 bits ek unsigned immediate value hain. Instruction `0x3C2F` ko decode karo.",
+          "options": [
+            "opcode 3, register 12, immediate 15",
+            "opcode 12, register 3, immediate 47",
+            "opcode 3, register 12, immediate 47",
+            "opcode 60, register 2, immediate 15"
+          ],
+          "answer": 2,
+          "explanation": "Har hex digit 4 bits hai: 3 | C | 2F. Upar ka digit 3 = opcode, agla C = 12 = register, aur neeche ke do digits `0x2F` = 2·16 + 15 = 47 = immediate. Trap: immediate ko sirf aakhri digit F = 15 samajhna; ya fields ki order ulti kar dena; ya bytes (`0x3C` = 60) ko fields maan lena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Variables, Types and Expressions",
+      "summary": "Is week aap C program ka structure, variables aur data types, operators ki precedence, integer division aur type conversion seekhoge, taaki koi bhi expression ka result khud nikaal sako.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Program structure**: upar `#include` lines, phir `main` function, uske andar declarations aur statements. Comments do tarah ke hote hain: `/* ... */` aur `// ...`. Compiler comments ko ignore karta hai.",
+        "**Variables aur types**: use karne se pehle variable declare karna padta hai, jaise `int count = 0;`. Typical 64-bit Linux gcc par sizes: `char` 1 byte, `int` 4, `float` 4, `double` 8. Local variable ko initialise na karo to usme garbage value hoti hai.",
+        "**Format specifiers**: `printf` mein `%d` (int), `%c` (char), `%f` (float/double), `%.2f` (2 decimal places). `scanf` ko variable ka address chahiye: `scanf(\"%d\", &x);`, aur double padhne ke liye `%lf`.",
+        "**Integer division aur %**: dono operands int hon to result bhi int, decimal part kat jaata hai (zero ki taraf): `7 / 2` = 3, `-7 / 2` = −3. Remainder ka sign pehle operand jaisa: `7 % 3` = 1, `-7 % 3` = −1.",
+        "**Type conversion**: mixed expression mein chhota type bade mein badal jaata hai (int + double → double). Double ko int variable mein rakho to fraction kat jaata hai (`int k = 3.99;` → 3). Cast se zabardasti convert karo: `(double)a / b`.",
+        "**Precedence aur associativity**: `*`, `/`, `%` pehle; phir `+`, `-`; phir comparisons; sabse baad assignment. Same level ke operators left se right chalte hain, par assignment right se left. Shak ho to brackets lagao.",
+        "**Increment aur compound operators**: `x++` pehle purani value deta hai phir badhata hai, `++x` pehle badhata hai phir nayi value deta hai. `x += 3` matlab `x = x + 3`. Ek hi expression mein ek variable ko do baar badalna (jaise `i = i++;`) undefined behaviour hai."
+      ],
+      "example": {
+        "problem": "Teen marks 7, 8 aur 10 hain. Neeche ka code do averages print karta hai. Output kya hoga aur dono alag kyun hain?",
+        "steps": [
+          "Sum = 7 + 8 + 10 = 25, jo ek int hai.",
+          "`avg1 = sum / 3`: dono int hain, isliye integer division: 25 / 3 = 8. Phir 8 float mein jaata hai: 8.00.",
+          "`avg2 = sum / 3.0`: 3.0 double hai, isliye sum bhi double ban jaata hai: 25 / 3.0 = 8.333...",
+          "`%.2f` do decimal places tak round karke dikhata hai: 8.33.",
+          "Answer: **8.00 8.33**. Fraction chahiye to kam se kam ek operand floating type ka hona chahiye."
+        ],
+        "code": "#include <stdio.h>\n\nint main(void)\n{\n    int a = 7, b = 8, c = 10;\n    int sum = a + b + c;\n    float avg1 = sum / 3;\n    float avg2 = sum / 3.0;\n    printf(\"%.2f %.2f\\n\", avg1, avg2);\n    return 0;\n}"
+      },
+      "mistakes": [
+        "`float avg = sum / n;` likh kar sochna ki decimal aayega. Division pehle int mein ho chuka hota hai; `(float)sum / n` likho.",
+        "`scanf(\"%d\", x);` likhna (`&` ke bina). `scanf` ko address chahiye, warna program crash kar sakta hai.",
+        "Precedence ka andaza lagana, jaise `a + b / 2` ko average samajhna. Yeh `a + (b / 2)` hai; `(a + b) / 2` likho."
+      ],
+      "revision": [
+        "int / int = int (fraction kat jaata hai, zero ki taraf).",
+        "`%` ka sign pehle operand jaisa hota hai.",
+        "int + double → double; double → int assignment fraction kaat deta hai.",
+        "`*` `/` `%` pehle, `+` `-` baad mein; same level left se right.",
+        "`x++` purani value deta hai, `++x` nayi."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w3-q1",
+          "question": "Is statement ka output kya hoga?",
+          "code": "printf(\"%d %d\\n\", 17 / 5, 17 % 5);",
+          "options": [
+            "3 2",
+            "3.4 2",
+            "2 3",
+            "3 0"
+          ],
+          "answer": 0,
+          "explanation": "Dono operands int hain, isliye `17 / 5` = 3 (3.4 ka fraction kat jaata hai), aur remainder `17 % 5` = 17 − 15 = 2. Trap: 3.4, normal division jaisa sochna; aur `%d` waise bhi decimal nahi dikhata.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w3-q2",
+          "question": "Is code ke baad x ki value kya hogi?",
+          "code": "int x = 10;\nx += 3 * 2;\nprintf(\"%d\\n\", x);",
+          "options": [
+            "26",
+            "13",
+            "16",
+            "60"
+          ],
+          "answer": 2,
+          "explanation": "`x += 3 * 2` ka matlab hai `x = x + (3 * 2)`. Right side pehle poori evaluate hoti hai: 6. Phir 10 + 6 = 16. Trap: 26, yeh sochna ki `x += 3` pehle hota hai aur phir result ×2 (`(10 + 3) * 2`).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w3-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "int a = 7, b = 2;\ndouble d1 = a / b;\ndouble d2 = (double)a / b;\nprintf(\"%.1f %.1f\\n\", d1, d2);",
+          "options": [
+            "3.5 3.5",
+            "3.0 3.5",
+            "3.0 3.0",
+            "3 3.5"
+          ],
+          "answer": 1,
+          "explanation": "`d1 = a / b`: dono int hain, to division int mein hota hai = 3, aur phir 3 double mein store hota hai: 3.0. `d2` mein cast pehle a ko 7.0 bana deta hai, phir 7.0 / 2 = 3.5. `%.1f` ek decimal dikhata hai, isliye \"3\" nahi \"3.0\". Trap: 3.5 3.5, sochna ki double variable mein store karne se division double ho jaayega.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w3-q4",
+          "question": "r ki value kya hogi?",
+          "code": "int r = 2 + 3 * 4 % 5 - 6 / 4;",
+          "options": [
+            "13",
+            "-1",
+            "2",
+            "3"
+          ],
+          "answer": 3,
+          "explanation": "`*`, `%`, `/` ki precedence `+`, `-` se zyada hai, aur `*` aur `%` same level par left se right chalte hain. `3 * 4` = 12, `12 % 5` = 2, `6 / 4` = 1 (integer division). Phir 2 + 2 − 1 = 3. Trap: −1, poora expression bina precedence ke left se right chalana; 13, `4 % 5` pehle karna; 2, `6 / 4` ko 1.5 maan kar baad mein katna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w3-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "int i = 5;\nint a = i++;\nint b = ++i;\nprintf(\"%d %d %d\\n\", a, b, i);",
+          "options": [
+            "6 7 7",
+            "5 7 7",
+            "5 6 7",
+            "6 6 7"
+          ],
+          "answer": 1,
+          "explanation": "`a = i++`: a ko purani value 5 milti hai, phir i = 6. `b = ++i`: pehle i = 7, phir b ko 7 milta hai. Aakhir mein i = 7. Output \"5 7 7\". Trap: 5 6 7, yeh sochna ki `++i` bhi purani value (6) deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w3-q6",
+          "question": "Is code ka output kya hoga? (ASCII maan kar)",
+          "code": "int a = 5, b = 2;\nfloat f = a / b * 2.0;\nint k = 3.99 + 1;\nchar ch = '0' + a;\nprintf(\"%.1f %d %c\\n\", f, k, ch);",
+          "options": [
+            "4.0 4 5",
+            "5.0 4 5",
+            "4.0 5 5",
+            "5.0 5 53"
+          ],
+          "answer": 0,
+          "explanation": "`a / b * 2.0` left se right chalta hai: pehle `a / b` = 2 (int division), phir 2 * 2.0 = 4.0. `3.99 + 1` = 4.99, int mein store karte hi fraction kat jaata hai: 4 (round nahi hota). `'0' + 5` = 48 + 5 = 53, jo character '5' hai, aur `%c` use '5' ki tarah dikhata hai. Trap: 5.0, yeh sochna ki 2.0 poore expression ko pehle se double bana deta hai; 5, 4.99 ko round karna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Decisions and Loops",
+      "summary": "Is week aap `if`/`else if`, `switch` (fall-through ke saath), `for`, `while`, `do-while` loops aur `break`/`continue` se program ka flow control karna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Condition ka matlab**: C mein koi bhi non-zero value true hai aur 0 false. Comparison (`x > 3`) true par 1 aur false par 0 deta hai.",
+        "**if / else if / else**: upar se neeche conditions check hoti hain, aur pehli true condition ka block chalta hai, baaki skip. Ek se zyada statement ho to braces `{ }` lagao.",
+        "**Dangling else**: `else` hamesha sabse paas wale bina-else `if` ke saath judta hai, indentation chahe kuch bhi dikhaye. Braces lagakar intent saaf karo.",
+        "**= vs ==**: `if (x = 0)` comparison nahi, assignment hai. x 0 ban jaata hai aur condition false. Compare karne ke liye `==` likho (gcc `-Wall` iski warning deta hai).",
+        "**switch aur fall-through**: `switch` integer ya char value ko `case` labels se milata hai. Match hone ke baad `break` tak saare neeche ke cases chalte rehte hain (fall-through). Koi match na ho to `default` chalta hai.",
+        "**for, while, do-while**: `for (init; condition; update)` gin kar chalne wale loops ke liye. `while` pehle condition check karta hai, isliye 0 baar bhi chal sakta hai. `do { } while (cond);` body pehle chalata hai, isliye kam se kam ek baar zaroor chalta hai.",
+        "**break aur continue**: `break` sabse andar wale loop (ya switch) se bahar nikalta hai. `continue` is round ka baaki hissa chhod kar agle round par jaata hai; `for` mein continue ke baad bhi update (`i++`) chalta hai.",
+        "**Short-circuit**: `a && b` mein a false ho to b evaluate hi nahi hota; `a || b` mein a true ho to b skip. Isliye `if (n != 0 && x / n > 2)` safe hai."
+      ],
+      "example": {
+        "problem": "`while` loop se 1234 ke digits ulte karke number banao.",
+        "steps": [
+          "Shuru mein n = 1234, rev = 0.",
+          "Round 1: digit = 1234 % 10 = 4, rev = 0·10 + 4 = 4, n = 1234 / 10 = 123.",
+          "Round 2: digit = 3, rev = 43, n = 12.",
+          "Round 3: digit = 2, rev = 432, n = 1.",
+          "Round 4: digit = 1, rev = 4321, n = 0. Ab `n > 0` false, loop khatam.",
+          "Answer: **4321**. Yahan loop kitni baar chalega pehle se pata nahi tha, isliye `while` sahi choice hai."
+        ],
+        "code": "int n = 1234, rev = 0;\nwhile (n > 0) {\n    int digit = n % 10;\n    rev = rev * 10 + digit;\n    n = n / 10;\n}\nprintf(\"%d\\n\", rev);"
+      },
+      "mistakes": [
+        "`switch` ke case mein `break` bhool jaana. Neeche ke cases bhi chal jaate hain. Har case ke end mein `break` lagao, jab tak fall-through jaan-boojh kar na ho.",
+        "`for (i = 0; i < n; i++);` — loop ke baad semicolon. Loop khaali chalta hai aur neeche ka block sirf ek baar. Semicolon hatao.",
+        "Loop ki ginti mein off-by-one: `i <= n` aur `i < n` mein ek round ka farq hai. Pehli aur aakhri value ko haath se check karo."
+      ],
+      "revision": [
+        "Non-zero = true, 0 = false.",
+        "`else` sabse paas wale `if` ka hota hai.",
+        "`switch` mein `break` ke bina fall-through hota hai.",
+        "`do-while` kam se kam ek baar chalta hai.",
+        "`break` loop se bahar; `continue` agle round par (for mein update chalta hai)."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w4-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "int n = 2;\nswitch (n) {\n    case 1: printf(\"A\");\n    case 2: printf(\"B\");\n    case 3: printf(\"C\");\n        break;\n    default: printf(\"D\");\n}",
+          "options": [
+            "B",
+            "BCD",
+            "ABC",
+            "BC"
+          ],
+          "answer": 3,
+          "explanation": "n = 2 se `case 2` match hota hai aur \"B\" print hota hai. `break` nahi hai, isliye control `case 3` mein gir jaata hai (fall-through) aur \"C\" print hota hai, phir `break` switch se bahar le jaata hai. Output \"BC\". Trap: \"B\", yeh sochna ki sirf matching case chalega; \"BCD\", break ko ignore karna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w4-q2",
+          "question": "Loop ke baad count aur i ki value kya hogi?",
+          "code": "int i, count = 0;\nfor (i = 0; i < 10; i += 3)\n    count++;\nprintf(\"%d %d\\n\", count, i);",
+          "options": [
+            "3 9",
+            "4 12",
+            "4 9",
+            "3 12"
+          ],
+          "answer": 1,
+          "explanation": "i ki values jin par body chalti hai: 0, 3, 6, 9, yaani 4 baar, to count = 4. 9 ke baad update se i = 12 hota hai, condition `12 < 10` false, loop khatam. Isliye i = 12. Trap: \"4 9\", yeh bhool jaana ki loop rukne se pehle aakhri update bhi chalta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w4-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "int x = 5;\nif (x = 0)\n    printf(\"zero %d\\n\", x);\nelse\n    printf(\"nonzero %d\\n\", x);",
+          "options": [
+            "nonzero 0",
+            "zero 0",
+            "nonzero 5",
+            "zero 5"
+          ],
+          "answer": 0,
+          "explanation": "`x = 0` assignment hai: x mein 0 rakha jaata hai aur expression ki value bhi 0 hai, jo false hai. Isliye `else` chalta hai, par tab tak x badal chuka hai, to \"nonzero 0\". Trap: \"nonzero 5\", yeh sochna ki condition ne sirf compare kiya; \"zero 0\", `=` ko `==` padhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w4-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "int i, s = 0;\nfor (i = 1; i <= 10; i++) {\n    if (i % 2 == 0)\n        continue;\n    if (i > 7)\n        break;\n    s += i;\n}\nprintf(\"%d %d\\n\", s, i);",
+          "options": [
+            "25 9",
+            "16 8",
+            "16 9",
+            "16 11"
+          ],
+          "answer": 2,
+          "explanation": "Even i par `continue` sab skip karta hai. Odd i: 1, 3, 5, 7 jude, s = 16. i = 8 even hai, skip. i = 9 odd hai aur 9 > 7, to `break`; i ki value 9 hi rehti hai. Output \"16 9\". Trap: \"25 9\", 9 ko bhi jod dena (break, add se pehle hai); \"16 11\", yeh sochna ki loop poora chala.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w4-q5",
+          "question": "Is code ka output kya hoga? (Indentation par dhyaan mat do, rules par do.)",
+          "code": "int a = 5, b = 10;\nif (a > 10)\n    if (b > 5)\n        printf(\"X\");\nelse\n    printf(\"Y\");\nprintf(\"Z\");",
+          "options": [
+            "YZ",
+            "XZ",
+            "Z",
+            "Y"
+          ],
+          "answer": 2,
+          "explanation": "`else` sabse paas wale bina-else `if`, yaani `if (b > 5)`, ka hai, chahe woh bahar wale if ke neeche likha dikhe. Bahar wala `if (a > 10)` false hai, isliye andar ka poora if-else skip ho jaata hai. Sirf aakhri `printf(\"Z\")` chalta hai. Trap: \"YZ\", indentation dekh kar else ko bahar wale if ka maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w4-q6",
+          "question": "Is code ka output kya hoga?",
+          "code": "int i, j, count = 0;\nfor (i = 1; i <= 4; i++) {\n    for (j = 1; j <= 4; j++) {\n        if (j == i)\n            break;\n        count++;\n    }\n}\nprintf(\"%d\\n\", count);",
+          "options": [
+            "0",
+            "6",
+            "10",
+            "12"
+          ],
+          "answer": 1,
+          "explanation": "`break` sirf andar wale loop ko rokta hai. i = 1 par j = 1 par turant break: 0. i = 2 par j = 1 gina, j = 2 par break: 1. i = 3 par 2, i = 4 par 3. Kul 0 + 1 + 2 + 3 = 6. Trap: 0, yeh sochna ki break dono loops se bahar nikal deta hai; 12, break ko `continue` ki tarah lena (16 mein se 4 skip).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Functions, Scope and Recursion",
+      "summary": "Is week aap functions declare aur define karna, call by value, runtime stack, recursion, aur variables ka scope aur lifetime (local, global, static) seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Functions kyun**: bada problem chhote, test karne laayak tukdon mein toot jaata hai, aur ek hi code baar-baar likhna nahi padta. Function ka ek return type, naam, parameters aur body hoti hai.",
+        "**Declaration vs definition**: prototype (`int square(int x);`) compiler ko function ka naam, return type aur parameter types batata hai, aur `main` se pehle likha jaata hai. Definition mein poori body hoti hai. Function ko use karne se pehle uska declaration dikhna chahiye.",
+        "**Call by value**: C arguments ki **copy** function ko deta hai. Function ke andar parameter badlo to caller ka variable nahi badalta. Isliye simple `swap(int a, int b)` kaam nahi karta (iska hal pointers hain, agle week).",
+        "**Runtime stack**: har function call ke liye stack par ek **frame** banta hai jisme parameters, local variables aur return address hote hain. Function return hote hi frame hat jaata hai, aur uske locals khatam.",
+        "**Recursion**: function khud ko call karta hai. Do cheezein zaroori: **base case** (jahan recursion ruke) aur aisa recursive case jo base ki taraf badhe. Har call ka apna frame hota hai; base case na ho to stack overflow hota hai.",
+        "**Scope**: variable kahan dikhta hai. Block ke andar declared variable sirf us block mein. Andar same naam ka variable bahar wale ko **shadow** (chhupa) deta hai. Global variable (sab functions ke bahar) har function mein dikhta hai.",
+        "**Lifetime aur static**: normal local (automatic) variable har call par naya banta hai. `static` local sirf ek baar initialise hota hai aur calls ke beech apni value yaad rakhta hai. Globals aur statics program ke poore time tak zinda rehte hain, aur by default 0 se initialise hote hain."
+      ],
+      "example": {
+        "problem": "Recursive `fact(4)` ko stack frames ke saath trace karo.",
+        "steps": [
+          "`fact(4)` ka frame banta hai: n = 4, base case nahi, to `4 * fact(3)` ka wait.",
+          "Upar naye frames: `fact(3)` → `3 * fact(2)`, `fact(2)` → `2 * fact(1)`.",
+          "`fact(1)` base case hai, 1 return karta hai, aur uska frame hat jaata hai.",
+          "Ab wapas: `fact(2)` = 2 · 1 = 2, `fact(3)` = 3 · 2 = 6, `fact(4)` = 4 · 6 = 24.",
+          "Sabse zyada 4 frames ek saath stack par the (plus `main` ka).",
+          "Answer: **24**."
+        ],
+        "code": "int fact(int n)\n{\n    if (n <= 1)\n        return 1;            /* base case */\n    return n * fact(n - 1);  /* recursive case */\n}"
+      },
+      "mistakes": [
+        "Function ko call karne ke baad define karna aur upar prototype na dena. Purane compilers galat type maan lete hain; aaj ka gcc warning/error deta hai. `main` se pehle prototype likho.",
+        "Recursion mein base case bhool jaana ya galat likhna (jaise `n == 0` par ruko jab n kabhi 0 nahi banta). Infinite recursion → stack overflow.",
+        "Sochna ki function ke andar parameter badalne se caller ka variable badal jaayega. Call by value mein sirf copy badalti hai."
+      ],
+      "revision": [
+        "Prototype: return type, naam, parameter types, end mein `;`.",
+        "C hamesha call by value hai; copy jaati hai.",
+        "Har call = naya stack frame; return par frame hat jaata hai.",
+        "Recursion = base case + chhota hota hua recursive case.",
+        "`static` local ek baar initialise hota hai aur value yaad rakhta hai."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w5-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nvoid swap(int a, int b)\n{\n    int t = a;\n    a = b;\n    b = t;\n}\n\nint main(void)\n{\n    int x = 3, y = 7;\n    swap(x, y);\n    printf(\"%d %d\\n\", x, y);\n    return 0;\n}",
+          "options": [
+            "7 3",
+            "3 7",
+            "3 3",
+            "7 7"
+          ],
+          "answer": 1,
+          "explanation": "`swap` ko x aur y ki copies (a = 3, b = 7) milti hain. Andar copies swap hoti hain, par `main` ke x aur y ko koi chhoota bhi nahi. Output \"3 7\". Trap: \"7 3\", yeh sochna ki parameters asli variables hi hain (call by reference); C call by value hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w5-q2",
+          "question": "Kaunsa ek function ka sahi prototype (declaration) hai jo do int leta hai aur double return karta hai?",
+          "options": [
+            "double avg(int a, int b);",
+            "avg(int a, int b) double;",
+            "double avg(int a, b);",
+            "int avg(double a, double b);"
+          ],
+          "answer": 0,
+          "explanation": "Prototype ka format: return type, naam, phir brackets mein har parameter ka type, aur end mein `;`. Isliye `double avg(int a, int b);`. Trap: `double avg(int a, b);`, kyunki parameter list mein har parameter ka type alag se likhna padta hai (variable declarations jaisa `int a, b` yahan nahi chalta).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w5-q3",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nint counter(void)\n{\n    static int n = 0;\n    int m = 0;\n    n++;\n    m++;\n    return n * 10 + m;\n}\n\nint main(void)\n{\n    counter();\n    counter();\n    printf(\"%d\\n\", counter());\n    return 0;\n}",
+          "options": [
+            "11",
+            "33",
+            "31",
+            "13"
+          ],
+          "answer": 2,
+          "explanation": "`static int n` sirf ek baar 0 hota hai aur har call par badhta hai: teesri call mein n = 3. `m` normal local hai, har call par phir se 0 hota hai, to hamesha 1. Return 3·10 + 1 = 31. Trap: 11, static ko bhi har call par reset maan lena; 33, m ko bhi static maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w5-q4",
+          "question": "`f(7)` kya return karega?",
+          "code": "int f(int n)\n{\n    if (n <= 1)\n        return 1;\n    return n + f(n - 2);\n}",
+          "options": [
+            "28",
+            "15",
+            "12",
+            "16"
+          ],
+          "answer": 3,
+          "explanation": "f(7) = 7 + f(5) = 7 + 5 + f(3) = 7 + 5 + 3 + f(1). f(1) base case hai aur 1 deta hai. Total 7 + 5 + 3 + 1 = 16. Trap: 28, 1 se 7 tak sab jod dena (n − 2 ki jagah n − 1); 15, base case ka 1 jodna bhool jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w5-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nint x = 10;\n\nvoid show(void)\n{\n    printf(\"%d \", x);\n}\n\nint main(void)\n{\n    int x = 20;\n    {\n        int x = 30;\n        printf(\"%d \", x);\n    }\n    printf(\"%d \", x);\n    show();\n    return 0;\n}",
+          "options": [
+            "30 20 10",
+            "30 30 30",
+            "30 20 20",
+            "10 20 30"
+          ],
+          "answer": 0,
+          "explanation": "Andar wale block mein `x = 30` baaki dono ko shadow karta hai: 30. Block khatam, ab `main` ka local `x = 20` dikhta hai: 20. `show` ke andar koi local x nahi, aur `main` ke locals wahan dikhte hi nahi (scope function tak seemit hai), to global `x = 10`: 10. Trap: \"30 20 20\", yeh sochna ki `show` ko caller ka x dikhega.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w5-q6",
+          "question": "`p(3)` call karne par kya print hoga?",
+          "code": "void p(int n)\n{\n    if (n == 0)\n        return;\n    printf(\"%d\", n);\n    p(n - 1);\n    printf(\"%d\", n);\n}",
+          "options": [
+            "321",
+            "123321",
+            "321321",
+            "321123"
+          ],
+          "answer": 3,
+          "explanation": "Har call recursive call se pehle n print karti hai: 3, 2, 1 (neeche jaate hue). p(0) turant return. Ab frames ulte order mein khulte hain aur har frame recursive call ke baad apna n dobara print karta hai: pehle 1, phir 2, phir 3. Output \"321123\". Trap: \"321321\", yeh sochna ki wapas aate waqt bhi order 3, 2, 1 hoga; stack mein jo frame sabse baad bana, woh sabse pehle khatam hota hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Pointers and Memory Layout",
+      "summary": "Is week aap pointers (`&` aur `*`), pointers se function mein variables badalna, `sizeof`, endianness, alignment, aur compiler optimisation ki ek jhalak seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Address-of aur dereference**: `&x` variable x ka memory address deta hai. Pointer variable address rakhta hai: `int *p = &x;`. `*p` us address par rakhi value hai, isliye `*p = 5;` asal mein x ko 5 bana deta hai.",
+        "**Pointer type**: `int *` int ko point karta hai, `char *` char ko. Type batata hai ki `*p` karne par kitni bytes aur kis tarah padhni hain. Address print karne ke liye `%p`, aur \"kahin point nahi karta\" ke liye `NULL`.",
+        "**Pointers aur functions**: C call by value hai, par agar address (copy) bhejo to function us address par likh kar caller ka variable badal sakta hai: `swap(&x, &y)` jismein `void swap(int *a, int *b)`. `scanf` isi wajah se `&` maangta hai.",
+        "**sizeof**: compile time par bytes batata hai, type `size_t` (print ke liye `%zu`). Typical 64-bit Linux gcc: `char` 1, `int` 4, `double` 8, aur **har** pointer 8 bytes, chahe woh kisi bhi type ko point kare.",
+        "**Endianness**: multi-byte value ki bytes memory mein kis order mein hain. **Little-endian** (x86, most ARM) mein sabse kam significant byte sabse chhote address par: `0x12345678` memory mein 78 56 34 12. Big-endian mein ulta.",
+        "**Alignment**: CPU ko pasand hai ki 4-byte int aise address par ho jo 4 ka multiple ho, aur 8-byte double 8 ke multiple par. Isse access tez hota hai. Isi wajah se structs mein padding aati hai (week 8).",
+        "**Compiler optimisation ki jhalak**: `-O2` par compiler variables ko registers mein rakh sakta hai, constant expressions pehle hi compute kar sakta hai (`3 * 4` → 12), aur jo result kabhi use nahi hota uska code hata sakta hai. Jis variable ka address liya gaya ho use aam taur par memory mein rehna padta hai. `volatile` compiler ko batata hai ki is variable ke reads/writes optimise mat karo (hardware registers ke liye)."
+      ],
+      "example": {
+        "problem": "Pointers se do variables swap karo aur trace karo ki memory mein kya hota hai.",
+        "steps": [
+          "`main` mein x = 3, y = 7. Call `swap(&x, &y)`: a ko x ka address, b ko y ka address milta hai (addresses ki copies).",
+          "`int t = *a;`: a jahan point karta hai (x) wahan ki value 3, to t = 3.",
+          "`*a = *b;`: x ki jagah par y ki value 7 likh di, ab x = 7.",
+          "`*b = t;`: y ki jagah par 3 likh diya, ab y = 3.",
+          "Function return hota hai; a, b, t khatam, par x aur y ki memory badal chuki hai.",
+          "Answer: **7 3** print hota hai."
+        ],
+        "code": "#include <stdio.h>\n\nvoid swap(int *a, int *b)\n{\n    int t = *a;\n    *a = *b;\n    *b = t;\n}\n\nint main(void)\n{\n    int x = 3, y = 7;\n    swap(&x, &y);\n    printf(\"%d %d\\n\", x, y);\n    return 0;\n}"
+      },
+      "mistakes": [
+        "Uninitialised pointer par likhna: `int *p; *p = 5;`. p kisi random address ko point karta hai, crash ya memory corruption. Pehle `p = &x;` (ya valid memory) do.",
+        "`int *p, q;` se sochna ki dono pointer hain. Sirf p pointer hai, q ek int hai. Har pointer ke saath `*` lagao: `int *p, *q;`.",
+        "`sizeof(p)` (pointer ka size, 8) aur `sizeof(*p)` (jis cheez ko point karta hai uska size) mein confuse hona."
+      ],
+      "revision": [
+        "`&x` = address, `*p` = us address ki value.",
+        "Function mein variable badalna ho to uska address bhejo.",
+        "64-bit par har pointer 8 bytes; `sizeof` ke liye `%zu`.",
+        "Little-endian: lowest byte lowest address par.",
+        "Alignment: int 4 ke multiple par, double 8 ke multiple par."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w6-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "int x = 10;\nint *p = &x;\n*p = *p + 5;\nprintf(\"%d %d\\n\", x, *p);",
+          "options": [
+            "10 15",
+            "15 10",
+            "15 15",
+            "10 10"
+          ],
+          "answer": 2,
+          "explanation": "p, x ka address rakhta hai, isliye `*p` aur x ek hi memory hain. `*p = *p + 5` us memory ko 15 bana deta hai, to x bhi 15 aur `*p` bhi 15. Trap: \"10 15\", yeh sochna ki `*p` x ki alag copy hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w6-q2",
+          "question": "Typical 64-bit Linux gcc par (int 4 bytes, pointer 8 bytes) is statement ka output kya hoga?",
+          "code": "printf(\"%zu %zu %zu\\n\", sizeof(char), sizeof(int *), sizeof(double));",
+          "options": [
+            "1 4 8",
+            "1 8 4",
+            "4 8 8",
+            "1 8 8"
+          ],
+          "answer": 3,
+          "explanation": "`char` hamesha 1 byte. `int *` ek pointer hai aur 64-bit system par har pointer 8 bytes ka hota hai, chahe woh int ko point kare. `double` 8 bytes. Output \"1 8 8\". Trap: \"1 4 8\", pointer ka size uske target type (int, 4) jitna maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w6-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "int a = 1, b = 2;\nint *p = &a, *q = &b;\n*p = *q;\np = q;\n*p = 5;\nprintf(\"%d %d\\n\", a, b);",
+          "options": [
+            "5 2",
+            "2 5",
+            "1 5",
+            "2 2"
+          ],
+          "answer": 1,
+          "explanation": "`*p = *q` value copy karta hai: a = 2. `p = q` sirf pointer badalta hai, ab p bhi b ko point karta hai (a nahi badla). `*p = 5` ab b ko 5 banata hai. Output \"2 5\". Trap: \"1 5\", `*p = *q` ko pointer copy samajhna; \"5 2\", yeh bhool jaana ki `p = q` ke baad p, b ko point karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w6-q4",
+          "question": "Little-endian machine par (unsigned int 4 bytes) is code ka output kya hoga?",
+          "code": "unsigned int v = 0x11223344;\nunsigned char *b = (unsigned char *)&v;\nprintf(\"%x %x\\n\", b[0], b[3]);",
+          "options": [
+            "44 11",
+            "11 44",
+            "33 22",
+            "4 1"
+          ],
+          "answer": 0,
+          "explanation": "Little-endian mein sabse kam significant byte (`0x44`) sabse chhote address par hota hai, to memory mein order hai 44 33 22 11. b ek-ek byte padhta hai: `b[0]` = 44, `b[3]` = 11. Trap: \"11 44\", jo big-endian machine par aata; number ko jis order mein likhte hain memory mein bhi wahi order maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w6-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nvoid update(int *p, int v)\n{\n    *p += v;\n    v = 0;\n}\n\nint main(void)\n{\n    int x = 4, y = 6;\n    update(&x, y);\n    update(&y, x);\n    printf(\"%d %d\\n\", x, y);\n    return 0;\n}",
+          "options": [
+            "4 6",
+            "10 16",
+            "10 10",
+            "16 10"
+          ],
+          "answer": 1,
+          "explanation": "Pehli call: p, x ko point karta hai, v = 6 (y ki copy). x = 4 + 6 = 10. `v = 0` sirf copy ko badalta hai, y abhi bhi 6. Doosri call: p, y ko point karta hai, v = 10. y = 6 + 10 = 16. Output \"10 16\". Trap: \"10 10\", yeh sochna ki `v = 0` ne y ko 0 kar diya (to y = 0 + 10); \"4 6\", pointer wale parameter ko bhi copy samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w6-q6",
+          "question": "Is code ka output kya hoga?",
+          "code": "int x = 5, y = 9;\nint *p = &x;\nint **pp = &p;\n**pp = 7;\n*pp = &y;\n*p = *p + x;\nprintf(\"%d %d\\n\", x, y);",
+          "options": [
+            "7 9",
+            "14 9",
+            "7 16",
+            "5 14"
+          ],
+          "answer": 2,
+          "explanation": "pp, p ko point karta hai, aur p, x ko. `**pp = 7` do kadam chalta hai: pp → p → x, to x = 7. `*pp = &y` p ko hi badal deta hai, ab p, y ko point karta hai. `*p = *p + x` matlab y = 9 + 7 = 16. Output \"7 16\". Trap: \"14 9\", yeh bhool jaana ki `*pp = &y` ne p ko badal diya (to x = 7 + 7); \"5 14\", `**pp` ko x tak na pahunchna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Arrays, Pointer Arithmetic and Strings",
+      "summary": "Is week aap arrays, pointer arithmetic, arrays aur pointers ka farq, `'\\0'` par khatam hone wali strings, aur `string.h` ke functions (`strlen`, `strcpy`, `strcat`, `strcmp`) seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Array**: ek hi type ke elements memory mein lagataar. `int a[5];` ke index 0 se 4 tak. C bounds check nahi karta, `a[5]` likhna array ke bahar padhna hai (undefined behaviour).",
+        "**Array name aur pointer**: zyada tar expressions mein array ka naam pehle element ke pointer mein badal jaata hai (decay): `a` ≡ `&a[0]`. Aur `a[i]` ka asli matlab hai `*(a + i)`.",
+        "**Pointer arithmetic**: `p + 1` agle **element** par jaata hai, agle byte par nahi; address `sizeof(*p)` bytes badhta hai (int ke liye 4). Ek hi array ke do pointers ka farq (`q - p`) elements ki ginti deta hai.",
+        "**Array vs pointer**: `sizeof(a)` poore array ki bytes deta hai (`int a[10]` → 40), par pointer ka `sizeof` 8 hai. Array naam ko reassign nahi kar sakte (`a = b;` error). Function ko array do to asal mein pointer jaata hai, isliye andar size pata nahi chalta; size alag parameter mein bhejo.",
+        "**Strings**: C mein string ek `char` array hai jiske end mein `'\\0'` (null character, value 0) hota hai. `\"hi\"` 3 bytes leta hai: h, i, `'\\0'`. `%s` aur string functions `'\\0'` milne tak hi chalte hain.",
+        "**char array vs string literal**: `char s[] = \"hi\";` apni copy banata hai jise badal sakte ho. `char *s = \"hi\";` ek read-only literal ko point karta hai; `s[0] = 'H';` undefined behaviour hai.",
+        "**string.h**: `strlen(s)` `'\\0'` se pehle tak ke characters ginta hai. `strcpy(d, s)` copy, `strcat(d, s)` end mein jodta hai (d mein jagah honi chahiye). `strcmp(a, b)` pehle alag character par compare karke negative, 0 ya positive deta hai. Strings ko `==` se compare mat karo, woh addresses compare karta hai."
+      ],
+      "example": {
+        "problem": "String \"education\" mein kitne vowels hain? Pointer se loop chala kar gino.",
+        "steps": [
+          "p ko string ke shuru par rakho aur tab tak chalo jab tak `*p != '\\0'`.",
+          "Har character ko a, e, i, o, u se compare karo.",
+          "e (haan), d, u (haan), c, a (haan), t, i (haan), o (haan), n.",
+          "Loop `'\\0'` par rukta hai, to array ke bahar nahi jaata.",
+          "Answer: **5** vowels."
+        ],
+        "code": "char s[] = \"education\";\nint count = 0;\nfor (char *p = s; *p != '\\0'; p++) {\n    char ch = *p;\n    if (ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u')\n        count++;\n}\nprintf(\"%d\\n\", count);"
+      },
+      "mistakes": [
+        "String ke liye jagah ginte waqt `'\\0'` bhool jaana: \"hello\" ke liye `char s[5]` kam hai, `char s[6]` chahiye.",
+        "`if (s1 == s2)` se strings compare karna. Yeh addresses compare karta hai; `strcmp(s1, s2) == 0` use karo.",
+        "Function ke andar `sizeof(arr) / sizeof(arr[0])` se length nikalna. Wahan arr pointer hai, isliye galat answer aata hai; length parameter bhejo."
+      ],
+      "revision": [
+        "`a[i]` = `*(a + i)`; `p + 1` ek element aage.",
+        "`sizeof` array par poori size, pointer par 8.",
+        "String = chars + `'\\0'`; `strlen` `'\\0'` nahi ginta.",
+        "`strcmp`: 0 matlab barabar.",
+        "Function ko array dena = pointer dena."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w7-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "char s[] = \"hello\";\nprintf(\"%zu %zu\\n\", sizeof(s), strlen(s));",
+          "options": [
+            "6 5",
+            "5 5",
+            "5 6",
+            "8 5"
+          ],
+          "answer": 0,
+          "explanation": "`char s[] = \"hello\"` mein 5 letters aur ek `'\\0'` store hote hain, to `sizeof(s)` = 6. `strlen` `'\\0'` se pehle tak ginta hai: 5. Trap: \"5 5\", `'\\0'` ki byte bhool jaana; \"8 5\", s ko pointer samajhna (yeh array hai, pointer nahi).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w7-q2",
+          "question": "Is code ka output kya hoga?",
+          "code": "int a[5] = {10, 20, 30, 40, 50};\nint *p = a + 1;\nprintf(\"%d %d\\n\", *p, *(p + 2));",
+          "options": [
+            "10 30",
+            "20 40",
+            "20 22",
+            "11 13"
+          ],
+          "answer": 1,
+          "explanation": "`a + 1` doosre element (index 1) ko point karta hai, to `*p` = 20. `p + 2` do elements aage, yaani index 3: 40. Trap: \"20 22\", `*(p + 2)` ko `*p + 2` padhna; \"11 13\", pointer arithmetic ko value par lagana.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w7-q3",
+          "question": "Int 4 bytes maan kar, is code ka output kya hoga?",
+          "code": "int a[] = {3, 1, 4, 1, 5, 9};\nint n = sizeof(a) / sizeof(a[0]);\nint *p = &a[n - 1];\nint *q = a;\nprintf(\"%d %ld\\n\", n, (long)(p - q));",
+          "options": [
+            "24 20",
+            "6 20",
+            "24 5",
+            "6 5"
+          ],
+          "answer": 3,
+          "explanation": "`sizeof(a)` = 6 · 4 = 24 bytes, `sizeof(a[0])` = 4, to n = 6. p aakhri element (index 5) par, q index 0 par. Pointer subtraction elements ginta hai, bytes nahi: 5 − 0 = 5. Output \"6 5\". Trap: \"6 20\", pointer ke farq ko bytes mein ginna; \"24 5\", `sizeof` ko seedha element count maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w7-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void)\n{\n    char a[20] = \"cat\";\n    char b[] = \"car\";\n    strcat(a, b);\n    printf(\"%s %zu %d\\n\", a, strlen(a), strcmp(\"cat\", \"car\") > 0);\n    return 0;\n}",
+          "options": [
+            "catcar 7 1",
+            "carcat 6 1",
+            "catcar 6 1",
+            "catcar 6 0"
+          ],
+          "answer": 2,
+          "explanation": "`strcat(a, b)` b ko a ke end mein jodta hai: \"catcar\", length 6 (`strlen` `'\\0'` nahi ginta). `strcmp(\"cat\", \"car\")` teesre character par alag hota hai: 't' (116) > 'r' (114), to positive, aur `> 0` = 1. Trap: \"catcar 7 1\", `'\\0'` ko bhi ginna; \"catcar 6 0\", \"car\" ko bada samajhna kyunki usme 'r' hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w7-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "char s[10] = \"abcdef\";\ns[3] = '\\0';\nprintf(\"%s %zu %zu\\n\", s, strlen(s), sizeof(s));",
+          "options": [
+            "abcdef 6 10",
+            "abc 3 4",
+            "abcef 5 10",
+            "abc 3 10"
+          ],
+          "answer": 3,
+          "explanation": "`s[3]` ('d' ki jagah) par `'\\0'` aa gaya, to string wahin khatam maani jaati hai: `%s` \"abc\" dikhata hai aur `strlen` 3. 'e', 'f' memory mein abhi bhi hain par dikhte nahi. `sizeof(s)` array ki declared size hai: 10. Trap: \"abcef 5 10\", yeh sochna ki character delete hokar baaki aage khisak gaye; \"abc 3 4\", `sizeof` ko string ki length se jodna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w7-q6",
+          "question": "64-bit Linux gcc par (int 4 bytes, pointer 8 bytes) is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nvoid f(int arr[])\n{\n    printf(\"%zu \", sizeof(arr));\n}\n\nint main(void)\n{\n    int a[10];\n    printf(\"%zu \", sizeof(a));\n    f(a);\n    printf(\"%zu\\n\", sizeof(a) / sizeof(*a));\n    return 0;\n}",
+          "options": [
+            "40 40 10",
+            "40 8 10",
+            "10 10 10",
+            "40 8 1"
+          ],
+          "answer": 1,
+          "explanation": "`main` mein a sach mein array hai: 10 · 4 = 40 bytes. Function parameter `int arr[]` asal mein `int *arr` hai, isliye `sizeof(arr)` = 8 (pointer size; gcc iski warning bhi deta hai). `sizeof(a) / sizeof(*a)` = 40 / 4 = 10. Output \"40 8 10\". Trap: \"40 40 10\", yeh sochna ki array function mein bhi apna size saath le jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Structures, Unions and Enums",
+      "summary": "Is week aap `struct` se alag-alag types ko ek saath rakhna, `typedef`, `union`, `enum`, aur structs ki size, padding aur alignment ko intro level par seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**struct**: alag types ke members ko ek naam ke neeche jodta hai: `struct point { int x; int y; };`. Member tak `.` se pahunchte hain (`p.x`). Pointer ho to `->`: `ptr->x` ≡ `(*ptr).x`.",
+        "**typedef**: kisi type ko naya naam deta hai, jaise `typedef struct { ... } Student;`. Uske baad seedha `Student s;` likh sakte ho, har baar `struct` likhne ki zaroorat nahi.",
+        "**Struct copy**: `b = a;` saare members copy karta hai (andar ke arrays bhi). Struct ko function mein by value bhejo to poori copy jaati hai; asli struct badalna ho ya badi copy se bachna ho to pointer bhejo.",
+        "**Padding aur alignment**: har member apne alignment ke multiple wale offset par rakha jaata hai (typical 64-bit gcc: char 1, int 4, double 8). Beech mein khaali bytes (padding) aa sakti hain, aur poore struct ki size sabse bade alignment ki multiple tak round hoti hai.",
+        "**Member order**: bade members pehle rakhne se padding kam hoti hai. `{char; int; char;}` 12 bytes leta hai, par `{int; char; char;}` sirf 8.",
+        "**union**: saare members **ek hi memory** share karte hain; size sabse bade member jitni (alignment tak round). Ek member mein likhne se baaki ki bytes bhi badal jaati hain, isliye ek time par ek hi member ka matlab hota hai.",
+        "**enum**: naam wale integer constants. Pehla 0 se shuru, har agla pichhle + 1, jab tak tum khud value na do: `enum { MON = 1, TUE, WED };` mein TUE = 2, WED = 3."
+      ],
+      "example": {
+        "problem": "64-bit Linux gcc par `struct R { char a; double b; int c; };` ki size nikaalo.",
+        "steps": [
+          "`a` (char, 1 byte) offset 0 par.",
+          "`b` (double) ko 8 ke multiple par hona chahiye, to offsets 1–7 padding, aur b offset 8 se 15 tak.",
+          "`c` (int) ko 4 ka multiple chahiye; 16 already hai, to c offset 16 se 19.",
+          "Abhi tak 20 bytes. Sabse bada alignment 8 hai, to size ko 8 ke multiple tak badhao: 24 (end mein 4 bytes padding).",
+          "Order badal kar `{ double b; int c; char a; }` karo to 8 + 4 + 1 = 13 → round karke 16.",
+          "Answer: **24 bytes** (reorder karne par 16)."
+        ]
+      },
+      "mistakes": [
+        "Struct ki size ko members ki sizes ka seedha jod samajhna (1 + 8 + 4 = 13). Padding ki wajah se asli size zyada hoti hai; hamesha `sizeof` use karo.",
+        "Pointer ke saath `.` lagana (`ptr.x`). Pointer se member ke liye `ptr->x` chahiye.",
+        "Union ke ek member mein likh kar doosre se \"alag\" value ki ummeed karna. Sab ek hi bytes hain."
+      ],
+      "revision": [
+        "`.` struct ke saath, `->` struct pointer ke saath.",
+        "Struct assignment = poori copy.",
+        "Size = members + padding, sabse bade alignment ka multiple.",
+        "Union size = sabse bada member; memory shared.",
+        "enum: 0 se shuru, har agla +1, jab tak value na di jaaye."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w8-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "enum color { RED, GREEN = 5, BLUE, WHITE = 2, BLACK };\nprintf(\"%d %d %d\\n\", RED, BLUE, BLACK);",
+          "options": [
+            "1 6 3",
+            "0 2 4",
+            "0 6 7",
+            "0 6 3"
+          ],
+          "answer": 3,
+          "explanation": "RED pehla hai aur koi value nahi di, to 0. GREEN = 5, to BLUE = 6. WHITE ko 2 diya, to BLACK = 3 (pichhle constant + 1). Output \"0 6 3\". Trap: \"0 6 7\", BLACK ko BLUE ke baad gin lena aur WHITE = 2 ko ignore karna; \"1 6 3\", enum ko 1 se shuru maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w8-q2",
+          "question": "Is code ka output kya hoga?",
+          "code": "struct point { int x, y; };\nstruct point a = {1, 2};\nstruct point b = a;\nb.x = 10;\nprintf(\"%d %d\\n\", a.x, b.x);",
+          "options": [
+            "10 10",
+            "1 1",
+            "1 10",
+            "10 1"
+          ],
+          "answer": 2,
+          "explanation": "`b = a` saare members ki copy banata hai; a aur b alag memory hain. b.x badalne se a.x par koi asar nahi. Output \"1 10\". Trap: \"10 10\", struct assignment ko reference/alias samajhna (jaise kuch doosri languages mein objects ke saath hota hai).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w8-q3",
+          "question": "Typical 64-bit Linux gcc par (int 4 bytes, 4-byte aligned) yeh kya print karega?",
+          "code": "struct S {\n    char c;\n    int i;\n    char d;\n};\nprintf(\"%zu\\n\", sizeof(struct S));",
+          "options": [
+            "12",
+            "6",
+            "9",
+            "8"
+          ],
+          "answer": 0,
+          "explanation": "c offset 0 par. i ko 4 ka multiple chahiye, to 3 bytes padding aur i offsets 4–7. d offset 8 par. Ab 9 bytes, par size sabse bade alignment (4) ka multiple honi chahiye taaki array mein agla struct bhi aligned rahe: 12. Trap: 6, sirf sizes jodna (1 + 4 + 1); 9, end ki padding bhool jaana; 8, woh size jo members ka order badalne par milti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w8-q4",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\ntypedef struct {\n    char name[10];\n    int marks;\n} Student;\n\nvoid bonus(Student *s)\n{\n    s->marks += 5;\n}\n\nvoid bonus2(Student s)\n{\n    s.marks += 5;\n}\n\nint main(void)\n{\n    Student st = {\"Asha\", 80};\n    bonus(&st);\n    bonus2(st);\n    printf(\"%s %d\\n\", st.name, st.marks);\n    return 0;\n}",
+          "options": [
+            "Asha 90",
+            "Asha 85",
+            "Asha 80",
+            "A 85"
+          ],
+          "answer": 1,
+          "explanation": "`bonus` ko pointer mila, to `s->marks += 5` asli st ko 85 bana deta hai. `bonus2` ko poore struct ki copy mili; uske andar ka +5 copy par laga aur function ke saath khatam. Output \"Asha 85\". Trap: \"Asha 90\", yeh sochna ki struct by value bhejne par bhi asli badal jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w8-q5",
+          "question": "Little-endian machine par (int 4 bytes, ASCII) is code ka output kya hoga?",
+          "code": "union U {\n    int i;\n    char c[4];\n};\nunion U u;\nu.i = 0x41424344;\nprintf(\"%zu %c\\n\", sizeof(u), u.c[0]);",
+          "options": [
+            "4 D",
+            "8 A",
+            "4 A",
+            "8 D"
+          ],
+          "answer": 0,
+          "explanation": "Union ke members same memory share karte hain, to size = sabse bada member = 4 (8 nahi, kyunki members jude nahi, overlap hote hain). Little-endian mein sabse kam significant byte `0x44` pehle address par hai, to `c[0]` = `0x44` = 'D'. Trap: \"4 A\", number ko jis order mein likha hai (41 pehle) memory mein bhi wahi order maan lena; \"8 D\", union ki size ko members ka jod samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w8-q6",
+          "question": "Typical 64-bit Linux gcc par (double 8 bytes, 8-byte aligned) is code ka output kya hoga?",
+          "code": "struct A { char a; double d; char b; };\nstruct B { double d; char a; char b; };\nprintf(\"%zu %zu\\n\", sizeof(struct A), sizeof(struct B));",
+          "options": [
+            "10 10",
+            "24 24",
+            "24 16",
+            "17 10"
+          ],
+          "answer": 2,
+          "explanation": "A: a offset 0, d ko 8 ka multiple chahiye to 7 bytes padding aur d offsets 8–15, b offset 16; 17 bytes ko 8 ke multiple tak round: 24. B: d offsets 0–7, a 8 par, b 9 par; 10 bytes ko round: 16. Same members, sirf order badla, aur 8 bytes bach gaye. Trap: \"24 24\", yeh sochna ki order se farq nahi padta; \"17 10\", end ki padding bhool jaana.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Dynamic Memory: Stack and Heap",
+      "summary": "Is week aap stack aur heap ka farq, `malloc`/`calloc`/`realloc`/`free`, memory leaks aur dangling pointers, aur 2-D arrays (static aur dynamic) seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Stack vs heap**: local variables function ke stack frame mein rehte hain aur return par apne aap khatam. **Heap** se memory tab maangte hain jab size runtime par pata chale ya data ko function ke baad bhi zinda rehna ho; yeh tab tak rehti hai jab tak tum `free` na karo.",
+        "**malloc**: `malloc(n)` n bytes deta hai aur `void *` return karta hai; memory uninitialised (garbage) hoti hai. Hamesha bytes mein socho: `malloc(n * sizeof(int))`. Memory na mile to `NULL` aata hai, isliye check karo. `<stdlib.h>` include karo.",
+        "**calloc**: `calloc(count, size)` count elements ki jagah deta hai aur saari bytes 0 kar deta hai.",
+        "**realloc**: `realloc(p, newsize)` block ko bada/chhota karta hai. Purana data (dono sizes mein jo chhota ho utna) bacha rehta hai, par block naye address par move ho sakta hai. Result pehle temporary pointer mein lo; fail hone par `NULL` aata hai aur purana block abhi bhi valid hota hai.",
+        "**free aur dangling pointer**: `free(p)` block heap ko wapas deta hai, par p mein purana address reh jaata hai (dangling). Use use karna ya dobara free karna undefined behaviour hai. Free ke baad `p = NULL;` achhi aadat hai.",
+        "**Memory leak**: heap block ka aakhri pointer kho diya (overwrite ya function khatam) bina `free` kiye, to woh memory program khatam hone tak waste. Function se local variable ka address return karna bhi galat hai, kyunki frame hat chuka hota hai.",
+        "**2-D arrays**: `int m[3][4];` memory mein row-major hai: pehle poori row 0, phir row 1. `m[i][j]` start se `i·4 + j` elements door hai. Dynamic 2-D ke do tareeke: ek bada block aur index `i * cols + j`, ya rows ke pointers ka array (`int **`) jisme har row alag `malloc`."
+      ],
+      "example": {
+        "problem": "User se n = 4 milta hai. Heap par n ints ka array banao, usme i² (i = 1 se 4) bharo, sum nikaalo aur memory free karo.",
+        "steps": [
+          "`int *a = malloc(n * sizeof(int));`: 4 · 4 = 16 bytes.",
+          "`if (a == NULL)` par error dikha kar ruko.",
+          "Loop: `a[0]` = 1, `a[1]` = 4, `a[2]` = 9, `a[3]` = 16.",
+          "Sum = 1 + 4 + 9 + 16 = 30.",
+          "`free(a); a = NULL;`: memory wapas, aur dangling pointer nahi bacha.",
+          "Answer: **30**."
+        ],
+        "code": "int n = 4, sum = 0;\nint *a = malloc(n * sizeof(int));\nif (a == NULL)\n    return 1;\nfor (int i = 0; i < n; i++) {\n    a[i] = (i + 1) * (i + 1);\n    sum += a[i];\n}\nprintf(\"%d\\n\", sum);\nfree(a);\na = NULL;"
+      },
+      "mistakes": [
+        "`malloc(10)` likh kar 10 ints ki ummeed karna. Yeh 10 **bytes** hain; `malloc(10 * sizeof(int))` likho.",
+        "`p = realloc(p, size);` likhna. Fail hone par p `NULL` ho jaata hai aur purana block leak. Pehle temporary pointer mein lo.",
+        "`free` ke baad pointer use karna ya do baar `free` karna. Free ke turant baad pointer ko `NULL` kar do."
+      ],
+      "revision": [
+        "Stack: automatic, function ke saath khatam. Heap: `free` tak.",
+        "`malloc` garbage deta hai, `calloc` zero.",
+        "`realloc` data bachata hai par address badal sakta hai.",
+        "Leak = pointer kho gaya, free nahi hua. Dangling = free ho gaya, pointer bacha.",
+        "`m[i][j]` offset = `i * cols + j` elements (row-major)."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w9-q1",
+          "question": "10 ints ke liye heap memory lene ka sahi tareeka kaunsa hai?",
+          "options": [
+            "int *p = malloc(10);",
+            "int *p = malloc(10 * sizeof(int));",
+            "int p = malloc(10 * sizeof(int));",
+            "int *p = malloc(sizeof(int *));"
+          ],
+          "answer": 1,
+          "explanation": "`malloc` bytes maangta hai, to 10 ints ke liye `10 * sizeof(int)` = 40 bytes, aur result ek pointer (`int *`) mein rakhna hai. Trap: `malloc(10)`, jo sirf 10 bytes (2½ ints) deta hai; aur `sizeof(int *)` sirf ek pointer jitni jagah hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w9-q2",
+          "question": "Is code ka output kya hoga?",
+          "code": "int *a = calloc(4, sizeof(int));\na[1] = 7;\nprintf(\"%d %d\\n\", a[0] + a[1], a[3]);\nfree(a);",
+          "options": [
+            "Garbage / unpredictable",
+            "7 7",
+            "7 0",
+            "0 7"
+          ],
+          "answer": 2,
+          "explanation": "`calloc` saari bytes 0 kar deta hai, to `a[0]` = 0 aur `a[3]` = 0. `a[1]` = 7 likha. `a[0] + a[1]` = 7, aur `a[3]` = 0. Output \"7 0\". Trap: \"Garbage\", calloc ko malloc jaisa uninitialised samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w9-q3",
+          "question": "Is code mein kya problem hai?",
+          "code": "int *p = malloc(sizeof(int));\nint *q = malloc(sizeof(int));\n*p = 1;\n*q = 2;\np = q;\nfree(p);",
+          "options": [
+            "Koi problem nahi; dono blocks free ho gaye",
+            "Ek hi block do baar free hua (double free)",
+            "q wala block leak hua",
+            "Pehle p ko mila block leak hua; uska koi pointer nahi bacha"
+          ],
+          "answer": 3,
+          "explanation": "`p = q` ke baad p aur q dono doosre block ko point karte hain, aur pehle block (jisme 1 tha) ka address kahin nahi bacha. `free(p)` sirf doosra block free karta hai. Pehla block ab kabhi free nahi ho sakta: leak. (Saath hi q ab dangling hai.) Trap: \"q wala block leak hua\", par woh to `free(p)` se free ho gaya, kyunki p usi ko point kar raha tha.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w9-q4",
+          "question": "`int m[3][4];` (int 4 bytes) mein `m[2][1]`, `m[0][0]` se kitni **bytes** door hai?",
+          "options": [
+            "36",
+            "20",
+            "9",
+            "28"
+          ],
+          "answer": 0,
+          "explanation": "C row-major hai: har row mein 4 ints. `m[2][1]` se pehle 2 poori rows (8 elements) aur 1 element aur, yaani 2·4 + 1 = 9 elements. Bytes mein 9 · 4 = 36. Trap: 20, column-major soch kar (1·3 + 2 = 5 elements); 9, elements ko hi bytes maan lena; 28, row length 4 ki jagah 3 lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w9-q5",
+          "question": "Maan lo `realloc` safal hota hai. Is code ka output kya hoga?",
+          "code": "int *a = malloc(3 * sizeof(int));\nfor (int i = 0; i < 3; i++)\n    a[i] = i + 1;\nint *t = realloc(a, 5 * sizeof(int));\nif (t != NULL) {\n    a = t;\n    a[3] = 10;\n    a[4] = a[2] + a[3];\n}\nprintf(\"%d %d\\n\", a[2], a[4]);\nfree(a);",
+          "options": [
+            "0 10",
+            "Unpredictable (realloc ke baad purani values kho jaati hain)",
+            "3 13",
+            "3 10"
+          ],
+          "answer": 2,
+          "explanation": "Pehle a = {1, 2, 3}. `realloc` block ko 5 ints ka karta hai aur pehle 3 values bachata hai, chahe block naye address par chala jaaye. Phir `a[3]` = 10 aur `a[4]` = 3 + 10 = 13. Output \"3 13\". Trap: \"0 10\" ya \"unpredictable\", yeh sochna ki realloc khaali naya block deta hai; purana data copy hota hai (sirf naye 2 slots garbage hote, jo yahan bhar diye gaye).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w9-q6",
+          "question": "In do functions ke baare mein kaunsa statement sahi hai?",
+          "code": "int *make(void)\n{\n    int x = 42;\n    return &x;\n}\n\nint *make2(void)\n{\n    int *p = malloc(sizeof(int));\n    if (p != NULL)\n        *p = 42;\n    return p;\n}",
+          "options": [
+            "make2 sahi hai (caller ko baad mein free karna hoga); make ek dangling pointer return karta hai",
+            "Dono sahi hain, kyunki dono 42 ka address dete hain",
+            "make sahi hai; make2 return hote hi memory leak karta hai",
+            "Dono galat hain, kyunki function pointer return nahi kar sakta"
+          ],
+          "answer": 0,
+          "explanation": "`make` mein x stack frame ka local hai; return hote hi frame hat jaata hai, to `&x` ek dangling address hai aur use dereference karna undefined behaviour (gcc warning bhi deta hai). `make2` ki memory heap par hai, function ke baad bhi zinda rehti hai; bas caller ko `free` karna hoga. Trap: \"dono sahi\", kyunki kabhi-kabhi make ka galat pointer bhi 42 dikha deta hai, par yeh sirf sanyog hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "File Handling and Bit Manipulation",
+      "summary": "Is week aap text aur binary files ke saath kaam karna (`fopen`, `fprintf`, `fscanf`, `fgets`, `fread`, `fwrite`, `fclose`) aur bitwise operators, shifts aur masks se bits ko set, clear, toggle aur test karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**FILE * aur fopen**: `FILE *fp = fopen(\"data.txt\", \"r\");`. Modes: `\"r\"` padhna (file honi chahiye), `\"w\"` likhna (nayi banti hai, purani ho to khaali ho jaati hai), `\"a\"` end mein jodna; binary ke liye `\"rb\"`, `\"wb\"`. File na khule to `NULL` milta hai, hamesha check karo. Kaam ke baad `fclose(fp)`, jo buffer ko bhi flush karta hai.",
+        "**Text I/O**: `fprintf(fp, ...)` aur `fscanf(fp, ...)` printf/scanf jaise hi hain, bas file ke saath. `fscanf` kitne items match hue woh return karta hai, aur file khatam hone par `EOF`. `fgets(buf, n, fp)` ek line padhta hai, zyada se zyada n − 1 characters, newline ko bhi rakhta hai, aur end mein `'\\0'` lagata hai.",
+        "**Binary I/O**: `fwrite(ptr, size, count, fp)` memory ki bytes jaisi hain waisi likhta hai; 10 ints = 40 bytes (int 4 bytes). `fread` same arguments leta hai aur **kitne items** pure padhe woh return karta hai, jo file khatam hone par count se kam ho sakta hai.",
+        "**Bitwise operators**: `&` (dono 1 to 1), `|` (koi ek 1 to 1), `^` (alag hon to 1), `~` (har bit ulta). Yeh har bit par alag kaam karte hain; `&&`, `||` jaise logical operators se confuse mat karo.",
+        "**Shifts**: `x << k` bits ko left khiskata hai, yaani 2ᵏ se guna (agar overflow na ho). Unsigned `x >> k` right khiskata hai, yaani 2ᵏ se integer division. Bit manipulation ke liye unsigned types use karo; negative numbers ko shift karna implementation-defined/undefined ho sakta hai.",
+        "**Masks**: bit k ke liye mask `1u << k`. Set: `x | (1u << k)`. Clear: `x & ~(1u << k)`. Toggle: `x ^ (1u << k)`. Test: `(x >> k) & 1`.",
+        "**Useful tricks**: `x & (x - 1)` sabse neeche wala 1-bit hata deta hai, `x & (~x + 1)` sirf sabse neeche wala 1-bit bachata hai, aur `a ^ a` = 0."
+      ],
+      "example": {
+        "problem": "45 ke binary mein kitne 1-bits hain? Shift aur mask wale loop se gino.",
+        "steps": [
+          "45 = 32 + 8 + 4 + 1 = 101101 (binary).",
+          "Har round mein `x & 1` sabse neeche ka bit deta hai, phir `x >>= 1` use hata deta hai.",
+          "Bits neeche se: 1, 0, 1, 1, 0, 1. Count: 1, 1, 2, 3, 3, 4.",
+          "x 0 hote hi loop rukta hai (6 rounds).",
+          "Answer: **4** set bits."
+        ],
+        "code": "unsigned int x = 45;\nint count = 0;\nwhile (x != 0) {\n    count += x & 1;\n    x >>= 1;\n}\nprintf(\"%d\\n\", count);"
+      },
+      "mistakes": [
+        "`fopen` ka result check na karna. File na mili to fp `NULL` hai aur agla `fprintf`/`fgets` crash karega.",
+        "Bit test ke liye `if (x & 1 << k == 0)` likhna. `==` ki precedence `&` se zyada hai; brackets lagao: `if ((x & (1u << k)) == 0)`.",
+        "`&` aur `&&` mein confuse hona: `6 & 1` = 0 hai, par `6 && 1` = 1."
+      ],
+      "revision": [
+        "`\"w\"` purani file khaali kar deta hai, `\"a\"` end mein jodta hai.",
+        "`fgets` newline rakhta hai; `fread` items ki ginti return karta hai.",
+        "Set: `|`, clear: `& ~`, toggle: `^`, test: `>> k & 1`.",
+        "`x << k` = ×2ᵏ, unsigned `x >> k` = ÷2ᵏ.",
+        "`x & (x - 1)` lowest set bit hata deta hai."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w10-q1",
+          "question": "Is statement ka output kya hoga?",
+          "code": "printf(\"%d %d %d\\n\", 12 & 10, 12 | 10, 12 ^ 10);",
+          "options": [
+            "1 1 0",
+            "14 8 6",
+            "8 14 6",
+            "8 14 2"
+          ],
+          "answer": 2,
+          "explanation": "12 = 1100, 10 = 1010. AND: 1000 = 8. OR: 1110 = 14. XOR (jahan bits alag): 0110 = 6. Output \"8 14 6\". Trap: \"1 1 0\", bitwise ko logical (`&&`, `||`) samajhna; \"14 8 6\", AND aur OR ulta karna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w10-q2",
+          "question": "Ek file \"log.txt\" pehle se hai aur usme data hai. `fopen(\"log.txt\", \"w\")` karne par kya hota hai?",
+          "options": [
+            "File ka purana content mit jaata hai aur likhna shuru se hota hai",
+            "Naya data purane content ke end mein judta hai",
+            "fopen NULL deta hai kyunki file pehle se hai",
+            "File sirf padhne ke liye khulti hai"
+          ],
+          "answer": 0,
+          "explanation": "`\"w\"` mode file ko zero length par truncate kar deta hai (na ho to nayi banata hai), phir likhna shuru se hota hai. Purana data bachana ho to `\"a\"` (append) use karo. Trap: \"end mein judta hai\", jo `\"a\"` ka kaam hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w10-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "unsigned int x = 0x5A;        /* 0101 1010 */\nx = x | (1u << 0);\nx = x & ~(1u << 3);\nx = x ^ (1u << 7);\nprintf(\"%X\\n\", x);",
+          "options": [
+            "DB",
+            "D3",
+            "53",
+            "D2"
+          ],
+          "answer": 1,
+          "explanation": "Shuru: 0101 1010. Bit 0 set: 0101 1011 (`0x5B`). Bit 3 clear: 0101 0011 (`0x53`). Bit 7 toggle (0 tha, 1 hua): 1101 0011 = `0xD3`. Output \"D3\". Trap: \"DB\", bit 3 clear karna bhool jaana; \"53\", toggle bhool jaana; \"D2\", bit 0 set na karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w10-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "unsigned int a = 5;\nprintf(\"%u %u %u\\n\", a << 3, 100u >> 2, (a << 1) | 1);",
+          "options": [
+            "15 25 11",
+            "40 50 11",
+            "40 25 10",
+            "40 25 11"
+          ],
+          "answer": 3,
+          "explanation": "`a << 3` = 5 · 2³ = 40. `100u >> 2` = 100 / 4 = 25. `(a << 1) | 1` = 1010 | 0001 = 1011 = 11. Output \"40 25 11\". Trap: \"15 25 11\", shift ko 3 se guna samajhna; \"40 50 11\", `>> 2` ko 2 se bhaag samajhna; \"40 25 10\", `| 1` bhool jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w10-q5",
+          "question": "Binary file \"data.bin\" mein theek 10 ints (40 bytes, int 4 bytes) likhe hain. Is code ka output kya hoga?",
+          "code": "int buf[8];\nFILE *fp = fopen(\"data.bin\", \"rb\");\nsize_t n1 = fread(buf, sizeof(int), 8, fp);\nsize_t n2 = fread(buf, sizeof(int), 8, fp);\nfclose(fp);\nprintf(\"%zu %zu\\n\", n1, n2);",
+          "options": [
+            "32 8",
+            "8 2",
+            "8 8",
+            "8 0"
+          ],
+          "answer": 1,
+          "explanation": "`fread` bytes nahi, pure padhe gaye **items** ginta hai. Pehli call 8 ints padhti hai: n1 = 8. File position aage badh chuki hai; sirf 2 ints bache hain, to doosri call 2 hi padh paati hai: n2 = 2. Trap: \"32 8\", bytes return hone ki soch; \"8 8\", yeh sochna ki maangne par hamesha poore 8 milenge.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w10-q6",
+          "question": "Is code ka output kya hoga?",
+          "code": "unsigned int x = 0xB6;        /* 1011 0110 */\nunsigned int lowest = x & (~x + 1);\nunsigned int cleared = x & (x - 1);\nint count = 0;\nunsigned int y = x;\nwhile (y) {\n    y &= y - 1;\n    count++;\n}\nprintf(\"%u %X %d\\n\", lowest, cleared, count);",
+          "options": [
+            "1 B4 5",
+            "2 B5 5",
+            "2 B4 4",
+            "2 B4 5"
+          ],
+          "answer": 3,
+          "explanation": "`~x + 1` unsigned mein −x hai, aur `x & -x` sirf sabse neeche ka 1-bit rakhta hai: 1011 0110 ka lowest set bit, bit 1 hai, value 2. `x & (x - 1)`: 1011 0110 & 1011 0101 = 1011 0100 = `0xB4`. Loop har round mein ek 1-bit hatata hai, to count = 1-bits ki ginti = 5. Output \"2 B4 5\". Trap: \"1 B4 5\", bit ki position (1) aur uski value (2) mein confuse hona; \"2 B4 4\", 1-bits galat ginna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Preprocessor, Headers and the Build Pipeline",
+      "summary": "Is week aap `#define` macros aur unke traps, `#include`, include guards, conditional compilation, multi-file projects aur header files, aur preprocess → compile → assemble → link stages seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Preprocessor**: compiler se pehle chalta hai aur `#` se shuru hone wali lines ko sambhalta hai. Yeh sirf **text replace** karta hai; C ke types ya precedence ko nahi samajhta.",
+        "**#define aur macros**: `#define PI 3.14159` ek constant hai. Function-like macro: `#define SQ(x) ((x) * (x))`. Har parameter aur poore macro ko brackets mein rakho, warna `SQ(1 + 2)` jaisi cheez galat expand hoti hai. Argument jo do baar use ho (jaise `SQ(i++)`) side effect do baar karta hai.",
+        "**#include**: `#include <stdio.h>` system directories mein dhoondhta hai, `#include \"myfile.h\"` pehle current project folder mein. Preprocessor us file ka poora text wahin chipka deta hai.",
+        "**Include guards**: header do baar include ho jaaye (seedha ya kisi doosre header ke through) to struct jaisi definitions do baar aa jaati hain aur compile error aata hai. Hal: `#ifndef POINT_H` / `#define POINT_H` / ... / `#endif` (ya `#pragma once`).",
+        "**Conditional compilation**: `#if`, `#elif`, `#else`, `#endif`, `#ifdef NAME`, `#ifndef NAME`. Jo hissa condition mein false hai woh compiler tak pahunchta hi nahi. `gcc -DDEBUG prog.c` se command line par DEBUG define kar sakte ho.",
+        "**Multi-file projects**: header (`.h`) mein declarations: prototypes, `extern int count;`, struct types. Ek `.c` file mein definition: `int count = 0;`. File level par `static` variable/function sirf usi file mein dikhta hai. Har `.c` alag compile hoti hai (translation unit).",
+        "**Build stages**: preprocess (`gcc -E`, output `.i`) → compile to assembly (`gcc -S`, `.s`) → assemble to object code (`gcc -c`, `.o`) → link (sab `.o` aur libraries jod kar executable). \"undefined reference\" ek **linker** error hai: declaration mil gaya par definition kahin nahi mili."
+      ],
+      "example": {
+        "problem": "`#define DOUBLE(x) x + x` hai. `3 * DOUBLE(2)` ki value kya hogi, aur sahi macro kya hona chahiye?",
+        "steps": [
+          "Preprocessor sirf text badalta hai: `3 * DOUBLE(2)` → `3 * 2 + 2`.",
+          "Ab normal precedence: `3 * 2` = 6, phir 6 + 2 = 8.",
+          "Hum 3 · (2 + 2) = 12 chahte the.",
+          "Sahi macro: `#define DOUBLE(x) ((x) + (x))`. Ab `3 * ((2) + (2))` = 12.",
+          "Answer: buggy macro se **8**, brackets wale macro se **12**."
+        ]
+      },
+      "mistakes": [
+        "Macro mein brackets na lagana. Har parameter ko `(x)` aur poori body ko bahar ke brackets mein rakho.",
+        "Header mein variable ki definition (`int count = 0;`) likhna. Do `.c` files include karengi to linker \"multiple definition\" dega. Header mein `extern int count;`, aur definition ek hi `.c` mein.",
+        "`#define N 10;` (end mein semicolon). `int a[N];` ban jaata hai `int a[10;];` aur ajeeb error aata hai. `#define` ke end mein `;` mat lagao."
+      ],
+      "revision": [
+        "Preprocessor = text replacement, compile se pehle.",
+        "Macro: har parameter aur poori body brackets mein.",
+        "Include guard: `#ifndef` / `#define` / `#endif`.",
+        "Header mein declarations (`extern`), `.c` mein definitions.",
+        "Stages: `-E` preprocess, `-S` assembly, `-c` object, phir link.",
+        "\"undefined reference\" = linker error."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w11-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "#define SQ(x) x * x\nprintf(\"%d\\n\", SQ(2 + 3));",
+          "options": [
+            "11",
+            "25",
+            "13",
+            "10"
+          ],
+          "answer": 0,
+          "explanation": "Preprocessor bina brackets ke text badalta hai: `SQ(2 + 3)` → `2 + 3 * 2 + 3`. Precedence se `3 * 2` = 6 pehle, phir 2 + 6 + 3 = 11. Trap: 25, macro ko function ki tarah samajhna jo pehle `2 + 3` = 5 karta. Isliye `#define SQ(x) ((x) * (x))` likhte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w11-q2",
+          "question": "Build ke kis stage par `undefined reference to 'compute'` jaisa error aata hai?",
+          "options": [
+            "Preprocessor",
+            "Compiler (C se assembly)",
+            "Assembler",
+            "Linker"
+          ],
+          "answer": 3,
+          "explanation": "Compiler ko sirf prototype chahiye, isliye woh call ko theek maan leta hai. Linker sab object files ko jodte waqt `compute` ki asli definition dhoondhta hai; na mile (jaise woh `.c` file build mein di hi nahi) to \"undefined reference\". Trap: compiler, par compiler ka error hota \"implicit declaration\" ya syntax error, undefined reference nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w11-q3",
+          "question": "Yeh program `gcc prog.c` se (koi `-D` option nahi) compile karke chalaya. Output kya hoga?",
+          "code": "#include <stdio.h>\n#define LEVEL 2\n\nint main(void)\n{\n#if LEVEL > 1\n    printf(\"A\");\n#elif LEVEL > 0\n    printf(\"B\");\n#endif\n#ifdef DEBUG\n    printf(\"C\");\n#else\n    printf(\"D\");\n#endif\n    printf(\"\\n\");\n    return 0;\n}",
+          "options": [
+            "ABD",
+            "AC",
+            "AD",
+            "BD"
+          ],
+          "answer": 2,
+          "explanation": "`LEVEL` 2 hai, to `#if LEVEL > 1` true: \"A\" wali line rehti hai, aur `#elif` wala hissa hata diya jaata hai (if/elif mein ek hi chunta hai). DEBUG kahin define nahi hua, to `#else` wala \"D\". Output \"AD\". Trap: \"ABD\", yeh sochna ki `#elif` bhi true hai to woh bhi aayega; preprocessor bhi if-else-if ki tarah pehli true branch hi rakhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w11-q4",
+          "question": "`point.h` mein `struct point { int x, y; };` hai aur koi include guard nahi hai. `shapes.h` bhi `point.h` include karta hai. `main.c` dono ko include karta hai. `main.c` compile karne par kya hoga?",
+          "code": "/* main.c */\n#include \"point.h\"\n#include \"shapes.h\"   /* shapes.h also has #include \"point.h\" */\n\nint main(void)\n{\n    struct point p = {1, 2};\n    return p.x;\n}",
+          "options": [
+            "Linker error: multiple definition",
+            "Compile error: struct point ek hi file mein do baar define hua",
+            "Theek chalega; preprocessor duplicate includes apne aap hata deta hai",
+            "Program runtime par crash karega"
+          ],
+          "answer": 1,
+          "explanation": "Preprocessor `point.h` ka text do baar main.c mein chipka deta hai, to ek hi translation unit mein `struct point` ki do definitions ho jaati hain: compile error (\"redefinition\"). Yeh linker tak pahunchta hi nahi. Hal: include guard (`#ifndef POINT_H` ...). Trap: \"preprocessor apne aap hata deta hai\", jo guard ke bina nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w11-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "#define MAX(a, b) ((a) > (b) ? (a) : (b))\n\nint i = 5, j = 3;\nint m = MAX(i++, j);\nprintf(\"%d %d\\n\", m, i);",
+          "options": [
+            "5 6",
+            "6 6",
+            "6 7",
+            "5 7"
+          ],
+          "answer": 2,
+          "explanation": "Expand karo: `((i++) > (j) ? (i++) : (j))`. Pehla `i++` 5 deta hai, 5 > 3 true, aur i = 6. `?:` ke pehle operand ke baad sequence point hai, isliye yeh defined hai. Ab chuna gaya `(i++)` phir chalta hai: 6 deta hai aur i = 7. To m = 6, i = 7. Trap: \"5 6\", MAX ko function samajhna jisme `i++` ek hi baar chalta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w11-q6",
+          "question": "Do files ko `gcc main.c a.c -o app` se build karke chalaya. Output kya hoga, aur agar `main.c` mein `extern int hidden;` likh kar `hidden` print karne ki koshish karein to kya hoga?",
+          "code": "/* a.c */\nint count = 10;\nstatic int hidden = 5;\nvoid inc(void) { count++; hidden++; }\n\n/* main.c */\n#include <stdio.h>\nextern int count;\nvoid inc(void);\n\nint main(void)\n{\n    inc();\n    inc();\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+          "options": [
+            "12; hidden use karne par linker error (undefined reference), kyunki static use a.c tak seemit rakhta hai",
+            "12; hidden print karne par 7 aayega",
+            "10; kyunki extern count ki alag copy banata hai",
+            "Compile error: count do baar declare hua hai"
+          ],
+          "answer": 0,
+          "explanation": "`extern int count;` sirf batata hai ki count kahin aur defined hai; linker use a.c wale count se jodta hai. Do baar `inc()` se count 10 → 12. `hidden` file-level `static` hai, iska naam a.c ke bahar dikhta hi nahi; main.c mein extern likh kar use karoge to linker ko koi bahar dikhne wala hidden nahi milega: undefined reference. Trap: \"7 aayega\", static ko normal global samajhna; \"10\", extern ko copy samajhna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Revision: Tracing, Bugs and Debugging Habits",
+      "summary": "Is week aap poore course ko jod kar revise karoge: programs ko trace table se trace karna, aam C bugs pehchanna, undefined behaviour se bachna, aur debugging ki achhi aadatein.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Trace table**: har variable ka ek column banao aur har line ke baad nayi value likho. Loop mein har round ki ek row. Dimaag mein trace karne se zyada galti hoti hai, kaagaz par kam.",
+        "**Off-by-one errors**: n elements ke array ke index 0 se n − 1 hain, to loop `for (i = 0; i < n; i++)`. `i <= n` ek round zyada chalta hai aur array ke bahar padhta hai. Pehli aur aakhri iteration hamesha haath se check karo.",
+        "**Aam bugs ki list**: `=` ki jagah `==`, switch mein `break` missing, integer division (`1 / 2` = 0), uninitialised variable, `scanf` mein `&` missing, aur `if`/`for` ke baad galti se `;`.",
+        "**Memory bugs**: array ke bahar padhna/likhna, string mein `'\\0'` ki jagah na rakhna, free ke baad pointer use karna (dangling), `free` bhool jaana (leak), aur local ka address return karna. Yeh aksar \"kabhi chalta hai, kabhi nahi\" wale bugs hote hain.",
+        "**Undefined behaviour (UB)**: jaise signed int overflow, `i = i++;`, uninitialised value padhna, ya array ke bahar jaana. C standard koi result guarantee nahi karta; output compiler aur optimisation ke saath badal sakta hai. Aise code ka \"output\" predict mat karo, use theek karo.",
+        "**Tools**: `gcc -Wall -Wextra` bahut se bugs compile time par pakad leta hai. `-g` ke saath build karke `gdb` mein step-by-step chalao. `-fsanitize=address` ya `valgrind` out-of-bounds aur leaks pakadte hain.",
+        "**Debugging habits**: pehle bug ko baar-baar reproduce karo, phir input chhota karo. Shak wali jagah `printf` se values dekho (`stderr` par, ya `fflush` ke saath). Return values (`fopen`, `malloc`, `scanf`) check karo. Ek baar mein ek hi change karo."
+      ],
+      "example": {
+        "problem": "Yeh function array ka maximum dena chahiye, par `{-5, -2, -9}` ke liye 0 deta hai. Bug dhoondho aur theek karo.",
+        "steps": [
+          "Trace: `max = 0` se shuru. −5 > 0? Nahi. −2 > 0? Nahi. −9 > 0? Nahi. Return 0.",
+          "Bug: max ko 0 se shuru kiya, jo array mein hai hi nahi. Saare numbers negative hon to max kabhi update nahi hota.",
+          "Fix: `max = a[0]` se shuru karo aur loop index 1 se chalao.",
+          "Naya trace: max = −5; −2 > −5, to max = −2; −9 > −2? Nahi.",
+          "Answer: fixed function **−2** deta hai. Sabak: initial value hamesha data se lo."
+        ],
+        "code": "int find_max(const int a[], int n)\n{\n    int max = a[0];              /* buggy version had: int max = 0; */\n    for (int i = 1; i < n; i++)\n        if (a[i] > max)\n            max = a[i];\n    return max;\n}"
+      },
+      "mistakes": [
+        "Compiler warnings ko ignore karna. `-Wall` ki zyada tar warnings asli bugs hoti hain (`=` in condition, unused value, missing return); unhe zero karo.",
+        "UB wale code ka output \"maan\" lena kyunki ek baar chal gaya. Doosri machine ya `-O2` par result badal sakta hai.",
+        "Bina soche bahut saare changes ek saath karna. Phir pata nahi chalta kis change ne bug theek kiya ya naya bug laaya."
+      ],
+      "revision": [
+        "Trace table: har variable ka column, har line/round ki row.",
+        "n elements: index 0 se n − 1; loop `i < n`.",
+        "`if (...);` aur `for (...);` ka semicolon body ko alag kar deta hai.",
+        "UB ka output predict nahi karte; code theek karte hain.",
+        "`-Wall -Wextra -g` aur sanitizers ko aadat banao."
+      ],
+      "questions": [
+        {
+          "id": "cprog-w12-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "int i, s = 0;\nfor (i = 0; i < 5; i++);\n    s += i;\nprintf(\"%d\\n\", s);",
+          "options": [
+            "10",
+            "15",
+            "0",
+            "5"
+          ],
+          "answer": 3,
+          "explanation": "`for (...)` ke baad `;` ka matlab hai loop ki body khaali hai. Loop sirf i ko 0 se 5 tak badhata hai. Phir `s += i` (jo indentation se loop ka hissa dikhta hai) sirf ek baar chalta hai: s = 5. Trap: 10, indentation dekh kar sochna ki 0 + 1 + 2 + 3 + 4 jud raha hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w12-q2",
+          "question": "Is code mein kya bug hai?",
+          "code": "int a[5] = {1, 2, 3, 4, 5};\nint s = 0;\nfor (int i = 1; i <= 5; i++)\n    s += a[i];\nprintf(\"%d\\n\", s);",
+          "options": [
+            "Koi bug nahi; 15 print hoga",
+            "a[0] chhoot jaata hai aur a[5] (array ke bahar) padha jaata hai",
+            "Sirf a[5] chhoot jaata hai",
+            "Compile error aayega"
+          ],
+          "answer": 1,
+          "explanation": "Valid indices 0 se 4 hain. Loop 1 se 5 tak chalta hai, to `a[0]` (value 1) kabhi nahi judta, aur `a[5]` array ke bahar hai, jise padhna undefined behaviour hai. Compiler isse rokta nahi. Fix: `for (i = 0; i < 5; i++)`. Trap: \"koi bug nahi\", maths ki tarah 1 se 5 tak ginna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "cprog-w12-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "char s[] = \"Debug\";\nint n = 0;\nfor (char *p = s; *p != '\\0'; p++)\n    if (*p >= 'a' && *p <= 'z')\n        n++;\nprintf(\"%d %c\\n\", n, s[n]);",
+          "options": [
+            "5 g",
+            "4 u",
+            "4 g",
+            "4 D"
+          ],
+          "answer": 2,
+          "explanation": "\"Debug\" mein lowercase letters e, b, u, g hain, 'D' capital hai, to n = 4. `s[4]` paanchwa character hai (index 0 se): D-0, e-1, b-2, u-3, g-4, to 'g'. Output \"4 g\". Trap: \"4 u\", index ko 1 se ginna; \"5 g\", capital 'D' ko bhi gin lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w12-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "int marks = 85;\nswitch (marks / 10) {\n    case 10:\n    case 9: printf(\"A\");\n    case 8: printf(\"B\");\n    case 7: printf(\"C\");\n        break;\n    default: printf(\"F\");\n}",
+          "options": [
+            "BC",
+            "B",
+            "ABC",
+            "BCF"
+          ],
+          "answer": 0,
+          "explanation": "`85 / 10` integer division hai = 8, to `case 8` match hota hai: \"B\". Wahan `break` nahi, to fall-through se `case 7` ka \"C\", phir `break`. Output \"BC\". Trap: \"B\", break ki kami na dekhna; \"ABC\", yeh sochna ki switch upar ke cases bhi chalata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w12-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n\nint next(int *p)\n{\n    static int calls = 0;\n    calls++;\n    *p = *p * 2;\n    return calls + *p;\n}\n\nint main(void)\n{\n    int v = 1;\n    int a = next(&v);\n    int b = next(&v);\n    printf(\"%d %d %d\\n\", a, b, v);\n    return 0;\n}",
+          "options": [
+            "3 5 4",
+            "2 4 4",
+            "3 6 2",
+            "3 6 4"
+          ],
+          "answer": 3,
+          "explanation": "Pehli call: calls = 1, v = 1 · 2 = 2, return 1 + 2 = 3. Doosri call: static calls ab 2, v = 2 · 2 = 4, return 2 + 4 = 6. v pointer se badla, to main mein v = 4. Output \"3 6 4\". Trap: \"3 5 4\", static ko har call par reset maan lena (1 + 4); \"3 6 2\", pointer se hua badlav bhool jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "cprog-w12-q6",
+          "question": "64-bit Linux gcc par (int 4 bytes, ASCII) is program ka output kya hoga?",
+          "code": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {\n    char tag[4];\n    int val;\n} Item;\n\nint main(void)\n{\n    Item *items = malloc(3 * sizeof(Item));\n    if (items == NULL)\n        return 1;\n    for (int i = 0; i < 3; i++) {\n        items[i].tag[0] = 'A' + i;\n        items[i].tag[1] = '\\0';\n        items[i].val = (i + 1) * 10;\n    }\n    Item *p = items + 1;\n    p->val += items[2].val;\n    p++;\n    printf(\"%s %d %zu\\n\", p->tag, items[1].val, sizeof(Item));\n    free(items);\n    return 0;\n}",
+          "options": [
+            "B 50 8",
+            "C 50 8",
+            "C 20 8",
+            "C 50 5"
+          ],
+          "answer": 1,
+          "explanation": "Loop ke baad: items[0] = (\"A\", 10), items[1] = (\"B\", 20), items[2] = (\"C\", 30). p = items + 1, to `p->val += items[2].val` se items[1].val = 20 + 30 = 50. `p++` ek poora Item aage, yaani items[2], to `p->tag` = \"C\". `sizeof(Item)` = 4 (char array) + 4 (int) = 8, koi padding nahi. Output \"C 50 8\". Trap: \"B 50 8\", `p++` bhool jaana; \"C 20 8\", yeh sochna ki p se badalne par items[1] nahi badla; \"C 50 5\", tag ko 1 byte ka maan lena.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

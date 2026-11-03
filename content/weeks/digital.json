@@ -1,0 +1,1434 @@
+{
+  "subjectId": "digital",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Why Digital: Logic Levels and Noise Margins",
+      "summary": "Is week aap seekhoge ki digital system voltages ko 0 aur 1 mein kaise todta hai, logic levels (VOH, VOL, VIH, VIL) aur noise margin kya hote hain, aur digital signals noise ke saamne itne reliable kyun hain.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Analog vs digital**: analog signal ki koi bhi value ho sakti hai (jaise 2.37 V), jabki digital system sirf do symbols pehchaanta hai, 0 aur 1. Har symbol ke liye ek poori voltage **range** fix hoti hai, ek single value nahi. Isi range ki wajah se thoda noise aane par bhi bit nahi badalta.",
+        "**Output levels**: ek gate jab 1 bhejta hai to uski output kam se kam **VOH** hoti hai, aur jab 0 bhejta hai to zyada se zyada **VOL**. Ye gate ka promise hai ki woh kitna saaf signal bhejega.",
+        "**Input levels**: receiving gate VIH ya usse upar ki voltage ko 1 maanta hai aur VIL ya usse neeche ki voltage ko 0. VIL aur VIH ke beech ka hissa **forbidden (undefined) region** hai; wahan ki voltage par output ka koi bharosa nahi.",
+        "**Noise margins**: NMH = VOH − VIH aur NML = VIL − VOL. Ye batate hain ki wire par kitna noise aa sakta hai aur phir bhi receiver sahi bit padhe. Overall noise margin = min(NMH, NML). Kisi bhi margin ka negative hona matlab do gates aapas mein reliably baat nahi kar sakte.",
+        "**Static discipline**: har gate ko ye niyam maanna padta hai ki valid input (≤ VIL ya ≥ VIH) milne par woh aur bhi strict valid output (≤ VOL ya ≥ VOH) dega. Kyunki VOH > VIH aur VOL < VIL, beech mein noise ke liye jagah bachti hai.",
+        "**Voltage transfer characteristic (VTC)**: inverter ke liye Vout vs Vin ka graph. Low Vin par Vout high, high Vin par Vout low, aur beech mein ek steep transition. VIL aur VIH woh points hain jahan slope = −1 hota hai. Transition region mein gain ka magnitude 1 se zyada hona zaroori hai, tabhi gate signal ko 'saaf' kar paata hai.",
+        "**Signal regeneration**: har gate thode kharab input ko bhi poora saaf VOH ya VOL bana deta hai, isliye noise ek stage se doosre mein jud-jud kar nahi badhta. Analog chain mein har stage ka noise add hota jaata hai; digital chain mein har stage par noise 'reset' ho jaata hai. Yahi digital ki reliability ka raaz hai, aur isi wajah se digital copy bilkul original jaisi hoti hai."
+      ],
+      "example": {
+        "problem": "Ek logic family ke liye VOH = 4.4 V, VOL = 0.4 V, VIH = 3.5 V, VIL = 1.5 V. NMH, NML aur overall noise margin nikaalo.",
+        "steps": [
+          "NMH = VOH − VIH = 4.4 − 3.5 = 0.9 V. Matlab 1 bhejte waqt wire 0.9 V tak neeche khisak sakti hai.",
+          "NML = VIL − VOL = 1.5 − 0.4 = 1.1 V. Matlab 0 bhejte waqt wire 1.1 V tak upar ja sakti hai.",
+          "Overall margin chhota wala hota hai, kyunki noise ko pata nahi ki wire par 0 hai ya 1.",
+          "Check: dono margins positive hain, to ye family apne aap se jud sakti hai (static discipline satisfied).",
+          "Answer: **NMH = 0.9 V, NML = 1.1 V, overall noise margin = 0.9 V**."
+        ]
+      },
+      "mistakes": [
+        "NML ko VOL − VIL likh dena, jisse negative number aata hai. Yaad rakho: margin hamesha 'jo milta hai' aur 'jo chahiye' ka gap hai: NMH = VOH − VIH, NML = VIL − VOL.",
+        "VIH − VIL (forbidden region ki width) ko noise margin samajhna. Forbidden region jitna chhota ho utna achha, par margin output aur input levels ke beech ka gap hai.",
+        "Do alag families jodte waqt ek hi family ke numbers use karna. Driver ke VOH/VOL aur receiver ke VIH/VIL lo, tabhi sahi margin milega."
+      ],
+      "revision": [
+        "Digital = har bit ke liye voltage range, single value nahi.",
+        "NMH = VOH − VIH, NML = VIL − VOL; overall = dono ka minimum.",
+        "VIL aur VIH ke beech forbidden region hai.",
+        "VTC par VIL, VIH woh points hain jahan slope −1 hai; beech mein |gain| > 1.",
+        "Har gate signal regenerate karta hai, isliye noise jud kar nahi badhta."
+      ],
+      "questions": [
+        {
+          "id": "digital-w1-q1",
+          "question": "Ek gate family ke liye VOH = 3.1 V, VOL = 0.2 V, VIH = 2.0 V, VIL = 0.8 V hai. Low noise margin NML kitna hai?",
+          "options": [
+            "1.1 V",
+            "0.6 V",
+            "1.2 V",
+            "0.8 V"
+          ],
+          "answer": 1,
+          "explanation": "NML = VIL − VOL = 0.8 − 0.2 = 0.6 V. 1.1 V to NMH (VOH − VIH) hai, aur 1.2 V forbidden region ki width (VIH − VIL) hai, margin nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w1-q2",
+          "question": "Ek receiver ke liye VIL = 0.8 V aur VIH = 2.0 V hai. Uske input par 1.4 V aaye to woh ise kya padhega?",
+          "options": [
+            "Hamesha 1, kyunki 1.4 V, 0.8 V se zyada hai",
+            "Hamesha 0, kyunki 1.4 V, 2.0 V se kam hai",
+            "Pakka nahi kaha ja sakta; 1.4 V forbidden region mein hai",
+            "Input ko ignore karke pichhli value rakhega"
+          ],
+          "answer": 2,
+          "explanation": "1.4 V, VIL (0.8 V) aur VIH (2.0 V) ke beech hai, yani forbidden region mein. Wahan gate 0 ya 1 kuch bhi de sakta hai, ya beech ki kharab voltage. Trap: sirf ek threshold dekh kar 0 ya 1 bol dena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w1-q3",
+          "question": "10 analog amplifiers ki chain mein noise badhta jaata hai, par 10 digital inverters ki chain mein output phir bhi saaf rehta hai. Iski asli wajah kya hai?",
+          "options": [
+            "Har digital gate signal ko regenerate karke wapas VOH ya VOL ke paas le aata hai",
+            "Digital wires par noise aata hi nahi",
+            "Digital gates analog amplifiers se zyada fast hote hain",
+            "Digital circuits mein current nahi behta"
+          ],
+          "answer": 0,
+          "explanation": "Har gate thode noisy valid input ko bhi poora saaf output bana deta hai (static discipline + gain > 1 transition mein). Isliye noise har stage par 'reset' hota hai, jud kar nahi badhta. Trap: ye maan lena ki digital wires par noise hota hi nahi; noise hota hai, bas margin ke andar rehta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w1-q4",
+          "question": "Gate X (driver) ke liye VOH = 2.7 V, VOL = 0.5 V. Gate Y (receiver) ke liye VIH = 3.5 V, VIL = 1.5 V. X ko Y se jodne par kya hoga?",
+          "options": [
+            "Dono margins positive hain, connection theek hai",
+            "Sirf 0 mein problem hai, kyunki NML negative hai",
+            "Dono 0 aur 1 reliably jaayenge, bas speed kam hogi",
+            "1 reliably nahi pahunchega, kyunki NMH = −0.8 V hai"
+          ],
+          "answer": 3,
+          "explanation": "NMH = VOH(X) − VIH(Y) = 2.7 − 3.5 = −0.8 V, negative. X ka '1' Y ke liye valid 1 hi nahi hai. NML = 1.5 − 0.5 = 1.0 V positive hai, to 0 theek jaata hai. Trap: ek hi family ke numbers ki tarah sab ko positive maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w1-q5",
+          "question": "Inverter ke VTC (Vout vs Vin) ke baare mein kaunsa statement sahi hai?",
+          "options": [
+            "VIL aur VIH woh points hain jahan Vout = Vin hota hai",
+            "Achhe inverter ka VTC ek seedhi line hona chahiye jiska slope −1 ho",
+            "Transition region mein |slope| 1 se zyada hona chahiye, aur VIL, VIH slope = −1 wale points par hote hain",
+            "VTC mein forbidden region ka koi matlab nahi hota"
+          ],
+          "answer": 2,
+          "explanation": "VIL aur VIH unity-gain points (slope = −1) par define hote hain, aur beech mein steep transition (|gain| > 1) hi signal ko regenerate karta hai. Vout = Vin wala point switching threshold hai, VIL/VIH nahi. Slope −1 wali seedhi line koi gain nahi deti, to noise saaf nahi hoga.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w1-q6",
+          "question": "Ek family mein VOH = 4.6 V, VOL = 0.3 V, VIH = 3.2 V, VIL = 1.4 V hai. Wire par sabse badi kitni noise (V mein) aa sakti hai jisse 0 aur 1 dono hamesha sahi padhe jaayein?",
+          "options": [
+            "1.4 V",
+            "2.5 V",
+            "1.8 V",
+            "1.1 V"
+          ],
+          "answer": 3,
+          "explanation": "NMH = 4.6 − 3.2 = 1.4 V aur NML = 1.4 − 0.3 = 1.1 V. Noise ko nahi pata wire par 0 hai ya 1, isliye guarantee sirf chhote margin tak: 1.1 V. 1.4 V sirf 1 ke liye safe hai (0 par 1.4 V noise wire ko 1.7 V tak le jaata, jo forbidden hai). 2.5 V dono ka sum hai aur 1.8 V forbidden width.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Number Systems and Signed Binary",
+      "summary": "Is week aap binary, octal aur hex ke beech conversion, fractions ko binary mein badalna, aur signed numbers (sign-magnitude, 1's complement, 2's complement) ke saath overflow pakadna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Positional number system**: base r mein har digit ka weight r ki power hota hai. (1011)₂ = 1·8 + 0·4 + 1·2 + 1·1 = 11. Fraction ke liye powers negative hoti hain: (0.101)₂ = 1/2 + 0 + 1/8 = 0.625.",
+        "**Decimal se binary**: integer part ko baar-baar 2 se divide karo aur remainders neeche se upar padho. Fraction part ko baar-baar 2 se multiply karo aur integer parts upar se neeche padho. Jaise 13 → 1101 aur 0.375 → 0.011.",
+        "**Octal aur hex**: 8 = 2³ aur 16 = 2⁴, isliye binary ko point se shuru karke 3-3 bits (octal) ya 4-4 bits (hex) ke groups mein todo. Integer part mein groups point se left ki taraf bante hain, fraction part mein point se right ki taraf, aur kam bits ho to zeros jodo. Hex digits: A = 10, B = 11, ... F = 15.",
+        "**Sign-magnitude**: MSB sign hai (0 = +, 1 = −), baaki bits magnitude. Problem: +0 (0000) aur −0 (1000) do zero, aur addition ke liye alag hardware chahiye.",
+        "**1's complement**: negative number = positive ki saari bits ulat do. Isme bhi do zero hain (0000 aur 1111). n bits ki range −(2ⁿ⁻¹ − 1) se +(2ⁿ⁻¹ − 1).",
+        "**2's complement**: negative = saari bits ulto, phir 1 jodo. Sirf ek zero, aur range −2ⁿ⁻¹ se +(2ⁿ⁻¹ − 1); 8 bits mein −128 se +127. MSB ka weight −2ⁿ⁻¹ maan lo: 1101 = −8 + 4 + 1 = −3. Ek hi adder se + aur − dono ho jaate hain, isliye har computer yahi use karta hai.",
+        "**Sign extension**: 2's complement number ko zyada bits mein le jaana ho to MSB ko left mein copy karo. 4-bit 1101 (−3) → 8-bit 11111101 (−3).",
+        "**Overflow**: do same-sign numbers jodne par result ka sign ulta aa jaaye to overflow hai (answer range se bahar). Alag sign wale numbers jodne par overflow kabhi nahi hota. Hardware mein: MSB mein jaane wala carry aur MSB se nikalne wala carry alag hon to overflow."
+      ],
+      "example": {
+        "problem": "−45 ko 8-bit 2's complement mein likho, aur hex mein bhi batao.",
+        "steps": [
+          "Pehle +45 ko binary mein: 45 = 32 + 8 + 4 + 1 = 00101101 (8 bits).",
+          "Saari bits ulto (1's complement): 11010010.",
+          "1 jodo: 11010010 + 1 = 11010011.",
+          "Check: MSB weight −128 lo: −128 + 64 + 16 + 2 + 1 = −45 ✓.",
+          "Hex ke liye 4-4 bits: 1101 = D, 0011 = 3.",
+          "Answer: **−45 = 11010011 = 0xD3** (8-bit 2's complement)."
+        ]
+      },
+      "mistakes": [
+        "Hex/octal grouping galat side se karna. Integer part mein point se left ki taraf groups banao (zeros left mein jodo), fraction part mein point se right ki taraf (zeros right mein jodo). (0.101)₂ ka hex 0.A hai, 0.5 nahi.",
+        "2's complement mein sirf bits ulat kar ruk jaana. Woh 1's complement hai; 2's complement ke liye +1 bhi karna padta hai.",
+        "Final carry out ko overflow samajhna. 2's complement mein carry out aana normal hai; overflow tab hai jab do same-sign numbers ka result opposite sign ka aaye."
+      ],
+      "revision": [
+        "Binary → hex: 4 bits ka group; binary → octal: 3 bits ka group.",
+        "2's complement = invert + 1; MSB ka weight −2ⁿ⁻¹.",
+        "n-bit 2's complement range: −2ⁿ⁻¹ se 2ⁿ⁻¹ − 1.",
+        "Sign-magnitude aur 1's complement mein do zero hote hain.",
+        "Overflow: same sign + same sign = opposite sign."
+      ],
+      "questions": [
+        {
+          "id": "digital-w2-q1",
+          "question": "(10110110)₂ ko hexadecimal mein badlo.",
+          "options": [
+            "6B",
+            "266",
+            "B6",
+            "A6"
+          ],
+          "answer": 2,
+          "explanation": "4-4 bits ke group: 1011 = B, 0110 = 6, to B6. 266 octal answer hai (3-3 bit groups: 10 110 110), aur 6B tab aata hai jab groups ko ulte order mein padh lo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w2-q2",
+          "question": "(157)₈ ka decimal value kya hai?",
+          "options": [
+            "111",
+            "343",
+            "125",
+            "157"
+          ],
+          "answer": 0,
+          "explanation": "1·8² + 5·8 + 7 = 64 + 40 + 7 = 111. 343 tab aata hai jab 157 ko hex maan lo (1·256 + 5·16 + 7), aur 157 likhna matlab conversion kiya hi nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w2-q3",
+          "question": "−37 ka 8-bit 2's complement representation kya hai?",
+          "options": [
+            "11011010",
+            "10100101",
+            "00100101",
+            "11011011"
+          ],
+          "answer": 3,
+          "explanation": "+37 = 00100101. Bits ulto: 11011010, phir +1: 11011011. Check: −128 + 64 + 16 + 8 + 2 + 1 = −37. 11011010 sirf 1's complement hai (+1 bhool gaye), aur 10100101 sign-magnitude form hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w2-q4",
+          "question": "8-bit pattern 11110100 ko 2's complement signed number maana jaaye to uski value kya hai?",
+          "options": [
+            "−116",
+            "−12",
+            "−11",
+            "244"
+          ],
+          "answer": 1,
+          "explanation": "MSB ka weight −128: −128 + 64 + 32 + 16 + 4 = −12. Ya ulto + 1: 00001011 + 1 = 00001100 = 12, to −12. −116 sign-magnitude reading hai, −11 1's complement reading, aur 244 unsigned value.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w2-q5",
+          "question": "4-bit 2's complement mein 0110 + 0101 kiya gaya. Kya hota hai?",
+          "options": [
+            "Result 1011 aata hai jo −5 padha jaata hai; overflow hua hai",
+            "Result 1011 = +11, sab theek hai",
+            "Result 0011 aata hai aur carry 1 nikalta hai",
+            "Overflow nahi hua, kyunki koi carry out nahi nikla"
+          ],
+          "answer": 0,
+          "explanation": "+6 + +5 = +11, par 4-bit 2's complement ki range sirf −8 se +7 hai. Bits 1011 aati hain, jiska MSB 1 hai, to ye −5 padha jaata hai: do positive numbers ka negative result = overflow. Trap: 'carry out nahi aaya to overflow nahi' sochna; signed overflow carry out se nahi, sign se pakda jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w2-q6",
+          "question": "(25.625)₁₀ ko hexadecimal mein badlo.",
+          "options": [
+            "19.5",
+            "31.5",
+            "19.A",
+            "19.625"
+          ],
+          "answer": 2,
+          "explanation": "25 = 11001 aur 0.625 = 0.101 (0.625·2 = 1.25 → 1, 0.25·2 = 0.5 → 0, 0.5·2 = 1.0 → 1). Binary 11001.101. Hex groups: integer 0001 1001 = 19, fraction point se right ki taraf 1010 = A. Isliye 19.A. 19.5 tab aata hai jab fraction mein zero left mein jod do (0101), aur 31.5 octal answer hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Logic Gates and Boolean Algebra",
+      "summary": "Is week aap basic logic gates (AND, OR, NOT, NAND, NOR, XOR, XNOR), truth tables, Boolean algebra ke laws aur De Morgan's theorem se expressions simplify karna seekhoge.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Basic gates**: AND (AB) tabhi 1 jab saare inputs 1; OR (A + B) tab 1 jab koi bhi input 1; NOT (A') input ko ulat deta hai. NAND = AND ke baad NOT, NOR = OR ke baad NOT.",
+        "**XOR aur XNOR**: A ⊕ B = A'B + AB', yani inputs alag hon to 1. Kai inputs ka XOR tab 1 hota hai jab 1s ki ginti odd ho (odd-parity detector). XNOR iska ulta hai: inputs barabar hon to 1, isliye ise equality gate bhi kehte hain.",
+        "**Truth table**: n inputs ke liye 2ⁿ rows. Har row ek input combination hai, usually binary counting order (000, 001, ...) mein. Do expressions equal tabhi hain jab har row mein unka output same ho.",
+        "**Basic laws**: A + 0 = A, A·1 = A (identity); A + 1 = 1, A·0 = 0 (null); A + A = A, A·A = A (idempotent); A + A' = 1, A·A' = 0 (complement); (A')' = A (involution). Commutative aur associative laws bhi chalte hain.",
+        "**Distributive laws**: A(B + C) = AB + AC jo normal algebra jaisa hai, aur A + BC = (A + B)(A + C) jo sirf Boolean mein chalta hai. Doosra wala simplification mein bahut kaam aata hai.",
+        "**Absorption**: A + AB = A aur A(A + B) = A. Ek aur useful rule: A + A'B = A + B (agar A = 0 hai tabhi B ka matlab hai, to A' likhne ki zaroorat nahi).",
+        "**De Morgan's theorem**: (AB)' = A' + B' aur (A + B)' = A'B'. Rule: bar ko andar le jao, har variable ulto aur AND ko OR (ya OR ko AND) bana do. Ye kitne bhi variables par chalta hai: (ABC)' = A' + B' + C'.",
+        "**Duality**: kisi bhi sahi identity mein AND ↔ OR aur 0 ↔ 1 badal do (variables ko mat chhuo), to nayi identity bhi sahi hogi. Jaise A + 0 = A ka dual A·1 = A hai."
+      ],
+      "example": {
+        "problem": "F = A'B' + A'B + AB ko simplify karo aur truth table se check karo.",
+        "steps": [
+          "Pehle do terms mein A' common hai: A'B' + A'B = A'(B' + B) = A'·1 = A'.",
+          "Ab F = A' + AB.",
+          "Rule A' + AB = A' + B lagao (jaise X + X'Y = X + Y, yahan X = A').",
+          "To F = A' + B.",
+          "Truth table check: AB = 00 → F = 1, 01 → 1, 10 → 0, 11 → 1. A' + B bhi 1, 1, 0, 1 deta hai ✓.",
+          "Answer: **F = A' + B**."
+        ]
+      },
+      "mistakes": [
+        "De Morgan lagate waqt sirf variables ulatna aur operator na badalna, jaise (AB)' = A'B' likh dena. Sahi hai (AB)' = A' + B'; AND ko OR banana zaroori hai.",
+        "(A + B)' ko A' + B' likhna. Ye (AB)' ke barabar hai, (A + B)' ke nahi. (A + B)' = A'B' hota hai.",
+        "A + BC ko normal algebra ki tarah 'aage simplify nahi hota' maan lena. Boolean mein A + BC = (A + B)(A + C), aur ulta bhi: (A + B)(A + C) ko seedha A + BC likh sakte ho."
+      ],
+      "revision": [
+        "n inputs → truth table mein 2ⁿ rows.",
+        "XOR = inputs alag hon to 1; multi-input XOR = odd number of 1s.",
+        "A + AB = A, A + A'B = A + B.",
+        "A + BC = (A + B)(A + C).",
+        "(AB)' = A' + B', (A + B)' = A'B'."
+      ],
+      "questions": [
+        {
+          "id": "digital-w3-q1",
+          "question": "2-input NOR gate ka output 1 kab hota hai?",
+          "options": [
+            "Jab koi bhi ek input 1 ho",
+            "Jab dono inputs 1 hon",
+            "Jab inputs alag-alag hon",
+            "Sirf jab dono inputs 0 hon"
+          ],
+          "answer": 3,
+          "explanation": "NOR = (A + B)'. A + B sirf tab 0 hai jab dono 0 hon, isliye NOR sirf usi row mein 1 deta hai. 'Koi bhi ek input 1' OR ka behaviour hai, aur 'inputs alag' XOR ka.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w3-q2",
+          "question": "De Morgan's theorem se (A + B)' kiske barabar hai?",
+          "options": [
+            "A' + B'",
+            "A'B'",
+            "AB",
+            "(AB)'"
+          ],
+          "answer": 1,
+          "explanation": "(A + B)' = A'B': bar todo, variables ulto, aur OR ko AND bana do. A' + B' (aur (AB)') to NAND ka form hai, NOR ka nahi. Ye sabse common trap hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w3-q3",
+          "question": "A + A'B ka simplest form kya hai?",
+          "options": [
+            "A + B",
+            "B",
+            "AB",
+            "A"
+          ],
+          "answer": 0,
+          "explanation": "A + A'B = (A + A')(A + B) = 1·(A + B) = A + B (distributive law A + XY = (A + X)(A + Y)). Truth table bhi yahi deta hai: sirf AB = 00 par 0. 'A' tab aata jab term AB hota (absorption A + AB = A); A' wala term absorb nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w3-q4",
+          "question": "(A + B)(A + C) ko simplify karo.",
+          "options": [
+            "A + B + C",
+            "AB + AC",
+            "A + BC",
+            "ABC"
+          ],
+          "answer": 2,
+          "explanation": "Multiply karo: AA + AC + AB + BC = A + AC + AB + BC. Absorption se A + AC + AB = A, to result A + BC. Ye Boolean ka doosra distributive law hai. AB + AC = A(B + C) ek alag function hai: A = 0, B = C = 1 par woh 0 deta hai jabki asli expression 1 deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w3-q5",
+          "question": "F = AB' + C hai. F' (complement) kya hoga?",
+          "options": [
+            "A'B + C'",
+            "(A' + B) + C'",
+            "A'BC'",
+            "(A' + B)C'"
+          ],
+          "answer": 3,
+          "explanation": "F' = (AB' + C)' = (AB')'·C' (De Morgan, OR → AND) = (A' + B)·C' (phir se De Morgan andar). A'B + C' tab aata hai jab sirf variables ulat diye aur operators nahi badle; truth table se check karo, dono alag hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w3-q6",
+          "question": "F(A, B, C) = (A ⊕ B) + B'C. 8 rows wali truth table mein F kitni rows mein 1 hai?",
+          "options": [
+            "6",
+            "5",
+            "4",
+            "3"
+          ],
+          "answer": 1,
+          "explanation": "A ⊕ B rows 010, 011, 100, 101 mein 1 hai (4 rows). B'C rows 001 aur 101 mein 1 hai (2 rows). Row 101 dono mein common hai, to total 4 + 2 − 1 = 5 rows (001, 010, 011, 100, 101). 6 tab aata hai jab overlap wali row do baar gin lo.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Canonical Forms and Algebraic Minimisation",
+      "summary": "Is week aap minterms aur maxterms, canonical SOP (Σm) aur POS (ΠM) forms, unke beech conversion, aur algebra se expression ko chhota karke gate count kam karna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Minterm**: ek product term jisme har variable exactly ek baar aata hai (seedha ya complement), aur jo truth table ki sirf ek row mein 1 hota hai. Row ke bit 0 ho to variable complement, 1 ho to seedha. ABC = 101 ka minterm m5 = AB'C.",
+        "**Canonical SOP**: function = un saari rows ke minterms ka OR jahan output 1 hai. Short mein F = Σm(1, 3, 6) likhte hain. Ye unique hai, par aksar bahut lamba hota hai.",
+        "**Maxterm**: ek sum term jisme har variable exactly ek baar ho, aur jo sirf ek row mein 0 ho. Yahan rule ulta hai: row ka bit 0 ho to variable seedha, 1 ho to complement. ABC = 101 ka maxterm M5 = A' + B + C'.",
+        "**Canonical POS**: function = un rows ke maxterms ka AND jahan output 0 hai, F = ΠM(...). Agar F = Σm(list) hai to F = ΠM(baaki saare indices). Aur F' = Σm(baaki indices), kyunki F ke 0 wali rows F' ki 1 wali rows hain.",
+        "**Combining rule**: XY + XY' = X. Do minterms jo sirf ek variable mein alag hain, mil kar ek chhota term ban jaate hain. Algebraic minimisation basically yahi baar-baar lagana hai, saath mein absorption (X + XY = X) aur X + X'Y = X + Y.",
+        "**Consensus theorem**: AB + A'C + BC = AB + A'C. BC wala term redundant hai, kyunki jab B = C = 1 ho to A ki koi bhi value AB ya A'C mein se ek ko 1 kar degi. Dual: (A + B)(A' + C)(B + C) = (A + B)(A' + C).",
+        "**Gate-count thinking**: SOP ko AND-OR (two-level) circuit se banate hain: har product term ek AND gate, aur sab ek OR gate mein. Kam terms = kam AND gates, kam literals = gates ke kam inputs. Isliye cost ko aksar 'terms aur literals ki ginti' se naapte hain."
+      ],
+      "example": {
+        "problem": "F(A, B, C) = Σm(0, 2, 3, 7). Canonical SOP likho, minimal SOP nikaalo, aur canonical POS bhi batao.",
+        "steps": [
+          "Minterms: m0 = A'B'C', m2 = A'BC', m3 = A'BC, m7 = ABC.",
+          "m0 + m2: A'B'C' + A'BC' = A'C'(B' + B) = A'C'.",
+          "m3 + m7: A'BC + ABC = BC(A' + A) = BC.",
+          "Saare minterms cover ho gaye: F = A'C' + BC (2 terms, 4 literals, canonical mein 4 terms aur 12 literals the).",
+          "0 wali rows 1, 4, 5, 6 hain, to F = ΠM(1, 4, 5, 6).",
+          "Answer: **F = A'C' + BC**, aur canonical POS **ΠM(1, 4, 5, 6)**."
+        ]
+      },
+      "mistakes": [
+        "Maxterm mein minterm wala rule lagana. Row 101 ka maxterm A' + B + C' hai (bit 1 → complement), AB'C nahi; AB'C us row ka minterm hai.",
+        "Σm se ΠM banate waqt wahi indices dobara likh dena. ΠM mein sirf woh indices aate hain jo Σm mein NAHI the.",
+        "Variable order bhool jaana. F(A, B, C) mein A MSB hai; agar order F(C, B, A) ho to m1 ka matlab bilkul badal jaata hai."
+      ],
+      "revision": [
+        "Minterm: row mein 1, bit 0 → complement. Maxterm: row mein 0, bit 1 → complement.",
+        "F = Σm(S) = ΠM(baaki indices); F' = Σm(baaki indices).",
+        "XY + XY' = X: ek variable ka farak hata do.",
+        "Consensus: AB + A'C + BC = AB + A'C.",
+        "Kam terms aur kam literals = kam gates aur gate inputs."
+      ],
+      "questions": [
+        {
+          "id": "digital-w4-q1",
+          "question": "F(A, B, C) mein row ABC = 110 ka minterm kya hai?",
+          "options": [
+            "A'B'C",
+            "A' + B' + C",
+            "ABC'",
+            "A'BC"
+          ],
+          "answer": 2,
+          "explanation": "Minterm mein bit 1 → variable seedha, bit 0 → complement. 110 → A, B, C' = ABC' (ye m6 hai). A'B'C bits ko ulta padhne se aata hai, aur A' + B' + C is row ka maxterm M6 hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w4-q2",
+          "question": "F(A, B, C) = Σm(1, 4, 6). Isi function ka canonical POS form kya hai?",
+          "options": [
+            "ΠM(0, 2, 3, 5, 7)",
+            "ΠM(1, 4, 6)",
+            "Σm(0, 2, 3, 5, 7)",
+            "ΠM(1, 3, 5, 7)"
+          ],
+          "answer": 0,
+          "explanation": "POS mein un rows ke maxterms aate hain jahan F = 0, yani 1, 4, 6 ko chhod kar baaki: ΠM(0, 2, 3, 5, 7). ΠM(1, 4, 6) wahi indices dobara likhne ki galti hai, aur Σm(0, 2, 3, 5, 7) to F' hai, F nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w4-q3",
+          "question": "F(A, B, C) ke liye maxterm M5 kya hai?",
+          "options": [
+            "AB'C",
+            "A + B' + C",
+            "A'BC'",
+            "A' + B + C'"
+          ],
+          "answer": 3,
+          "explanation": "5 = 101. Maxterm mein bit 1 → complement, bit 0 → seedha: A' + B + C'. Ye sum sirf row 101 mein 0 hota hai. AB'C is row ka minterm m5 hai, aur A + B' + C minterm wala rule maxterm par lagane se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w4-q4",
+          "question": "AB + A'C + BC ka minimal SOP kya hai?",
+          "options": [
+            "AB + BC",
+            "AB + A'C",
+            "A'C + BC",
+            "B + C"
+          ],
+          "answer": 1,
+          "explanation": "Consensus theorem: BC = AB aur A'C ka consensus hai, isliye redundant. Jab B = C = 1, to A = 1 par AB = 1 aur A = 0 par A'C = 1. AB + BC galat hai: A = 0, B = 0, C = 1 par original 1 deta hai (A'C se) jabki AB + BC 0 deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w4-q5",
+          "question": "F(A, B, C) = Σm(0, 1, 2, 3, 6, 7) ka minimal SOP kya hai?",
+          "options": [
+            "A' + BC",
+            "A'B' + B",
+            "A' + B",
+            "B + C"
+          ],
+          "answer": 2,
+          "explanation": "m0–m3 mein A = 0 hai, B aur C sab combinations: ye mil kar A'. m2, m3, m6, m7 mein B = 1: ye mil kar B. To F = A' + B. Check: F sirf rows 4 (100) aur 5 (101) mein 0 hai, yani A = 1, B = 0, jo (A' + B) ka 0 hai. A' + BC row 6 (110) miss kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w4-q6",
+          "question": "F(A, B, C, D) = A'B'C'D' + A'B'CD' + AB'C'D' + AB'CD'. Iska minimal SOP kya hai?",
+          "options": [
+            "B'D'",
+            "A'B'D'",
+            "B'C'D'",
+            "BD"
+          ],
+          "answer": 0,
+          "explanation": "Pehle do terms: A'B'D'(C' + C) = A'B'D'. Aakhri do: AB'D'(C' + C) = AB'D'. Phir A'B'D' + AB'D' = B'D'(A' + A) = B'D'. Saare chaaron terms mein B = 0 aur D = 0 common hai, A aur C sab values lete hain. A'B'D' sirf pehla step karke ruk jaane se aata hai, jo AB'D' wale terms miss karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Karnaugh Maps and Combinational Design",
+      "summary": "Is week aap 2, 3 aur 4 variable K-maps banana, 1s ko groups mein baandh kar minimal SOP nikaalna, don't cares ka fayda uthana, aur word problem se seedha circuit tak pahunchna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**K-map kya hai**: truth table ko ek grid mein aise likhna ki padosi cells sirf ek variable mein alag hon. Isliye rows aur columns **Gray code** order mein lagte hain: 00, 01, 11, 10 (00, 01, 10, 11 nahi). Padosi cells ko milana = XY + XY' = X wala rule, bas aankhon se.",
+        "**Wrap-around**: K-map ke left aur right edge padosi hain, aur top aur bottom edge bhi. 4-variable map ke chaaron corners (m0, m2, m8, m10) bhi ek group ban sakte hain.",
+        "**Grouping rules**: sirf 1s ko group karo; group ka size 1, 2, 4, 8 ... (2 ki power) hona chahiye aur shape rectangle; groups overlap kar sakte hain. n-variable map mein 2ᵏ cells ka group n − k literals ka term deta hai, isliye groups jitne bade utna achha.",
+        "**Term padhna**: group ke andar jo variable badalta hai woh hat jaata hai; jo constant 1 rehta hai woh seedha aata hai aur jo constant 0 rehta hai woh complement mein.",
+        "**Prime aur essential implicants**: prime implicant woh group hai jise aur bada nahi kar sakte. Agar kisi 1 ko sirf ek hi prime implicant cover karta hai, to woh **essential** hai aur answer mein zaroor aayega. Pehle saare essentials lo, phir bache 1s ko kam se kam groups se cover karo.",
+        "**Don't cares (X)**: woh input combinations jo kabhi aate hi nahi (jaise BCD mein 1010–1111) ya jinke output se farak nahi padta. Inhe 1 maan lo agar group bada hota ho, warna 0; X ko cover karna zaroori nahi.",
+        "**POS from K-map**: 0s ko group karke F' ka SOP nikaalo, phir De Morgan lagao. Jaise F' = AC aaya to F = A' + C'.",
+        "**Word problem se design**: (1) inputs/outputs ke naam rakho, (2) truth table banao, (3) K-map se simplify karo, (4) gates se circuit banao. Jaise 3-input majority (kam se kam do inputs 1) ka answer F = AB + AC + BC aata hai."
+      ],
+      "example": {
+        "problem": "F(A, B, C, D) = Σm(0, 2, 5, 7, 8, 10, 13, 15). K-map se minimal SOP nikaalo.",
+        "steps": [
+          "K-map banao (rows AB, columns CD, dono Gray order mein), neeche code block dekho.",
+          "Chaaron corners m0, m2, m8, m10 mein 1 hai. Inme B = 0 aur D = 0 constant hain, A aur C badalte hain: group = B'D'.",
+          "Beech ke chaar cells m5, m7, m13, m15 mein B = 1 aur D = 1 constant hain: group = BD.",
+          "Dono groups 4-4 cells ke hain (n = 4, k = 2), to har term mein 4 − 2 = 2 literals.",
+          "Saare 8 ones cover ho gaye, dono groups essential hain.",
+          "Answer: **F = B'D' + BD** (yani B aur D barabar hon to 1, ye B XNOR D hai)."
+        ],
+        "code": "        CD=00  CD=01  CD=11  CD=10\nAB=00     1      0      0      1\nAB=01     0      1      1      0\nAB=11     0      1      1      0\nAB=10     1      0      0      1\n\nGroup 1: four corners (m0, m2, m8, m10)  -> B'D'\nGroup 2: middle square (m5, m7, m13, m15) -> BD"
+      },
+      "mistakes": [
+        "Columns ko 00, 01, 10, 11 order mein likhna. Tab 01 aur 10 padosi ban jaate hain jo do bits mein alag hain, aur groups galat ho jaate hain. Hamesha 00, 01, 11, 10.",
+        "3 ya 6 cells ka group banana. Group size sirf 2 ki power ho sakta hai; 3 ones ko do overlapping groups of 2 se cover karo.",
+        "Don't cares ko zabardasti cover karna. X ko sirf tab lo jab group bada ho; ek akele X ke liye naya term mat banao."
+      ],
+      "revision": [
+        "Gray order: 00, 01, 11, 10; edges aur corners wrap karte hain.",
+        "Group size 1, 2, 4, 8; n-variable map mein 2ᵏ cells → n − k literals.",
+        "Essential prime implicants pehle lo.",
+        "Don't care: madad kare to 1, warna 0.",
+        "POS ke liye 0s group karo aur result ka complement lo."
+      ],
+      "questions": [
+        {
+          "id": "digital-w5-q1",
+          "question": "3-variable K-map mein 4 cells ka ek valid group kitne literals ka term deta hai?",
+          "options": [
+            "3",
+            "4",
+            "2",
+            "1"
+          ],
+          "answer": 3,
+          "explanation": "n = 3 aur group size 2ᵏ = 4 matlab k = 2, to literals = 3 − 2 = 1. Jaise poori row A = 1 ka group sirf A deta hai. 2 literals 2 cells ke group ke liye hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w5-q2",
+          "question": "4-variable K-map mein CD columns kis order mein likhe jaate hain?",
+          "options": [
+            "00, 01, 11, 10",
+            "00, 01, 10, 11",
+            "00, 10, 01, 11",
+            "11, 10, 01, 00"
+          ],
+          "answer": 0,
+          "explanation": "Gray code order 00, 01, 11, 10 mein har padosi pair sirf ek bit mein alag hai (aur 10 se wapas 00 bhi). Binary order 00, 01, 10, 11 mein 01 aur 10 do bits mein alag hain, to unhe padosi rakhna galat grouping deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w5-q3",
+          "question": "F(A, B, C) = Σm(0, 2, 4, 6) ka minimal SOP kya hai?",
+          "options": [
+            "A'C'",
+            "C'",
+            "B'C'",
+            "A' + C'"
+          ],
+          "answer": 1,
+          "explanation": "0, 2, 4, 6 = 000, 010, 100, 110: in sab mein C = 0, aur A, B har value lete hain. K-map mein ye C = 0 wala poora column-pair (wrap-around ke saath) hai, group of 4 → 1 literal: C'. A'C' sirf m0 aur m2 cover karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w5-q4",
+          "question": "F(A, B, C, D) = Σm(1, 5, 7, 13) + d(3, 15). Don't cares ka sahi use karke minimal SOP kya hai?",
+          "options": [
+            "A'C'D + BC'D + A'BD",
+            "A'D + BC'D",
+            "A'D + BD",
+            "BD + C'D"
+          ],
+          "answer": 2,
+          "explanation": "d3 ko 1 maano to m1, m3, m5, m7 ka group A'D banta hai. d15 ko 1 maano to m5, m7, m13, m15 ka group BD banta hai. Dono 4-cell groups, total 4 literals. Don't cares ignore karne par A'C'D + BC'D + A'BD jaisa lamba answer aata hai. BD + C'D galat hai kyunki C'D mein m9 (1001) aata hai jo F mein 0 hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w5-q5",
+          "question": "Ek circuit ka input ek BCD digit ABCD hai (A = MSB). Output 1 hona chahiye jab digit 5 ya usse bada ho. Inputs 1010 se 1111 kabhi nahi aate. Minimal SOP kya hai?",
+          "options": [
+            "A + BD + BC",
+            "AB'C' + A'BD + A'BC",
+            "A + B",
+            "A + BCD"
+          ],
+          "answer": 0,
+          "explanation": "1s: 5, 6, 7, 8, 9; don't cares: 10–15. Don't cares lekar A = 1 wali do poori rows (8 cells) ek group → A. m5, m7, m13, m15 → BD, aur m6, m7, m14, m15 → BC. To F = A + BD + BC. A + B galat hai kyunki 4 (0100) par B = 1 hai par output 0 chahiye. AB'C' + A'BD + A'BC don't cares use na karne ka result hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w5-q6",
+          "question": "F(A, B, C, D) = Σm(0, 1, 2, 5, 8, 9, 10). Iska minimal SOP kya hai?",
+          "options": [
+            "B'C' + B'D' + A'BC'D",
+            "B'D' + A'C'D",
+            "B'C' + A'C'D + B'CD'",
+            "B'C' + B'D' + A'C'D"
+          ],
+          "answer": 3,
+          "explanation": "B'C' = m0, m1, m8, m9 (group of 4). B'D' = chaaron corners m0, m2, m8, m10 (group of 4). m5 bachta hai: m1 + m5 = A'C'D (group of 2). Total 3 terms, 7 literals. B'D' + A'C'D m9 (1001) miss karta hai. Option A aur C bhi sahi function dete hain par 8 literals lagate hain: A'BC'D m5 ko akela leta hai, aur B'CD' (m2, m10) corners ka group of 4 na bana kar chhota group leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Universal Gates, MUX, Decoders and Timing",
+      "summary": "Is week aap NAND aur NOR se koi bhi circuit banana, multiplexer aur decoder se functions implement karna, propagation delay se circuit ki speed naapna, aur hazards (glitches) ka basic idea seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Universal gate**: aisa gate jisse NOT, AND aur OR teeno ban jaayein, to koi bhi function ban jaata hai. NAND se: NOT A = NAND(A, A); AND = NAND ke baad NAND-inverter (2 gates); OR = NAND(A', B') kyunki (A'B')' = A + B (3 gates). NOR bhi isi tarah universal hai.",
+        "**NAND-NAND aur NOR-NOR**: minimal SOP ko seedha NAND-NAND mein badal sakte ho: AND-OR ke saare gates ko NAND se replace karo, function same rahega (De Morgan se do bars cancel). Isi tarah POS ko NOR-NOR se banate hain. Chips mein NAND/NOR sabse saste aur fast hote hain.",
+        "**Multiplexer (MUX)**: 2ⁿ data inputs, n select lines, ek output. Select jo number batata hai, woh input output par aata hai. 2:1 MUX: Y = S'I0 + SI1. 4:1 MUX: Y = S1'S0'I0 + S1'S0I1 + S1S0'I2 + S1S0I3.",
+        "**MUX se function**: 3-variable function ko 4:1 MUX se banao: A, B select lines par, aur har data input par 0, 1, C ya C' lagao. Truth table ko AB ke hisaab se pairs mein dekho: pair (0, 0) → 0, (1, 1) → 1, (0, 1) → C, (1, 0) → C'.",
+        "**Decoder**: n inputs, 2ⁿ outputs, har waqt sirf ek output active. Output Yi = minterm mi. Isliye koi bhi function = decoder ke un outputs ka OR jahan F = 1. Enable input 0 ho to saare outputs inactive.",
+        "**Propagation delay**: input badalne se output badalne tak ka time, tpd. Output ke 0 → 1 (tPLH) aur 1 → 0 (tPHL) delays alag ho sakte hain. Kisi circuit ka worst-case delay = **critical path** (input se output tak sabse lamba delay wala raasta) ke saare gate delays ka sum. Contamination delay sabse chhota raasta hai: output kitni jaldi badalna shuru kar sakta hai.",
+        "**Hazards (glitch)**: alag raaston ke delay alag hone se output thodi der ke liye galat value de sakta hai. F = AB + A'C mein B = C = 1 rakho aur A ko 1 → 0 karo: F 1 hi rehna chahiye, par A' ke inverter delay ki wajah se ek pal ke liye dono terms 0 ho kar 0 glitch aa sakta hai (static-1 hazard). Fix: consensus term BC jod do, jo us transition ke dauraan 1 bana rehta hai."
+      ],
+      "example": {
+        "problem": "F(A, B, C) = Σm(1, 2, 6, 7) ko ek 4:1 MUX se banao, jisme A aur B select lines hain (A = S1, B = S0).",
+        "steps": [
+          "Truth table ko AB ke hisaab se 4 pairs mein todo; har pair mein C = 0 aur C = 1 wali rows hain (neeche code dekho).",
+          "AB = 00: rows 0, 1 mein F = 0, 1 → F = C, to I0 = C.",
+          "AB = 01: rows 2, 3 mein F = 1, 0 → F = C', to I1 = C'.",
+          "AB = 10: rows 4, 5 mein F = 0, 0 → I2 = 0.",
+          "AB = 11: rows 6, 7 mein F = 1, 1 → I3 = 1.",
+          "Answer: **I0 = C, I1 = C', I2 = 0, I3 = 1** (sirf ek inverter extra chahiye)."
+        ],
+        "code": "AB | C=0  C=1 | data input\n00 |  0    1   | I0 = C\n01 |  1    0   | I1 = C'\n10 |  0    0   | I2 = 0\n11 |  1    1   | I3 = 1"
+      },
+      "mistakes": [
+        "AND-OR ko NAND-NAND banate waqt sirf OR gate badalna. Dono levels ke saare gates NAND bane, tabhi double inversion cancel hoti hai.",
+        "MUX implementation mein select lines ka order ulta lena. A = S1 (MSB) hai to AB = 10 ka matlab input I2, I1 nahi.",
+        "Critical path mein sirf gates ki ginti dekhna. Delay har gate ka alag ho sakta hai; raaste ke actual delays jodo, aur inverter wala raasta mat bhoolo."
+      ],
+      "revision": [
+        "NAND aur NOR universal hain; OR = 3 NAND, AND = 2 NAND.",
+        "SOP → NAND-NAND, POS → NOR-NOR.",
+        "4:1 MUX se 3-variable function: data inputs 0, 1, C, C'.",
+        "Decoder ka har output ek minterm; function = unka OR.",
+        "Worst-case delay = critical path ka total delay.",
+        "Static-1 hazard ko consensus term se hatao."
+      ],
+      "questions": [
+        {
+          "id": "digital-w6-q1",
+          "question": "Active-high outputs wale 3-to-8 decoder mein inputs A B C = 1 1 0 (A = MSB) diye gaye, enable on hai. Kaunsa output 1 hoga?",
+          "options": [
+            "Y3",
+            "Y6",
+            "Y2",
+            "Saare outputs Y0 se Y6 tak"
+          ],
+          "answer": 1,
+          "explanation": "110 = 6, isliye sirf Y6 active hota hai; decoder ek waqt mein sirf ek output 1 karta hai (Y6 = ABC' = minterm m6). Y3 tab aata hai jab C ko MSB maan kar 011 padh lo, aur Y2 tab jab A ko ignore kar do.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w6-q2",
+          "question": "Sirf 2-input NAND gates se OR function (A + B) banana hai. Kam se kam kitne gates lagenge?",
+          "options": [
+            "1",
+            "2",
+            "4",
+            "3"
+          ],
+          "answer": 3,
+          "explanation": "A + B = (A'B')' = NAND(A', B'). A' ke liye ek NAND (inputs jode hue), B' ke liye ek, aur aakhri NAND: total 3. 2 gates se AND banta hai (NAND + inverter), OR nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w6-q3",
+          "question": "F(A, B, C) = Σm(0, 3, 5, 6) ko 4:1 MUX se banana hai, select lines A (S1) aur B (S0). Data inputs I0, I1, I2, I3 kya honge?",
+          "options": [
+            "C', C, C, C'",
+            "C, C', C', C",
+            "1, 0, 0, 1",
+            "C', C, C', C"
+          ],
+          "answer": 0,
+          "explanation": "AB = 00: rows 0, 1 → F = 1, 0 → C'. AB = 01: rows 2, 3 → 0, 1 → C. AB = 10: rows 4, 5 → 0, 1 → C. AB = 11: rows 6, 7 → 1, 0 → C'. To C', C, C, C'. 'C, C', C', C' pattern pairs ko ulta padhne (pehli row ko C = 1 samajhne) se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w6-q4",
+          "question": "F = AB + A'C ko inverter (delay 1 ns), 2-input AND gates (2 ns) aur ek 2-input OR gate (3 ns) se banaya gaya. Worst-case propagation delay kitna hai?",
+          "options": [
+            "5 ns",
+            "3 ns",
+            "6 ns",
+            "8 ns"
+          ],
+          "answer": 2,
+          "explanation": "Sabse lamba raasta A → inverter → AND (A'C) → OR hai: 1 + 2 + 3 = 6 ns. 5 ns sirf AND → OR wala raasta hai (inverter bhool gaye). 8 ns tab aata jab dono AND gates ka delay jod do, par woh parallel mein chalte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w6-q5",
+          "question": "Circuit F = AB + A'C mein B = 1, C = 1 hai aur A 1 se 0 hota hai. Output par ek chhota 0 glitch dikhta hai. Ise kaise hataoge?",
+          "options": [
+            "Inverter hata do",
+            "OR gate ki jagah XOR laga do",
+            "AB term hata do",
+            "Consensus term BC jod do: F = AB + A'C + BC"
+          ],
+          "answer": 3,
+          "explanation": "Ye static-1 hazard hai: A' ke delay ki wajah se ek pal ke liye AB aur A'C dono 0 ho jaate hain. BC term B = C = 1 par A se independent 1 rehta hai, to glitch ke dauraan output ko 1 pakde rakhta hai. Function same rehta hai (consensus theorem). Baaki options function hi badal dete hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w6-q6",
+          "question": "Do 2-input NOR gates ke inputs (A, B) aur (C, D) hain, aur unke outputs ek teesre 2-input NOR gate mein jaate hain. Final output kya function hai?",
+          "options": [
+            "(A + B)(C + D)",
+            "AB + CD",
+            "A'B' + C'D'",
+            "(A' + B')(C' + D')"
+          ],
+          "answer": 0,
+          "explanation": "Pehle level: (A + B)' aur (C + D)'. Teesra NOR: ((A + B)' + (C + D)')' = (A + B)(C + D) (De Morgan, double bar cancel). Ye NOR-NOR = POS wala rule hai. AB + CD to NAND-NAND structure deta hai; NOR-NOR ko SOP samajhna common trap hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Building Bigger Blocks: Encoders, Tri-states and Buses",
+      "summary": "Is week aap chhote MUX aur decoders jod kar bade blocks banana, encoder aur priority encoder design karna, aur tri-state buffers se kai devices ko ek shared bus par jodna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Hierarchical design**: bada circuit seedha gates se banane ki jagah chhote tested blocks (2:1 MUX, 2-to-4 decoder) ko jodo. Har level ko alag se samajhna aur check karna aasaan hota hai.",
+        "**Bada MUX**: 8:1 MUX = do 4:1 MUX (dono par S1, S0) + ek 2:1 MUX jiska select S2 (MSB) hai. Pehla level 'group ke andar kaunsa input', doosra level 'kaunsa group' chunta hai. 2:1 MUXes se 2ⁿ:1 banane mein 2ⁿ − 1 MUX lagte hain (8:1 ke liye 4 + 2 + 1 = 7).",
+        "**Bada decoder**: 4-to-16 = do 3-to-8 decoders, dono par A2 A1 A0, aur MSB A3 enables chalata hai (A3 = 0 → upar wala, A3 = 1 → neeche wala). Ya ek 2-to-4 decoder top bits se chaar 2-to-4 decoders ko enable kare. Enable input hi hierarchy ko possible banata hai.",
+        "**Encoder**: decoder ka ulta: 2ⁿ inputs, n outputs. 4-to-2 encoder: Y1 = D2 + D3, Y0 = D1 + D3. Ye maan kar chalta hai ki ek waqt mein sirf ek input 1 hai; do inputs ek saath 1 hon to galat code aata hai, aur koi input 1 na ho to output 00 aata hai jo D0 se alag nahi dikhta.",
+        "**Priority encoder**: kai inputs ek saath 1 hon to sabse high-priority wale ka code deta hai, aur ek **valid** bit V batata hai ki koi input active hai ya nahi. 4-input (D3 highest): Y1 = D3 + D2, Y0 = D3 + D2'D1, V = D3 + D2 + D1 + D0. Use: interrupts mein sabse zaroori request pehle.",
+        "**Tri-state buffer**: teen output states: 0, 1, aur **high impedance (Z)**. Enable = 1 par output = input; enable = 0 par output wire se 'disconnect' jaisa ho jaata hai, na 0 drive karta hai na 1.",
+        "**Bus**: kai devices ek hi set of wires share karte hain, har ek tri-state buffer se. Ek waqt mein sirf ek driver enable hona chahiye; do enable hon aur alag values bhejein to **bus contention** (short circuit jaisa current, galat value). Isliye enables aksar ek decoder se aate hain, jo ek waqt mein sirf ek output active karta hai."
+      ],
+      "example": {
+        "problem": "4-input priority encoder (D3 sabse high priority) ke outputs Y1, Y0, V ke equations nikaalo, aur D2 = D1 = D0 = 1, D3 = 0 ke liye output batao.",
+        "steps": [
+          "Truth table compactly likho (X = koi bhi value), neeche code dekho.",
+          "Y1 = 1 jab D3 = 1, ya D3 = 0 aur D2 = 1: Y1 = D3 + D3'D2 = D3 + D2.",
+          "Y0 = 1 jab D3 = 1, ya (D3 = 0, D2 = 0, D1 = 1): Y0 = D3 + D3'D2'D1 = D3 + D2'D1.",
+          "V = 1 jab koi bhi input 1 ho: V = D3 + D2 + D1 + D0.",
+          "D3 = 0, D2 = 1, D1 = 1, D0 = 1: Y1 = 0 + 1 = 1, Y0 = 0 + 0·1 = 0, V = 1.",
+          "Answer: **Y1 = D3 + D2, Y0 = D3 + D2'D1, V = D3 + D2 + D1 + D0**; diye gaye input ke liye Y1Y0 = 10 (D2 jeeta), V = 1."
+        ],
+        "code": "D3 D2 D1 D0 | Y1 Y0 V\n 0  0  0  0 |  X  X 0\n 0  0  0  1 |  0  0 1\n 0  0  1  X |  0  1 1\n 0  1  X  X |  1  0 1\n 1  X  X  X |  1  1 1"
+      },
+      "mistakes": [
+        "Bade MUX mein MSB select ko pehle level par laga dena. Pehle level ke saare MUX ek hi low select bits (S1 S0) share karte hain; MSB bits aakhri level mein jaati hain jo group chunti hain.",
+        "Normal encoder ko priority encoder samajhna. Normal 4-to-2 encoder mein D1 aur D2 dono 1 hon to output 11 aata hai, jo D3 ka code hai, yani bilkul galat.",
+        "Bus par do tri-state buffers ek saath enable kar dena. Ek waqt mein sirf ek driver; baaki sab Z mein rahein."
+      ],
+      "revision": [
+        "2:1 MUX se 2ⁿ:1 MUX: 2ⁿ − 1 MUX lagte hain.",
+        "Low select bits pehle level par, MSB select bits aakhri level par.",
+        "Bade decoder ke liye MSB bits enables chalate hain.",
+        "Priority encoder: sabse high active input ka code + valid bit V.",
+        "Tri-state: enable 0 → output Z; bus par ek waqt mein ek hi driver."
+      ],
+      "questions": [
+        {
+          "id": "digital-w7-q1",
+          "question": "Sirf 2:1 MUXes se ek 8:1 MUX banana hai. Kitne 2:1 MUX lagenge?",
+          "options": [
+            "4",
+            "7",
+            "8",
+            "3"
+          ],
+          "answer": 1,
+          "explanation": "Pehla level: 8 inputs ko 4 MUX 4 outputs mein laate hain (S0). Doosra: 2 MUX (S1). Teesra: 1 MUX (S2). Total 4 + 2 + 1 = 7 = 2³ − 1. 4 sirf pehle level ki ginti hai, aur 3 select lines ki ginti.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w7-q2",
+          "question": "Tri-state buffer ka enable 0 ho to uska output kya hota hai?",
+          "options": [
+            "High impedance (Z): output na 0 drive karta hai na 1",
+            "Hamesha 0",
+            "Hamesha 1",
+            "Input ka complement"
+          ],
+          "answer": 0,
+          "explanation": "Enable 0 par buffer apne output ko wire se electrically alag kar deta hai: high impedance (Z). Isi wajah se kai buffers ek bus share kar sakte hain. 'Hamesha 0' sochna sabse common galti hai; 0 bhi ek driven value hai jo bus par doosre driver se takrayegi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w7-q3",
+          "question": "8-input priority encoder (D7 sabse high priority, D0 sabse low) mein D1, D4 aur D6 ek saath 1 hain, baaki 0. 3-bit output kya hoga?",
+          "options": [
+            "001",
+            "100",
+            "111",
+            "110"
+          ],
+          "answer": 3,
+          "explanation": "Active inputs mein sabse high priority D6 hai, to output 6 = 110 (aur V = 1). 001 tab aata jab lowest priority wala jeetta. 111 normal (non-priority) encoder ka galat result hai jahan 001, 100 aur 110 sab OR ho jaate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w7-q4",
+          "question": "5-to-32 decoder banana hai 3-to-8 decoders (enable ke saath) aur ek 2-to-4 decoder se. Kitne 3-to-8 decoders lagenge?",
+          "options": [
+            "8",
+            "4",
+            "5",
+            "32"
+          ],
+          "answer": 1,
+          "explanation": "32 outputs / 8 per decoder = 4 decoders of 3-to-8, sab par low 3 bits. Top 2 bits ek 2-to-4 decoder mein jaati hain jo in 4 mein se ek ko enable karta hai. 8 tab aata jab har 3-to-8 ko 4 outputs wala samajh lo; 5 total decoders ki ginti hai (4 + 1).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w7-q5",
+          "question": "Simple (non-priority) 4-to-2 encoder ke equations Y1 = D2 + D3 aur Y0 = D1 + D3 hain. Agar galti se D1 aur D2 dono 1 ho jaayein (D0 = D3 = 0), to Y1Y0 kya aayega?",
+          "options": [
+            "10",
+            "01",
+            "11",
+            "00"
+          ],
+          "answer": 2,
+          "explanation": "Y1 = D2 + D3 = 1 + 0 = 1, Y0 = D1 + D3 = 1 + 0 = 1, to 11, jo D3 ka code hai jabki D3 active hi nahi. Isiliye multiple active inputs ke liye priority encoder chahiye. 10 woh hai jo priority encoder (D2 jeetta) deta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w7-q6",
+          "question": "16:1 MUX ko paanch 4:1 MUX se banaya gaya: pehle level ke 4 MUX (har ek par 4 consecutive inputs, I0–I3, I4–I7, ...) S1 S0 se chalte hain, aur aakhri MUX S3 S2 se. S3 S2 S1 S0 = 1011 par kaunsa input output par aayega?",
+          "options": [
+            "I3",
+            "I14",
+            "I13",
+            "I11"
+          ],
+          "answer": 3,
+          "explanation": "S3 S2 = 10 = 2 → teesra group (I8–I11). S1 S0 = 11 = 3 → us group ka chautha input: 8 + 3 = I11. Seedha binary 1011 = 11 bhi yahi kehta hai. I14 tab aata hai jab selects ki bhumika ulat do (S1 S0 se group aur S3 S2 se andar ka input chuno).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Adders, Subtractors, Comparators and LUTs",
+      "summary": "Is week aap half aur full adder, ripple-carry adder aur uska delay, 2's complement se subtraction aur overflow detection, magnitude comparator, aur lookup table (LUT) se koi bhi function banana seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Half adder**: do bits A, B jodta hai. Sum S = A ⊕ B, carry C = AB. Ye neeche se aane wala carry nahi le sakta, isliye sirf LSB ke liye kaam ka hai.",
+        "**Full adder**: teen bits A, B, Cin jodta hai. S = A ⊕ B ⊕ Cin (odd number of 1s par 1), Cout = AB + Cin(A ⊕ B) = AB + BCin + ACin (majority function). Do half adders aur ek OR gate se ban jaata hai.",
+        "**Ripple-carry adder**: n full adders ki chain, har ek ka Cout agle ka Cin. Design simple hai, par carry ko LSB se MSB tak 'ripple' karna padta hai, isliye worst-case delay n ke saath linearly badhta hai: n × (ek FA ka carry delay). 32-bit mein ye bahut slow ho jaata hai.",
+        "**Subtraction**: A − B = A + B' + 1 (2's complement). Adder-subtractor mein har B bit ek XOR gate se jaati hai jiska doosra input control M hai: M = 0 par B seedha (add), M = 1 par B' (subtract), aur M hi Cin bhi banta hai taaki +1 ho jaaye.",
+        "**Overflow detection**: signed (2's complement) addition mein V = Cn ⊕ Cn−1, yani MSB mein jaane wala carry aur MSB se nikalne wala carry alag hon to overflow. Unsigned addition mein final carry out Cn = 1 hi overflow ka signal hai.",
+        "**Magnitude comparator**: 1-bit: A > B = AB', A < B = A'B, A = B = (A ⊕ B)' (XNOR, ⊙). n bits ke liye MSB se shuru karo: jis pehli position par bits alag hon wahi faisla karti hai. 2-bit: A > B = A1B1' + (A1 ⊙ B1)A0B0'.",
+        "**Lookup table (LUT)**: k-input LUT asal mein 2ᵏ bits ki chhoti memory hai; inputs address bante hain aur stored bit output. Truth table ka output column seedha memory mein bhar do, to koi bhi k-input function ban jaata hai. Kul 2^(2ᵏ) alag functions possible hain (3 inputs → 2⁸ = 256). FPGA isi tarah logic banata hai."
+      ],
+      "example": {
+        "problem": "4-bit adder-subtractor (M = 1, subtract mode) se 5 − 7 nikaalo. Result aur final carry batao.",
+        "steps": [
+          "A = 5 = 0101, B = 7 = 0111.",
+          "M = 1 par har B bit XOR se ulat jaati hai: B' = 1000, aur Cin = M = 1.",
+          "Jodo: 0101 + 1000 + 1 = 1110, carry out C4 = 0.",
+          "1110 ko 2's complement mein padho: −8 + 4 + 2 = −2 ✓ (5 − 7 = −2).",
+          "Overflow check: C4 = 0 aur C3 = 0 (bit 3 mein carry nahi gaya), V = 0 ⊕ 0 = 0.",
+          "Answer: **result 1110 = −2, carry out 0, koi overflow nahi**."
+        ]
+      },
+      "mistakes": [
+        "Subtraction mein sirf B ko invert karna aur Cin = 1 bhool jaana. Woh 1's complement deta hai aur answer 1 kam aata hai.",
+        "Signed addition mein carry out = 1 ko overflow samajhna. Signed overflow ke liye V = Cn ⊕ Cn−1 dekho; carry out sirf unsigned overflow batata hai.",
+        "Ripple-carry delay ko constant maan lena. Bits double karo to worst-case carry delay bhi double hota hai."
+      ],
+      "revision": [
+        "Half adder: S = A ⊕ B, C = AB.",
+        "Full adder: S = A ⊕ B ⊕ Cin, Cout = AB + BCin + ACin.",
+        "Ripple-carry delay ∝ number of bits.",
+        "A − B = A + B' + 1; M = 1 par XOR se invert aur Cin = 1.",
+        "Signed overflow: V = Cn ⊕ Cn−1.",
+        "k-input LUT = 2ᵏ bit memory, 2^(2ᵏ) functions."
+      ],
+      "questions": [
+        {
+          "id": "digital-w8-q1",
+          "question": "Full adder mein A = 1, B = 1, Cin = 1 hai. S aur Cout kya honge?",
+          "options": [
+            "S = 0, Cout = 1",
+            "S = 1, Cout = 0",
+            "S = 0, Cout = 0",
+            "S = 1, Cout = 1"
+          ],
+          "answer": 3,
+          "explanation": "1 + 1 + 1 = 3 = binary 11, to S = 1 aur Cout = 1. Formula se: S = 1 ⊕ 1 ⊕ 1 = 1 (teen 1s, odd), Cout = majority = 1. S = 0, Cout = 1 woh answer hai jo sirf A + B (half adder) ka hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w8-q2",
+          "question": "Ek 3-input LUT kitne alag-alag Boolean functions implement kar sakta hai?",
+          "options": [
+            "8",
+            "256",
+            "16",
+            "64"
+          ],
+          "answer": 1,
+          "explanation": "3-input LUT mein 2³ = 8 memory bits hain, aur har bit 0 ya 1 ho sakti hai, to 2⁸ = 256 alag truth tables. 8 sirf rows (memory bits) ki ginti hai, functions ki nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w8-q3",
+          "question": "Ripple-carry adder mein har full adder ka Cin se Cout delay 2 ns hai. 16-bit adder ke liye worst-case carry delay (C0 se C16 tak) kitna hai?",
+          "options": [
+            "32 ns",
+            "2 ns",
+            "8 ns",
+            "16 ns"
+          ],
+          "answer": 0,
+          "explanation": "Worst case mein carry LSB se MSB tak saare 16 full adders se guzarta hai: 16 × 2 = 32 ns. 2 ns tab sochte ho jab maan lo saare adders parallel kaam karte hain; 8 ns 4-bit adder ka delay hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w8-q4",
+          "question": "4-bit adder-subtractor subtract mode (M = 1) mein A = 0110 aur B = 0011 ke saath chalaya gaya. 4-bit result aur final carry out kya hai?",
+          "options": [
+            "0011, carry out 0",
+            "1101, carry out 0",
+            "0011, carry out 1",
+            "1001, carry out 1"
+          ],
+          "answer": 2,
+          "explanation": "B' = 1100, Cin = 1: 0110 + 1100 + 1 = 10011. 4-bit result 0011 = 3 (6 − 3 = 3 ✓) aur carry out 1. 2's complement subtraction mein jab A ≥ B (unsigned), to carry out 1 aata hai, ye overflow nahi hai. 1101 = −3 hai, yani B − A ka answer.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w8-q5",
+          "question": "2-bit numbers A = A1A0 aur B = B1B0 ke liye A > B ka sahi expression kaunsa hai? (⊙ = XNOR)",
+          "options": [
+            "A1B1' + A0B0'",
+            "A1B1' + (A1 ⊙ B1)A0B0'",
+            "A1'B1 + (A1 ⊙ B1)A0'B0",
+            "(A1 ⊙ B1)(A0 ⊙ B0)"
+          ],
+          "answer": 1,
+          "explanation": "Agar A1 > B1 (A1B1') to A bada; agar MSBs barabar hon (A1 ⊙ B1) tabhi A0 > B0 dekho. A1B1' + A0B0' galat hai: A = 01, B = 10 par ye 1 deta hai jabki 1 < 2, kyunki MSB ki barabari check nahi ki. Teesra option A < B hai aur chautha A = B.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w8-q6",
+          "question": "4-bit 2's complement adder mein 1100 + 1011 kiya gaya. 4-bit result aur overflow flag V = C4 ⊕ C3 kya hai?",
+          "options": [
+            "0111, V = 0",
+            "10111, koi overflow nahi",
+            "1001, V = 0",
+            "0111, V = 1"
+          ],
+          "answer": 3,
+          "explanation": "1100 = −4, 1011 = −5, sahi sum −9 hai jo 4-bit range (−8 se +7) se bahar hai. Bits: 1100 + 1011 = 10111, 4-bit result 0111 (+7). Lower 3 bits 100 + 011 = 111, bit 3 mein carry nahi gaya: C3 = 0, aur C4 = 1, to V = 1 ⊕ 0 = 1. Do negatives ka positive result = overflow. 'V = 0' tab aata hai jab sirf carry out dekh kar socho ki sab theek hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Latches, Flip-Flops and Timing",
+      "summary": "Is week aap memory wale circuits seekhoge: SR latch, D latch, edge-triggered D flip-flop, setup aur hold time, aur D flip-flops se ek simple binary counter banana.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Combinational vs sequential**: combinational circuit ka output sirf abhi ke inputs par depend karta hai. Sequential circuit mein **memory (state)** hoti hai, isliye output pichhle inputs par bhi depend karta hai. Memory feedback se banti hai: output ko wapas input mein jodna.",
+        "**SR latch (NOR se)**: do cross-coupled NOR gates. S = 1, R = 0 → Q = 1 (set). S = 0, R = 1 → Q = 0 (reset). S = R = 0 → pichhli value hold. S = R = 1 → Q aur Q' dono 0 ho jaate hain (complement nahi rahe), aur dono ek saath 0 karne par result race par depend karta hai, isliye ye combination forbidden hai. NAND wala latch active-low hota hai (S' = 0 se set).",
+        "**Gated D latch**: SR latch ke aage gates lagao taaki S = D·EN aur R = D'·EN. Forbidden state kabhi nahi aata. EN = 1 par latch **transparent** hai: Q = D aur D ke saath badalta rehta hai. EN = 0 par last value hold. Ye **level-sensitive** hai.",
+        "**D flip-flop**: sirf clock ke edge par (aksar rising edge, 0 → 1) D ko sample karke Q mein daalta hai; baaki poore cycle Q nahi badalta, chahe D kitni baar badle. Ise do D latches se banate hain (master-slave): master CLK = 0 par transparent, slave CLK = 1 par, isliye data sirf edge par aage jaata hai.",
+        "**Setup aur hold time**: edge se kam se kam tsu pehle D stable hona chahiye (setup), aur edge ke th baad tak stable rehna chahiye (hold). Is window mein D badla to flip-flop **metastable** ho sakta hai: Q kuch der 0 aur 1 ke beech atak jaata hai. Clock edge se Q badalne tak ka delay tcq (clock-to-Q) hai.",
+        "**Simple counter**: n D flip-flops = n-bit state, 2ⁿ states. 2-bit up counter: D0 = Q0', D1 = Q1 ⊕ Q0. 3-bit ke liye D2 = Q2 ⊕ Q1Q0. Har clock par count +1, aur 111 ke baad 000 par wrap.",
+        "**Frequency divider**: D flip-flop ka D = Q' jodo, to har edge par Q toggle hota hai. Q ki frequency clock ki aadhi ho jaati hai. Counter ka bit k clock ko 2ᵏ⁺¹ se divide karta hai."
+      ],
+      "example": {
+        "problem": "3-bit up counter jisme D0 = Q0', D1 = Q1 ⊕ Q0, D2 = Q2 ⊕ Q1Q0 hai, abhi Q2Q1Q0 = 101 par hai. 4 clock edges ke baad state kya hogi?",
+        "steps": [
+          "Har edge par next state = D values, jo current state se nikalti hain.",
+          "101: D0 = 0, D1 = 0 ⊕ 1 = 1, D2 = 1 ⊕ (0·1) = 1 → 110.",
+          "110: D0 = 1, D1 = 1 ⊕ 0 = 1, D2 = 1 ⊕ 0 = 1 → 111.",
+          "111: D0 = 0, D1 = 1 ⊕ 1 = 0, D2 = 1 ⊕ 1 = 0 → 000 (wrap-around).",
+          "000: D0 = 1, D1 = 0, D2 = 0 → 001.",
+          "Answer: **001** (5 + 4 = 9, aur 9 mod 8 = 1)."
+        ]
+      },
+      "mistakes": [
+        "D latch aur D flip-flop ko same samajhna. Latch EN = 1 ke poore time D ko follow karta hai; flip-flop sirf edge par ek baar sample karta hai.",
+        "SR latch mein S = R = 0 ko 'reset' samajhna. S = R = 0 hold hai; reset ke liye R = 1, S = 0 chahiye.",
+        "Setup time ko edge ke baad wala time samajhna. Setup edge se pehle ki window hai, hold edge ke baad ki."
+      ],
+      "revision": [
+        "SR (NOR): 00 hold, 10 set, 01 reset, 11 forbidden.",
+        "D latch: level-sensitive (EN = 1 par transparent).",
+        "D flip-flop: edge par Q = D, baaki time hold.",
+        "D ko [edge − tsu, edge + th] mein stable rakho.",
+        "n flip-flops → 2ⁿ states; D = Q' se divide-by-2."
+      ],
+      "questions": [
+        {
+          "id": "digital-w9-q1",
+          "question": "NOR gates se bane SR latch mein S = 0 aur R = 0 kar diya gaya. Q ka kya hoga?",
+          "options": [
+            "Q = 0 ho jaayega (reset)",
+            "Q = 1 ho jaayega (set)",
+            "Q apni pichhli value rakhega",
+            "Q aur Q' dono 0 ho jaayenge"
+          ],
+          "answer": 2,
+          "explanation": "S = R = 0 par NOR gates ka output sirf feedback par depend karta hai, isliye latch purani value pakde rehta hai: yahi memory hai. Reset ke liye R = 1 chahiye, aur 'dono 0' wala case S = R = 1 ka hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w9-q2",
+          "question": "Gated D latch ka EN = 1 hai aur is dauraan D teen baar badalta hai. Q kya karega?",
+          "options": [
+            "Q har badlaav ke saath D ko follow karega (transparent)",
+            "Q sirf EN ke rising edge par D lega aur phir nahi badlega",
+            "Q kabhi nahi badlega jab tak EN = 0 na ho",
+            "Q forbidden state mein chala jaayega"
+          ],
+          "answer": 0,
+          "explanation": "D latch level-sensitive hai: EN = 1 ke poore time woh transparent hai, Q = D (thode delay ke saath). 'Sirf edge par sample' D flip-flop ka behaviour hai, latch ka nahi. D latch mein forbidden state aata hi nahi kyunki S aur R kabhi ek saath 1 nahi hote.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w9-q3",
+          "question": "NOR SR latch mein S = 1 aur R = 1 ek saath diye gaye. Is waqt outputs kya hain, aur ye combination kyun avoid karte hain?",
+          "options": [
+            "Q = 1, Q' = 0; isme koi problem nahi",
+            "Q toggle hota hai; isliye avoid karte hain",
+            "Q = 1, Q' = 1; power zyada lagti hai",
+            "Q = 0, Q' = 0; Q aur Q' complement nahi rahe, aur dono inputs ek saath 0 karne par next state race par depend karta hai"
+          ],
+          "answer": 3,
+          "explanation": "S = 1 aur R = 1 dono NOR gates ka ek input 1 bana dete hain, to dono outputs 0. Q' ab Q ka complement nahi raha. Phir S aur R ek saath 0 karo to dono gates ek saath 1 ki taraf daudte hain aur result unpredictable hai. Toggle JK flip-flop (J = K = 1) ka behaviour hai, SR ka nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w9-q4",
+          "question": "Ek D flip-flop ka setup time 2 ns aur hold time 1 ns hai. Rising clock edge 50 ns par aata hai. D ko kis time window mein bilkul stable rehna chahiye?",
+          "options": [
+            "49 ns se 51 ns",
+            "48 ns se 51 ns",
+            "48 ns se 50 ns",
+            "50 ns se 52 ns"
+          ],
+          "answer": 1,
+          "explanation": "Setup: edge se 2 ns pehle, yani 48 ns se. Hold: edge ke 1 ns baad tak, yani 51 ns tak. Window 48–51 ns. 48–50 ns hold time bhool jaata hai, aur 50–52 ns setup ko edge ke baad le jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w9-q5",
+          "question": "2-bit counter mein D0 = Q0' aur D1 = Q1 ⊕ Q0 hai. Shuru mein Q1Q0 = 00. 3 rising clock edges ke baad Q1Q0 kya hoga?",
+          "options": [
+            "00",
+            "10",
+            "01",
+            "11"
+          ],
+          "answer": 3,
+          "explanation": "00 → (D1 = 0 ⊕ 0 = 0, D0 = 1) → 01 → (D1 = 0 ⊕ 1 = 1, D0 = 0) → 10 → (D1 = 1 ⊕ 0 = 1, D0 = 1) → 11. Ye ek up counter hai: 0, 1, 2, 3. 10 tab aata hai jab 2 hi edges gino.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w9-q6",
+          "question": "Ek D flip-flop ka input D = Q ⊕ X hai. Shuru mein Q = 0. Agle 4 rising edges par X ki values 1, 0, 1, 1 hain. Har edge ke baad Q ki sequence kya hogi?",
+          "options": [
+            "1, 1, 0, 1",
+            "1, 0, 1, 1",
+            "1, 0, 0, 1",
+            "0, 1, 1, 0"
+          ],
+          "answer": 0,
+          "explanation": "Q_next = Q ⊕ X: X = 1 par Q toggle, X = 0 par hold. 0 → (X = 1) 1 → (X = 0) 1 → (X = 1) 0 → (X = 1) 1. Sequence 1, 1, 0, 1. '1, 0, 1, 1' sirf X ko copy karna hai (jaise D = X ho). Ye circuit asal mein T flip-flop jaisa kaam karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "JK and T Flip-Flops, Registers and Shift Counters",
+      "summary": "Is week aap JK aur T flip-flops ke characteristic aur excitation tables, registers, shift registers (SISO, SIPO, PISO), aur ring aur Johnson counters ka kaam karna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**JK flip-flop**: SR ka sudhra hua roop. J = K = 0 → hold, J = 1, K = 0 → set (Q = 1), J = 0, K = 1 → reset (Q = 0), aur J = K = 1 → **toggle** (Q ulat jaata hai). Koi forbidden state nahi. Characteristic equation: Q+ = JQ' + K'Q.",
+        "**T flip-flop**: ek hi input T. T = 0 → hold, T = 1 → toggle. Q+ = T ⊕ Q. JK ke J aur K ko jod kar T bana lo, ya D flip-flop mein D = T ⊕ Q laga do. T = 1 rakhne par output ki frequency clock ki aadhi hoti hai.",
+        "**Excitation table**: design ke liye ulta sawaal: Q se Q+ le jaane ke liye input kya chahiye? JK: 0 → 0: J = 0, K = X; 0 → 1: J = 1, K = X; 1 → 0: J = X, K = 1; 1 → 1: J = X, K = 0. T: T = Q ⊕ Q+ (badlaav ho to 1). D: D = Q+.",
+        "**Register**: n D flip-flops ek common clock par, n-bit word store karte hain. Load enable chahiye to har D ke aage 2:1 MUX: load = 1 par naya data, warna Q wapas D mein (hold).",
+        "**Shift register**: flip-flops ki chain jisme har Q agle ka D hai; har clock par data ek position khisakta hai. **SISO**: serial in, serial out (n-bit register n clocks ka delay deta hai). **SIPO**: bits ek-ek karke andar, n clocks ke baad poora word parallel padho (serial → parallel). **PISO**: poora word ek saath load karo, phir ek-ek bit bahar shift karo (parallel → serial). Left shift = 2 se multiply (jab overflow na ho).",
+        "**Ring counter**: n flip-flops ka shift register jisme aakhri Q pehle D mein wapas jaata hai, aur shuru mein ek hi 1 (jaise 1000). Ye 1 ghoomta rehta hai: n states, har state one-hot, decode karne ke liye koi gate nahi chahiye. Galat state (jaise 1100) se start ho to galat pattern hi ghoomta rehta hai.",
+        "**Johnson (twisted ring) counter**: aakhri flip-flop ka Q' pehle D mein jaata hai. n flip-flops se **2n states** milti hain (4 flip-flops → 8 states), aur har state ko sirf ek 2-input AND gate se decode kar sakte ho."
+      ],
+      "example": {
+        "problem": "4-bit Johnson counter (Q0 pehla flip-flop, D0 = Q3', har clock par Q1 ← Q0, Q2 ← Q1, Q3 ← Q2) 0000 se shuru hota hai. Poori state sequence likho.",
+        "steps": [
+          "Shuru: Q0Q1Q2Q3 = 0000. Q3' = 1, to agli clock par Q0 = 1 aur baaki bits ek position right.",
+          "0000 → 1000 → 1100 → 1110 → 1111 (1s bhar rahe hain).",
+          "1111 par Q3' = 0, to ab 0s andar aate hain: 1111 → 0111 → 0011 → 0001.",
+          "0001 par Q3' = 0 → 0000, aur cycle repeat.",
+          "Ginti: 8 alag states = 2 × 4.",
+          "Answer: **0000, 1000, 1100, 1110, 1111, 0111, 0011, 0001** (mod-8 counter)."
+        ],
+        "code": "clock : Q0 Q1 Q2 Q3\n  0   :  0  0  0  0\n  1   :  1  0  0  0\n  2   :  1  1  0  0\n  3   :  1  1  1  0\n  4   :  1  1  1  1\n  5   :  0  1  1  1\n  6   :  0  0  1  1\n  7   :  0  0  0  1\n  8   :  0  0  0  0   (repeat)"
+      },
+      "mistakes": [
+        "JK mein J = K = 1 ko forbidden samajhna (SR ki tarah). JK mein ye toggle hai aur bilkul valid hai.",
+        "Johnson counter ki states n maan lena. Ring counter mein n states hain, Johnson mein 2n.",
+        "SIPO mein pehla aaya bit kahan pahunchta hai, ye bhool jaana. Pehla bit sabse door wale flip-flop tak khisak jaata hai, isliye parallel padhne par order input order se ulta dikh sakta hai."
+      ],
+      "revision": [
+        "JK: 00 hold, 10 set, 01 reset, 11 toggle; Q+ = JQ' + K'Q.",
+        "T: Q+ = T ⊕ Q; T = 1 → frequency aadhi.",
+        "JK excitation: 0 → 1 ke liye J = 1, K = X.",
+        "SISO, SIPO, PISO: serial/parallel in aur out.",
+        "Ring: n states; Johnson: 2n states."
+      ],
+      "questions": [
+        {
+          "id": "digital-w10-q1",
+          "question": "JK flip-flop mein abhi Q = 0 hai aur J = 1, K = 1. Agle clock edge ke baad Q kya hoga?",
+          "options": [
+            "0",
+            "1",
+            "Undefined (forbidden)",
+            "Pichhli value hold"
+          ],
+          "answer": 1,
+          "explanation": "J = K = 1 toggle hai: Q+ = JQ' + K'Q = 1·1 + 0·0 = 1. 'Forbidden' SR latch ka S = R = 1 wala case hai; JK isi problem ko toggle bana kar solve karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w10-q2",
+          "question": "5 flip-flops se bana Johnson counter kitni alag states se guzarta hai?",
+          "options": [
+            "5",
+            "32",
+            "25",
+            "10"
+          ],
+          "answer": 3,
+          "explanation": "Johnson counter mein n flip-flops se 2n states: 2 × 5 = 10. 5 ring counter ka answer hai, aur 32 = 2⁵ ek poore binary counter ka.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w10-q3",
+          "question": "4-bit SIPO shift register 0000 se shuru hota hai. Har clock par naya serial bit Q3 mein aata hai aur purani bits ek position aage khisakti hain (Q3 → Q2 → Q1 → Q0). Serial input bits 1, 0, 1, 1 (isi order mein) hain. 4 clocks ke baad Q3Q2Q1Q0 kya hoga?",
+          "options": [
+            "1101",
+            "1011",
+            "0110",
+            "1000"
+          ],
+          "answer": 0,
+          "explanation": "Clock 1: 1000. Clock 2: 0100. Clock 3: 1010. Clock 4: 1101. Pehla bit (1) khisak kar Q0 tak pahuncha, aakhri bit (1) Q3 mein hai. 1011 tab aata hai jab input order ko seedha Q3 se Q0 tak likh do, khisakna bhool kar.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w10-q4",
+          "question": "Synchronous counter design karte waqt ek JK flip-flop ko Q = 0 se Q+ = 1 le jaana hai. J aur K kya hone chahiye? (X = don't care)",
+          "options": [
+            "J = 1, K = 0",
+            "J = 0, K = X",
+            "J = 1, K = X",
+            "J = X, K = 1"
+          ],
+          "answer": 2,
+          "explanation": "0 → 1 do tareeke se hota hai: set (J = 1, K = 0) ya toggle (J = 1, K = 1). Dono mein J = 1, aur K kuch bhi chalega, to K = X. 'J = 1, K = 0' bhi kaam karega par K ko don't care rakhne se K-map mein bade groups milte hain. J = X, K = 1 to 1 → 0 ka entry hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w10-q5",
+          "question": "Teen T flip-flops (sab ka T = 1) cascade mein lage hain: pehle ko 16 kHz clock milti hai aur har agla flip-flop pichhle ke output se clock hota hai. Teesre flip-flop ke output ki frequency kya hai?",
+          "options": [
+            "8 kHz",
+            "5.33 kHz",
+            "2 kHz",
+            "4 kHz"
+          ],
+          "answer": 2,
+          "explanation": "Har T flip-flop (T = 1) frequency aadhi karta hai: 16 → 8 → 4 → 2 kHz, yani 16 / 2³ = 2 kHz. 5.33 kHz tab aata jab 3 se divide kar do, aur 4 kHz sirf do stages ka result hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w10-q6",
+          "question": "Neeche diye rule wala 4-bit Johnson counter 0000 se shuru hota hai. 13 clock pulses ke baad Q0Q1Q2Q3 kya hoga?",
+          "code": "D0 = Q3'\nQ1 <- Q0, Q2 <- Q1, Q3 <- Q2   (every clock)\nstart: Q0 Q1 Q2 Q3 = 0 0 0 0",
+          "options": [
+            "0011",
+            "1101",
+            "1110",
+            "0111"
+          ],
+          "answer": 3,
+          "explanation": "Sequence: 0000, 1000, 1100, 1110, 1111, 0111, 0011, 0001, phir repeat; cycle length 8. 13 mod 8 = 5, to state number 5 = 0111. 1101 sirf 13 ka binary hai; Johnson counter binary count nahi karta. 0011 ek step aage (6) gin lene se aata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Finite State Machines and Sequence Detectors",
+      "summary": "Is week aap finite state machine (FSM) ka idea, Moore aur Mealy machines ka farak, state diagram se state table aur D flip-flop equations tak ka design flow, aur sequence detectors banana seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**FSM**: ek sequential circuit jiske paas limited states hoti hain. Har clock edge par current state aur input se **next state** decide hoti hai. Hardware mein: state flip-flops mein, aur next-state aur output logic combinational gates mein.",
+        "**Moore machine**: output sirf **current state** par depend karta hai. State diagram mein output state ke circle ke andar likhte hain. Output clock ke saath stable rehta hai, par input ka asar ek cycle baad dikhta hai.",
+        "**Mealy machine**: output current state aur **current input** dono par depend karta hai, isliye diagram mein output arrow (transition) par likhte hain, jaise '1/0' = input 1, output 0. Mealy aksar kam states mein kaam kar leti hai aur usi cycle mein react karti hai, par input glitch output tak pahunch sakta hai.",
+        "**Kitne flip-flops**: N states ke liye kam se kam ⌈log₂N⌉ flip-flops (binary encoding). 5 states → 3 flip-flops. One-hot encoding mein N flip-flops lagte hain par next-state logic simple hota hai.",
+        "**Design flow**: (1) word problem se state diagram, (2) state table (present state, input → next state, output), (3) har state ko binary code do (state assignment), (4) D flip-flops ke liye D = next state bit, K-map se D aur output ke equations, (5) circuit banao.",
+        "**Sequence detector**: serial input mein ek pattern (jaise 101) dhoondhta hai. Har state ka matlab hai 'pattern ka kitna hissa abhi tak mil chuka hai'. **Overlapping** detector pattern ke aakhri bits ko agle match ki shuruaat maan sakta hai (10101 mein 101 do baar); **non-overlapping** match ke baad zero se shuru karta hai.",
+        "**101 detector ki states**: Mealy (overlapping) ko 3 states chahiye: S0 (kuch nahi mila), S1 ('1' mila), S2 ('10' mila); S2 mein 1 aaye to output 1 aur S1 par jao (kyunki aakhri '1' naye match ki shuruaat hai). Moore ko ek extra state S3 ('101' mila, output 1) chahiye, yani 4 states."
+      ],
+      "example": {
+        "problem": "Overlapping '101' Mealy detector (neeche ki state table) ko S0 se input 1, 1, 0, 1, 0, 1, 1 diya gaya. Output sequence kya hogi?",
+        "steps": [
+          "Table dekho (code block). Format: next state / output.",
+          "S0 −1→ S1/0, S1 −1→ S1/0 (doosra 1 bhi '1 mila' hi hai).",
+          "S1 −0→ S2/0, S2 −1→ S1/1: pehla '101' mila, output 1.",
+          "S1 −0→ S2/0, S2 −1→ S1/1: overlap ki wajah se beech wala 1 dobara use hua, doosra match.",
+          "S1 −1→ S1/0.",
+          "Answer: **0, 0, 0, 1, 0, 1, 0** (do detections)."
+        ],
+        "code": "present | x=0     | x=1\nS0      | S0 / 0  | S1 / 0\nS1      | S2 / 0  | S1 / 0\nS2      | S0 / 0  | S1 / 1"
+      },
+      "mistakes": [
+        "Moore machine ka output arrow par likhna. Moore output state ke andar hota hai; arrow par output Mealy ka style hai.",
+        "Overlapping detector mein match ke baad seedha S0 par chale jaana. 101 ke baad aakhri '1' agle match ka shuruaati hissa ho sakta hai, isliye S1 par jao.",
+        "States ke liye flip-flops ginte waqt log₂N ko round down karna. 5 states ke liye 2 flip-flops sirf 4 states de sakte hain; ⌈log₂5⌉ = 3 chahiye."
+      ],
+      "revision": [
+        "Moore: output = f(state); Mealy: output = f(state, input).",
+        "Mealy output arrow par, Moore output state mein.",
+        "N states → ⌈log₂N⌉ flip-flops.",
+        "D flip-flop design: D = next state.",
+        "101 detector: Mealy 3 states, Moore 4 states."
+      ],
+      "questions": [
+        {
+          "id": "digital-w11-q1",
+          "question": "Moore machine ka output kis par depend karta hai?",
+          "options": [
+            "Sirf current input par",
+            "Current state aur current input dono par",
+            "Sirf current state par",
+            "Sirf pichhle input par"
+          ],
+          "answer": 2,
+          "explanation": "Moore output sirf present state ka function hai, isliye state diagram mein state ke andar likha jaata hai. State aur input dono par depend karna Mealy machine ki pehchaan hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w11-q2",
+          "question": "Ek FSM mein 6 states hain aur binary state encoding use hogi. Kam se kam kitne flip-flops chahiye?",
+          "options": [
+            "3",
+            "6",
+            "2",
+            "4"
+          ],
+          "answer": 0,
+          "explanation": "⌈log₂6⌉ = 3, kyunki 2 flip-flops sirf 4 states de sakte hain aur 3 flip-flops 8. 6 flip-flops one-hot encoding mein lagenge, binary mein nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w11-q3",
+          "question": "Overlapping '101' sequence detector banana hai. Mealy aur Moore design mein kam se kam kitni states chahiye?",
+          "options": [
+            "Mealy 4, Moore 3",
+            "Mealy 3, Moore 4",
+            "Dono mein 3",
+            "Dono mein 4"
+          ],
+          "answer": 1,
+          "explanation": "Mealy: S0, '1', '10' kaafi hain; '10' state mein 1 aate hi arrow par output 1 de do. Moore ko output ke liye ek alag state '101 mila' chahiye, to 4. Ulta jawab (Mealy 4, Moore 3) tab aata hai jab Moore aur Mealy ki definition mix ho jaaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w11-q4",
+          "question": "Neeche di gayi Mealy state table (next state / output) wali machine state A se shuru hoti hai aur input 0, 1, 1, 0 aata hai. Output sequence kya hai?",
+          "code": "present | x=0    | x=1\nA       | B / 0  | A / 0\nB       | B / 0  | C / 0\nC       | B / 1  | A / 1",
+          "options": [
+            "0, 1, 1, 0",
+            "0, 0, 0, 1",
+            "0, 0, 1, 1",
+            "0, 0, 1, 0"
+          ],
+          "answer": 3,
+          "explanation": "A −0→ B/0, B −1→ C/0, C −1→ A/1, A −0→ B/0. Outputs 0, 0, 1, 0. Mealy mein output usi transition ka hota hai jo abhi ho raha hai; '0, 0, 0, 1' tab aata hai jab output ek step der se (next state ka) padho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w11-q5",
+          "question": "2 D flip-flops (Q1Q0) se ek counter banana hai jo har clock par 00 → 01 → 11 → 10 → 00 chale. D1 aur D0 ke equations kya honge?",
+          "options": [
+            "D1 = Q1', D0 = Q0",
+            "D1 = Q0, D0 = Q1'",
+            "D1 = Q1 ⊕ Q0, D0 = Q0'",
+            "D1 = Q0', D0 = Q1"
+          ],
+          "answer": 1,
+          "explanation": "D flip-flop mein D = next state. Table: 00 → 01, 01 → 11, 11 → 10, 10 → 00. Next Q1 column (0, 1, 1, 0) har row mein current Q0 ke barabar hai, to D1 = Q0. Next Q0 column (1, 1, 0, 0) current Q1 ka ulta hai, to D0 = Q1'. 'D1 = Q1 ⊕ Q0, D0 = Q0'' normal binary counter (00 → 01 → 10 → 11) ka answer hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w11-q6",
+          "question": "Input stream 10101101 (left se pehle) ek '101' detector mein jaata hai. Overlapping detector kitni baar output 1 dega, aur non-overlapping kitni baar?",
+          "options": [
+            "2 aur 2",
+            "3 aur 3",
+            "3 aur 2",
+            "4 aur 2"
+          ],
+          "answer": 2,
+          "explanation": "Positions 1–8: 1 0 1 0 1 1 0 1. Overlapping matches: 1–3, 3–5 (bit 3 dobara use), 6–8 → 3. Non-overlapping: 1–3 match ke baad bit 4 se naya shuru; 4–6 = 011 nahi, phir 6–8 = 101 → 2. 3–5 wala match non-overlapping mein nahi ginta kyunki bit 3 pehle match mein use ho chuka.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Counters, Clock Speed and Error Correction",
+      "summary": "Is week aap T flip-flops se synchronous counter design karna, ripple counter ki kamzori, maximum clock frequency aur pipelining, aur parity aur Hamming(7,4) code se errors pakadna aur theek karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Synchronous counter**: saare flip-flops ek hi clock se chalte hain, isliye saare bits ek saath badalte hain. T flip-flops se 3-bit up counter: T0 = 1, T1 = Q0, T2 = Q1Q0. Rule: koi bit tab toggle hota hai jab usse neeche ke saare bits 1 hon.",
+        "**Kisi bhi sequence ka counter**: (1) present → next state table banao, (2) har flip-flop ke liye excitation table se input nikaalo (T = Q ⊕ Q+, D = Q+, JK ke liye J/K table), (3) unused states ko don't care rakho, (4) K-map se simplify. Unused states mein jaane par counter wapas main sequence mein aata hai ya nahi (self-starting), ye bhi check karo.",
+        "**Ripple (asynchronous) counter**: pehla flip-flop clock se, aur har agla flip-flop pichhle ke output se clock hota hai (sab T = 1). Kam gates lagte hain, par delays jud jaate hain: n bits ke liye worst case n × tcq, aur beech mein galat temporary counts (glitches) dikhte hain. Mod-N ke liye count N aate hi async clear karte hain, jaise mod-10 mein 1010 par Q3 aur Q1 se NAND ke through clear.",
+        "**Maximum clock frequency**: ek register se agle register tak data ko ek cycle mein pahunchna hai: Tclk ≥ tcq + tcomb(max) + tsu. fmax = 1 / Tclk(min). Hold time is formula mein nahi aata; woh alag check hai (shortest path ka delay ≥ th).",
+        "**Pipelining**: lambe combinational path ke beech registers daal kar use stages mein todo. Clock period = sabse slow stage + register overhead, isliye clock fast hota hai aur **throughput** (har cycle ek naya result) badhta hai. Par ek item ki **latency** (shuru se aakhir tak time) thodi badh jaati hai, kyunki har stage par register overhead lagta hai.",
+        "**Parity**: data ke saath ek extra bit, jisse total 1s even (even parity) ya odd (odd parity) ho. Receiver dobara gin kar check karta hai. Koi bhi single-bit error pakad leta hai, par kaunsa bit galat hai ye nahi batata, aur do bits ek saath ulte hon to error dikhta hi nahi.",
+        "**Hamming(7,4)**: 4 data bits + 3 parity bits = 7 bits. Positions 1 se 7; parity bits positions 1, 2, 4 par (2 ki powers), data 3, 5, 6, 7 par. p1 positions 1, 3, 5, 7 check karta hai; p2 positions 2, 3, 6, 7; p4 positions 4, 5, 6, 7 (even parity). Receiver teeno checks dobara karta hai; result (s4 s2 s1) ko binary number padho, ye **syndrome** galat bit ki position batata hai (000 = koi error nahi). Isliye ek bit ki error theek ho jaati hai."
+      ],
+      "example": {
+        "problem": "Data bits 1011 ko Hamming(7,4) mein encode karo (d3 = 1, d5 = 0, d6 = 1, d7 = 1). Phir maan lo position 6 ka bit ulat gaya; syndrome nikaal kar error pakdo.",
+        "steps": [
+          "p1 = d3 ⊕ d5 ⊕ d7 = 1 ⊕ 0 ⊕ 1 = 0.",
+          "p2 = d3 ⊕ d6 ⊕ d7 = 1 ⊕ 1 ⊕ 1 = 1.",
+          "p4 = d5 ⊕ d6 ⊕ d7 = 0 ⊕ 1 ⊕ 1 = 0.",
+          "Codeword positions 1–7: p1 p2 d3 p4 d5 d6 d7 = 0 1 1 0 0 1 1 → 0110011.",
+          "Position 6 ulta: received 0110001. Check s1 (1, 3, 5, 7) = 0 ⊕ 1 ⊕ 0 ⊕ 1 = 0; s2 (2, 3, 6, 7) = 1 ⊕ 1 ⊕ 0 ⊕ 1 = 1; s4 (4, 5, 6, 7) = 0 ⊕ 0 ⊕ 0 ⊕ 1 = 1.",
+          "Syndrome s4 s2 s1 = 110 = 6, to position 6 ko ulat do: wapas 0110011.",
+          "Answer: **codeword 0110011**; error position 6 par thi aur syndrome ne use sahi pakda."
+        ]
+      },
+      "mistakes": [
+        "fmax nikaalte waqt setup time ya clock-to-Q bhool jaana. Poora path hai tcq + tcomb + tsu; sirf combinational delay lene se frequency zyada aati hai jo chip par fail hogi.",
+        "Hamming syndrome ko ulte order (s1 s2 s4) mein padhna. Syndrome ka MSB s4 hai; 110 ko 011 padhoge to galat bit (3) ulat doge aur ab do errors ho jaayenge.",
+        "Pipelining se latency bhi kam hogi, ye sochna. Throughput badhta hai, par ek item ko ab har stage se guzarna hai aur register overhead har stage par lagta hai."
+      ],
+      "revision": [
+        "Sync up counter (T): T0 = 1, T1 = Q0, T2 = Q1Q0.",
+        "Ripple counter delay ≈ n × tcq; glitches aate hain.",
+        "Tclk ≥ tcq + tcomb + tsu.",
+        "Pipelining: throughput badhta hai, latency thodi badhti hai.",
+        "Parity: single error detect, correct nahi.",
+        "Hamming(7,4): parity 1, 2, 4 par; syndrome = galat bit ki position."
+      ],
+      "questions": [
+        {
+          "id": "digital-w12-q1",
+          "question": "7-bit data 1101001 ke liye even parity bit kya hoga, aur parity jodne ke baad 8-bit word mein kitne 1s honge?",
+          "options": [
+            "Parity 1, total 1s = 5",
+            "Parity 1, total 1s = 4",
+            "Parity 0, total 1s = 4",
+            "Parity 0, total 1s = 3"
+          ],
+          "answer": 2,
+          "explanation": "1101001 mein 1s: 1 + 1 + 0 + 1 + 0 + 0 + 1 = 4, jo pehle se even hai. Even parity ke liye parity bit 0, aur total 4 hi rehta hai. Parity 1 odd parity ka answer hota (total 5).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w12-q2",
+          "question": "4-bit ripple (asynchronous) up counter ke har flip-flop ka clock-to-Q delay 10 ns hai. 0111 se 1000 jaate waqt sabse aakhri bit kitni der mein settle hoga?",
+          "options": [
+            "10 ns",
+            "40 ns",
+            "20 ns",
+            "160 ns"
+          ],
+          "answer": 1,
+          "explanation": "0111 → 1000 mein chaaron bits badalti hain, aur ripple counter mein har flip-flop pichhle ke badalne ke baad hi clock hota hai: 4 × 10 = 40 ns. 10 ns synchronous counter ka answer hai jahan saare bits ek saath badalte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "digital-w12-q3",
+          "question": "Do registers ke beech ek combinational path hai. tcq = 2 ns, combinational delay (max) = 9 ns, setup time = 1 ns, hold time = 1 ns. Maximum clock frequency kya hai?",
+          "options": [
+            "90.9 MHz",
+            "111.1 MHz",
+            "76.9 MHz",
+            "83.3 MHz"
+          ],
+          "answer": 3,
+          "explanation": "Tclk(min) = tcq + tcomb + tsu = 2 + 9 + 1 = 12 ns, to fmax = 1 / 12 ns ≈ 83.3 MHz. Hold time is formula mein nahi aata; use jodne se 13 ns → 76.9 MHz aata hai. 90.9 MHz setup bhoolne (11 ns) se, aur 111.1 MHz sirf combinational delay (9 ns) lene se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w12-q4",
+          "question": "T flip-flops se 3-bit synchronous up counter (Q2Q1Q0) mein T0 = 1 aur T1 = Q0 hai. T2 kya hoga?",
+          "options": [
+            "T2 = Q1 + Q0",
+            "T2 = Q1Q0",
+            "T2 = Q1 ⊕ Q0",
+            "T2 = Q2Q1Q0"
+          ],
+          "answer": 1,
+          "explanation": "Up count mein Q2 tabhi toggle hota hai jab neeche ke dono bits 1 hon (011 → 100, 111 → 000), to T2 = Q1Q0. Q1 + Q0 lene se 001 → 010 par bhi Q2 toggle ho jaata, galat. Q2Q1Q0 sirf 111 par toggle karta aur 011 → 100 miss kar deta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w12-q5",
+          "question": "Ek combinational block ka delay 30 ns hai aur register overhead (tcq + tsu) 2 ns hai. Ise 3 barabar stages (har ek 10 ns) mein pipeline kiya gaya. Naya clock period aur ek data item ki latency kya hai?",
+          "options": [
+            "10 ns, 30 ns",
+            "12 ns, 12 ns",
+            "32 ns, 36 ns",
+            "12 ns, 36 ns"
+          ],
+          "answer": 3,
+          "explanation": "Clock period = stage delay + overhead = 10 + 2 = 12 ns. Ek item ko 3 stages paar karne hain: 3 × 12 = 36 ns latency. Bina pipeline ke period 30 + 2 = 32 ns tha, to throughput 32 / 12 ≈ 2.7 guna, par latency 32 se 36 ns ho gayi. '10 ns, 30 ns' register overhead bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "digital-w12-q6",
+          "question": "Hamming(7,4) codeword (positions 1 se 7, parity bits 1, 2, 4 par, even parity) mein ek bit ki error ke saath 1010111 receive hua. Sahi kiye gaye data bits (positions 3, 5, 6, 7) kya hain?",
+          "options": [
+            "1101",
+            "1111",
+            "0111",
+            "1010"
+          ],
+          "answer": 0,
+          "explanation": "s1 (1, 3, 5, 7) = 1 ⊕ 1 ⊕ 1 ⊕ 1 = 0. s2 (2, 3, 6, 7) = 0 ⊕ 1 ⊕ 1 ⊕ 1 = 1. s4 (4, 5, 6, 7) = 0 ⊕ 1 ⊕ 1 ⊕ 1 = 1. Syndrome s4 s2 s1 = 110 = 6, to position 6 ulto: 1010101. Data (3, 5, 6, 7) = 1, 1, 0, 1 → 1101. 1111 bina correct kiye data padhna hai, aur 0111 syndrome ko ulta (011 = 3) padh kar position 3 ulatne se aata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}
