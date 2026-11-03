@@ -67,14 +67,28 @@ async function flush(userId: string) {
         records.push(...(ops[next] as Extract<SyncOp, { kind: 'answers' }>).records);
         next++;
       }
+      const upload = (rows: AnswerRecord[]) =>
+        db.from('answers').upsert(rows.map((r) => answerRow(userId, r)), { onConflict: 'user_id,id', ignoreDuplicates: true });
       for (let j = 0; j < records.length; j += 500) {
-        const { error } = await db
-          .from('answers')
-          .upsert(records.slice(j, j + 500).map((r) => answerRow(userId, r)), { onConflict: 'user_id,id', ignoreDuplicates: true });
-        if (error) throw error;
+        const chunk = records.slice(j, j + 500);
+        const { error } = await upload(chunk);
+        if (!error) continue;
+        if (!isRejected(error)) throw error;
+        // One bad row rejects the whole batch: send them one by one and skip only the bad ones.
+        for (const r of chunk) {
+          const { error: rowError } = await upload([r]);
+          if (rowError && !isRejected(rowError)) throw rowError;
+          if (rowError) console.warn('[sync] skipped an answer the server rejected', r.id, rowError);
+        }
       }
     } else {
-      await sendOne(userId, op);
+      try {
+        await sendOne(userId, op);
+      } catch (error) {
+        // A change the server will never accept (bad data, a missing column) would otherwise block every later upload.
+        if (!isRejected(error)) throw error;
+        console.warn('[sync] skipped a change the server rejected', op.kind, error);
+      }
     }
     // Stop if the student logged out mid-upload; their queue stays on the device.
     if (progress.getScope() !== userId) return;
@@ -170,13 +184,25 @@ const missingTable = (error: unknown) => {
   return code === 'PGRST205' || code === '42P01';
 };
 
+/**
+ * True when the server refused the data itself, so retrying can never succeed: Postgres data,
+ * constraint and schema errors (classes 22, 23, 42) and PostgREST's request errors (PGRST1xx/2xx).
+ * Network failures and expired sessions (PGRST3xx) are not, and are retried.
+ */
+const isRejected = (error: unknown) => {
+  const code = (error as { code?: string } | null)?.code ?? '';
+  return /^(22|23|42)/.test(code) || /^PGRST[12]/.test(code);
+};
+
 /* ---------------- download ---------------- */
 
-async function fetchAll<T>(table: string, userId: string, order: string): Promise<T[]> {
+/** Every row of a table for this student, page by page. `order` must make rows unique, or pages can repeat or skip rows. */
+async function fetchAll<T>(table: string, userId: string, order: string[]): Promise<T[]> {
   const db = getSupabase();
   const rows: T[] = [];
   for (let from = 0; ; from += PAGE) {
-    const { data, error } = await db.from(table).select('*').eq('user_id', userId).order(order).range(from, from + PAGE - 1);
+    const query = order.reduce((q, col) => q.order(col), db.from(table).select('*').eq('user_id', userId));
+    const { data, error } = await query.range(from, from + PAGE - 1);
     if (error) throw error;
     rows.push(...((data ?? []) as T[]));
     if (!data || data.length < PAGE) return rows;
@@ -189,7 +215,7 @@ type CodingRow = ReturnType<typeof codingRow>;
 type WeekRow = { subject_id: string; week: number; done: boolean; saved: boolean };
 
 /** Like fetchAll, but undefined when the table doesn't exist yet. */
-async function fetchOptional<T>(table: string, userId: string, order: string): Promise<T[] | undefined> {
+async function fetchOptional<T>(table: string, userId: string, order: string[]): Promise<T[] | undefined> {
   try {
     return await fetchAll<T>(table, userId, order);
   } catch (error) {
@@ -202,10 +228,10 @@ async function pullAll(userId: string) {
   const db = getSupabase();
   const [profileRes, weeks, answers, tests, coding] = await Promise.all([
     db.from('profiles').select('full_name, subjects, last_visited, trial_ends_at, pro_until, exam_name, exam_date').eq('id', userId).maybeSingle(),
-    fetchAll<WeekRow>('week_status', userId, 'subject_id'),
-    fetchAll<AnswerRow>('answers', userId, 'answered_at'),
-    fetchAll<TestRow>('test_attempts', userId, 'submitted_at'),
-    fetchOptional<CodingRow>('coding_attempts', userId, 'submitted_at'),
+    fetchAll<WeekRow>('week_status', userId, ['subject_id', 'week']),
+    fetchAll<AnswerRow>('answers', userId, ['answered_at', 'id']),
+    fetchAll<TestRow>('test_attempts', userId, ['submitted_at', 'id']),
+    fetchOptional<CodingRow>('coding_attempts', userId, ['submitted_at', 'id']),
   ]);
   if (profileRes.error) throw profileRes.error;
 

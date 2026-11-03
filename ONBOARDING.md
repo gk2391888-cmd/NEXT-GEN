@@ -341,6 +341,12 @@ Five tabs ([components/admin/](components/admin/admin-panel.tsx)):
 - **Announcements:** create, hide or delete. They show on the Overview page.
 - **UPI payments:** UPI QR payments waiting for a check, oldest first. Approve only after the UTR and amount show up in the bank or UPI app.
 
+### Site-wide pages
+
+- [app/not-found.tsx](app/not-found.tsx) and [app/error.tsx](app/error.tsx): friendly 404 and crash screens with links back to the Study Library.
+- [app/sitemap.ts](app/sitemap.ts) lists the public pages and every week's notes and practice; [app/robots.ts](app/robots.ts) keeps `/admin`, `/profile`, `/login` and `/api/` out of search. Both, and the WhatsApp/Telegram link previews (Open Graph in [app/layout.tsx](app/layout.tsx)), use `SITE_URL` from [lib/site.ts](lib/site.ts).
+- Sync skips a change the server rejects outright (bad data, a missing column) instead of retrying it forever, and downloads page by a unique order, so long histories don't repeat or drop rows ([lib/sync.ts](lib/sync.ts)).
+
 ## 7. UI/UX conventions
 
 - **Design tokens:** every colour, space, size, radius, font size, shadow and breakpoint comes from [tokens/](tokens/README.md), written in the W3C DTCG format.

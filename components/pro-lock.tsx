@@ -4,12 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PRICING, usePlan } from '@/lib/plan';
 import type { ProContentError } from '@/lib/pro-content';
+import { useAuth } from './auth/auth-provider';
 
 /** Shown in place of a Pro-only feature for Free and logged-out students. */
 export function ProLock({ feature, children }: { feature: string; children: React.ReactNode }) {
   const plan = usePlan();
   const pathname = usePathname();
+  const { ready } = useAuth();
   if (plan.isPro) return <>{children}</>;
+  // Until the session is known everyone looks like a guest, so don't flash "Log in" at Pro students.
+  if (!ready) return <div className="card"><p className="muted">Loading…</p></div>;
 
   return (
     <div className="card pro-lock">

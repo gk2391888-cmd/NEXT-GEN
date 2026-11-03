@@ -65,6 +65,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | `UPI_ID` | Pay by UPI QR, e.g. `yourname@okaxis`. A business/merchant UPI ID is safer than a personal one for many payments. |
 | `UPI_PAYEE_NAME` | Optional: the name shown in the UPI app, defaults to `NEXT GEN` |
 | `PRO_PRICE_INR` | Optional, defaults to 99 |
+| `NEXT_PUBLIC_SITE_URL` | Optional: the public address for link previews and the sitemap, e.g. `https://nextgen.in` once a custom domain is added. Defaults to the Vercel production domain. |
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 

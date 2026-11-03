@@ -223,10 +223,13 @@ export const progress = {
     if (guest.answers.length) ops.push({ kind: 'answers', records: guest.answers });
     for (const attempt of guest.tests) ops.push({ kind: 'test', attempt });
     for (const attempt of guest.codingAttempts ?? []) ops.push({ kind: 'coding', attempt });
+    const mine = getSnapshot().weeks;
     for (const [key, status] of Object.entries(guest.weeks)) {
       if (!status.done && !status.saved) continue;
       const [subjectId, week] = key.split(':');
-      ops.push({ kind: 'week', subjectId, week: Number(week), status: { done: Boolean(status.done), saved: Boolean(status.saved) } });
+      // Merged with the account's own flags, so a guest "revise later" never un-marks a week the account finished.
+      const own = mine[key];
+      ops.push({ kind: 'week', subjectId, week: Number(week), status: { done: Boolean(status.done || own?.done), saved: Boolean(status.saved || own?.saved) } });
     }
     dispatch(...ops);
     const s = getSnapshot();

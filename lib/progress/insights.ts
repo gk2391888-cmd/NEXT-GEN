@@ -27,17 +27,19 @@ export function weakWeeks(answers: AnswerRecord[], { minAttempts = 3, below = 60
     .sort((a, b) => a.accuracy - b.accuracy);
 }
 
-/** Consecutive days (ending today or yesterday) with at least one answer. */
+/** Consecutive days (ending today or yesterday, India time) with at least one answer. */
 export function studyStreak(answers: AnswerRecord[], today = new Date()): number {
-  const days = new Set(answers.map((a) => a.at.slice(0, 10)));
-  const cursor = new Date(today);
-  if (!days.has(isoDay(cursor))) cursor.setDate(cursor.getDate() - 1);
+  const days = new Set(answers.map((a) => istDay(Date.parse(a.at))));
+  let cursor = today.getTime();
+  if (!days.has(istDay(cursor))) cursor -= DAY_MS;
   let streak = 0;
-  while (days.has(isoDay(cursor))) {
+  while (days.has(istDay(cursor))) {
     streak++;
-    cursor.setDate(cursor.getDate() - 1);
+    cursor -= DAY_MS;
   }
   return streak;
 }
 
-const isoDay = (d: Date) => d.toISOString().slice(0, 10);
+const DAY_MS = 86_400_000;
+/** The calendar day in India (UTC+5:30), so days roll over at midnight like the AI limits do. */
+const istDay = (t: number) => new Date(t + 5.5 * 3_600_000).toISOString().slice(0, 10);

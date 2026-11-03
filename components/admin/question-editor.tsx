@@ -49,7 +49,8 @@ export function QuestionEditor({ bank, initialId, describe, userId, onSaved }: P
       return;
     }
     const data: QuestionPatch = { question: draft.question.trim(), options, answer: draft.answer, explanation: draft.explanation.trim() };
-    if (draft.code.trim()) data.code = draft.code;
+    // An empty string (not a missing key) so clearing the box removes the original code block too.
+    data.code = draft.code.trim() ? draft.code : '';
     setStatus('Saving…');
     const { error } = await getSupabase()
       .from('content_overrides')
