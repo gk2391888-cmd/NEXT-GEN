@@ -11,7 +11,7 @@ import { percent } from '@/lib/progress/insights';
 import type { ActiveTest, NewAnswer, TestAttempt } from '@/lib/progress/types';
 import { pickQuestions, testKey, type MockTest } from '@/lib/tests';
 import type { Question, Subject } from '@/lib/types';
-import { accuracyColor, accuracyTone, InlineText, ProgressBar } from '@/components/ui';
+import { accuracyColor, accuracyTone, formatClock, InlineText, ProgressBar } from '@/components/ui';
 import { Explanation, letter, QuestionView } from './question-view';
 
 type Props = { subject: Subject; test: MockTest; pool: Question[]; weekTitles: Record<number, string> };
@@ -367,13 +367,4 @@ function TestResult({ attempt, byId, weekTitles, subject, onRetake }: ResultProp
       </div>
     </div>
   );
-}
-
-function formatClock(totalSeconds: number) {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  const mm = String(m).padStart(2, '0');
-  const ss = String(s).padStart(2, '0');
-  return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }

@@ -36,7 +36,7 @@ const NAMES: Record<Exclude<Persona, 'guest'>, string> = {
 };
 
 /** Tables a student can only see their own rows of (Row Level Security). */
-const OWN_ROWS: Record<string, string> = { profiles: 'id', answers: 'user_id', test_attempts: 'user_id', week_status: 'user_id', ai_usage: 'user_id', payments: 'user_id' };
+const OWN_ROWS: Record<string, string> = { profiles: 'id', answers: 'user_id', test_attempts: 'user_id', coding_attempts: 'user_id', week_status: 'user_id', ai_usage: 'user_id', payments: 'user_id' };
 
 /* ---------------- storage ---------------- */
 

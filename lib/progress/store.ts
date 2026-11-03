@@ -4,8 +4,10 @@ import { useSyncExternalStore } from 'react';
 import {
   emptyProgress,
   weekKey,
+  type ActiveExam,
   type ActiveTest,
   type AnswerRecord,
+  type CodingAttempt,
   type ExamTarget,
   type NewAnswer,
   type Profile,
@@ -94,6 +96,10 @@ export function applyOp(s: ProgressState, op: SyncOp): ProgressState {
       return { ...s, weeks: { ...s.weeks, [weekKey(op.subjectId, op.week)]: op.status } };
     case 'test':
       return s.tests.some((t) => t.id === op.attempt.id) ? s : { ...s, tests: [...s.tests, op.attempt].slice(-MAX_TESTS) };
+    case 'coding': {
+      const list = s.codingAttempts ?? [];
+      return list.some((a) => a.id === op.attempt.id) ? s : { ...s, codingAttempts: [...list, op.attempt].slice(-MAX_TESTS) };
+    }
     case 'visit':
       return { ...s, lastVisited: op.lastVisited };
     case 'profile':
@@ -101,7 +107,7 @@ export function applyOp(s: ProgressState, op: SyncOp): ProgressState {
     case 'exam':
       return { ...s, exam: op.exam ?? undefined };
     case 'reset':
-      return { ...s, weeks: {}, answers: [], tests: [], lastVisited: undefined };
+      return { ...s, weeks: {}, answers: [], tests: [], codingAttempts: [], lastVisited: undefined };
   }
 }
 
@@ -161,6 +167,22 @@ export const progress = {
     );
   },
 
+  saveActiveExam(active: ActiveExam) {
+    const s = getSnapshot();
+    commit({ ...s, activeExams: { ...s.activeExams, [active.setId]: active } });
+  },
+
+  discardActiveExam(setId: string) {
+    const s = getSnapshot();
+    const { [setId]: _removed, ...rest } = s.activeExams ?? {};
+    commit({ ...s, activeExams: rest });
+  },
+
+  submitCodingExam(attempt: CodingAttempt) {
+    progress.discardActiveExam(attempt.setId);
+    dispatch({ kind: 'coding', attempt });
+  },
+
   updateProfile(profile: Profile) {
     dispatch({ kind: 'profile', profile });
   },
@@ -200,6 +222,7 @@ export const progress = {
     const ops: SyncOp[] = [];
     if (guest.answers.length) ops.push({ kind: 'answers', records: guest.answers });
     for (const attempt of guest.tests) ops.push({ kind: 'test', attempt });
+    for (const attempt of guest.codingAttempts ?? []) ops.push({ kind: 'coding', attempt });
     for (const [key, status] of Object.entries(guest.weeks)) {
       if (!status.done && !status.saved) continue;
       const [subjectId, week] = key.split(':');
@@ -207,7 +230,7 @@ export const progress = {
     }
     dispatch(...ops);
     const s = getSnapshot();
-    commit({ ...s, active: { ...guest.active, ...s.active }, coding: { ...guest.coding, ...s.coding }, guestImportHandled: true });
+    commit({ ...s, active: { ...guest.active, ...s.active }, activeExams: { ...guest.activeExams, ...s.activeExams }, coding: { ...guest.coding, ...s.coding }, guestImportHandled: true });
     write(GUEST_KEY, emptyProgress());
   },
 
@@ -228,6 +251,9 @@ export const progress = {
       ...emptyProgress(),
       ...server,
       active: local.active,
+      activeExams: local.activeExams,
+      // Undefined when the server can't store them yet (migration 0007 not run): keep the device's copy.
+      codingAttempts: server.codingAttempts ?? local.codingAttempts,
       pending: local.pending,
       guestImportHandled: local.guestImportHandled,
       coding: local.coding,
@@ -241,6 +267,7 @@ export type ServerProgress = {
   weeks: ProgressState['weeks'];
   answers: AnswerRecord[];
   tests: TestAttempt[];
+  codingAttempts?: CodingAttempt[];
   lastVisited?: ProgressState['lastVisited'];
   profile?: Profile;
   plan?: ProgressState['plan'];

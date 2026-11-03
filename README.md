@@ -40,6 +40,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | My Mistakes (spaced revision), Exam Planner | ✓ | ✓ |
 | Coding Lab practice problems (Python in the browser via Pyodide) | ✓ | ✓ |
 | OPPE-style coding sets with hidden tests | | ✓ |
+| Timed OPPE simulation (`/lab/oppe/<set>`): countdown, Submit all, score report | | ✓ |
 | AI Doubt Solver (limits set in `lib/ai/features.ts`), with “Why was my answer wrong?” from any explanation | 5 / day | 200 / day, longer answers |
 | Grade Calculator (`/grades`): total, grade and end-term score needed per grade | ✓ | ✓ |
 | Time per question in test results, Save as PDF | | ✓ |
@@ -47,7 +48,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 - **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), upload PDF notes, post announcements, confirm UPI payments.
 - **PDF notes**: admins upload PDFs per subject and week (or for the whole subject) into the private Storage bucket `notes`, listed in `note_files`. Students open them from the Study Library and the week's notes through a one-hour signed link. Files marked Pro only open for trial and Pro students; Storage enforces that, not the browser.
 - **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. `lib/plans.ts` turns them into a tier, the same way on the server and in the browser.
-- **Pro content is checked on the server.** OPPE problems (with their hidden tests and solutions) and End-term question pools aren't in the pages; they come from `/api/pro/coding/<id>` and `/api/pro/tests/<subject>/<test>`, which check the student's session and `public.is_pro()` first (`lib/server/pro-access.ts`). Hidden tests and solutions are only fetched on Submit. The `<ProLock>` in the browser only decides what's shown.
+- **Pro content is checked on the server.** OPPE problems (with their hidden tests and solutions) and End-term question pools aren't in the pages; they come from `/api/pro/coding/<id>`, `/api/pro/oppe/<set>` and `/api/pro/tests/<subject>/<test>`, which check the student's session and `public.is_pro()` first (`lib/server/pro-access.ts`). Hidden tests and solutions are only fetched on Submit. The `<ProLock>` in the browser only decides what's shown.
 - **Payments**, two ways, each adding 30 days via the service-role key. Either can be on alone, or both.
   - Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup).
   - Pay by UPI QR: the student pays our UPI ID and submits the 12-digit UTR (`/api/payments/upi`, table `upi_requests`). An admin matches it in the bank statement and approves it in **Admin → UPI payments** (`/api/payments/upi/review`).
@@ -67,7 +68,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 
-Migrations: run `supabase/migrations/0001…0006` in order in the Supabase SQL Editor.
+Migrations: run `supabase/migrations/0001…0007` in order in the Supabase SQL Editor. `0007_coding_attempts.sql` adds the table that syncs timed OPPE attempts; until it's run, those attempts stay on the student's device and everything else keeps syncing.
 
 ## AI features
 

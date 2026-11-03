@@ -28,7 +28,12 @@ export type ProblemAnswers = Pick<CodingProblem, 'tests' | 'solution'>;
 // /api/pro/coding/<id> (which checks the plan), never through page data.
 export const PROBLEMS = problems as CodingProblem[];
 
-export const OPPE_SETS = [
+import type { OppeSet } from './coding-score';
+
+export type { OppeSet };
+
+/** `minutes` is the time limit of the set's timed simulation (/lab/oppe/<id>). */
+export const OPPE_SETS: OppeSet[] = [
   { id: 'oppe-1', title: 'OPPE practice set 1', minutes: 60 },
   { id: 'oppe-2', title: 'OPPE practice set 2', minutes: 60 },
   { id: 'oppe-3', title: 'OPPE practice set 3', minutes: 60 },
@@ -36,6 +41,14 @@ export const OPPE_SETS = [
 
 export function getProblem(id: string) {
   return PROBLEMS.find((p) => p.id === id);
+}
+
+export function getOppeSet(id: string) {
+  return OPPE_SETS.find((s) => s.id === id);
+}
+
+export function setProblems(setId: string) {
+  return PROBLEMS.filter((p) => p.tier === 'oppe' && p.set === setId);
 }
 
 /** The problem's neighbours in the same list (practice, or the same OPPE set). */

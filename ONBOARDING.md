@@ -43,7 +43,7 @@ next-gen/
 │   ├── practice/             ← /practice, /practice/[subject]/[week]
 │   ├── tests/                ← /tests, /tests/[subject]/[test]
 │   ├── mistakes/  planner/  progress/  search/  doubts/
-│   ├── lab/                  ← /lab, /lab/[id]  (Coding Lab)
+│   ├── lab/                  ← /lab, /lab/[id], /lab/oppe/[set]  (Coding Lab, timed OPPE exam)
 │   ├── login/  profile/  pricing/  admin/  privacy/  terms/
 │   ├── api/                  ← Server-only endpoints
 │   │   ├── ai/[feature]/route.ts      → every AI feature (POST /api/ai/doubt)
@@ -77,7 +77,7 @@ next-gen/
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
 ├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
-├── supabase/migrations/      ← 0001 → 0006, run by hand in the Supabase SQL editor
+├── supabase/migrations/      ← 0001 → 0007, run by hand in the Supabase SQL editor
 ├── scripts/
 │   ├── validate-content.mjs  ← Runs before every build, so broken content never ships
 │   ├── build-tokens.mjs      ← tokens/*.json → app/tokens.css + lib/tokens.ts
@@ -119,7 +119,7 @@ next-gen/
 - Pro **content** (OPPE problems, End-term pools) is only sent by `/api/pro/*`, after `requirePro()` ([lib/server/pro-access.ts](lib/server/pro-access.ts)) has checked the access token and asked `public.is_pro()` as that student. The plan in localStorage only decides what the UI shows.
 
 ```
-Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, test_attempts, week_status,
+Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, test_attempts, coding_attempts, week_status,
    │                                            reports, content_overrides, announcements, ai_usage, payments, admins)
    └──► /api/ai/<feature> ──► Groq   (sign-in → plan → limits → quota → model, with fallbacks)
    └──► /api/payments/* ──► Razorpay (service role grants +30 days pro_until)
@@ -132,6 +132,7 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 | `profiles` | Name, subjects, last visited, exam target, `trial_ends_at`, `pro_until` | Student (limited columns); trigger on sign-up; server for `pro_until` |
 | `answers` | One row per answered question (practice or test) | Student |
 | `test_attempts` | Submitted mock tests, responses, time per question | Student |
+| `coding_attempts` | Submitted timed OPPE simulations: set, score out of 100, per-problem public/hidden tests passed, time and code (migration 0007) | Student |
 | `week_status` | Done / saved flags per week | Student |
 | `reports` | "Report a problem" submissions | Student inserts; admin updates status |
 | `content_overrides` | Admin corrections to questions (`q:<id>` → patch) | Admin; everyone reads |
@@ -149,7 +150,7 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 | **Guest** | Not logged in | Everything free. Progress stays on this device only. No AI. |
 | **Free** | Logged in, trial over | Free features + 5 AI doubts a day |
 | **Trial** | First 7 days after sign-up (`trial_ends_at`) | Same as Pro |
-| **Pro** | Paid (`pro_until` is in the future) | End-term mock tests, OPPE coding sets, 200 doubts a day, time per question, Save as PDF |
+| **Pro** | Paid (`pro_until` is in the future) | End-term mock tests, OPPE coding sets and the timed OPPE simulation, 200 doubts a day, time per question, Save as PDF |
 | **Admin** | A row in `public.admins`, added by hand in SQL | `/admin` panel |
 
 The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features are wrapped in `<ProLock>` or show a `<ProTag>` ([components/pro-lock.tsx](components/pro-lock.tsx)).
@@ -159,6 +160,7 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
 | Pro feature | Where it's enforced |
 |---|---|
 | OPPE coding sets | Server: `/api/pro/coding/<id>`. The page only has the title; statement and visible tests come from the route, hidden tests and solution only on Submit or "Show model solution" (`?part=answers`). |
+| Timed OPPE sets | Server: `/api/pro/oppe/<set>`. The page only has the set's id, title and time limit; problems come from the route with hidden tests blanked, and `?part=answers` (every problem's tests and solution) is fetched on Submit and for the score report. |
 | End-term mock tests | Server: `/api/pro/tests/<subject>/end-term`. The page has no questions. |
 | AI limits (200 doubts a day, longer answers) | Server: `lib/server/ai/handler.ts` |
 | Pro-only PDF notes | Storage policies (migration 0006) |
@@ -248,7 +250,7 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 
 ### Coding Lab (`/lab` → `/lab/[id]`)
 
-1. The list shows 30 practice problems (free) and 3 OPPE sets of 4 problems each (Pro). Below it are "Predict the output" cards with a reveal button.
+1. The list shows 30 practice problems (free) and 3 OPPE sets of 4 problems each (Pro). Each set has **Take timed exam** (below) and an untimed practice link. Below it are "Predict the output" cards with a reveal button.
 2. The workspace ([components/coding/workspace.tsx](components/coding/workspace.tsx)) has a textarea editor: Tab inserts 4 spaces, Ctrl+Enter runs the code, and drafts are saved in localStorage.
    - **Run** checks your code against the visible tests.
    - **Submit** checks against all tests, including the hidden ones.
@@ -256,6 +258,20 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
    - OPPE problems go through [pro-workspace.tsx](components/coding/pro-workspace.tsx): the statement, starter code, hint and visible tests come from `/api/pro/coding/<id>` (hidden tests arrive blanked out, so they can be counted). The first Submit or "Show model solution" fetches `?part=answers` with the real hidden tests and the solution.
    - Grading still runs in the browser (Pyodide), so a Pro student can see the hidden tests in the network tab once they've submitted. Grading on the server would keep them secret even then, but it needs a sandboxed Python runner on the server (Pyodide in a Vercel function: ~10 MB, a few seconds of cold start, plus a time limit per run). Not worth it while the tests are practice, not an exam.
 3. Python runs in [public/pyodide-worker.js](public/pyodide-worker.js) and is killed after 8 s if it doesn't finish ([lib/python-runner.ts](lib/python-runner.ts)). Each test compares `repr(eval(call))` with the expected value.
+
+### Timed OPPE simulation (`/lab/oppe/[set]`, Pro)
+
+[pro-oppe-exam.tsx](components/coding/pro-oppe-exam.tsx) loads the set from `/api/pro/oppe/<set>`, then [oppe-exam.tsx](components/coding/oppe-exam.tsx) follows the mock test runner's pattern, with 3 screens. Scoring helpers live in [lib/coding-score.ts](lib/coding-score.ts), since `lib/coding.ts` is server-only.
+
+1. **Start:** the rules and previous attempts. Python starts downloading here, so the clock doesn't run on a loading screen.
+2. **Running:**
+   - a countdown from the set's `minutes` (`OPPE_SETS` in [lib/coding.ts](lib/coding.ts), 60 by default) that turns red under 5 minutes
+   - a problem palette (started / not started), Previous / Next, and **Run public tests**. No hints or solutions.
+   - The exam (`activeExams` in the progress store: problems, current one, end time, time per problem) is device-only, like an active mock test, so a **refresh resumes it**. The code is kept in separate localStorage keys (`nextgen-oppe-code:<set>:<problem>`) so typing doesn't rewrite the whole store, and it's separate from the practice drafts.
+   - **Submit all**, or the timer reaching zero, grades every problem against all its tests (public and hidden) in Pyodide. If Python can't load (offline), nothing is submitted: the exam stays open with a "try grading again" button.
+3. **Score report:** score out of 100 (each problem carries equal marks, split by the share of its tests passed: `examScore()`), problems fully solved, public and hidden tests passed and time spent per problem, then each problem's code next to the model solution, with **Retry this set**.
+
+Attempts are a `coding` `SyncOp` and sync to `coding_attempts` (migration 0007) the same way mock tests sync to `test_attempts`. If that table doesn't exist yet, `sync.ts` skips the upload and keeps the device's copy instead of blocking the queue. Fully solved problems are also marked solved in the Coding Lab list.
 
 ### AI Doubt Solver (`/doubts`)
 
@@ -378,7 +394,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
    - OPPE problems and End-term pools are served by `/api/pro/*` after a server-side plan check (see §5). Don't pass Pro content as props from a server page: props are in the page's HTML.
    - End-term questions are still the same questions used in free practice (and in `/api/content/questions`), so what Pro buys there is the 30-question timed test, not new questions. Pro-only questions would need their own content file that only the route reads.
    - Hidden tests reach a Pro student's browser on Submit, since Pyodide grades in the browser (see Coding Lab above).
-2. **Coding Lab "solved" status is device-only.** `markSolved` uses `commit`, not `dispatch`, so it never syncs to the account.
+2. **Coding Lab "solved" status is device-only.** `markSolved` uses `commit`, not `dispatch`, so it never syncs to the account. Timed OPPE attempts do sync (`coding_attempts`).
 3. **There are no automated tests and no ESLint setup.** The only safety nets are `validate:content` (which runs before every build) and `typecheck`.
 4. **Email is a launch blocker.** Supabase's built-in mailer only sends a few emails an hour, so custom SMTP (for example Resend) needs to be set up before real traffic. The README covers it.
 5. **Pricing has one source per number.** AI limits per plan live in `lib/ai/features.ts`, and the server enforces exactly those. The price shown in the UI is `PRICING` in `lib/plans.ts`, but the amount actually charged is `PRO_PRICE_INR` on the server, so change those two together. Migration 0004 keeps the old `consume_doubt()` (hard-coded 5/200) working only until this code is deployed; drop it afterwards.

@@ -44,6 +44,41 @@ export type ActiveTest = {
   timeSpent?: number[];
 };
 
+/** One problem's result in a timed OPPE simulation. */
+export type CodingProblemResult = {
+  problemId: string;
+  publicPassed: number;
+  publicTotal: number;
+  hiddenPassed: number;
+  hiddenTotal: number;
+  /** Seconds spent on this problem. */
+  timeSec: number;
+  /** The code that was graded. */
+  code: string;
+};
+
+/** A submitted timed OPPE simulation (Coding Lab exam mode). */
+export type CodingAttempt = {
+  id: string;
+  setId: string;
+  startedAt: string;
+  submittedAt: string;
+  durationSec: number;
+  /** 0–100: every problem carries equal marks, split by the share of its tests passed. */
+  score: number;
+  problems: CodingProblemResult[];
+};
+
+/** An OPPE simulation in progress. Device-only; the code itself is kept in separate draft keys (components/coding/oppe-exam.tsx) so typing doesn't rewrite the whole store. */
+export type ActiveExam = {
+  setId: string;
+  problemIds: string[];
+  current: number;
+  startedAt: number;
+  endsAt: number;
+  timeSpent: number[];
+};
+
 export type WeekStatus = { done?: boolean; saved?: boolean };
 
 export type LastVisited = { subjectId: string; week: number; at: string };
@@ -61,6 +96,7 @@ export type SyncOp =
   | { kind: 'answers'; records: AnswerRecord[] }
   | { kind: 'week'; subjectId: string; week: number; status: Required<WeekStatus> }
   | { kind: 'test'; attempt: TestAttempt }
+  | { kind: 'coding'; attempt: CodingAttempt }
   | { kind: 'visit'; lastVisited: LastVisited }
   | { kind: 'profile'; profile: Profile }
   | { kind: 'exam'; exam: ExamTarget | null }
@@ -78,6 +114,10 @@ export type ProgressState = {
   profile?: Profile;
   plan?: PlanDates;
   exam?: ExamTarget;
+  /** Submitted OPPE simulations. Optional so copies saved before they existed still load. */
+  codingAttempts?: CodingAttempt[];
+  /** OPPE simulations in progress, keyed by set id. Device-only. */
+  activeExams?: Record<string, ActiveExam>;
   /** Coding Lab problems solved on this device, keyed by problem id. */
   coding?: Record<string, { solvedAt: string }>;
   /** Logged-in only: changes not yet confirmed by the server. */
@@ -91,4 +131,4 @@ export const weekKey = (subjectId: string, week: number) => `${subjectId}:${week
 export const emptyProgress = (): ProgressState => ({ version: 2, weeks: {}, answers: [], tests: [], active: {}, pending: [] });
 
 export const hasProgress = (s: ProgressState) =>
-  s.answers.length > 0 || s.tests.length > 0 || Object.values(s.weeks).some((w) => w.done || w.saved);
+  s.answers.length > 0 || s.tests.length > 0 || Boolean(s.codingAttempts?.length) || Object.values(s.weeks).some((w) => w.done || w.saved);
