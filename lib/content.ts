@@ -2,7 +2,7 @@ import 'server-only';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cache } from 'react';
-import type { Question, Subject, SubjectContent, Week, WeekRef } from './types';
+import type { Question, QuestionText, Subject, SubjectContent, Week, WeekRef } from './types';
 
 const CONTENT_DIR = join(process.cwd(), 'content');
 
@@ -14,12 +14,20 @@ export function getSubject(id: string): Subject | undefined {
   return getSubjects().find((s) => s.id === id);
 }
 
-/** Weeks for a subject; empty while its content file has not been written yet. */
+/** English versions of a subject's questions, by question id. */
+function getEnglishQuestions(subjectId: string): Record<string, QuestionText> {
+  const file = join(CONTENT_DIR, 'weeks-en', `${subjectId}.json`);
+  if (!existsSync(file)) return {};
+  return (JSON.parse(readFileSync(file, 'utf8')) as { questions: Record<string, QuestionText> }).questions;
+}
+
+/** Weeks for a subject, each question with its English version in `en`; empty while its content file has not been written yet. */
 export const getWeeks = cache((subjectId: string): Week[] => {
   const file = join(CONTENT_DIR, 'weeks', `${subjectId}.json`);
   if (!existsSync(file)) return [];
   const data: SubjectContent = JSON.parse(readFileSync(file, 'utf8'));
-  return data.weeks;
+  const english = getEnglishQuestions(subjectId);
+  return data.weeks.map((w) => ({ ...w, questions: w.questions.map((q) => (english[q.id] ? { ...q, en: english[q.id] } : q)) }));
 });
 
 export function getWeek(subjectId: string, week: number): Week | undefined {

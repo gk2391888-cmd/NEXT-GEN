@@ -7,7 +7,7 @@ An independent learning and exam-preparation site for IITM BS Foundation student
 ## What's in Phase 1
 
 - **Study Library**: 8 Foundation subjects × 12 weeks of original Hinglish notes (concept, solved example, common mistakes, quick revision). "Save as PDF" prints a clean copy.
-- **Practice Quiz**: 6 MCQs per week (576 total) with instant Hinglish explanations.
+- **Practice Quiz**: 6 MCQs per week (576 total) with instant explanations, in English or Hinglish: each student picks with the English / Hinglish switch on practice, mock tests, My Mistakes and search (English by default, remembered in the browser).
 - **Mock Tests**: Quiz 1 (weeks 1–4), Quiz 2 (weeks 5–8) and End term (all weeks) per subject, with timer, question palette, mark-for-review, auto-submit, resume after refresh, and a result page with week-wise performance and answer review.
 - **My Progress**: accuracy by subject, weak weeks, mock test history, weeks saved for revision.
 
@@ -139,7 +139,8 @@ Open http://localhost:3000.
 | Path | What it holds |
 | --- | --- |
 | `content/subjects.json` | The 8 subjects (code, name, colours) |
-| `content/weeks/<subject>.json` | 12 weeks of notes and questions per subject |
+| `content/weeks/<subject>.json` | 12 weeks of notes and questions per subject (Hinglish) |
+| `content/weeks-en/<subject>.json` | The English text of every question (question, options, explanation), by question id |
 | `content/lab.json`, `content/faqs.json` | Python & CT lab exercises, Doubt Help answers |
 | `app/` | Pages (Next.js App Router, statically generated) |
 | `components/` | UI; `components/quiz/` has practice and mock test logic |
@@ -157,6 +158,8 @@ npm run validate:content
 ```
 
 The validator checks every week has the right fields, 6 questions with 4 distinct options, valid answer indexes and ids, and that correct answers aren't bunched on one option. `npm run build` runs it first, so broken content never deploys.
+
+Every question also needs its English text in `content/weeks-en/<subject>.json` (`question`, `options`, `explanation`; answer, code and difficulty are shared). The validator fails if one is missing, has a different number of options, or has different `` ` `` / `**` marks, and lists any question or option whose numbers differ between the two languages so you can check the translation. Keep the options in the same order: the answer index is the same in both languages.
 
 Formatting inside content strings: only `**bold**` and `` `code` ``. Multi-line code goes in a `code` field.
 

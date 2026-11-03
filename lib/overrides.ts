@@ -2,10 +2,11 @@
 
 import { useMemo, useSyncExternalStore } from 'react';
 import { getSupabase } from './supabase/client';
+import { useQuestionLang } from './question-lang';
+import { applyPatch, localize, type QuestionPatch } from './question-text';
 import type { Question } from './types';
 
-/** Fields an admin can correct on a question; everything else comes from the built-in content. */
-export type QuestionPatch = Partial<Pick<Question, 'question' | 'code' | 'options' | 'answer' | 'explanation'>>;
+export { applyPatch, type QuestionPatch } from './question-text';
 
 type Overrides = Record<string, QuestionPatch>;
 
@@ -32,14 +33,11 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-export function applyPatch(q: Question, patch?: QuestionPatch): Question {
-  return patch ? { ...q, ...patch } : q;
-}
-
-/** The questions with any admin corrections applied. */
+/** The questions as students see them: with any admin corrections applied, in the student's chosen language. */
 export function useCorrectedQuestions<T extends Question>(questions: T[]): T[] {
   const current = useSyncExternalStore(subscribe, () => overrides, () => EMPTY);
-  return useMemo(() => questions.map((q) => (current[q.id] ? { ...q, ...current[q.id] } : q)), [questions, current]);
+  const lang = useQuestionLang();
+  return useMemo(() => questions.map((q) => localize(applyPatch(q, current[q.id]), lang)), [questions, current, lang]);
 }
 
 export function getOverride(id: string): QuestionPatch | undefined {

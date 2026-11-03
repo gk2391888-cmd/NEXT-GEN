@@ -23,7 +23,7 @@ const NAV = [
 
 /** Topbar titles for pages that aren't in the sidebar. */
 const OTHER_PAGES = [
-  { href: '/search', label: 'Search notes' },
+  { href: '/search', label: 'Search' },
   { href: '/pricing', label: 'Plans and pricing' },
   { href: '/profile', label: 'My profile' },
   { href: '/admin', label: 'Admin' },

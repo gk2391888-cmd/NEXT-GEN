@@ -8,6 +8,8 @@ import { loadQuestionBank, type BankQuestion } from '@/lib/question-bank';
 import { accessOf, PRICING, usePlan } from '@/lib/plan';
 import { limitsFor, type AiUsage } from '@/lib/ai/features';
 import { askAi } from '@/lib/ai/client';
+import { useQuestionLang } from '@/lib/question-lang';
+import { localize } from '@/lib/question-text';
 import { useAuth } from './auth/auth-provider';
 import { RichText } from './rich-text';
 
@@ -24,6 +26,7 @@ export function DoubtChat() {
   const { user, ready } = useAuth();
   const plan = usePlan();
   const params = useSearchParams();
+  const lang = useQuestionLang();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -60,14 +63,24 @@ export function DoubtChat() {
         if (!q) return;
         setAbout(q);
         if (!id) return;
+        const wrongPick = Number.isInteger(picked) && picked >= 0 && picked < q.options.length && picked !== q.answer;
+        // The suggested doubt is in the language the student reads questions in.
+        if (lang === 'en') {
+          setDraft(
+            wrongPick
+              ? `I chose option ${LETTERS[picked]}. Why is it wrong, and how do we get the correct answer ${LETTERS[q.answer]}? Explain step by step.`
+              : 'Explain this question step by step, and tell me why the other options are wrong.',
+          );
+          return;
+        }
         setDraft(
-          Number.isInteger(picked) && picked >= 0 && picked < q.options.length && picked !== q.answer
+          wrongPick
             ? `Maine option ${LETTERS[picked]} choose kiya tha. Ye galat kyun hai, aur sahi answer ${LETTERS[q.answer]} kaise aata hai? Step-by-step samjhao.`
             : 'Is question ko step-by-step samjhao, aur batao baaki options galat kyun hain.',
         );
       })
       .catch(() => {});
-  }, [params, uid]);
+  }, [params, uid]); // eslint-disable-line react-hooks/exhaustive-deps -- lang only picks the wording of the suggested doubt
 
   useEffect(() => {
     if (!uid || !restored) return;
@@ -114,7 +127,7 @@ export function DoubtChat() {
     setDraft('');
     setError('');
     setBusy(true);
-    const res = await askAi<{ answer: string }>('doubt', { messages: next, questionId: about?.id });
+    const res = await askAi<{ answer: string }>('doubt', { messages: next, questionId: about?.id, lang });
     setBusy(false);
     if (res.usage) setUsage(res.usage);
     if (res.ok) {
@@ -154,7 +167,7 @@ export function DoubtChat() {
       {about && (
         <div className="chat-context">
           <span className="muted">Asking about</span>
-          <strong>{about.question.slice(0, 160)}</strong>
+          <strong>{localize(about, lang).question.slice(0, 160)}</strong>
           <button className="text-btn" onClick={() => setAbout(null)}>Remove</button>
         </div>
       )}

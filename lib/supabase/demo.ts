@@ -159,7 +159,10 @@ function seedShared(db: Db) {
     { id: 4, user_id: 'demo-free', question_id: 'math1-w1-q3', kind: 'other', message: '', status: 'fixed', created_at: day(-9) },
   ];
   db.content_overrides = [
-    { key: 'q:math1-w1-q4', data: { explanation: '(Edited by an admin in demo mode.) Is set me 3 elements hain, isliye power set me 2³ = 8 subsets honge.' }, updated_at: day(-4), updated_by: 'demo-admin' },
+    { key: 'q:math1-w1-q4', data: {
+        explanation: '(Edited by an admin in demo mode.) Is set me 3 elements hain, isliye power set me 2³ = 8 subsets honge.',
+        en: { explanation: '(Edited by an admin in demo mode.) This set has 3 elements, so its power set has 2³ = 8 subsets.' },
+      }, updated_at: day(-4), updated_by: 'demo-admin' },
   ];
 }
 

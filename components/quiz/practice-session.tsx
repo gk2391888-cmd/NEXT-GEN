@@ -8,6 +8,7 @@ import { percent } from '@/lib/progress/insights';
 import type { Question } from '@/lib/types';
 import { accuracyTone, InlineText, ProgressBar } from '@/components/ui';
 import { Explanation, QuestionView } from './question-view';
+import { LanguageSwitch } from './language-switch';
 
 type Props = { subjectId: string; subjectName: string; week: number; weekTitle: string; questions: Question[] };
 
@@ -61,6 +62,10 @@ export function PracticeSession({ subjectId, subjectName, week, weekTitle, quest
             <Link className="btn btn-secondary" href="/practice">Choose another week</Link>
           </div>
         </div>
+        <div className="flex-between">
+          <h3>Answer review</h3>
+          <LanguageSwitch />
+        </div>
         {questions.map((q, i) => (
           <div key={q.id} className="review">
             <div className="review-head">
@@ -78,7 +83,10 @@ export function PracticeSession({ subjectId, subjectName, week, weekTitle, quest
     <div className="quiz-wrap">
       <div className="quiz-top">
         <span className="chip chip-blue">{subjectName.toUpperCase()} · WEEK {week}</span>
-        <span className="muted">Question {index + 1} of {questions.length}</span>
+        <span className="btn-group items-center">
+          <span className="muted">Question {index + 1} of {questions.length}</span>
+          <LanguageSwitch />
+        </span>
       </div>
       <ProgressBar value={percent(index, questions.length)} color="var(--color-accent-solid)" />
       <div className="card quiz-card">

@@ -4,7 +4,7 @@ import { getSubjects, getWeeks } from '@/lib/content';
 import { PageHead } from '@/components/ui';
 import { NotesSearch, type SearchEntry } from '@/components/notes-search';
 
-export const metadata: Metadata = { title: 'Search notes' };
+export const metadata: Metadata = { title: 'Search' };
 
 export default function SearchPage() {
   const entries: SearchEntry[] = getSubjects().flatMap((s) =>
@@ -19,7 +19,7 @@ export default function SearchPage() {
   );
   return (
     <>
-      <PageHead kicker="Find anything" title="Search notes" description="Search all 96 weeks of notes by topic, formula or keyword." />
+      <PageHead kicker="Find anything" title="Search" description="Search all 96 weeks of notes and practice questions by topic, formula or keyword." />
       <Suspense>
         <NotesSearch entries={entries} />
       </Suspense>

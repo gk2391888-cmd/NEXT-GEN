@@ -3,6 +3,10 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
+import { useQuestionLang } from '@/lib/question-lang';
+import { localize } from '@/lib/question-text';
+import { LanguageSwitch } from '@/components/quiz/language-switch';
 
 export type SearchEntry = { subjectId: string; subject: string; week: number; title: string; summary: string; text: string };
 
@@ -22,6 +26,14 @@ function search(entries: SearchEntry[], query: string) {
     .sort((a, b) => b.score - a.score)
     .slice(0, 25)
     .map((r) => r.e);
+}
+
+/** Practice questions whose text (in either language) contains every search word. */
+function searchQuestions(bank: BankQuestion[], query: string) {
+  const words = query.toLowerCase().split(/s+/).filter((w) => w.length > 1);
+  if (!words.length) return [];
+  const textOf = (q: BankQuestion) => [q.question, ...q.options, q.en?.question ?? '', ...(q.en?.options ?? [])].join(' ').toLowerCase();
+  return bank.filter((q) => words.every((w) => textOf(q).includes(w))).slice(0, 10);
 }
 
 function snippet(text: string, query: string) {
@@ -50,7 +62,7 @@ export function NotesSearch({ entries }: { entries: SearchEntry[] }) {
           router.replace(`/search?q=${encodeURIComponent(e.target.value)}`, { scroll: false });
         }}
         placeholder="Try: median, determinant, for loop, passive voice"
-        aria-label="Search notes"
+        aria-label="Search notes and questions"
       />
       {query.trim().length > 1 && results.length === 0 && <div className="empty">No notes match “{query}”. Try a different word.</div>}
       {results.map((r) => (
@@ -60,6 +72,29 @@ export function NotesSearch({ entries }: { entries: SearchEntry[] }) {
           <span className="muted">{snippet(r.text, query) || r.summary}</span>
         </Link>
       ))}
+      {query.trim().length > 1 && <QuestionHits query={query} subjects={new Map(entries.map((e) => [e.subjectId, e.subject]))} />}
     </div>
+  );
+}
+
+/** Matching practice questions, shown in the student's chosen language. The question bank loads once a search starts. */
+function QuestionHits({ query, subjects }: { query: string; subjects: Map<string, string> }) {
+  const bank = useQuestionBank();
+  const lang = useQuestionLang();
+  const hits = useMemo(() => (bank ? searchQuestions(bank, query) : []), [bank, query]);
+  if (!bank || hits.length === 0) return null;
+  return (
+    <>
+      <div className="flex-between mt-lg">
+        <h3>Practice questions</h3>
+        <LanguageSwitch />
+      </div>
+      {hits.map((q) => (
+        <Link key={q.id} href={`/practice/${q.subjectId}/${q.week}`} className="search-hit">
+          <span className="muted">{subjects.get(q.subjectId)} · Week {q.week} · {q.weekTitle}</span>
+          <strong>{localize(q, lang).question.replace(/[*`]/g, '')}</strong>
+        </Link>
+      ))}
+    </>
   );
 }
