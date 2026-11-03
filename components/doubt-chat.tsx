@@ -14,6 +14,11 @@ import { RichText } from './rich-text';
 type Turn = { role: 'user' | 'assistant'; content: string };
 
 const todayIST = () => new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+/** The current chat is kept on this device, so a refresh or a tab switch doesn't lose it. */
+const chatKey = (userId: string) => `nextgen-doubt-chat:${userId}`;
+type SavedChat = { turns: Turn[]; questionId?: string };
 
 export function DoubtChat() {
   const { user, ready } = useAuth();
@@ -31,20 +36,55 @@ export function DoubtChat() {
   const freeLimits = limitsFor('doubt', 'free');
   const proLimits = limitsFor('doubt', 'pro');
 
-  // "Explain more with AI" links here with ?question=<id>.
+  // "Explain more with AI" links here with ?question=<id>, and "Why was my answer wrong?" adds &picked=<option index>.
+  // Without a question, the last chat on this device comes back.
+  const [restored, setRestored] = useState(false);
+  const uid = user?.id;
   useEffect(() => {
+    if (!uid) return;
     const id = params.get('question');
-    if (!id) return;
+    const picked = Number(params.get('picked'));
+    let saved: SavedChat | null = null;
+    try {
+      saved = JSON.parse(window.localStorage.getItem(chatKey(uid)) ?? 'null');
+    } catch {
+      // Nothing saved, or private mode.
+    }
+    if (!id && saved?.turns?.length) setTurns(saved.turns);
+    const questionId = id ?? (saved?.turns?.length ? saved.questionId : undefined);
+    setRestored(true);
+    if (!questionId) return;
     loadQuestionBank()
       .then((bank) => {
-        const q = bank.find((x) => x.id === id);
-        if (q) {
-          setAbout(q);
-          setDraft('Is question ko step-by-step samjhao, aur batao baaki options galat kyun hain.');
-        }
+        const q = bank.find((x) => x.id === questionId);
+        if (!q) return;
+        setAbout(q);
+        if (!id) return;
+        setDraft(
+          Number.isInteger(picked) && picked >= 0 && picked < q.options.length && picked !== q.answer
+            ? `Maine option ${LETTERS[picked]} choose kiya tha. Ye galat kyun hai, aur sahi answer ${LETTERS[q.answer]} kaise aata hai? Step-by-step samjhao.`
+            : 'Is question ko step-by-step samjhao, aur batao baaki options galat kyun hain.',
+        );
       })
       .catch(() => {});
-  }, [params]);
+  }, [params, uid]);
+
+  useEffect(() => {
+    if (!uid || !restored) return;
+    try {
+      if (turns.length) window.localStorage.setItem(chatKey(uid), JSON.stringify({ turns: turns.slice(-40), questionId: about?.id } satisfies SavedChat));
+      else window.localStorage.removeItem(chatKey(uid));
+    } catch {
+      // Not saved; the chat still works.
+    }
+  }, [turns, about, uid, restored]);
+
+  function newChat() {
+    setTurns([]);
+    setAbout(null);
+    setDraft('');
+    setError('');
+  }
 
   // Today's usage, for the "3 of 5 left" counter.
   useEffect(() => {
@@ -105,7 +145,10 @@ export function DoubtChat() {
     <div className="card chat">
       <div className="quiz-top">
         <span className="muted">{plan.isPro ? 'Pro plan' : 'Free plan'}</span>
-        {left !== null && <span className="chip chip-blue">{left} of {usage!.limit} doubts left today</span>}
+        <span className="btn-group">
+          {left !== null && <span className="chip chip-blue">{left} of {usage!.limit} doubts left today</span>}
+          {turns.length > 0 && <button className="text-btn" onClick={newChat} disabled={busy}>New chat</button>}
+        </span>
       </div>
 
       {about && (

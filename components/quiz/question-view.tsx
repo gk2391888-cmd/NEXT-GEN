@@ -56,7 +56,11 @@ export function Explanation({ question, selected }: { question: Question; select
       </strong>
       <InlineText text={question.explanation} />
       <div className="explain-actions">
-        <Link className="text-btn" href={`/doubts?question=${encodeURIComponent(question.id)}`}>✦ Explain more with AI</Link>
+        {selected !== null && !right ? (
+          <Link className="text-btn" href={`/doubts?question=${encodeURIComponent(question.id)}&picked=${selected}`}>✦ Why was my answer wrong? Ask AI</Link>
+        ) : (
+          <Link className="text-btn" href={`/doubts?question=${encodeURIComponent(question.id)}`}>✦ Explain more with AI</Link>
+        )}
         <ReportButton questionId={question.id} label={question.question.slice(0, 90)} />
       </div>
     </div>

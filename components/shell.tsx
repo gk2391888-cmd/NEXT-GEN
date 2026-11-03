@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { AccountMenu } from './auth/account-menu';
 import { useAuth } from './auth/auth-provider';
 import { PRICING, usePlan } from '@/lib/plan';
+import { RenewBanner } from './renew-banner';
 
 const NAV = [
   { href: '/', label: 'Overview', icon: '◈' },
@@ -16,6 +17,7 @@ const NAV = [
   { href: '/lab', label: 'Coding Lab', icon: '⌘', tag: 'NEW' },
   { href: '/doubts', label: 'AI Doubt Solver', icon: '✦', tag: 'NEW' },
   { href: '/planner', label: 'Exam Planner', icon: '▦' },
+  { href: '/grades', label: 'Grade Calculator', icon: '∑', tag: 'NEW' },
   { href: '/progress', label: 'My Progress', icon: '▥' },
 ];
 
@@ -112,7 +114,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
           <AccountMenu />
         </header>
-        <main className="content" id="content">{children}</main>
+        <main className="content" id="content">
+          <RenewBanner />
+          {children}
+        </main>
         <footer className="footer">
           <span>© {new Date().getFullYear()} NEXT GEN · A THE TECH HUB initiative</span>
           <span className="footer-links">

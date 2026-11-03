@@ -40,7 +40,8 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | My Mistakes (spaced revision), Exam Planner | ✓ | ✓ |
 | Coding Lab practice problems (Python in the browser via Pyodide) | ✓ | ✓ |
 | OPPE-style coding sets with hidden tests | | ✓ |
-| AI Doubt Solver (limits set in `lib/ai/features.ts`) | 5 / day | 200 / day, longer answers |
+| AI Doubt Solver (limits set in `lib/ai/features.ts`), with “Why was my answer wrong?” from any explanation | 5 / day | 200 / day, longer answers |
+| Grade Calculator (`/grades`): total, grade and end-term score needed per grade | ✓ | ✓ |
 | Time per question in test results, Save as PDF | | ✓ |
 
 - **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), upload PDF notes, post announcements, confirm UPI payments.

@@ -271,6 +271,14 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
 
 - Name, your subjects this term (these sort first everywhere), and **Delete account**: you type DELETE, it calls the `delete_my_account()` RPC, and rows cascade away.
 
+### Grade Calculator (`/grades`)
+
+- [components/grade-calculator.tsx](components/grade-calculator.tsx) with the maths in [lib/grades.ts](lib/grades.ts): the standard Foundation theory formula `T = 0.1·GAA + max(0.6·F + 0.2·max(Qz1, Qz2), 0.4·F + 0.2·Qz1 + 0.3·Qz2)`, and the lowest end-term score for each grade (S 90, A 80, B 70, C 60, D 50, E 40). Scores stay in localStorage. The page says that Python/OPPE courses use other formulas.
+
+### Pro ending reminder
+
+- [components/renew-banner.tsx](components/renew-banner.tsx), shown on every page except `/pricing`: paid Pro in its last 5 days, or a trial in its last 2. "Later" hides it for the day.
+
 ### Pricing and payment (`/pricing`)
 
 1. Free vs Pro cards ([components/pricing-plans.tsx](components/pricing-plans.tsx)). The button changes with your state: Start trial / Upgrade / Keep Pro / Pro active / "launching soon" when neither Razorpay nor `UPI_ID` is set.
