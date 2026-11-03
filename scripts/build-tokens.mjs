@@ -56,7 +56,8 @@ const outputs = [
 ];
 
 if (process.argv.includes('--check')) {
-  const stale = outputs.filter(([file, text]) => !existsSync(file) || readFileSync(file, 'utf8') !== text);
+  // Ignore CRLF vs LF, so a Windows checkout (core.autocrlf) doesn't count as stale.
+  const stale = outputs.filter(([file, text]) => !existsSync(file) || readFileSync(file, 'utf8').replace(/\r\n/g, '\n') !== text);
   if (stale.length) {
     console.log(`✗ Design tokens are out of date: ${stale.map(([f]) => f.slice(root.length + 1)).join(', ')}. Run npm run tokens.`);
     process.exit(1);
