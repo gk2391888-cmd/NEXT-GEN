@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Plus_Jakarta_Sans } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Shell } from '@/components/shell';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { RAW } from '@/lib/tokens';
@@ -24,6 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <Shell>{children}</Shell>
         </AuthProvider>
+        {/* Vercel Web Analytics and Speed Insights: cookieless; they only report on the deployed site. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

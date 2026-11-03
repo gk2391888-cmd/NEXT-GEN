@@ -21,6 +21,8 @@ export default function PrivacyPage() {
         <li><strong>Account details</strong>: your email address and, if you sign in with Google, your name and profile picture URL from Google.</li>
         <li><strong>Learning progress</strong>: the questions you answer and whether they were correct, mock test attempts and scores, weeks you mark as done or save for revision, the last week you opened, and the subjects you choose in your profile.</li>
         <li><strong>Without an account</strong>: progress is stored only in your browser’s local storage and is never sent to us.</li>
+        <li><strong>AI doubts</strong>: the messages you send to the AI Doubt Solver are sent to our AI provider (currently Groq) to write the answer. We keep a daily count of your requests and the size of the answers to apply plan limits; we don’t store the chat itself.</li>
+        <li><strong>Usage statistics</strong>: anonymous page views and page-speed measurements through Vercel Web Analytics and Speed Insights. They use no cookies and don’t identify you.</li>
       </ul>
       <p>We do not collect payment details, your location, or your contacts, and we do not use advertising or tracking cookies.</p>
 
