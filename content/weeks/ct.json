@@ -1,0 +1,1211 @@
+{
+  "subjectId": "ct",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Variables and iteration",
+      "summary": "Is week tum seekhoge ki data ko cards ke pile ki tarah dekh kar ek-ek card par iterate kaise karte hain, aur variables ki madad se count, sum aur average kaise nikalte hain.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Dataset as cards**: Har record ek card jaisa hai — jaise ek dukaan ke bill ka card jisme bill number, customer aur amount likha hai. Poora dataset = cards ka ek pile.",
+        "**Variable**: Ek naam wala dabba jisme value store hoti hai, jaise `count = 0`. Iski value baad mein badal sakti hai.",
+        "**Initialisation**: Loop shuru karne se pehle variable ko sahi starting value do — count ke liye 0, sum ke liye 0.",
+        "**Iteration**: Pile 1 se ek-ek card uthao, us par kaam karo, phir use Pile 2 mein rakh do. Jab Pile 1 khaali ho jaaye, iteration khatam.",
+        "**Update step**: Har card par variable ko update karna, jaise `total = total + X.Amount`. Yahi loop ka dil hai.",
+        "**Termination**: Loop tabhi rukta hai jab uski condition False ho jaaye (Pile 1 empty). Agar condition kabhi False na ho to **infinite loop** ban jaata hai.",
+        "**Average**: Average = sum / count. Dono ko ek hi iteration mein saath-saath calculate kar sakte ho, aur divide loop ke baad karo."
+      ],
+      "example": {
+        "problem": "Ek dukaan ke 5 bill cards ke amounts Rs. 120, Rs. 45, Rs. 300, Rs. 80 aur Rs. 55 hain. Ek hi iteration mein total amount aur bills ki sankhya nikalo, phir average batao.",
+        "steps": [
+          "Do variables banao: `total = 0` aur `count = 0` (loop se pehle).",
+          "Card 1 (120): total = 0 + 120 = 120, count = 1.",
+          "Card 2 (45): total = 165, count = 2.",
+          "Card 3 (300): total = 465, count = 3.",
+          "Card 4 (80): total = 545, count = 4. Card 5 (55): total = 600, count = 5.",
+          "Pile 1 khaali, loop khatam. Ab average = 600 / 5 = 120.",
+          "Answer: total = Rs. 600, count = 5, average = Rs. 120."
+        ],
+        "code": "total = 0\ncount = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    total = total + X.Amount\n    count = count + 1\n    Move X to Pile 2\nend while\naverage = total / count"
+      },
+      "mistakes": [
+        "Variable ko loop ke andar initialise kar dena (`total = 0` loop ke andar) — isse har card par value reset ho jaati hai. Initialisation hamesha loop se pehle karo.",
+        "Card ko Pile 2 mein move karna bhool jaana — tab Pile 1 kabhi khaali nahi hota aur loop infinite chalta hai.",
+        "Average loop ke andar har baar divide karke nikalna — division sirf loop khatam hone ke baad, ek baar karo."
+      ],
+      "revision": [
+        "Dataset = cards ka pile; ek card = ek record.",
+        "Pattern yaad rakho: initialise → iterate → update → result.",
+        "Count ke liye `count = count + 1`, sum ke liye `sum = sum + value`.",
+        "Loop tab rukta hai jab Pile 1 empty ho jaaye.",
+        "Average = sum / count, hamesha loop ke baad."
+      ],
+      "questions": [
+        {
+          "id": "ct-w1-q1",
+          "question": "Pile 1 mein 7 cards hain. Neeche ka pseudocode chalne ke baad `count` ki value kya hogi?",
+          "code": "count = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    count = count + 1\n    Move X to Pile 2\nend while",
+          "options": ["6", "7", "8", "0"],
+          "answer": 1,
+          "explanation": "Har card ke liye loop ek baar chalta hai aur count 1 se badhta hai. 7 cards → 7 baar update → count = 7. 6 ya 8 off-by-one galti hai; count 0 se shuru hota hai aur har card par sirf ek baar badhta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w1-q2",
+          "question": "Saare cards ke amounts ka sum nikalne ke liye `sum` variable ko kahan initialise karna chahiye?",
+          "options": [
+            "Loop shuru hone se pehle, value 0 ke saath",
+            "Loop ke andar, har card uthane ke baad",
+            "Loop khatam hone ke baad",
+            "Kisi bhi jagah, result same aayega"
+          ],
+          "answer": 0,
+          "explanation": "Initialisation loop se pehle hota hai taaki sum sab cards ki values jama kar sake. Agar `sum = 0` loop ke andar likha, to har card par sum reset ho jaayega aur end mein sirf aakhri card ki value bachegi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w1-q3",
+          "question": "Pile 1 mein 4 cards hain jinke Marks 12, 7, 15 aur 9 hain. Neeche ka pseudocode chalne ke baad `c` ki value kya hogi?",
+          "code": "a = 0\nb = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    a = a + X.Marks\n    b = b + 1\n    Move X to Pile 2\nend while\nc = a / b",
+          "options": ["43", "4", "10.75", "14.33"],
+          "answer": 2,
+          "explanation": "a = 12 + 7 + 15 + 9 = 43 aur b = 4 (cards ki sankhya). c = 43 / 4 = 10.75, yani average. 43 sirf sum hai; 14.33 tab aata jab galti se 3 cards se divide karte.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w1-q4",
+          "question": "Cards ke Price is order mein hain: 40, 95, 30, 95, 60. Pseudocode ke baad `changes` ki value kya hogi?",
+          "code": "maxPrice = 0\nchanges = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    if X.Price > maxPrice:\n        maxPrice = X.Price\n        changes = changes + 1\n    Move X to Pile 2\nend while",
+          "options": ["3", "5", "1", "2"],
+          "answer": 3,
+          "explanation": "Trace: 40 > 0 → max = 40, changes = 1. 95 > 40 → max = 95, changes = 2. 30 nahi. Doosra 95: 95 > 95 False (strictly greater chahiye). 60 nahi. Isliye changes = 2. 3 tab aata jab condition `>=` hoti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w1-q5",
+          "question": "Is pseudocode ke saath kya problem hai?",
+          "code": "i = 1\ntotal = 0\nwhile i <= 5:\n    total = total + i\nend while",
+          "options": [
+            "total ki value 15 hogi",
+            "Loop kabhi nahi rukega kyunki i update nahi ho raha",
+            "Loop ek baar bhi nahi chalega",
+            "total ki value 5 hogi"
+          ],
+          "answer": 1,
+          "explanation": "Loop ke andar `i` kabhi badhta hi nahi, to `i <= 5` hamesha True rahega — infinite loop. 15 tab aata jab loop ke andar `i = i + 1` hota; wahi line yahan missing hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w1-q6",
+          "question": "Ek fitness app ke cards par daily Steps is order mein hain: 3000, 5000, 2000, 6000. Pseudocode ke baad `jumps` ki value kya hogi?",
+          "code": "prev = 0\njumps = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    if X.Steps > prev:\n        jumps = jumps + X.Steps - prev\n    prev = X.Steps\n    Move X to Pile 2\nend while",
+          "options": ["6000", "16000", "9000", "4000"],
+          "answer": 2,
+          "explanation": "Trace: 3000 > 0 → jumps = 3000, prev = 3000. 5000 > 3000 → jumps = 5000, prev = 5000. 2000 > 5000 nahi, par prev = 2000 ho jaata hai (ye line if ke bahar hai). 6000 > 2000 → jumps = 5000 + 4000 = 9000. 6000 wala trap tab aata jab prev sirf if ke andar update hota.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Filtering with conditions",
+      "summary": "Is week tum seekhoge ki iteration ke dauraan sirf woh cards kaise chuno jo kisi condition ko satisfy karte hain, aur AND, OR, NOT se multiple conditions kaise jodte hain.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Filtering**: Iteration ke andar `if` condition lagakar sirf matching cards par kaam karna, baaki cards ko skip karna.",
+        "**Condition (Boolean expression)**: Aisa expression jiska result sirf True ya False hota hai, jaise `X.City == \"Pune\"` ya `X.Price > 100`.",
+        "**Comparison operators**: `==` (barabar), `!=` (barabar nahi), `<`, `>`, `<=`, `>=`. `=` assignment hai aur `==` comparison — dono alag hain.",
+        "**AND / OR / NOT**: AND tab True jab dono conditions True; OR tab True jab kam se kam ek True; NOT result ko ulta kar deta hai.",
+        "**Filtered count/sum**: Count ya sum ka update step `if` ke andar rakho, taaki sirf filtered cards gine jaayein.",
+        "**Boundary values**: `>` aur `>=` ka farak sirf boundary par dikhta hai. 'Kam se kam 60' ka matlab `>= 60`, 'more than 60' ka matlab `> 60`.",
+        "**Precedence**: Python jaise rules mein `not` pehle, phir `and`, phir `or` evaluate hota hai. Shak ho to brackets lagao."
+      ],
+      "example": {
+        "problem": "Canteen bills: (Aman, Snacks, 60), (Bela, Drinks, 30), (Chirag, Snacks, 150), (Dev, Meals, 120), (Esha, Snacks, 90). Snacks category ke woh bills gino jinka amount 80 se zyada hai, aur unka total bhi nikalo.",
+        "steps": [
+          "`count = 0`, `total = 0` se shuru karo.",
+          "Aman: Snacks hai, par 60 > 80 False → skip.",
+          "Bela: Drinks hai → skip.",
+          "Chirag: Snacks aur 150 > 80 → count = 1, total = 150.",
+          "Dev: Meals → skip.",
+          "Esha: Snacks aur 90 > 80 → count = 2, total = 240.",
+          "Answer: count = 2, total = Rs. 240."
+        ],
+        "code": "count = 0\ntotal = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    if X.Category == \"Snacks\" and X.Amount > 80:\n        count = count + 1\n        total = total + X.Amount\n    Move X to Pile 2\nend while"
+      },
+      "mistakes": [
+        "`=` aur `==` ko mix karna. Condition mein hamesha `==` likho; `=` value assign karta hai.",
+        "'Kam se kam' (at least) ko `>` likh dena. 'At least 50' = `>= 50`, jabki 'more than 50' = `> 50`.",
+        "AND ki jagah OR lagana — 'Snacks jo 80 se mehnge hain' mein dono baatein sach honi chahiye, isliye AND."
+      ],
+      "revision": [
+        "Filter = iteration + if condition.",
+        "Update steps ko if ke andar rakho.",
+        "AND: dono True; OR: koi ek True; NOT: ulta.",
+        "Boundary par `>` vs `>=` zaroor check karo.",
+        "Precedence: not → and → or; brackets se confusion khatam."
+      ],
+      "questions": [
+        {
+          "id": "ct-w2-q1",
+          "question": "Students dataset: (Anu, Delhi, 72), (Bittu, Patna, 55), (Chinu, Delhi, 48), (Disha, Patna, 90), (Eshan, Ranchi, 60). Fields hain Name, City, Marks. Kitne students ke Marks >= 60 hain?",
+          "options": ["3", "2", "4", "1"],
+          "answer": 0,
+          "explanation": "72, 90 aur 60 — teeno `>= 60` hain, to answer 3. Trap 2 hai: agar `> 60` samjhoge to Eshan ke 60 marks chhoot jaayenge. `>=` mein boundary value bhi shamil hoti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w2-q2",
+          "question": "Same dataset: (Anu, Delhi, 72), (Bittu, Patna, 55), (Chinu, Delhi, 48), (Disha, Patna, 90), (Eshan, Ranchi, 60). Condition `X.City == \"Delhi\" or X.Marks > 80` kitne students ke liye True hai?",
+          "options": ["0", "1", "2", "3"],
+          "answer": 3,
+          "explanation": "OR mein koi ek condition True ho to kaafi hai. Anu (Delhi) True, Chinu (Delhi) True, Disha (90 > 80) True. Bittu aur Eshan dono False. Total 3. Agar galti se AND padha, to koi bhi Delhi student 80 se upar nahi hai, isliye 0 aata.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w2-q3",
+          "question": "Dataset: (Anu, Delhi, 72), (Bittu, Patna, 55), (Chinu, Delhi, 48), (Disha, Patna, 90), (Eshan, Ranchi, 60). Pseudocode ke baad `s` ki value kya hogi?",
+          "code": "s = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    if X.City != \"Delhi\":\n        s = s + X.Marks\n    Move X to Pile 2\nend while",
+          "options": ["120", "325", "205", "145"],
+          "answer": 2,
+          "explanation": "`!=` matlab 'Delhi nahi'. Non-Delhi students: Bittu 55 + Disha 90 + Eshan 60 = 205. 120 Delhi walon ka sum hai (ulta filter) aur 325 sabka total hai (filter hi nahi lagaya).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w2-q4",
+          "question": "Condition `not (X.Marks < 60)` kis condition ke barabar hai?",
+          "options": ["`X.Marks > 60`", "`X.Marks >= 60`", "`X.Marks <= 60`", "`X.Marks != 60`"],
+          "answer": 1,
+          "explanation": "'60 se kam nahi' ka matlab hai 60 ya usse zyada, yani `>= 60`. Common galti `> 60` likhna hai — par X.Marks = 60 par `not (60 < 60)` = `not False` = True hota hai, isliye 60 bhi shamil hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w2-q5",
+          "question": "Dataset mein 5 students hain, jinme se 2 Patna ke hain. Is pseudocode ke baad `count` kya hoga?",
+          "code": "count = 0\nwhile Pile 1 has more cards:\n    Pick a card X from Pile 1\n    if X.City == \"Patna\":\n        found = True\n    count = count + 1\n    Move X to Pile 2\nend while",
+          "options": ["2", "5", "3", "0"],
+          "answer": 1,
+          "explanation": "Indentation dekho: `count = count + 1` if ke andar nahi, bahar hai. Isliye ye har card par chalega → count = 5. Patna wale 2 tabhi aate jab count wali line if ke block ke andar hoti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w2-q6",
+          "question": "Dataset: (Anu, Delhi, 72), (Bittu, Patna, 55), (Chinu, Delhi, 48), (Disha, Patna, 90), (Eshan, Ranchi, 60). Python jaisa precedence maano (`and` pehle evaluate hota hai, phir `or`). Neeche wali condition kitne students ke liye True hai?",
+          "code": "X.City == \"Patna\" or X.City == \"Ranchi\" and X.Marks >= 60",
+          "options": ["1", "2", "3", "5"],
+          "answer": 2,
+          "explanation": "`and` pehle judta hai, to condition asal mein hai: Patna OR (Ranchi AND Marks >= 60). Bittu (Patna) True, Disha (Patna) True, Eshan (Ranchi, 60) True → 3. Agar tum ise (Patna or Ranchi) and Marks >= 60 padhoge to Bittu (55) hat jaata aur galat answer 2 aata.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Datatypes and records",
+      "summary": "Is week tum seekhoge ki har value ka ek datatype hota hai — Integer, String, Boolean, Character — aur kaunse operations kis type par sense banate hain. Saath hi records aur subtypes ka idea bhi.",
+      "readMinutes": 10,
+      "concepts": [
+        "**Datatype**: Batata hai ki value kis tarah ki hai aur us par kaunse operations allowed hain. Jaise Integer par `+` aur `-` chalte hain.",
+        "**Integer**: Poore numbers (…, -1, 0, 5, 42). Count, quantity, age jaisi cheezein.",
+        "**Boolean**: Sirf do values — True ya False. Har condition ka result Boolean hota hai.",
+        "**Character aur String**: Character ek akshar hai (`'a'`), String characters ka sequence hai (`\"Mango\"`). String ki length nikal sakte ho, compare kar sakte ho aur jod (concatenate) sakte ho.",
+        "**Record**: Alag-alag fields ka group, jaise ek bill card: BillNo (Integer), Shop (String), Paid (Boolean). Ek card hi ek record hai.",
+        "**Subtype**: Kisi type ka restricted version, jaise Marks = Integer jo 0 se 100 ke beech ho. Isse galat values pakadna aasaan hota hai.",
+        "**Type mismatch**: String `\"25\"` aur Integer `25` alag hain. Quotes wali value String hoti hai, chahe usme digits hon.",
+        "**Meaningful operations**: Roll number Integer jaisa dikhta hai, par uska sum ya average meaningless hai — operation datatype ke saath-saath meaning par bhi depend karta hai."
+      ],
+      "example": {
+        "problem": "Ek mobile recharge record mein fields hain: Number = \"9876500011\", Amount = 199, Validity = 28, IsActive = True. Har field ka sahi datatype batao aur bolo ki kya Number ko Integer rakhna sahi hai.",
+        "steps": [
+          "Amount = 199: poora number, us par jodna-ghatana sense banata hai → Integer.",
+          "Validity = 28 (din): Integer; ise subtype bana sakte ho jo 1 se 365 tak ho.",
+          "IsActive = True: sirf True/False ho sakta hai → Boolean.",
+          "Number: digits hain, lekin do mobile numbers ka sum ya average ka koi matlab nahi; aur shuru mein 0 bhi aa sakta hai. Isliye String better hai.",
+          "Answer: Number → String, Amount → Integer, Validity → Integer (subtype 1–365), IsActive → Boolean."
+        ]
+      },
+      "mistakes": [
+        "Jo bhi digits mein likha ho use Integer maan lena. Phone number, PIN code, roll number — inpe arithmetic nahi hota, inhe String ya identifier ki tarah treat karo.",
+        "`\"5\"` (String) aur `5` (Integer) ko same samajhna. Quotes ka matlab String hai.",
+        "Boolean ko `\"True\"` likh dena — Boolean value bina quotes ke True ya False hoti hai."
+      ],
+      "revision": [
+        "Basic datatypes: Integer, Boolean, Character, String.",
+        "Record = multiple fields ka group (ek card).",
+        "Subtype = allowed values ki range ya set ko limit karna.",
+        "Condition ka result hamesha Boolean.",
+        "Operation tabhi sahi jab datatype aur meaning dono match karein."
+      ],
+      "questions": [
+        {
+          "id": "ct-w3-q1",
+          "question": "Condition `X.Price > 100` ka result kis datatype ka hota hai?",
+          "options": ["Integer", "String", "Boolean", "Character"],
+          "answer": 2,
+          "explanation": "Comparison ka result hamesha True ya False hota hai, isliye Boolean. X.Price khud Integer ho sakta hai, par `X.Price > 100` poora expression Boolean deta hai — yahi common confusion hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w3-q2",
+          "question": "Inme se kis field ke liye Integer sabse sahi datatype hai?",
+          "options": [
+            "PIN code (jaise 800001)",
+            "Ek order mein items ki quantity",
+            "Mobile number",
+            "Customer ka naam"
+          ],
+          "answer": 1,
+          "explanation": "Quantity par jodna, ghatana, average — sab meaningful hai, isliye Integer. PIN code aur mobile number digits mein hain par unpe arithmetic ka koi matlab nahi, isliye unhe String jaisa treat karna better hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w3-q3",
+          "question": "Yahan `+` do Strings ko jodta (concatenate karta) hai. `c` ki value kya hogi?",
+          "code": "a = \"12\"\nb = \"3\"\nc = a + b",
+          "options": ["\"123\"", "15", "\"312\"", "\"12 3\""],
+          "answer": 0,
+          "explanation": "a aur b dono quotes mein hain, yani Strings. String + String = dono ko jod do, order wahi rehta hai: \"12\" ke baad \"3\" → \"123\". 15 tab aata jab dono Integers hote; beech mein space apne aap nahi aata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w3-q4",
+          "question": "Marks field ke liye subtype define hai: Integer jo 0 se 100 tak ho (0 aur 100 dono shamil). Kaunsi value is subtype mein valid hai?",
+          "options": ["101", "-5", "72.5", "100"],
+          "answer": 3,
+          "explanation": "100 Integer hai aur range ke andar (boundary shamil hai). 101 aur -5 range ke bahar hain, aur 72.5 Integer hi nahi hai — subtype ki dono shartein (Integer + range) poori honi chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w3-q5",
+          "question": "Ek record mein fields hain: RollNo (jaise 1045), Name (String), Maths (Integer marks 0–100). Kaunsa operation meaningful hai?",
+          "options": [
+            "Saare RollNo ka average nikalna",
+            "Do Names ko multiply karna",
+            "Saare students ke Maths marks ka average nikalna",
+            "Name ko 2 se divide karna"
+          ],
+          "answer": 2,
+          "explanation": "Marks ka average ek useful number hai. RollNo digits mein hai par wo sirf ek pehchaan (identifier) hai — uska average kisi kaam ka nahi. Strings ko multiply ya divide karna sense hi nahi banata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w3-q6",
+          "question": "Pseudocode ke baad `s` ki value aur datatype kya hai?",
+          "code": "x = 7\ny = 2\np = (x > y)\nq = p and (x == 7)\nr = x + y\ns = (r > 10) or not p",
+          "options": ["True (Boolean)", "False (Boolean)", "9 (Integer)", "False (String)"],
+          "answer": 1,
+          "explanation": "p = (7 > 2) = True. r = 9. s = (9 > 10) or not True = False or False = False. Ye ek condition ka result hai, isliye Boolean. 9 to r ki value hai, s ki nahi; aur False bina quotes ke hai, isliye String nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Flowcharts",
+      "summary": "Is week tum algorithms ko flowchart ke shapes se draw karna aur kisi bhi flowchart ko step-by-step trace karke output nikalna seekhoge.",
+      "readMinutes": 10,
+      "concepts": [
+        "**Flowchart**: Algorithm ka picture version. Boxes steps dikhate hain aur arrows batate hain ki agla step kaunsa hai.",
+        "**Terminal (oval)**: Start aur End dikhata hai. Har flowchart ek Start se shuru aur End par khatam hota hai.",
+        "**Process box (rectangle)**: Koi kaam ya assignment, jaise `count = count + 1`.",
+        "**Decision box (diamond)**: Isme condition check hoti hai aur do raaste nikalte hain — Yes (True) aur No (False).",
+        "**Input/Output (parallelogram)**: Data lena ya result dikhana, jaise 'Read card X' ya 'Print total'.",
+        "**Loop in flowchart**: Jab arrow wapas pehle wale decision box par jaata hai, wahi loop banta hai. Exit tab hota hai jab decision ka doosra raasta chuna jaaye.",
+        "**Trace table**: Ek table jisme har round ke baad variables ki value likho — isse galti pakadna aasaan hota hai."
+      ],
+      "example": {
+        "problem": "Ek flowchart N = 4 lekar 1 se N tak ke numbers ka product (yani factorial) nikalta hai. Iske steps trace karo.",
+        "steps": [
+          "Start → process box: `prod = 1`, `i = 1`.",
+          "Diamond: `i <= N`? 1 <= 4 Yes → prod = 1 × 1 = 1, i = 2, arrow wapas diamond par.",
+          "2 <= 4 Yes → prod = 2, i = 3.",
+          "3 <= 4 Yes → prod = 6, i = 4.",
+          "4 <= 4 Yes → prod = 24, i = 5.",
+          "5 <= 4 No → Output prod → End.",
+          "Answer: prod = 24 (yani 4!)."
+        ],
+        "code": "Start\nprod = 1, i = 1\n[Decision] i <= N ?\n    Yes: prod = prod * i\n         i = i + 1\n         go back to Decision\n    No:  Output prod\nEnd"
+      },
+      "mistakes": [
+        "Decision box se sirf ek arrow nikalna. Diamond se hamesha do raaste (Yes aur No) hone chahiye.",
+        "Loop ke andar counter (`i = i + 1`) badhana bhool jaana — tab arrow baar-baar wapas aata rahega aur flowchart kabhi End tak nahi pahunchega.",
+        "Condition ko rectangle mein likh dena. Condition hamesha diamond mein, kaam hamesha rectangle mein."
+      ],
+      "revision": [
+        "Oval = Start/End, Rectangle = Process, Diamond = Decision, Parallelogram = Input/Output.",
+        "Wapas jaata hua arrow = loop.",
+        "Diamond se do exits: Yes aur No.",
+        "Decision box loop ke last round mein bhi ek baar check hota hai (jab No aata hai).",
+        "Trace table banao: har round ke baad variables likho."
+      ],
+      "questions": [
+        {
+          "id": "ct-w4-q1",
+          "question": "Flowchart mein condition check karne ke liye kaunsa shape use hota hai?",
+          "options": ["Rectangle", "Diamond", "Oval", "Parallelogram"],
+          "answer": 1,
+          "explanation": "Diamond decision box hai — usme condition likhi jaati hai aur do raaste (Yes/No) nikalte hain. Rectangle process ke liye hai, oval Start/End ke liye aur parallelogram input/output ke liye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w4-q2",
+          "question": "Flowchart mein 'Print total' jaisa output step kis shape mein banaya jaata hai?",
+          "options": ["Parallelogram", "Diamond", "Oval", "Sirf ek arrow"],
+          "answer": 0,
+          "explanation": "Input aur output dono parallelogram mein dikhaye jaate hain. Diamond sirf condition ke liye hai aur oval sirf Start/End ke liye; arrow sirf flow ki direction batata hai, koi step nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w4-q3",
+          "question": "Is flowchart ka output kya hoga?",
+          "code": "Start\nx = 2, y = 0\n[Decision] x < 20 ?\n    Yes: y = y + 1\n         x = x * 3\n         go back to Decision\n    No:  Output y\nEnd",
+          "options": ["2", "4", "3", "54"],
+          "answer": 2,
+          "explanation": "Trace: x = 2 → y = 1, x = 6. x = 6 → y = 2, x = 18. x = 18 < 20 → y = 3, x = 54. Ab 54 < 20 No → Output y = 3. 2 wala trap tab aata jab 18 < 20 ko galti se No maan lo; 54 to x ki value hai, y ki nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w4-q4",
+          "question": "Is flowchart mein decision box (`n > 0 ?`) kul kitni baar evaluate hota hai?",
+          "code": "Start\nn = 5, s = 0\n[Decision] n > 0 ?\n    Yes: s = s + n\n         n = n - 2\n         go back to Decision\n    No:  Output s\nEnd",
+          "options": ["3", "4", "5", "9"],
+          "answer": 1,
+          "explanation": "n = 5 (Yes), n = 3 (Yes), n = 1 (Yes), n = -1 (No). Teen baar Yes aur ek baar No → kul 4 checks. Sabse common galti 3 bolna hai — aakhri wala check, jisme No aata hai, bhi gina jaata hai. (9 to s ki final value hai.)",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w4-q5",
+          "question": "Is flowchart ke baare mein kya sahi hai?",
+          "code": "Start\ni = 1\n[Decision] i != 10 ?\n    Yes: i = i + 2\n         go back to Decision\n    No:  Output i\nEnd",
+          "options": [
+            "Loop 5 baar chalke ruk jaata hai",
+            "Loop ek bhi baar nahi chalta",
+            "Loop 9 baar chalta hai",
+            "Loop kabhi nahi rukta, kyunki i kabhi 10 ke barabar nahi hota"
+          ],
+          "answer": 3,
+          "explanation": "i ki values 1, 3, 5, 7, 9, 11, 13… — sab odd hain, 10 kabhi aata hi nahi. Isliye `i != 10` hamesha True rehta hai aur loop infinite hai. 5 baar wala option tab sahi hota jab condition `i < 10` hoti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w4-q6",
+          "question": "Pile mein cards ki values hain: 4, 9, 12, 15, 7. `%` ka matlab remainder hai (jaise `12 % 3 = 0`). Flowchart ke End par a aur b kya honge?",
+          "code": "Start\na = 0, b = 0\n[D1] More cards in pile?\n    No:  Output a, b → End\n    Yes: Read card X\n         [D2] X.Value % 3 == 0 ?\n             Yes: a = a + 1\n             No:  [D3] X.Value % 2 == 0 ?\n                      Yes: b = b + 1\n                      No:  do nothing\n         go back to D1",
+          "options": ["a = 3, b = 2", "a = 2, b = 2", "a = 2, b = 1", "a = 3, b = 1"],
+          "answer": 3,
+          "explanation": "4: 3 se divide nahi, even → b = 1. 9: 3 se divide → a = 1. 12: 3 se divide → a = 2 (D3 tak pahunchta hi nahi). 15 → a = 3. 7: kuch nahi. Answer a = 3, b = 1. Trap b = 2 tab aata jab 12 ko even bhi gin lo — par D3 sirf D2 ke No raaste par hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Pseudocode basics",
+      "summary": "Is week tum algorithms ko pseudocode mein likhna seekhoge — while loop, if-else aur indentation ke saath — aur kisi bhi pseudocode ko dry-run karke output nikalna.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Pseudocode**: Algorithm ko English/Hinglish jaise structured steps mein likhna. Ye kisi real language ka code nahi, par uske kaafi kareeb hota hai.",
+        "**Assignment**: `x = x + 1` ka matlab: pehle right side calculate karo, phir result left wale variable mein daal do.",
+        "**while loop**: `while condition:` ke neeche wale steps tab tak repeat hote hain jab tak condition True hai. Har round se pehle condition check hoti hai.",
+        "**if / else if / else**: Sirf pehli True condition wala block chalta hai; baaki skip. Agar koi bhi True nahi, to `else` chalta hai.",
+        "**Indentation**: Kaunsa step loop ya if ke andar hai, ye aage chhodi gayi khaali jagah se pata chalta hai. Galat indentation = galat logic.",
+        "**Dry run / trace table**: Har line ke baad variables ki value ek table mein likhna. Output nikalne ka sabse reliable tarika.",
+        "**Remainder `%`**: `a % b` matlab a ko b se divide karne par bacha remainder, jaise `17 % 5 = 2`. `n % 10` number ka last digit deta hai.",
+        "**Integer division `//`**: `17 // 5 = 3` — sirf quotient ka integer part. `n // 10` number ka last digit hata deta hai."
+      ],
+      "example": {
+        "problem": "Number 4075 ke digits ka sum pseudocode se nikalo.",
+        "steps": [
+          "Shuru: n = 4075, s = 0.",
+          "Round 1: d = 4075 % 10 = 5, s = 5, n = 4075 // 10 = 407.",
+          "Round 2: d = 7, s = 12, n = 40.",
+          "Round 3: d = 0, s = 12, n = 4.",
+          "Round 4: d = 4, s = 16, n = 0.",
+          "Ab `n > 0` False hai, loop khatam.",
+          "Answer: s = 16 (4 + 0 + 7 + 5)."
+        ],
+        "code": "n = 4075\ns = 0\nwhile n > 0:\n    d = n % 10\n    s = s + d\n    n = n // 10\nend while"
+      },
+      "mistakes": [
+        "if-else if chain mein maan lena ki multiple blocks chalenge. Pehli True condition ke baad baaki saari skip hoti hain.",
+        "Trace karte waqt purani value use karna — har line ke baad table update karo, phir agli line padho.",
+        "`/` aur `//` ko mix karna. `7 / 2 = 3.5` jabki `7 // 2 = 3`."
+      ],
+      "revision": [
+        "while: har round se pehle condition check hoti hai.",
+        "if-else if chain mein sirf pehla True branch chalta hai.",
+        "Indentation se block decide hota hai.",
+        "`n % 10` = last digit, `n // 10` = last digit hatao.",
+        "Hamesha trace table banao."
+      ],
+      "questions": [
+        {
+          "id": "ct-w5-q1",
+          "question": "`23 % 4` aur `23 // 4` ki values kya hain (isi order mein)?",
+          "options": ["5 aur 3", "3 aur 5.75", "3 aur 5", "2 aur 5"],
+          "answer": 2,
+          "explanation": "23 = 4 × 5 + 3. Isliye quotient (`//`) = 5 aur remainder (`%`) = 3. Order dhyaan se padho: pehle `%` hai, to answer '3 aur 5'. 5.75 normal division `/` ka result hai, `//` ka nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w5-q2",
+          "question": "Is pseudocode ke baad `grade` ki value kya hogi?",
+          "code": "marks = 75\nif marks >= 90:\n    grade = \"S\"\nelse if marks >= 70:\n    grade = \"A\"\nelse if marks >= 50:\n    grade = \"B\"\nelse:\n    grade = \"C\"",
+          "options": ["S", "A", "B", "C"],
+          "answer": 1,
+          "explanation": "75 >= 90 False, 75 >= 70 True → grade = \"A\", aur baaki branches skip. 75 >= 50 bhi True hai, par chain mein sirf pehli True branch chalti hai, isliye \"B\" galat hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w5-q3",
+          "question": "Loop khatam hone par `a` aur `b` ki values kya hongi?",
+          "code": "a = 1\nb = 0\nwhile a < 50:\n    b = b + 1\n    a = a * 2\nend while",
+          "options": ["a = 32, b = 5", "a = 64, b = 7", "a = 128, b = 7", "a = 64, b = 6"],
+          "answer": 3,
+          "explanation": "a: 1 → 2 → 4 → 8 → 16 → 32 → 64, aur har baar b badhta hai: b = 6. Jab a = 64 hota hai to `64 < 50` False, loop rukta hai. 'a = 32, b = 5' wala trap ek round pehle rukne ki galti hai — 32 < 50 abhi bhi True hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w5-q4",
+          "question": "Neeche ka code `total = 6` deta hai. Agar `i = i + 1` wali line ko ek level aur andar (if ke block mein) kar diya jaaye, to kya hoga?",
+          "code": "total = 0\ni = 1\nwhile i <= 4:\n    if i % 2 == 0:\n        total = total + i\n    i = i + 1\nend while",
+          "options": [
+            "total = 6 hi aayega",
+            "total = 10 aayega",
+            "Loop kabhi khatam nahi hoga",
+            "total = 2 aayega"
+          ],
+          "answer": 2,
+          "explanation": "Shuru mein i = 1 (odd), to if ki condition False. Ab `i = i + 1` if ke andar hai, isliye chalega hi nahi — i hamesha 1 rahega aur `i <= 4` hamesha True. Infinite loop. Indentation sirf dikhawa nahi, logic badal deti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w5-q5",
+          "question": "Is pseudocode ke baad `r` ki value kya hogi?",
+          "code": "n = 352\nr = 0\nwhile n > 0:\n    r = r * 10 + n % 10\n    n = n // 10\nend while",
+          "options": ["253", "352", "10", "235"],
+          "answer": 0,
+          "explanation": "Round 1: r = 0 × 10 + 2 = 2, n = 35. Round 2: r = 2 × 10 + 5 = 25, n = 3. Round 3: r = 25 × 10 + 3 = 253, n = 0. Ye number ko ulta (reverse) karta hai. 10 digits ka sum hai — wo tab aata jab `r * 10` na hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w5-q6",
+          "question": "Loop ke baad `c`, `x` aur `y` ki values kya hongi?",
+          "code": "x = 10\ny = 3\nc = 0\nwhile x > y:\n    x = x - 2\n    y = y + 1\n    c = c + 1\nend while",
+          "options": ["c = 2, x = 6, y = 5", "c = 3, x = 4, y = 6", "c = 4, x = 2, y = 7", "c = 3, x = 6, y = 5"],
+          "answer": 1,
+          "explanation": "10 > 3 → x = 8, y = 4, c = 1. 8 > 4 → x = 6, y = 5, c = 2. 6 > 5 → x = 4, y = 6, c = 3. 4 > 6 False, stop. 'c = 2, x = 6, y = 5' tab aata jab 6 > 5 ko galti se False maan lo; 'c = 3, x = 6, y = 5' mein c to badha par x, y update nahi kiye.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Procedures and parameters",
+      "summary": "Is week tum seekhoge ki baar-baar use hone wale steps ko procedure mein kaise pack karte hain, parameters se input kaise dete hain, aur return value kaise wapas milti hai.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Procedure**: Steps ka ek naam wala group jise baar-baar call kar sakte ho, jaise `CountCity(city)`. Same code baar-baar likhna nahi padta.",
+        "**Parameter vs argument**: Definition mein likha naam (`city`) parameter hai; call karte waqt di gayi actual value (`\"Pune\"`) argument hai.",
+        "**Return value**: `return` procedure ka result caller ko wapas bhejta hai, aur procedure wahin turant khatam ho jaata hai.",
+        "**Local variable**: Procedure ke andar bana variable sirf andar hi exist karta hai; bahar same naam ka variable alag hota hai.",
+        "**Call karna**: `c = CountCity(\"Pune\")` — procedure chalta hai aur jo return hua wo c mein store ho jaata hai.",
+        "**Position se matching**: Arguments parameters se order ke hisaab se match hote hain — `Diff(3, 10)` mein pehla parameter 3 aur doosra 10 paata hai.",
+        "**Side effect**: Agar procedure koi bahar ka data badal de (jaise cards ko move karna ya delete karna), to use side effect kehte hain. Inka dhyaan rakho."
+      ],
+      "example": {
+        "problem": "Ek procedure banao jo do numbers a aur b mein se bada wala return kare, phir use karke 14, 31 aur 22 mein sabse bada number nikalo.",
+        "steps": [
+          "Pehli call: Bigger(14, 31). Yahan a = 14, b = 31. 14 > 31 False, isliye `return b` → 31.",
+          "m = 31.",
+          "Doosri call: Bigger(31, 22). a = 31, b = 22. 31 > 22 True → `return a` → 31.",
+          "m = 31.",
+          "Answer: sabse bada number 31 hai. Ek hi procedure do baar reuse hua."
+        ],
+        "code": "Procedure Bigger(a, b)\n    if a > b:\n        return a\n    return b\nEnd Bigger\n\nm = Bigger(14, 31)\nm = Bigger(m, 22)"
+      },
+      "mistakes": [
+        "Sochna ki `return` ke baad wali lines bhi chalti hain. `return` hote hi procedure turant ruk jaata hai.",
+        "Arguments ka order galat dena. `Power(2, 3)` aur `Power(3, 2)` alag results dete hain — matching position se hoti hai.",
+        "Procedure ke local variable ko bahar use karne ki koshish karna — wo bahar exist hi nahi karta."
+      ],
+      "revision": [
+        "Procedure = naam wala reusable steps ka group.",
+        "Parameter definition mein, argument call mein.",
+        "return result bhejta hai aur procedure ko wahin rok deta hai.",
+        "Local variables bahar visible nahi hote.",
+        "Arguments order (position) se match hote hain."
+      ],
+      "questions": [
+        {
+          "id": "ct-w6-q1",
+          "question": "Is pseudocode ke baad `x` ki value kya hogi?",
+          "code": "Procedure Square(n)\n    return n * n\nEnd Square\n\nx = Square(4) + Square(2)",
+          "options": ["20", "36", "12", "8"],
+          "answer": 0,
+          "explanation": "Square(4) = 16 aur Square(2) = 4, to x = 16 + 4 = 20. 36 tab aata jab pehle 4 + 2 = 6 karke Square(6) nikalo — par yahan do alag calls hain jinke results jode ja rahe hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w6-q2",
+          "question": "Procedure `Discount(price, percent)` ko `Discount(500, 10)` se call kiya gaya. Yahan `500` kya kehlata hai?",
+          "options": ["Parameter", "Return value", "Argument", "Local variable"],
+          "answer": 2,
+          "explanation": "Call ke waqt di gayi actual value argument hoti hai. `price` parameter hai (definition wala naam), aur 500 us parameter ko diya gaya argument hai. Return value to procedure khatam hone par milti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w6-q3",
+          "question": "`Check(12)` aur `Check(15)` kya return karenge (isi order mein)?",
+          "code": "Procedure Check(n)\n    if n % 2 == 0:\n        return \"Even\"\n    if n > 10:\n        return \"Big odd\"\n    return \"Small odd\"\nEnd Check",
+          "options": [
+            "\"Even\" aur \"Small odd\"",
+            "\"Big odd\" aur \"Big odd\"",
+            "\"Even\" aur \"Even\"",
+            "\"Even\" aur \"Big odd\""
+          ],
+          "answer": 3,
+          "explanation": "Check(12): 12 even hai → \"Even\" return, aur procedure wahin ruk gaya (12 > 10 check hota hi nahi). Check(15): odd hai, 15 > 10 → \"Big odd\". 'Big odd aur Big odd' wala trap ye maan leta hai ki return ke baad bhi agli lines chalti hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w6-q4",
+          "question": "Is pseudocode ke baad `y` ki value kya hogi?",
+          "code": "Procedure Diff(a, b)\n    return a - 2 * b\nEnd Diff\n\ny = Diff(3, 10)",
+          "options": ["4", "-17", "-14", "10"],
+          "answer": 1,
+          "explanation": "Position se a = 3, b = 10. a - 2 × b = 3 - 20 = -17 (multiplication pehle). 4 tab aata jab arguments ulte lagao (a = 10, b = 3), aur -14 tab jab galti se (3 - 10) × 2 kar do.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w6-q5",
+          "question": "Is pseudocode ke baad `r` aur bahar wale `count` ki values kya hongi?",
+          "code": "count = 5\n\nProcedure AddThree(count)\n    count = count + 3\n    return count\nEnd AddThree\n\nr = AddThree(10)",
+          "options": [
+            "r = 13, count = 13",
+            "r = 8, count = 8",
+            "r = 13, count = 5",
+            "r = 8, count = 5"
+          ],
+          "answer": 2,
+          "explanation": "Procedure ka parameter `count` ek local variable hai jo argument 10 paata hai; andar wo 13 banta hai aur return hota hai → r = 13. Bahar wala `count` alag variable hai, isliye 5 hi rehta hai. 8 tab aata jab bahar wala 5 use hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w6-q6",
+          "question": "Pile ke cards ke Amounts hain: 120, 80, 200, 50, 150 (procedure pile ko badalta nahi). `CountAbove(100) - CountAbove(150)` ki value kya hogi?",
+          "code": "Procedure CountAbove(limit)\n    c = 0\n    for each card X in Pile:\n        if X.Amount > limit:\n            c = c + 1\n    return c\nEnd CountAbove",
+          "options": ["2", "1", "3", "4"],
+          "answer": 0,
+          "explanation": "CountAbove(100): 120, 200, 150 → 3. CountAbove(150): sirf 200 (150 > 150 False) → 1. 3 - 1 = 2. Agar `>` ko `>=` samjhoge to doosri call 2 degi aur galat answer 1 aayega. c local hai, har call mein 0 se shuru hota hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Nested iterations",
+      "summary": "Is week tum seekhoge ki jab har card ko baaki cards se compare karna ho (jaise pairs dhoondhna), tab loop ke andar loop kaise lagate hain aur kitni comparisons hoti hain.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Nested loop**: Ek loop ke andar doosra loop. Outer loop ke har ek round mein inner loop poora chalta hai.",
+        "**Total iterations**: Outer m baar aur inner n baar chale, to inner body m × n baar chalti hai.",
+        "**Pairs dhoondhna**: Har card ko doosre har card se compare karna, jaise 'same city ke do students' ya 'do bills jinka total 500 ho'.",
+        "**Duplicate pairs se bachna**: (A, B) aur (B, A) ek hi pair hai. Inner loop ko `j = i + 1` se shuru karo taaki har pair ek hi baar gina jaaye.",
+        "**Self-pair se bachna**: Card ko khud se compare mat karo — `j = i + 1` se shuru karne par ye apne aap ho jaata hai.",
+        "**Unique pairs ka formula**: n cards mein unique pairs = n × (n − 1) / 2. Jaise 5 cards → 10 pairs.",
+        "**Cost**: Nested loops slow hote hain — 1000 cards par lagbhag 5 lakh comparisons. Isliye pehle socho ki inki zaroorat hai ya nahi."
+      ],
+      "example": {
+        "problem": "5 dosto ki heights (cm) list H mein hain: A = 160, B = 172, C = 160, D = 168, E = 172. Kitne pairs ki height same hai? (`for i from a to b` mein a aur b dono shamil hain, aur H[i] matlab position i wali height, 0 se shuru.)",
+        "steps": [
+          "Positions: A = 0, B = 1, C = 2, D = 3, E = 4. `j` hamesha `i + 1` se shuru, taaki koi pair do baar na gina jaaye.",
+          "i = 0 (160): j = 2 par 160 match → pairs = 1.",
+          "i = 1 (172): j = 4 par 172 match → pairs = 2.",
+          "i = 2 (160): j = 3, 4 par koi 160 nahi.",
+          "i = 3 (168): j = 4 match nahi. i = 4: inner loop khaali (5 se 4 tak kuch nahi).",
+          "Total comparisons = 4 + 3 + 2 + 1 = 10 = 5 × 4 / 2.",
+          "Answer: 2 pairs (A–C aur B–E)."
+        ],
+        "code": "H = [160, 172, 160, 168, 172]\npairs = 0\nfor i from 0 to 4:\n    for j from i + 1 to 4:\n        if H[i] == H[j]:\n            pairs = pairs + 1"
+      },
+      "mistakes": [
+        "Unique pairs chahiye tab bhi inner loop 0 se shuru karna — har pair do baar gina jaata hai aur card khud se bhi match ho jaata hai.",
+        "while loops mein inner counter ko outer ke har round mein reset na karna — tab inner loop sirf pehle round mein chalta hai.",
+        "Nested loop ke iterations m + n likh dena; sahi hai m × n."
+      ],
+      "revision": [
+        "Outer ka har round = inner ka poora run.",
+        "Inner body m × n baar chalti hai.",
+        "Unique pairs: j = i + 1 se shuru; count = n(n − 1) / 2.",
+        "Self-comparison aur duplicate pairs se bacho.",
+        "while ke andar while ho to inner counter reset karna mat bhoolo."
+      ],
+      "questions": [
+        {
+          "id": "ct-w7-q1",
+          "question": "`for i from a to b` mein a aur b dono shamil hain. Is pseudocode ke baad `c` ki value kya hogi?",
+          "code": "c = 0\nfor i from 1 to 4:\n    for j from 1 to 3:\n        c = c + 1",
+          "options": ["7", "12", "16", "9"],
+          "answer": 1,
+          "explanation": "Outer loop 4 baar, aur har baar inner loop 3 baar chalta hai → 4 × 3 = 12. 7 (4 + 3) tab aata jab loops ko alag-alag maan lo, par nested mein multiply hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w7-q2",
+          "question": "8 students hain. Har possible unique pair ko ek baar compare karna hai (A–B aur B–A ek hi pair hai, aur khud se compare nahi). Kitne comparisons honge?",
+          "options": ["64", "56", "28", "36"],
+          "answer": 2,
+          "explanation": "Unique pairs = n × (n − 1) / 2 = 8 × 7 / 2 = 28. 56 tab aata jab har pair do baar gino (A–B aur B–A), aur 64 tab jab khud se comparison bhi shamil kar lo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w7-q3",
+          "question": "`for i from a to b` mein a aur b dono shamil hain. Is pseudocode ke baad `c` ki value kya hogi?",
+          "code": "c = 0\nfor i from 1 to 4:\n    for j from i to 4:\n        c = c + 1",
+          "options": ["6", "16", "4", "10"],
+          "answer": 3,
+          "explanation": "Inner loop i se shuru hota hai: i = 1 → 4 baar, i = 2 → 3, i = 3 → 2, i = 4 → 1. Total 4 + 3 + 2 + 1 = 10. 16 tab aata jab inner loop hamesha 1 se shuru hota; 6 tab jab j = i + 1 se shuru hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w7-q4",
+          "question": "List positions 0 se shuru hain aur `from a to b` mein dono ends shamil hain. Pseudocode ke baad `count` kya hoga?",
+          "code": "A = [3, 7, 5, 2, 8]\ncount = 0\nfor i from 0 to 4:\n    for j from i + 1 to 4:\n        if A[i] + A[j] == 10:\n            count = count + 1",
+          "options": ["2", "4", "5", "1"],
+          "answer": 0,
+          "explanation": "Sirf alag positions ke unique pairs check hote hain: (3, 7) = 10 aur (2, 8) = 10. List mein 5 ek hi baar hai, to (5, 5) pair nahi banta. Answer 2. Agar j 0 se shuru hota, to (7, 3), (8, 2) aur 5 ka khud se pair bhi gina jaata → 5.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w7-q5",
+          "question": "`for i from a to b` mein a aur b dono shamil hain. Is pseudocode ke baad `s` ki value kya hogi?",
+          "code": "s = 0\nfor i from 1 to 3:\n    for j from 1 to i:\n        s = s + j",
+          "options": ["6", "14", "10", "18"],
+          "answer": 2,
+          "explanation": "i = 1: j = 1 → s = 1. i = 2: j = 1, 2 → s = 4. i = 3: j = 1, 2, 3 → s = 10. Dhyaan do ki `j` jodha ja raha hai, `i` nahi. 6 tab aata jab sirf inner loop ek baar (i = 3 wala) gino.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w7-q6",
+          "question": "Is pseudocode ke baad `c` ki value kya hogi?",
+          "code": "i = 1\nj = 1\nc = 0\nwhile i <= 3:\n    while j <= 3:\n        c = c + 1\n        j = j + 1\n    end while\n    i = i + 1\nend while",
+          "options": ["9", "3", "6", "4"],
+          "answer": 1,
+          "explanation": "`j = 1` outer loop ke bahar hai, isliye reset nahi hota. Pehle round mein inner loop 3 baar chalta hai (c = 3, j = 4). Uske baad `j <= 3` hamesha False, to inner loop chalta hi nahi. Answer 3. 9 tab aata jab `j = 1` outer loop ke andar, inner while se pehle likha hota.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Binning and sorting",
+      "summary": "Is week tum data ko groups (bins) mein baantna aur cards ko order mein lagana (sorting) seekhoge — jaise marks ranges ke bins ya prices ko chhote se bade order mein.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Binning**: Cards ko kisi field ke basis par alag piles (bins) mein baantna, jaise city-wise piles ya marks ki ranges 0–39, 40–69, 70–100.",
+        "**Bin boundaries**: Ranges overlap nahi honi chahiye aur koi value chhootni nahi chahiye. Boundary value (jaise 40) kis bin mein jaayegi, ye clearly define karo.",
+        "**Binning se fayda**: Same-city pairs jaise kaam mein sirf ek bin ke andar compare karna padta hai, isliye comparisons bahut kam ho jaate hain.",
+        "**Sorting**: Cards ko kisi field ke hisaab se ascending (chhote se bade) ya descending (bade se chhote) order mein lagana.",
+        "**Insertion sort**: Ek-ek card uthao aur use already sorted pile mein sahi jagah par insert karo — jaise taash ke patte haath mein lagate ho.",
+        "**Selection sort**: Bache hue cards mein se sabse chhota dhoondho aur use bache hue hisse ki pehli jagah par rakho (swap); phir baaki ke saath repeat karo.",
+        "**Bubble pass**: Paas-paas ke do elements compare karo, galat order mein hon to swap karo. Ek pass ke baad sabse bada element end tak pahunch jaata hai.",
+        "**Sorted data ka fayda**: Min/max turant milta hai, median nikalna aasaan hai, aur duplicates paas-paas aa jaate hain."
+      ],
+      "example": {
+        "problem": "Prices [42, 15, 37, 8] ko insertion sort se ascending order mein lagao.",
+        "steps": [
+          "Sorted pile khaali se shuru: [ ].",
+          "42 uthao → [42].",
+          "15 uthao, 42 se chhota hai → aage insert: [15, 42].",
+          "37 uthao, 15 se bada aur 42 se chhota → beech mein: [15, 37, 42].",
+          "8 uthao, sabse chhota → shuru mein: [8, 15, 37, 42].",
+          "Answer: [8, 15, 37, 42]."
+        ]
+      },
+      "mistakes": [
+        "Bin boundaries overlap kar dena, jaise 0–40 aur 40–70 — ab 40 do bins mein aa jaata hai. Ek side `<` aur doosri side `>=` rakho.",
+        "Ascending aur descending mein confuse hona. Ascending = chhota pehle.",
+        "Sort karte waqt card ki sirf ek field move karna — poora record saath move hona chahiye, warna naam aur marks mismatch ho jaate hain."
+      ],
+      "revision": [
+        "Binning = kisi field ke basis par piles banana.",
+        "Boundaries: na overlap, na gap.",
+        "Insertion sort: har naya card sorted pile mein sahi jagah.",
+        "Selection sort: bache cards ka minimum aage swap.",
+        "Bubble pass ke baad sabse bada element end mein."
+      ],
+      "questions": [
+        {
+          "id": "ct-w8-q1",
+          "question": "Marks: 35, 72, 40, 69, 90, 55, 39. Bins: Low = marks < 40, Mid = 40 <= marks < 70, High = marks >= 70. Mid bin mein kitne cards honge?",
+          "options": ["2", "4", "3", "5"],
+          "answer": 2,
+          "explanation": "Mid ke liye 40 se 69 tak: 40, 69 aur 55 → 3 cards. 40 boundary par hai aur `40 <= marks` ki wajah se Mid mein jaata hai, Low mein nahi. 39 Low mein aur 72, 90 High mein.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w8-q2",
+          "question": "List [19, 4, 27, 4, 11] ko ascending order mein sort karne ke baad teesra (3rd) element kya hoga?",
+          "options": ["11", "19", "4", "27"],
+          "answer": 0,
+          "explanation": "Sorted list: [4, 4, 11, 19, 27]. Teesra element 11 hai. Trap: duplicate 4 ko ek baar ginna — tab teesra 19 lagega. Sorting mein duplicates dono rehte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w8-q3",
+          "question": "List [29, 10, 14, 37, 13] par selection sort chalaya. Har pass mein bache hue hisse ka minimum dhoondh kar us hisse ki pehli position wale element se swap kiya jaata hai. 2 passes ke baad list kya hogi?",
+          "options": [
+            "[10, 13, 29, 14, 37]",
+            "[10, 14, 29, 37, 13]",
+            "[10, 13, 14, 29, 37]",
+            "[10, 13, 14, 37, 29]"
+          ],
+          "answer": 3,
+          "explanation": "Pass 1: minimum 10 ko 29 se swap → [10, 29, 14, 37, 13]. Pass 2: bache hisse [29, 14, 37, 13] ka minimum 13, use 29 se swap → [10, 13, 14, 37, 29]. Poori sorted list [10, 13, 14, 29, 37] abhi nahi bani — sirf 2 passes hue hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w8-q4",
+          "question": "List [50, 20, 40, 10, 30] par insertion sort (ascending) chal raha hai. Pehle 3 cards insert hone ke baad sorted pile kya hogi?",
+          "options": ["[10, 20, 40]", "[20, 40, 50]", "[20, 50, 40]", "[10, 20, 30]"],
+          "answer": 1,
+          "explanation": "Insertion sort cards ko order mein uthata hai: 50 → [50], 20 → [20, 50], 40 → [20, 40, 50]. 10 abhi uthaya hi nahi gaya, isliye [10, 20, 40] galat hai — wo selection sort jaisi soch hai (pehle minimum dhoondhna).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w8-q5",
+          "question": "60 students hain jo 3 cities mein barabar bante hain (har city mein 20). Same-city pairs dhoondhne hain. Bina binning ke saare unique pairs check karne mein 60 × 59 / 2 = 1770 comparisons lagte. City-wise bins banake sirf har bin ke andar unique pairs check karne mein kitne comparisons lagenge?",
+          "options": ["570", "1770", "190", "600"],
+          "answer": 0,
+          "explanation": "Ek bin mein 20 × 19 / 2 = 190 pairs. 3 bins → 3 × 190 = 570. 190 sirf ek city ka hai, aur 600 tab aata jab 20 × 20 / 2 lagao (khud se comparison bhi gin liya). Binning ne kaam lagbhag teen guna kam kar diya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w8-q6",
+          "question": "Positions 0 se shuru hain aur `from 0 to 4` mein 0 aur 4 dono shamil hain. Is ek pass ke baad `L` aur `c` kya honge?",
+          "code": "L = [3, 8, 5, 9, 2, 7]\nc = 0\nfor i from 0 to 4:\n    if L[i] > L[i + 1]:\n        temp = L[i]\n        L[i] = L[i + 1]\n        L[i + 1] = temp\n        c = c + 1",
+          "options": [
+            "L = [2, 3, 5, 7, 8, 9], c = 3",
+            "L = [3, 5, 8, 2, 7, 9], c = 2",
+            "L = [3, 5, 8, 2, 7, 9], c = 3",
+            "L = [3, 5, 2, 8, 7, 9], c = 4"
+          ],
+          "answer": 2,
+          "explanation": "i = 0: 3 > 8 nahi. i = 1: 8 > 5 swap → [3, 5, 8, 9, 2, 7], c = 1. i = 2: 8 > 9 nahi. i = 3: 9 > 2 swap → [3, 5, 8, 2, 9, 7], c = 2. i = 4: 9 > 7 swap → [3, 5, 8, 2, 7, 9], c = 3. Ek pass sirf sabse bade (9) ko end tak le jaata hai; poori list sort nahi hoti.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Lists",
+      "summary": "Is week tum list ko ek ordered collection ki tarah use karna seekhoge — indexing, length, append, iteration aur kisi list se filtered nayi list banana.",
+      "readMinutes": 12,
+      "concepts": [
+        "**List**: Values ka ordered collection, jaise `[12, 5, 9]`. Order matter karta hai aur duplicates allowed hain.",
+        "**Indexing**: Positions 0 se shuru hoti hain. `L[0]` pehla element hai aur `L[length(L) - 1]` aakhri.",
+        "**length(L)**: List mein kitne elements hain. `length([4, 7, 1]) = 3`.",
+        "**Append**: `L = L + [x]` list ke end mein naya element jodta hai (Python mein `L.append(x)` bhi yahi karta hai).",
+        "**List par iteration**: `for each x in L:` — har element order mein ek-ek karke milta hai.",
+        "**Filtered list banana**: Khaali list `[]` se shuru karo, aur condition True ho to element append karo.",
+        "**Index out of range**: 5 elements wali list mein valid indices 0 se 4 hain; `L[5]` error deta hai."
+      ],
+      "example": {
+        "problem": "Bills ki list `B = [250, 90, 410, 60, 300]` se ek nayi list banao jisme sirf 100 se bade bills hon, aur unka average nikalo.",
+        "steps": [
+          "`big = []` se shuru karo.",
+          "250 > 100 → big = [250].",
+          "90 → skip. 410 → big = [250, 410].",
+          "60 → skip. 300 → big = [250, 410, 300].",
+          "Sum = 250 + 410 + 300 = 960, length = 3.",
+          "Answer: big = [250, 410, 300] aur average = 960 / 3 = 320."
+        ],
+        "code": "B = [250, 90, 410, 60, 300]\nbig = []\nfor each x in B:\n    if x > 100:\n        big = big + [x]\ntotal = 0\nfor each y in big:\n    total = total + y\navg = total / length(big)"
+      },
+      "mistakes": [
+        "Indexing 1 se shuru karna. Pehla element `L[0]` hai, `L[1]` nahi.",
+        "Aakhri element ke liye `L[length(L)]` likhna — ye out of range hai; sahi hai `L[length(L) - 1]`.",
+        "`L + [x]` ki jagah `L + x` likhna — list mein list hi jodi jaati hai, isliye x ko brackets mein rakho."
+      ],
+      "revision": [
+        "List ordered hai, index 0 se shuru.",
+        "Last element: `L[length(L) - 1]`.",
+        "Append: `L = L + [x]`.",
+        "Filter pattern: `[]` se shuru, condition True ho to append."
+      ],
+      "questions": [
+        {
+          "id": "ct-w9-q1",
+          "question": "`L = [8, 3, 6, 1, 9]` hai. `L[2] + L[4]` ki value kya hogi?",
+          "options": ["4", "9", "12", "15"],
+          "answer": 3,
+          "explanation": "Index 0 se shuru: L[0] = 8, L[1] = 3, L[2] = 6, L[3] = 1, L[4] = 9. To 6 + 9 = 15. 4 wala trap 1 se indexing ki galti hai (3 + 1).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w9-q2",
+          "question": "List `[5, 5, 2, 7]` ke baare mein kaunsa statement sahi hai?",
+          "options": [
+            "Iski length 4 hai aur duplicates allowed hain",
+            "Iski length 3 hai kyunki 5 do baar hai",
+            "Iska pehla element L[1] hai",
+            "List mein order matter nahi karta"
+          ],
+          "answer": 0,
+          "explanation": "List har element ko alag rakhti hai, duplicates bhi, isliye length 4. Pehla element L[0] hai aur list ordered hoti hai — [5, 2] aur [2, 5] alag lists hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w9-q3",
+          "question": "Is pseudocode ke baad `M` kya hogi?",
+          "code": "L = [4, 11, 7, 20, 3]\nM = []\nfor each x in L:\n    if x % 2 == 1:\n        M = M + [x * 2]",
+          "options": ["[8, 40]", "[11, 7, 3]", "[22, 14, 6]", "[6, 14, 22]"],
+          "answer": 2,
+          "explanation": "`x % 2 == 1` matlab odd. Odd numbers order mein: 11, 7, 3 — inko double karke append: [22, 14, 6]. [11, 7, 3] mein double karna bhool gaye; [6, 14, 22] mein order galat hai — append original order hi rakhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w9-q4",
+          "question": "Is pseudocode ke baad `s` ki value kya hogi?",
+          "code": "L = [3, 1, 4, 1, 5]\ni = 0\ns = 0\nwhile i < length(L):\n    if L[i] > i:\n        s = s + L[i]\n    i = i + 1\nend while",
+          "options": ["14", "12", "9", "7"],
+          "answer": 1,
+          "explanation": "Har element ko uske index se compare karo: i = 0: 3 > 0 → s = 3. i = 1: 1 > 1 nahi. i = 2: 4 > 2 → s = 7. i = 3: 1 > 3 nahi. i = 4: 5 > 4 → s = 12. 14 saare elements ka sum hai — condition ignore karne par aata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w9-q5",
+          "question": "Is pseudocode ke baad `x` ki value kya hogi?",
+          "code": "L = [10, 20, 30, 40]\nL = L + [50]\nn = length(L)\nx = L[n - 2]",
+          "options": ["50", "40", "30", "Error"],
+          "answer": 1,
+          "explanation": "Append ke baad L = [10, 20, 30, 40, 50], to n = 5. L[n - 2] = L[3] = 40 (index 0 se). 30 tab aata jab append ko ignore karke n = 4 le lo; 50 to L[4] hai, yani last element.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w9-q6",
+          "question": "Is pseudocode ke baad `R` kya hogi?",
+          "code": "L = [2, 9, 4, 9, 1, 12]\nR = []\nbest = L[0]\nfor each x in L:\n    if x > best:\n        best = x\n        R = R + [x]",
+          "options": ["[9, 12]", "[2, 9, 12]", "[9, 9, 12]", "[2, 9, 9, 12]"],
+          "answer": 0,
+          "explanation": "best = 2 se shuru. 2 > 2 nahi. 9 > 2 → R = [9], best = 9. 4 nahi. Doosra 9: 9 > 9 False, isliye dobara nahi judta. 1 nahi. 12 > 9 → R = [9, 12]. [9, 9, 12] tab aata jab condition `>=` hoti; 2 kabhi append nahi hota kyunki wo sirf starting best hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Dictionaries",
+      "summary": "Is week tum dictionary (key → value) ka use karke data ko naam se store karna, frequency count karna aur category-wise totals nikalna seekhoge.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Dictionary**: Key–value pairs ka collection, jaise `{\"Pune\": 3, \"Agra\": 5}`. Value ko position se nahi, key se access karte hain: `D[\"Pune\"]`.",
+        "**Unique keys**: Ek dictionary mein ek key sirf ek baar hoti hai. Same key par dobara assign karoge to purani value overwrite ho jaayegi.",
+        "**Key check**: Value update karne se pehle check karo ki key hai ya nahi: `if k in D:`. Missing key padhne par error aata hai.",
+        "**Frequency count pattern**: Key hai to `D[k] = D[k] + 1`, warna `D[k] = 1`. Words, letters ya cities ginne ka standard tarika.",
+        "**Group total pattern**: Category-wise sum: key hai to `D[cat] = D[cat] + amount`, warna `D[cat] = amount`.",
+        "**keys(D)**: Saari keys ki list deta hai, jisse dictionary par iterate kar sakte ho.",
+        "**List vs Dictionary**: List = position se access (`L[2]`), Dictionary = key se access (`D[\"Delhi\"]`)."
+      ],
+      "example": {
+        "problem": "Shopping cards par categories hain: Fruits, Dairy, Fruits, Snacks, Dairy, Fruits. Har category kitni baar aayi?",
+        "steps": [
+          "D = {} (khaali dictionary).",
+          "Fruits: nayi key → {Fruits: 1}. Dairy: nayi → {Fruits: 1, Dairy: 1}.",
+          "Fruits: pehle se hai → Fruits = 2.",
+          "Snacks: nayi → Snacks = 1.",
+          "Dairy: hai → Dairy = 2. Fruits: hai → Fruits = 3.",
+          "Answer: {Fruits: 3, Dairy: 2, Snacks: 1}."
+        ],
+        "code": "D = {}\nfor each card X in Pile:\n    k = X.Category\n    if k in D:\n        D[k] = D[k] + 1\n    else:\n        D[k] = 1"
+      },
+      "mistakes": [
+        "Key check kiye bina `D[k] = D[k] + 1` karna — pehli baar key hoti hi nahi, error aata hai. Pehle `if k in D` check karo.",
+        "Sochna ki same key do baar store hogi. Dobara assign karne par purani value replace ho jaati hai.",
+        "Dictionary ko position se access karna, jaise `D[0]` — dictionary mein position nahi, key chalti hai."
+      ],
+      "revision": [
+        "Dictionary = key → value.",
+        "Keys unique; reassignment purani value overwrite karta hai.",
+        "Frequency: `if k in D` → +1, warna = 1.",
+        "`keys(D)` se saari keys par loop.",
+        "Naam se lookup chahiye → dictionary; order/position chahiye → list."
+      ],
+      "questions": [
+        {
+          "id": "ct-w10-q1",
+          "question": "Is pseudocode ke baad dictionary mein kitni keys hongi aur `D[\"pen\"]` kya hoga?",
+          "code": "D = {\"pen\": 10, \"book\": 45}\nD[\"pen\"] = 12\nD[\"bag\"] = 300",
+          "options": [
+            "4 keys, D[\"pen\"] = 12",
+            "3 keys, D[\"pen\"] = 12",
+            "3 keys, D[\"pen\"] = 10",
+            "4 keys, D[\"pen\"] = 10"
+          ],
+          "answer": 1,
+          "explanation": "\"pen\" pehle se hai, to `D[\"pen\"] = 12` nayi key nahi banata, sirf value 10 se 12 kar deta hai. \"bag\" nayi key hai. Keys: pen, book, bag → 3. 4 keys tab lagti jab tum soch lo ki pen do baar store hoga.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w10-q2",
+          "question": "Kisi city ke naam se uski population turant nikalni hai. Kaunsa structure sabse suitable hai?",
+          "options": [
+            "Ek list jisme sirf populations ho",
+            "Ek Integer variable",
+            "Ek Boolean variable",
+            "Dictionary jisme key = city ka naam aur value = population"
+          ],
+          "answer": 3,
+          "explanation": "Naam se value dhoondhna dictionary ka kaam hai: `D[\"Indore\"]` seedha population de dega. Sirf populations wali list mein pata hi nahi chalega kaunsa number kis city ka hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w10-q3",
+          "question": "Is pseudocode ke baad `D['A'] + D['N']` ki value kya hogi?",
+          "code": "D = {}\nfor each character c in \"BANANA\":\n    if c in D:\n        D[c] = D[c] + 1\n    else:\n        D[c] = 1",
+          "options": ["5", "6", "4", "3"],
+          "answer": 0,
+          "explanation": "BANANA mein B = 1, A = 3, N = 2. D['A'] + D['N'] = 3 + 2 = 5. 6 to poore word ki length hai (B bhi gin liya). Har letter pehli baar 1 se shuru hota hai, phir har repeat par +1.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w10-q4",
+          "question": "Har item ek (category, amount) pair hai. Loop ke baad kis category ka total sabse zyada hai, aur kitna?",
+          "code": "bills = [(\"Food\", 120), (\"Travel\", 300), (\"Food\", 80), (\"Books\", 150), (\"Travel\", 50)]\nT = {}\nfor each (cat, amt) in bills:\n    if cat in T:\n        T[cat] = T[cat] + amt\n    else:\n        T[cat] = amt",
+          "options": ["Travel, 300", "Food, 200", "Travel, 350", "Books, 150"],
+          "answer": 2,
+          "explanation": "Totals: Food = 120 + 80 = 200, Travel = 300 + 50 = 350, Books = 150. Sabse zyada Travel, 350. 'Travel, 300' sirf sabse bada single bill hai — group total mein usi category ke saare bills judte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w10-q5",
+          "question": "Is pseudocode ke baad `D[\"A\"]` ki value kya hogi?",
+          "code": "D = {}\nfor each (cat, amt) in [(\"A\", 5), (\"B\", 7), (\"A\", 4)]:\n    D[cat] = amt",
+          "options": ["9", "4", "5", "Error"],
+          "answer": 1,
+          "explanation": "Yahan key check aur jodna nahi hai, sirf `D[cat] = amt` assignment hai. Pehle D[\"A\"] = 5, phir teesre item par overwrite hokar 4. 9 tab aata jab code `D[cat] = D[cat] + amt` jaisa total pattern hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w10-q6",
+          "question": "Keys usi order mein milti hain jisme daali gayi thi. Loop ke baad `inv` mein kitni keys hongi aur `inv[82]` kya hoga?",
+          "code": "marks = {\"Asha\": 82, \"Ravi\": 67, \"Neel\": 82, \"Tara\": 91}\ninv = {}\nfor each name in keys(marks):\n    m = marks[name]\n    if m in inv:\n        inv[m] = inv[m] + [name]\n    else:\n        inv[m] = [name]",
+          "options": [
+            "4 aur [\"Neel\"]",
+            "3 aur [\"Neel\"]",
+            "4 aur [\"Asha\", \"Neel\"]",
+            "3 aur [\"Asha\", \"Neel\"]"
+          ],
+          "answer": 3,
+          "explanation": "Yahan marks keys ban rahe hain: 82, 67, 91 → 3 unique keys (82 do baar aaya par key ek hi hai). Asha par inv[82] = [\"Asha\"], phir Neel par 82 already hai to list mein append → [\"Asha\", \"Neel\"]. [\"Neel\"] tab aata jab overwrite hota; is code mein `if m in inv` usse bachata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Graphs and matrices",
+      "summary": "Is week tum relationships ko graph (nodes aur edges) ki tarah dekhna aur unhe adjacency matrix mein store karke degree, connections aur chhote paths nikalna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Graph**: Nodes (jaise log ya shehar) aur unke beech edges (connections). 'A aur B dost hain' ek edge hai.",
+        "**Undirected vs directed**: Dosti undirected hai (A–B = B–A). 'A follows B' directed hai (A → B, par zaroori nahi ki B → A).",
+        "**Adjacency matrix**: n × n table M, jisme `M[i][j] = 1` agar i se j edge hai, warna 0. Undirected graph ki matrix symmetric hoti hai: `M[i][j] = M[j][i]`.",
+        "**Degree**: Undirected graph mein kisi node se jude edges ki sankhya = uski row ke 1s ka sum.",
+        "**In-degree / out-degree**: Directed graph mein row ka sum = out-degree (wo kitno ko follow karta hai), column ka sum = in-degree (kitne log use follow karte hain).",
+        "**Matrix par nested loop**: Saari cells check karne ke liye `for i` ke andar `for j` — ye week 7 wala nested iteration hi hai.",
+        "**Path of length 2**: i se j tak do kadam ka raasta tab hai jab koi k ho jisme `M[i][k] = 1` aur `M[k][j] = 1`.",
+        "**Edges ginna**: Undirected graph mein total edges = matrix ke saare 1s / 2, kyunki har edge do baar store hoti hai."
+      ],
+      "example": {
+        "problem": "4 dost P, Q, R, S hain. Dostiyan: P–Q, P–R, R–S. Adjacency matrix banao aur har ek ki degree nikalo.",
+        "steps": [
+          "4 × 4 matrix lo, shuru mein saari cells 0.",
+          "P–Q: M[P][Q] = 1 aur M[Q][P] = 1 (undirected, dono taraf).",
+          "P–R aur R–S ke liye bhi dono taraf 1 likho.",
+          "Degree = row ka sum: P = 2, Q = 1, R = 2, S = 1.",
+          "Check: saare 1s = 6, edges = 6 / 2 = 3. Sahi hai.",
+          "Answer: P = 2, Q = 1, R = 2, S = 1."
+        ],
+        "code": "      P  Q  R  S\nP  [  0, 1, 1, 0 ]\nQ  [  1, 0, 0, 0 ]\nR  [  1, 0, 0, 1 ]\nS  [  0, 0, 1, 0 ]"
+      },
+      "mistakes": [
+        "Undirected graph mein sirf ek taraf 1 likhna. A–B edge ke liye M[A][B] aur M[B][A] dono 1 karo.",
+        "Directed graph mein row aur column ka matlab ulta samajhna. Row i = i se bahar jaane wale edges (out), column j = j mein aane wale edges (in).",
+        "Undirected graph ke edges ginte waqt saare 1s seedhe gin lena; 2 se divide karna zaroori hai."
+      ],
+      "revision": [
+        "Graph = nodes + edges.",
+        "M[i][j] = 1 matlab i se j edge.",
+        "Undirected matrix symmetric hoti hai.",
+        "Row sum = degree (ya out-degree), column sum = in-degree.",
+        "Undirected edges = total 1s / 2."
+      ],
+      "questions": [
+        {
+          "id": "ct-w11-q1",
+          "question": "Ye ek undirected graph ki adjacency matrix hai. Node A ki degree kya hai?",
+          "code": "     A  B  C  D\nA  [ 0, 1, 1, 1 ]\nB  [ 1, 0, 0, 1 ]\nC  [ 1, 0, 0, 0 ]\nD  [ 1, 1, 0, 0 ]",
+          "options": ["2", "4", "3", "1"],
+          "answer": 2,
+          "explanation": "A ki row: 0 + 1 + 1 + 1 = 3, yani A ke B, C aur D teeno se edges hain. 4 tab aata jab matrix ki size ko degree samajh lo; diagonal (A se A) 0 hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w11-q2",
+          "question": "Ye ek undirected graph ki adjacency matrix hai. Graph mein kul kitne edges hain?",
+          "code": "     A  B  C  D\nA  [ 0, 1, 1, 1 ]\nB  [ 1, 0, 0, 1 ]\nC  [ 1, 0, 0, 0 ]\nD  [ 1, 1, 0, 0 ]",
+          "options": ["8", "4", "6", "3"],
+          "answer": 1,
+          "explanation": "Saare 1s: 3 + 2 + 1 + 2 = 8. Undirected graph mein har edge do baar store hoti hai (M[A][B] aur M[B][A]), isliye edges = 8 / 2 = 4: A–B, A–C, A–D, B–D. 8 bolna sabse common galti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w11-q3",
+          "question": "Ye ek directed follow graph hai: M[i][j] = 1 matlab i, j ko follow karta hai. Kis node ke sabse zyada followers (in-degree) hain?",
+          "code": "     U  V  W  X\nU  [ 0, 1, 1, 0 ]\nV  [ 0, 0, 1, 0 ]\nW  [ 1, 0, 0, 0 ]\nX  [ 1, 1, 1, 0 ]",
+          "options": ["U", "X", "V", "W"],
+          "answer": 3,
+          "explanation": "Followers = column ka sum. U: 2 (W, X), V: 2 (U, X), W: 3 (U, V, X), X: 0. To W. X ka trap: X ki row ka sum 3 hai, par wo out-degree hai — X teen logon ko follow karta hai, use koi follow nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w11-q4",
+          "question": "Kaunsi matrix kisi undirected graph (bina self-loop) ki adjacency matrix ho sakti hai?",
+          "options": [
+            "`[[0,1,0],[1,0,1],[0,1,0]]`",
+            "`[[0,1,0],[0,0,1],[0,1,0]]`",
+            "`[[1,1,0],[1,0,0],[0,0,0]]`",
+            "`[[0,1,1],[1,0,0],[0,0,0]]`"
+          ],
+          "answer": 0,
+          "explanation": "Undirected matrix symmetric honi chahiye aur bina self-loop ke diagonal 0. Pehli matrix dono shartein poori karti hai. Doosri mein M[0][1] = 1 par M[1][0] = 0; teesri mein M[0][0] = 1 (self-loop); chauthi mein M[0][2] = 1 par M[2][0] = 0.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w11-q5",
+          "question": "Directed graph ki matrix M di gayi hai (indices 0 se, `from 0 to 3` mein dono ends shamil). Pseudocode ke baad `c` (node 0 se node 3 tak length-2 raaston ki sankhya) kya hogi?",
+          "code": "M = [[0, 1, 1, 0],\n     [0, 0, 0, 1],\n     [0, 0, 0, 1],\n     [0, 0, 0, 0]]\nc = 0\nfor k from 0 to 3:\n    if M[0][k] == 1 and M[k][3] == 1:\n        c = c + 1",
+          "options": ["1", "2", "0", "3"],
+          "answer": 1,
+          "explanation": "k = 1: M[0][1] = 1 aur M[1][3] = 1 → raasta 0 → 1 → 3. k = 2: M[0][2] = 1 aur M[2][3] = 1 → raasta 0 → 2 → 3. k = 0 aur k = 3 par condition False. c = 2. 0 tab lagta jab sirf direct edge M[0][3] dekho, jo 0 hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w11-q6",
+          "question": "Undirected graph ki matrix M di gayi hai (`from 0 to 4` mein dono ends shamil). Pseudocode ke baad `count` kya hoga?",
+          "code": "M = [[0, 1, 1, 0, 0],\n     [1, 0, 1, 0, 0],\n     [1, 1, 0, 1, 0],\n     [0, 0, 1, 0, 1],\n     [0, 0, 0, 1, 0]]\ncount = 0\nfor i from 0 to 4:\n    d = 0\n    for j from 0 to 4:\n        d = d + M[i][j]\n    if d == 2:\n        count = count + 1",
+          "options": ["3", "1", "2", "4"],
+          "answer": 0,
+          "explanation": "Har row ka sum (degree): node 0 = 2, node 1 = 2, node 2 = 3, node 3 = 2, node 4 = 1. Degree exactly 2 wale nodes: 0, 1, 3 → count = 3. Agar `d = 0` outer loop ke bahar hota, to d jama hota rehta (2, 4, 7, 9, 10) aur galat answer 1 aata.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Recursion and Python thinking",
+      "summary": "Is week tum recursion seekhoge — aisa procedure jo khud ko chhote input ke saath call karta hai — aur dekhoge ki ab tak ka pseudocode Python mein kaise likha jaata hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Recursion**: Ek procedure jo apne aap ko chhote problem ke saath call karta hai, jaise `Fact(n) = n × Fact(n − 1)`.",
+        "**Base case**: Woh condition jahan recursion rukti hai, jaise `Fact(0) = 1`. Base case na ho (ya kabhi pahuncha na jaaye) to calls kabhi khatam nahi hoti.",
+        "**Recursive case**: Problem ko chhota karke same procedure ko call karna. Har call base case ki taraf badhni chahiye.",
+        "**Call stack / unwinding**: Calls pehle andar tak jaati hain (Fact(3) → Fact(2) → Fact(1) → Fact(0)), phir results ulte order mein wapas aate hain.",
+        "**Recursion on lists**: List = pehla element + baaki list. Jaise `Sum(L) = L[0] + Sum(baaki list)`, aur khaali list ka sum 0.",
+        "**Python mapping**: `Procedure` → `def`, `end while` ki jagah sirf indentation, `length(L)` → `len(L)`, `L = L + [x]` → `L.append(x)`.",
+        "**Python range aur slicing**: `range(a, b)` a se b − 1 tak chalta hai (b shamil nahi). `L[1:]` matlab index 1 se end tak ki list — recursion mein 'baaki list' ke liye kaam aata hai."
+      ],
+      "example": {
+        "problem": "Recursive procedure se `power(2, 4)` (yani 2 ki power 4) nikalo, Python mein likh kar.",
+        "steps": [
+          "Base case: e == 0 par 1 return. Recursive case: b × power(b, e − 1).",
+          "power(2, 4) = 2 × power(2, 3).",
+          "power(2, 3) = 2 × power(2, 2), power(2, 2) = 2 × power(2, 1), power(2, 1) = 2 × power(2, 0).",
+          "power(2, 0) = 1 — base case, yahan recursion rukti hai.",
+          "Wapas aate hue: power(2, 1) = 2, power(2, 2) = 4, power(2, 3) = 8, power(2, 4) = 16.",
+          "Answer: 16."
+        ],
+        "code": "def power(b, e):\n    if e == 0:\n        return 1\n    return b * power(b, e - 1)\n\nprint(power(2, 4))"
+      },
+      "mistakes": [
+        "Base case aisa rakhna jahan input kabhi pahunche hi nahi — jaise `if n == 0` jab har call mein n − 2 ho aur n odd ho. Check karo ki har valid input base case tak pahunchta hai.",
+        "Recursive call ka result use na karna — `return` ke bina sirf `power(b, e - 1)` likhne se value kho jaati hai.",
+        "Python mein `range(1, 5)` ko 1 se 5 tak samajhna; ye 1, 2, 3, 4 deta hai."
+      ],
+      "revision": [
+        "Recursion = base case + recursive case.",
+        "Har call problem ko chhota kare aur base case ki taraf badhe.",
+        "Calls andar jaati hain, results ulte order mein laut-te hain.",
+        "Python: def, len(), append(), L[1:].",
+        "`range(a, b)` mein b shamil nahi hota."
+      ],
+      "questions": [
+        {
+          "id": "ct-w12-q1",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "def f(n):\n    if n == 0:\n        return 0\n    return n + f(n - 1)\n\nprint(f(4))",
+          "options": ["4", "24", "9", "10"],
+          "answer": 3,
+          "explanation": "f(4) = 4 + f(3) = 4 + 3 + f(2) = 4 + 3 + 2 + 1 + f(0) = 10. Ye 1 se n tak ka sum hai. 24 tab aata jab `+` ki jagah `*` hota (factorial).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w12-q2",
+          "question": "Recursive procedure mein base case ka kaam kya hai?",
+          "options": [
+            "Recursion ko rokna aur seedha answer dena",
+            "Procedure ko tez chalana",
+            "Har call mein input ko bada karna",
+            "Saare variables ko global banana"
+          ],
+          "answer": 0,
+          "explanation": "Base case woh chhota input hai jiska answer seedha pata hai, isliye wahan recursion ruk jaati hai. Bina base case ke procedure khud ko call karta hi rahega. Input har call mein chhota hona chahiye, bada nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ct-w12-q3",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "def g(L):\n    if len(L) == 0:\n        return 0\n    if L[0] > 0:\n        return 1 + g(L[1:])\n    return g(L[1:])\n\nprint(g([3, -1, 0, 7, -5, 2]))",
+          "options": ["4", "3", "6", "2"],
+          "answer": 1,
+          "explanation": "g positive numbers ginta hai: har call pehla element check karti hai aur baaki list `L[1:]` par recurse karti hai. Positive: 3, 7, 2 → 3. 0 positive nahi hai (`0 > 0` False); usse gin loge to 4 aayega. 6 to list ki length hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w12-q4",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "L = [5, 8, 2, 9]\ns = 0\nfor i in range(1, len(L)):\n    s = s + L[i]\nprint(s)",
+          "options": ["24", "15", "19", "10"],
+          "answer": 2,
+          "explanation": "len(L) = 4, to `range(1, 4)` deta hai i = 1, 2, 3 (4 shamil nahi). s = L[1] + L[2] + L[3] = 8 + 2 + 9 = 19. 24 tab aata jab index 0 bhi shamil karo; 15 tab jab range ko 0 se 2 tak samjho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w12-q5",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "def h(n):\n    if n <= 1:\n        return 1\n    return h(n - 1) + h(n - 2)\n\nprint(h(5))",
+          "options": ["5", "8", "13", "3"],
+          "answer": 1,
+          "explanation": "Base case: h(0) = 1 aur h(1) = 1. Phir neeche se upar: h(2) = 2, h(3) = 3, h(4) = 5, h(5) = h(4) + h(3) = 5 + 3 = 8. 5 tab aata jab h(4) ko hi answer maan lo — ek level kam.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ct-w12-q6",
+          "question": "Is procedure ke liye `t(6)` aur `t(5)` ke baare mein kya sahi hai?",
+          "code": "def t(n):\n    if n == 0:\n        return 0\n    return 1 + t(n - 2)",
+          "options": [
+            "t(6) = 3 aur t(5) = 2",
+            "t(6) = 6 aur t(5) = 5",
+            "Dono infinite recursion mein chale jaate hain",
+            "t(6) = 3, lekin t(5) kabhi base case tak nahi pahunchta (infinite recursion)"
+          ],
+          "answer": 3,
+          "explanation": "t(6): 6 → 4 → 2 → 0, teen calls mein 1 juda → 3. t(5): 5 → 3 → 1 → -1 → -3 … n kabhi 0 nahi hota, base case miss ho jaata hai (Python mein RecursionError aata hai). 't(5) = 2' wala trap maan leta hai ki recursion 1 par ruk jaayegi, par base case sirf n == 0 hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

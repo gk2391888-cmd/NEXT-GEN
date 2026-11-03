@@ -1,0 +1,1093 @@
+{
+  "subjectId": "stat2",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Joint distributions",
+      "summary": "Do ya zyada discrete random variables ko ek saath kaise describe karte hain, yeh seekhenge. Joint PMF table se marginal aur conditional probabilities nikalna is week ka main skill hai.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Joint PMF**: p(x, y) = P(X = x, Y = y). Yeh batata hai ki X aur Y dono ek saath specific values lein, uski probability kitni hai.",
+        "**Valid joint PMF**: har cell p(x, y) ≥ 0 hona chahiye aur saare cells ka total Σ p(x, y) = 1 hona chahiye. Unknown constant nikalne ke liye isi rule ka use hota hai.",
+        "**Marginal PMF**: P(X = x) = Σ (over y) p(x, y), yaani table mein X wali row ka sum. Isi tarah Y ka marginal column sum se aata hai.",
+        "**Conditional PMF**: P(Y = y | X = x) = p(x, y) / P(X = x). Matlab given X = x wali row ko us row ke total se divide kar do, taaki nayi row ka sum 1 ho jaaye.",
+        "**Event probability**: P(X + Y ≤ 2) jaise events ke liye bas un cells ko add karo jo condition satisfy karte hain.",
+        "**Teen ya zyada RVs**: p(x, y, z) bhi same tarah kaam karta hai. Kisi ek variable ka marginal chahiye toh baaki variables par sum kar do."
+      ],
+      "example": {
+        "problem": "X ∈ {0, 1} aur Y ∈ {0, 1, 2} ka joint PMF: p(0,0) = 0.1, p(0,1) = 0.2, p(0,2) = 0.1, p(1,0) = 0.2, p(1,1) = 0.3, p(1,2) = 0.1. P(X = 1), P(Y = 1 | X = 1) aur P(X + Y ≥ 2) nikalo.",
+        "steps": [
+          "Pehle check karo: 0.1 + 0.2 + 0.1 + 0.2 + 0.3 + 0.1 = 1.0, toh PMF valid hai.",
+          "P(X = 1) = row X = 1 ka sum = 0.2 + 0.3 + 0.1 = 0.6. Isliye P(X = 0) = 0.4.",
+          "P(Y = 1 | X = 1) = p(1,1) / P(X = 1) = 0.3 / 0.6 = 0.5.",
+          "X + Y ≥ 2 wale cells: (0,2), (1,1), (1,2).",
+          "P(X + Y ≥ 2) = 0.1 + 0.3 + 0.1 = 0.5.",
+          "Answer: P(X = 1) = 0.6, P(Y = 1 | X = 1) = 0.5, P(X + Y ≥ 2) = 0.5."
+        ]
+      },
+      "mistakes": [
+        "P(Y = y | X = x) nikalte waqt galat marginal se divide karna. Jo variable 'given' hai (bar ke right side), usi ke marginal se divide karo.",
+        "Table ka total 1 check kiye bina aage badh jaana. Unknown constant wale questions mein yahi pehla step hai.",
+        "Yeh maan lena ki p(x, y) = P(X = x) × P(Y = y) hamesha hota hai. Yeh sirf independent RVs ke liye true hai."
+      ],
+      "revision": [
+        "Σ over all (x, y) of p(x, y) = 1",
+        "P(X = x) = Σ over y of p(x, y) (row sum)",
+        "P(Y = y) = Σ over x of p(x, y) (column sum)",
+        "P(Y = y | X = x) = p(x, y) / P(X = x)",
+        "Kisi event ki probability = condition satisfy karne wale cells ka sum"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w1-q1",
+          "question": "X, Y ∈ {0, 1} ka joint PMF hai: p(0,0) = 0.15, p(0,1) = 0.25, p(1,0) = 0.35, p(1,1) = k. k ki value kya hai?",
+          "options": ["0.15", "0.25", "0.35", "0.75"],
+          "answer": 1,
+          "explanation": "Saare cells ka sum 1 hona chahiye: 0.15 + 0.25 + 0.35 + k = 1, toh k = 1 − 0.75 = 0.25. Trap: 0.75 known cells ka sum hai, k nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w1-q2",
+          "question": "Joint PMF: p(1,1) = 0.1, p(1,2) = 0.3, p(2,1) = 0.2, p(2,2) = 0.4. P(Y = 2) kitna hai?",
+          "options": ["0.3", "0.4", "0.6", "0.7"],
+          "answer": 3,
+          "explanation": "P(Y = 2) = p(1,2) + p(2,2) = 0.3 + 0.4 = 0.7. Trap: 0.6 = P(X = 2) hai (galat variable ka marginal), aur 0.4 sirf ek cell hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w1-q3",
+          "question": "Same joint PMF: p(1,1) = 0.1, p(1,2) = 0.3, p(2,1) = 0.2, p(2,2) = 0.4. P(X = 2 | Y = 2) kya hai?",
+          "options": ["4/7", "0.4", "2/3", "0.7"],
+          "answer": 0,
+          "explanation": "Given Y = 2 hai, toh P(Y = 2) = 0.7 se divide karo: 0.4 / 0.7 = 4/7. Trap: 2/3 = 0.4 / 0.6 hai, jo P(Y = 2 | X = 2) hota hai (galat marginal se divide kiya). 0.4 joint probability hai, conditional nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w1-q4",
+          "question": "Ek fair coin do baar toss hota hai. X = total heads, Y = 1 agar pehla toss Head ho, warna 0. P(X = 1, Y = 1) kya hai?",
+          "options": ["1/2", "1/8", "1/4", "3/4"],
+          "answer": 2,
+          "explanation": "Outcomes HH, HT, TH, TT, har ek 1/4. X = 1 aur pehla toss H, dono sirf HT mein hota hai, toh answer 1/4. Trap: 1/2 = P(X = 1) ya P(Y = 1) akele ki probability hai, joint nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w1-q5",
+          "question": "p(x, y) = c(x + y), jahan x ∈ {1, 2} aur y ∈ {1, 2}. Valid PMF ke liye c kya hona chahiye?",
+          "options": ["1/4", "1/6", "1/9", "1/12"],
+          "answer": 3,
+          "explanation": "Chaaron cells: (1,1) → 2c, (1,2) → 3c, (2,1) → 3c, (2,2) → 4c. Total 12c = 1, toh c = 1/12. Trap: 1/9 tab aata hai jab (1,2) aur (2,1) ko ek hi cell gin lo; 1/4 tab jab har cell ko equal maan lo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w1-q6",
+          "question": "p(x, y) = (x + y)/12, x ∈ {1, 2}, y ∈ {1, 2}. P(X = 2 | Y = 1) kya hai?",
+          "options": ["3/12", "3/7", "3/5", "1/2"],
+          "answer": 2,
+          "explanation": "P(Y = 1) = p(1,1) + p(2,1) = 2/12 + 3/12 = 5/12. Phir P(X = 2 | Y = 1) = (3/12) / (5/12) = 3/5. Trap: 3/7 = p(2,1) / P(X = 2) hai, yaani galat marginal (X ka) se divide kiya. 3/12 sirf joint probability hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Independence and functions",
+      "summary": "Kab do RVs independent hote hain, aur X + Y, max(X, Y) jaise functions ka PMF kaise nikalte hain. Binomial aur Poisson ke sums ka shortcut bhi seekhenge.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Independence**: X aur Y independent hain agar har (x, y) ke liye p(x, y) = P(X = x) × P(Y = y). Ek bhi cell fail ho jaaye toh dependent.",
+        "**Function of RVs**: Z = g(X, Y) ka PMF nikalne ke liye har cell ka Z value likho, phir same Z value wale cells ki probabilities add karo.",
+        "**Sum of independent RVs (convolution)**: P(X + Y = z) = Σ over k of P(X = k) × P(Y = z − k). Independence ki wajah se product use kar sakte hain.",
+        "**Poisson sum**: X ~ Poisson(λ₁), Y ~ Poisson(λ₂) independent hon toh X + Y ~ Poisson(λ₁ + λ₂).",
+        "**Binomial sum**: X ~ Bin(n, p), Y ~ Bin(m, p) independent aur same p ho toh X + Y ~ Bin(n + m, p).",
+        "**Max aur min**: independent X, Y ke liye P(max ≤ t) = P(X ≤ t) × P(Y ≤ t) aur P(min > t) = P(X > t) × P(Y > t).",
+        "**iid**: independent and identically distributed, yaani sab RVs independent hain aur sab ka distribution same hai."
+      ],
+      "example": {
+        "problem": "X aur Y independent hain, dono {1, 2, 3} par uniform (har value 1/3). Z = X + Y ka PMF aur P(max(X, Y) ≤ 2) nikalo.",
+        "steps": [
+          "Independent hai, toh har pair (x, y) ki probability = (1/3)(1/3) = 1/9. Total 9 pairs.",
+          "Z = 2: (1,1) → 1 pair → 1/9.",
+          "Z = 3: (1,2), (2,1) → 2/9. Z = 4: (1,3), (2,2), (3,1) → 3/9.",
+          "Z = 5: (2,3), (3,2) → 2/9. Z = 6: (3,3) → 1/9. Check: 1 + 2 + 3 + 2 + 1 = 9, toh total 1.",
+          "P(max ≤ 2) = P(X ≤ 2) × P(Y ≤ 2) = (2/3)(2/3) = 4/9.",
+          "Answer: Z ka PMF 1/9, 2/9, 3/9, 2/9, 1/9 (z = 2 se 6) aur P(max ≤ 2) = 4/9."
+        ]
+      },
+      "mistakes": [
+        "Sirf ek cell check karke independence declare kar dena. Independent bolne ke liye har cell check karna padta hai; dependent bolne ke liye ek failing cell kaafi hai.",
+        "P(max = 1) ko P(X = 1) + P(Y = 1) likh dena. Sahi tareeka complement hai: 1 − P(dono 0).",
+        "Binomial sum shortcut ko alag p wale binomials par laga dena. Shortcut tabhi chalta hai jab p same ho."
+      ],
+      "revision": [
+        "Independent ⇔ p(x, y) = P(X = x)P(Y = y) har (x, y) ke liye",
+        "P(X + Y = z) = Σ P(X = k)P(Y = z − k)",
+        "Poisson(λ₁) + Poisson(λ₂) = Poisson(λ₁ + λ₂)",
+        "Bin(n, p) + Bin(m, p) = Bin(n + m, p)",
+        "P(max ≤ t) = P(X ≤ t)P(Y ≤ t) for independent X, Y"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w2-q1",
+          "question": "X aur Y independent hain. P(X = 1) = 0.4 aur P(Y = 0) = 0.5. P(X = 1, Y = 0) kya hai?",
+          "options": ["0.9", "0.2", "0.45", "0.1"],
+          "answer": 1,
+          "explanation": "Independent RVs ke liye joint = product: 0.4 × 0.5 = 0.2. Trap: 0.9 add karne se aata hai, jo 'ya' (OR) type event ke liye bhi galat hoga.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w2-q2",
+          "question": "X ~ Poisson(2) aur Y ~ Poisson(3) independent hain. X + Y ka distribution kya hai?",
+          "options": ["Poisson(5)", "Poisson(6)", "Poisson(2.5)", "Binomial(5, 0.5)"],
+          "answer": 0,
+          "explanation": "Independent Poisson RVs ke sum mein rates add hote hain: 2 + 3 = 5, toh Poisson(5). Trap: Poisson(6) rates ko multiply karne se aata hai, aur 2.5 average lene se.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w2-q3",
+          "question": "Joint PMF: p(0,0) = 0.2, p(0,1) = 0.2, p(1,0) = 0.3, p(1,1) = 0.3. X aur Y ke baare mein kya sahi hai?",
+          "options": [
+            "Dependent hain, kyunki p(0,0) ≠ p(1,0)",
+            "Dependent hain, kyunki table symmetric nahi hai",
+            "E[XY] jaane bina kuch nahi keh sakte",
+            "Independent hain, kyunki har cell mein p(x, y) = P(X = x)P(Y = y)"
+          ],
+          "answer": 3,
+          "explanation": "P(X = 0) = 0.4, P(X = 1) = 0.6, P(Y = 0) = P(Y = 1) = 0.5. Check: 0.4 × 0.5 = 0.2 aur 0.6 × 0.5 = 0.3, chaaron cells match. Isliye independent. Trap: alag cells ki values alag hona dependence ka sign nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w2-q4",
+          "question": "X, Y independent hain, dono {1, 2, 3} par uniform. P(X + Y = 5) kya hai?",
+          "options": ["1/9", "1/3", "2/9", "5/9"],
+          "answer": 2,
+          "explanation": "X + Y = 5 ke pairs: (2,3) aur (3,2). Har pair 1/9, toh total 2/9. Trap: 1/9 tab aata hai jab (2,3) aur (3,2) ko ek hi gin lo; order matter karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w2-q5",
+          "question": "X aur Y iid Bernoulli(0.3) hain. Z = max(X, Y). P(Z = 1) kya hai?",
+          "options": ["0.09", "0.51", "0.6", "0.49"],
+          "answer": 1,
+          "explanation": "Z = 0 sirf tab jab dono 0 hon: 0.7 × 0.7 = 0.49. Toh P(Z = 1) = 1 − 0.49 = 0.51. Trap: 0.6 = 0.3 + 0.3 hai, jo dono ke 1 hone wale case ko double count karta hai. 0.09 sirf 'dono 1' hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w2-q6",
+          "question": "X ~ Bin(3, 1/2) aur Y ~ Bin(2, 1/2) independent hain. P(X + Y = 1) kya hai?",
+          "options": ["1/32", "3/16", "1/6", "5/32"],
+          "answer": 3,
+          "explanation": "Same p hai, toh X + Y ~ Bin(5, 1/2). P(X + Y = 1) = 5C1 × (1/2)⁵ = 5/32. Direct check: P(X=1)P(Y=0) + P(X=0)P(Y=1) = (3/8)(1/4) + (1/8)(1/2) = 3/32 + 2/32 = 5/32. Trap: 1/6 tab aata hai jab 0 se 5 tak saari values equally likely maan lo.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Expectation, covariance, correlation",
+      "summary": "Mean, variance, covariance aur correlation discrete RVs ke liye kaise nikalte hain. Linearity aur Var(X + Y) ka formula is week ke sabse useful tools hain.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Expectation**: E[X] = Σ x × P(X = x). Yeh long-run average value hai.",
+        "**E[g(X)]**: E[g(X)] = Σ g(x) × P(X = x). g(X) ka PMF alag se banane ki zaroorat nahi.",
+        "**Linearity**: E[aX + bY + c] = aE[X] + bE[Y] + c. Yeh hamesha true hai, independence ki zaroorat nahi.",
+        "**Variance**: Var(X) = E[X²] − (E[X])², aur Var(aX + b) = a² Var(X). Constant b variance ko change nahi karta.",
+        "**Covariance**: Cov(X, Y) = E[XY] − E[X]E[Y]. Positive matlab dono saath badhte hain, negative matlab ek badhe toh doosra ghate.",
+        "**Var of sum**: Var(X ± Y) = Var(X) + Var(Y) ± 2Cov(X, Y). Independent ho toh Cov = 0.",
+        "**Correlation**: ρ = Cov(X, Y) / (σX σY), hamesha −1 ≤ ρ ≤ 1. Yeh unit-free measure hai linear relation ka.",
+        "**Zero covariance ≠ independence**: Independent ⇒ Cov = 0, lekin Cov = 0 se independence prove nahi hoti."
+      ],
+      "example": {
+        "problem": "X, Y ∈ {0, 1}: p(0,0) = 0.4, p(0,1) = 0.1, p(1,0) = 0.1, p(1,1) = 0.4. Cov(X, Y), ρ aur Var(X + Y) nikalo.",
+        "steps": [
+          "P(X = 1) = 0.1 + 0.4 = 0.5, toh E[X] = 0.5. Isi tarah E[Y] = 0.5.",
+          "XY sirf (1,1) par 1 hai, toh E[XY] = 0.4.",
+          "Cov(X, Y) = 0.4 − 0.5 × 0.5 = 0.15.",
+          "E[X²] = E[X] = 0.5 (kyunki 0² = 0, 1² = 1), toh Var(X) = 0.5 − 0.25 = 0.25. Same Var(Y) = 0.25.",
+          "ρ = 0.15 / (0.5 × 0.5) = 0.6.",
+          "Var(X + Y) = 0.25 + 0.25 + 2(0.15) = 0.8.",
+          "Answer: Cov = 0.15, ρ = 0.6, Var(X + Y) = 0.8."
+        ]
+      },
+      "mistakes": [
+        "Var(3X) = 3Var(X) likhna. Constant bahar aate waqt square hota hai: Var(3X) = 9Var(X).",
+        "Var(X − Y) = Var(X) − Var(Y) likhna. Variances hamesha add hote hain; sirf covariance ka sign badalta hai.",
+        "Cov = 0 dekh kar independent bol dena. Y = X² jaise cases mein Cov 0 ho sakta hai par dependence clear hai."
+      ],
+      "revision": [
+        "E[aX + bY + c] = aE[X] + bE[Y] + c",
+        "Var(X) = E[X²] − (E[X])²; Var(aX + b) = a²Var(X)",
+        "Cov(X, Y) = E[XY] − E[X]E[Y]",
+        "Var(X ± Y) = Var X + Var Y ± 2Cov(X, Y)",
+        "ρ = Cov / (σX σY), −1 ≤ ρ ≤ 1"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w3-q1",
+          "question": "E[X] = 3 aur E[Y] = −1. E[2X − 3Y + 4] kya hai?",
+          "options": ["7", "1", "13", "10"],
+          "answer": 2,
+          "explanation": "Linearity: 2(3) − 3(−1) + 4 = 6 + 3 + 4 = 13. Trap: 7 tab aata hai jab −3 × −1 ko −3 le lo (sign mistake).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w3-q2",
+          "question": "Var(X) = 4. Var(3X + 5) kya hai?",
+          "options": ["36", "12", "17", "41"],
+          "answer": 0,
+          "explanation": "Var(aX + b) = a²Var(X) = 9 × 4 = 36. Constant 5 sirf shift karta hai, spread nahi. Trap: 12 mein a ko square nahi kiya, aur 41 / 17 mein constant 5 add kar diya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w3-q3",
+          "question": "X values −1, 0, 1 leta hai probabilities 0.25, 0.5, 0.25 ke saath. Var(X) kya hai?",
+          "options": ["0", "0.5", "0.25", "1"],
+          "answer": 1,
+          "explanation": "E[X] = −0.25 + 0 + 0.25 = 0. E[X²] = 1(0.25) + 0 + 1(0.25) = 0.5. Var = 0.5 − 0² = 0.5. Trap: mean 0 hone se variance 0 nahi hota; variance spread naapta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w3-q4",
+          "question": "E[X] = 2, E[Y] = 3 aur E[XY] = 7. Cov(X, Y) kya hai?",
+          "options": ["7", "−1", "6", "1"],
+          "answer": 3,
+          "explanation": "Cov = E[XY] − E[X]E[Y] = 7 − 6 = 1. Trap: 7 sirf E[XY] hai aur 6 sirf E[X]E[Y]; covariance dono ka difference hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w3-q5",
+          "question": "Var(X) = 4, Var(Y) = 9, Cov(X, Y) = −2. Var(X − Y) kya hai?",
+          "options": ["9", "13", "17", "5"],
+          "answer": 2,
+          "explanation": "Var(X − Y) = Var X + Var Y − 2Cov = 4 + 9 − 2(−2) = 17. Trap: 13 mein covariance ignore hua, 9 mein sign galat laga, aur 5 mein variances subtract kar diye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w3-q6",
+          "question": "X uniform hai {−1, 0, 1} par (har value 1/3) aur Y = X². Kaunsa statement sahi hai?",
+          "options": [
+            "Cov(X, Y) = 0, lekin X aur Y independent nahi hain",
+            "Cov(X, Y) = 0, isliye X aur Y independent hain",
+            "Cov(X, Y) > 0, kyunki Y poori tarah X par depend karta hai",
+            "Cov(X, Y) = 2/3"
+          ],
+          "answer": 0,
+          "explanation": "E[X] = 0 aur E[XY] = E[X³] = (−1 + 0 + 1)/3 = 0, toh Cov = 0. Lekin P(X = 0, Y = 1) = 0 jabki P(X = 0)P(Y = 1) = (1/3)(2/3) ≠ 0, toh dependent. Trap: 2/3 = E[Y] hai; aur Cov = 0 se independence nahi milti.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Continuous random variables",
+      "summary": "Continuous RVs ko PDF aur CDF se describe karna seekhenge. Integration se probability, mean aur variance nikalna is week ka core hai.",
+      "readMinutes": 13,
+      "concepts": [
+        "**PDF**: f(x) ≥ 0 aur ∫ f(x) dx = 1 (poori range par). Probability area hai: P(a ≤ X ≤ b) = ∫ from a to b of f(x) dx.",
+        "**Single point ki probability zero**: continuous X ke liye P(X = a) = 0, isliye P(X < a) aur P(X ≤ a) same hain.",
+        "**CDF**: F(x) = P(X ≤ x). Yeh non-decreasing hai, 0 se 1 tak jaata hai, aur P(a < X ≤ b) = F(b) − F(a).",
+        "**PDF aur CDF ka relation**: f(x) = F′(x), yaani CDF ko differentiate karo toh PDF milta hai.",
+        "**Density probability nahi hai**: f(x) ki value 1 se zyada ho sakti hai (jaise Uniform(0, 0.5) mein f = 2). Sirf area ≤ 1 hona chahiye.",
+        "**Mean aur variance**: E[X] = ∫ x f(x) dx, E[X²] = ∫ x² f(x) dx, Var(X) = E[X²] − (E[X])²."
+      ],
+      "example": {
+        "problem": "f(x) = 2x, 0 ≤ x ≤ 1 (baaki jagah 0). Check karo ki yeh valid PDF hai, phir F(x), P(X ≤ 0.5), E[X] aur Var(X) nikalo.",
+        "steps": [
+          "∫ from 0 to 1 of 2x dx = [x²] from 0 to 1 = 1, aur f ≥ 0, toh valid PDF.",
+          "F(x) = ∫ from 0 to x of 2t dt = x² (0 ≤ x ≤ 1 ke liye).",
+          "P(X ≤ 0.5) = F(0.5) = 0.25.",
+          "E[X] = ∫ from 0 to 1 of x × 2x dx = 2/3.",
+          "E[X²] = ∫ from 0 to 1 of x² × 2x dx = 2/4 = 1/2.",
+          "Var(X) = 1/2 − (2/3)² = 1/2 − 4/9 = 1/18.",
+          "Answer: F(x) = x², P(X ≤ 0.5) = 0.25, E[X] = 2/3, Var(X) = 1/18."
+        ]
+      },
+      "mistakes": [
+        "f(a) ko P(X = a) samajh lena. Continuous case mein kisi ek point ki probability 0 hoti hai; f(a) sirf density hai.",
+        "Var nikalte waqt E[X²] ki jagah E[X] use kar lena. E[X²] ke liye x² × f(x) integrate karo.",
+        "Normalising constant nikalte waqt antiderivative ka divisor bhool jaana, jaise ∫x² dx = x³/3, sirf x³ nahi."
+      ],
+      "revision": [
+        "∫ f(x) dx = 1, f(x) ≥ 0",
+        "P(a ≤ X ≤ b) = ∫ from a to b of f(x) dx = F(b) − F(a)",
+        "f(x) = F′(x); P(X = a) = 0",
+        "E[X] = ∫ x f(x) dx; Var = E[X²] − (E[X])²"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w4-q1",
+          "question": "f(x) = c x², 0 ≤ x ≤ 3 par (baaki 0). c kya hona chahiye?",
+          "options": ["1/3", "1/9", "1/27", "3"],
+          "answer": 1,
+          "explanation": "∫ from 0 to 3 of c x² dx = c × 27/3 = 9c = 1, toh c = 1/9. Trap: 1/27 tab aata hai jab antiderivative x³/3 mein /3 bhool jao.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w4-q2",
+          "question": "X ek continuous random variable hai jiska PDF f aur CDF F hai. P(X = 2) kya hai?",
+          "options": ["f(2), yaani us point par density", "F(2)", "0", "1 − F(2)"],
+          "answer": 2,
+          "explanation": "Continuous RV ke liye kisi bhi single point ki probability 0 hoti hai, kyunki ek point ke upar area zero hai. Trap: f(2) density hai, probability nahi; F(2) = P(X ≤ 2) hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w4-q3",
+          "question": "X ka CDF hai F(x) = x², 0 ≤ x ≤ 1 (x < 0 par 0, x > 1 par 1). P(0.5 < X ≤ 1) kya hai?",
+          "options": ["0.25", "0.5", "1", "0.75"],
+          "answer": 3,
+          "explanation": "P(0.5 < X ≤ 1) = F(1) − F(0.5) = 1 − 0.25 = 0.75. Trap: 0.25 sirf F(0.5) hai, aur 0.5 tab aata hai jab CDF ko linear maan lo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w4-q4",
+          "question": "f(x) = 3x², 0 ≤ x ≤ 1. E[X] kya hai?",
+          "options": ["3/4", "1/2", "3/5", "1"],
+          "answer": 0,
+          "explanation": "E[X] = ∫ from 0 to 1 of x × 3x² dx = 3 × (1/4) = 3/4. Trap: 3/5 = ∫ x² × 3x² dx = E[X²] hai, E[X] nahi. 1/2 interval ka midpoint hai, jo sirf uniform ke liye mean hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w4-q5",
+          "question": "X ka CDF hai F(x) = 1 − 1/x², x ≥ 1 ke liye (x < 1 par 0). X ka PDF kya hai (x ≥ 1 par)?",
+          "options": ["1/x²", "2/x³", "−2/x³", "x − 1/x"],
+          "answer": 1,
+          "explanation": "f(x) = F′(x) = d/dx (1 − x⁻²) = 2x⁻³ = 2/x³. Trap: −2/x³ sign galat hai (PDF negative nahi ho sakta), aur x − 1/x integrate kar diya, differentiate nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w4-q6",
+          "question": "f(x) = 3x², 0 ≤ x ≤ 1. Var(X) kya hai?",
+          "options": ["3/5", "9/16", "3/16", "3/80"],
+          "answer": 3,
+          "explanation": "E[X] = 3/4, E[X²] = ∫ 3x⁴ dx = 3/5. Var = 3/5 − 9/16 = (48 − 45)/80 = 3/80. Trap: 3/16 = 3/4 − 9/16 hai, jahan E[X²] ki jagah E[X] le liya. 3/5 sirf E[X²] hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Common continuous distributions",
+      "summary": "Uniform, Exponential aur Normal distributions ke formulas, properties aur standard calculations. Normal ko standardize karke Φ table use karna practice karenge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Uniform(a, b)**: f(x) = 1/(b − a) on [a, b]. Mean = (a + b)/2, Var = (b − a)²/12. Probability = length ratio.",
+        "**Exponential(λ)**: f(x) = λe^(−λx), x ≥ 0. P(X > t) = e^(−λt), Mean = 1/λ, Var = 1/λ². Waiting time model karne ke liye use hota hai.",
+        "**Memoryless property**: Exponential ke liye P(X > s + t | X > s) = P(X > t). Jitna wait ho chuka, usse aage ka wait affect nahi hota.",
+        "**Normal(μ, σ²)**: bell-shaped, μ ke around symmetric. Dhyan do: second parameter variance σ² hai, standard deviation σ nahi.",
+        "**Standardization**: Z = (X − μ)/σ ~ N(0, 1). Phir P(X ≤ x) = Φ((x − μ)/σ), aur Φ(−z) = 1 − Φ(z).",
+        "**68-95-99.7 rule**: Normal mein lagbhag 68%, 95%, 99.7% data μ ± 1σ, 2σ, 3σ ke andar hota hai. Useful Φ values: Φ(1) ≈ 0.8413, Φ(1.96) ≈ 0.975, Φ(2) ≈ 0.9772."
+      ],
+      "example": {
+        "problem": "Ek bulb ki lifetime Exponential hai jiska mean 500 hours hai. (a) P(lifetime > 1000 hours)? (b) Agar bulb 300 hours chal chuka hai, toh aur 1000 hours chalne ki probability?",
+        "steps": [
+          "Mean = 1/λ = 500, toh λ = 1/500.",
+          "(a) P(X > 1000) = e^(−1000/500) = e^(−2) ≈ 0.135.",
+          "(b) Memoryless property: P(X > 300 + 1000 | X > 300) = P(X > 1000).",
+          "Toh (b) ka answer bhi e^(−2) ≈ 0.135 hai, pichle 300 hours ka koi asar nahi.",
+          "Answer: dono cases mein ≈ 0.135."
+        ]
+      },
+      "mistakes": [
+        "N(50, 100) mein 100 ko σ maan lena. Yeh variance hai, toh σ = 10.",
+        "Exponential mein λ aur mean confuse karna. Mean 1/λ hai; 'mean 4' ka matlab λ = 1/4.",
+        "Upper tail chahiye tha aur Φ(z) hi likh diya. P(X > x) = 1 − Φ(z)."
+      ],
+      "revision": [
+        "Uniform(a, b): mean (a + b)/2, var (b − a)²/12",
+        "Exponential(λ): P(X > t) = e^(−λt), mean 1/λ, var 1/λ²",
+        "Memoryless: P(X > s + t | X > s) = P(X > t)",
+        "Z = (X − μ)/σ ~ N(0, 1); Φ(−z) = 1 − Φ(z)",
+        "Φ(1) ≈ 0.8413, Φ(1.96) ≈ 0.975, Φ(2) ≈ 0.9772"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w5-q1",
+          "question": "X ~ Uniform(2, 10). Mean aur variance kya hain?",
+          "options": ["6, 2/3", "6, 16/3", "4, 16/3", "6, 64"],
+          "answer": 1,
+          "explanation": "Mean = (2 + 10)/2 = 6. Var = (10 − 2)²/12 = 64/12 = 16/3. Trap: 2/3 = 8/12 mein (b − a) ko square nahi kiya; 64 mein /12 bhool gaye; 4 = (b − a)/2 hai, mean nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w5-q2",
+          "question": "X ~ Exponential(λ = 0.5). E[X] kya hai?",
+          "options": ["0.5", "0.25", "4", "2"],
+          "answer": 3,
+          "explanation": "Exponential ka mean 1/λ = 1/0.5 = 2. Trap: 0.5 rate hai, mean nahi; 4 = 1/λ² variance hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w5-q3",
+          "question": "X ~ Uniform(0, 10). P(3 < X < 7) kya hai?",
+          "options": ["0.3", "0.7", "0.4", "0.5"],
+          "answer": 2,
+          "explanation": "Uniform mein probability = length / total length = (7 − 3)/10 = 0.4. Trap: 0.7 = P(X < 7) hai aur 0.3 = P(X < 3); dono ka difference chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w5-q4",
+          "question": "X ~ N(50, 100) (yahan 100 variance hai). P(X > 70) kya hai? (Φ(2) ≈ 0.9772 use karo)",
+          "options": ["0.0228", "0.9772", "0.0456", "0.4772"],
+          "answer": 0,
+          "explanation": "σ = √100 = 10. z = (70 − 50)/10 = 2. P(X > 70) = 1 − Φ(2) = 0.0228. Trap: 0.9772 = P(X < 70) hai (1 − bhool gaye); 0.0456 dono tails ka total hai; 0.4772 = Φ(2) − 0.5.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w5-q5",
+          "question": "Bus ka waiting time Exponential hai, mean 4 minutes. Tum 3 minutes se wait kar rahe ho. Aur 4 minutes se zyada wait karne ki probability?",
+          "options": ["e^(−7/4) ≈ 0.174", "e^(−1) ≈ 0.368", "e^(−3/4) ≈ 0.472", "1 − e^(−1) ≈ 0.632"],
+          "answer": 1,
+          "explanation": "λ = 1/4. Memoryless se P(X > 3 + 4 | X > 3) = P(X > 4) = e^(−4/4) = e^(−1) ≈ 0.368. Trap: e^(−7/4) = P(X > 7) hai, jo past wait ko condition nahi karta. 1 − e^(−1) = P(X ≤ 4) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w5-q6",
+          "question": "Exam scores ~ N(60, 15²). Top 2.5% students ka cutoff score kya hai? (Φ(1.645) ≈ 0.95, Φ(1.96) ≈ 0.975)",
+          "options": ["75", "84.7", "89.4", "501"],
+          "answer": 2,
+          "explanation": "Top 2.5% ka matlab P(X > c) = 0.025, yaani Φ(z) = 0.975, z = 1.96. c = 60 + 1.96 × 15 = 60 + 29.4 = 89.4. Trap: 84.7 mein 1.645 use hua (wo top 5% hai); 501 mein σ ki jagah variance 225 multiply kiya; 75 sirf μ + σ hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Functions of continuous RVs",
+      "summary": "Agar X ka distribution pata hai toh Y = g(X) ka distribution kaise nikalein. CDF method aur monotone transformation formula dono seekhenge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**CDF method**: FY(y) = P(Y ≤ y) = P(g(X) ≤ y). Is event ko X ke terms mein likho, X ka CDF use karo, phir differentiate karke Y ka PDF lo.",
+        "**Monotone transformation formula**: agar g strictly increasing ya decreasing hai aur x = h(y) inverse hai, toh fY(y) = fX(h(y)) × |h′(y)|.",
+        "**Linear transform**: Y = aX + b ke liye fY(y) = (1/|a|) fX((y − b)/a). Range bhi shift aur scale hoti hai.",
+        "**Normal linear rahta hai**: X ~ N(μ, σ²) ⇒ aX + b ~ N(aμ + b, a²σ²).",
+        "**Uniform aur Exponential scaling**: X ~ Uniform(0, 1) ⇒ aX + b ~ Uniform(b, a + b) (a > 0). X ~ Exp(λ) ⇒ cX ~ Exp(λ/c) (c > 0).",
+        "**Non-monotone g (jaise X²)**: Y ≤ y ka matlab −√y ≤ X ≤ √y. Dono sides ka area count karna padta hai.",
+        "**Shortcut for mean**: sirf E[g(X)] chahiye toh ∫ g(x) fX(x) dx kaafi hai, Y ka PDF nikalne ki zaroorat nahi."
+      ],
+      "example": {
+        "problem": "X ~ Uniform(0, 1) aur Y = −ln(X). Y ka distribution nikalo.",
+        "steps": [
+          "X (0, 1) mein hai, toh −ln X (0, ∞) mein hai. Toh y ≥ 0 lo.",
+          "FY(y) = P(−ln X ≤ y) = P(ln X ≥ −y) = P(X ≥ e^(−y)).",
+          "X uniform hai, toh P(X ≥ e^(−y)) = 1 − e^(−y).",
+          "Differentiate: fY(y) = e^(−y), y ≥ 0.",
+          "Answer: Y ~ Exponential(1). Isi trick se computer uniform random numbers se exponential numbers banata hai."
+        ]
+      },
+      "mistakes": [
+        "Monotone formula mein |h′(y)| factor bhool jaana. Uske bina density ka area 1 nahi aayega.",
+        "Y = X² mein sirf positive root lena jab X negative values bhi le sakta hai. −√y wali side bhi count karo.",
+        "aX + b ka variance a²σ² + b likh dena. Constant b variance mein nahi aata."
+      ],
+      "revision": [
+        "FY(y) = P(g(X) ≤ y), phir fY = FY′",
+        "fY(y) = fX(h(y)) |h′(y)| for monotone g",
+        "aX + b ~ N(aμ + b, a²σ²) jab X normal ho",
+        "X ~ Exp(λ) ⇒ cX ~ Exp(λ/c)",
+        "X ~ Uniform(0, 1) ⇒ −ln X ~ Exp(1)"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w6-q1",
+          "question": "X ~ N(2, 9). Y = 3X − 1 ka distribution kya hai?",
+          "options": ["N(5, 27)", "N(6, 81)", "N(5, 9)", "N(5, 81)"],
+          "answer": 3,
+          "explanation": "Mean = 3(2) − 1 = 5, Var = 3² × 9 = 81. Toh N(5, 81). Trap: 27 mein 3 ko square nahi kiya; N(6, 81) mein −1 bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w6-q2",
+          "question": "X ~ Uniform(0, 2) aur Y = 3X + 1. Y ka distribution kya hai?",
+          "options": ["Uniform(1, 7)", "Uniform(0, 6)", "Uniform(3, 7)", "Uniform(1, 6)"],
+          "answer": 0,
+          "explanation": "X = 0 par Y = 1, X = 2 par Y = 7. Linear transform uniform ko uniform hi rakhta hai, toh Y ~ Uniform(1, 7). Trap: Uniform(0, 6) mein +1 shift bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w6-q3",
+          "question": "X ~ Uniform(0, 1) aur Y = X². 0 ≤ y ≤ 1 ke liye Y ka CDF FY(y) kya hai?",
+          "options": ["y²", "√y", "y", "2y"],
+          "answer": 1,
+          "explanation": "FY(y) = P(X² ≤ y) = P(X ≤ √y) = √y (kyunki X ≥ 0 aur uniform). Trap: y² tab aata hai jab transformation ko ulta laga do.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w6-q4",
+          "question": "X ~ Uniform(0, 1) aur Y = X². 0 < y < 1 par Y ka PDF kya hai?",
+          "options": ["2y", "√y", "1/(2√y)", "1/√y"],
+          "answer": 2,
+          "explanation": "FY(y) = √y, toh fY(y) = d/dy (√y) = 1/(2√y). Check: ∫ from 0 to 1 of 1/(2√y) dy = 1. Trap: 1/√y ka area 2 aata hai, valid PDF nahi; √y CDF hai, PDF nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w6-q5",
+          "question": "X ~ Exponential(λ = 2) aur Y = 3X. Y ka distribution kya hai?",
+          "options": ["Exponential(6)", "Exponential(2/3)", "Exponential(3/2)", "Exponential(2)"],
+          "answer": 1,
+          "explanation": "P(Y > y) = P(X > y/3) = e^(−2y/3), toh Y ~ Exponential(2/3). Intuition: time 3 guna lamba hua, toh rate 3 guna kam hua. Trap: Exponential(6) mein rate ko multiply kar diya; 3/2 Y ka mean hai, rate nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w6-q6",
+          "question": "X ~ Uniform(−1, 2) aur Y = X². P(Y ≤ 1/4) kya hai?",
+          "options": ["1/6", "1/4", "1/2", "1/3"],
+          "answer": 3,
+          "explanation": "Y ≤ 1/4 ⇔ −1/2 ≤ X ≤ 1/2. Length 1, total length 3, toh probability 1/3. Trap: 1/6 tab aata hai jab sirf positive side 0 se 1/2 lo; negative X bhi square hokar chhota hota hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Multiple continuous RVs",
+      "summary": "Do continuous RVs ke liye joint density, marginal density aur independence. Double integral se probabilities aur expectations nikalna seekhenge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Joint PDF**: f(x, y) ≥ 0 aur ∫∫ f(x, y) dx dy = 1. P((X, Y) ∈ A) = region A par f ka double integral.",
+        "**Uniform on a region**: f(x, y) = 1/area. Kisi sub-region ki probability = sub-region ka area / total area.",
+        "**Marginal PDF**: fX(x) = ∫ f(x, y) dy (y ko integrate out karo). Same tarah fY(y) = ∫ f(x, y) dx.",
+        "**Independence**: X, Y independent hain agar f(x, y) = fX(x) × fY(y) har jagah. Support ek rectangle hona chahiye; triangle jaisa support dependence ka sign hai.",
+        "**Conditional PDF**: f(y | x) = f(x, y) / fX(x), jahan fX(x) > 0.",
+        "**Expectation**: E[g(X, Y)] = ∫∫ g(x, y) f(x, y) dx dy. Linearity yahan bhi chalti hai.",
+        "**Sum of independent normals**: X ~ N(μ₁, σ₁²), Y ~ N(μ₂, σ₂²) independent ⇒ X ± Y ~ N(μ₁ ± μ₂, σ₁² + σ₂²)."
+      ],
+      "example": {
+        "problem": "f(x, y) = x + y on 0 ≤ x ≤ 1, 0 ≤ y ≤ 1. Validity check karo, fX(x) nikalo, P(X ≤ 1/2, Y ≤ 1/2) nikalo, aur batao X, Y independent hain ya nahi.",
+        "steps": [
+          "∫∫ (x + y) = ∫∫ x + ∫∫ y = 1/2 + 1/2 = 1, toh valid.",
+          "fX(x) = ∫ from 0 to 1 of (x + y) dy = x + 1/2. Isi tarah fY(y) = y + 1/2.",
+          "P(X ≤ 1/2, Y ≤ 1/2) = ∫ from 0 to 1/2 [∫ from 0 to 1/2 (x + y) dy] dx = ∫ from 0 to 1/2 (x/2 + 1/8) dx.",
+          "= (1/2)(1/8) + (1/8)(1/2) = 1/16 + 1/16 = 1/8.",
+          "fX(x)fY(y) = (x + 1/2)(y + 1/2) ≠ x + y, toh X aur Y independent nahi hain.",
+          "Answer: fX(x) = x + 1/2, probability = 1/8, dependent."
+        ]
+      },
+      "mistakes": [
+        "Uniform region ki density ko hamesha 1 maan lena. Density = 1/area hoti hai.",
+        "Triangle region (jaise 0 < y < x < 1) mein integration limits ko 0 se 1 rakh dena. Inner limit doosre variable par depend karti hai.",
+        "X − Y ke variance mein variances subtract kar dena. Independent normals ke liye dono variances add hote hain."
+      ],
+      "revision": [
+        "∫∫ f(x, y) dx dy = 1",
+        "fX(x) = ∫ f(x, y) dy",
+        "Independent ⇔ f(x, y) = fX(x)fY(y)",
+        "Uniform region: probability = area ratio",
+        "X ± Y ~ N(μ₁ ± μ₂, σ₁² + σ₂²) for independent normals"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w7-q1",
+          "question": "(X, Y) ka joint PDF f(x, y) = c hai rectangle 0 ≤ x ≤ 2, 0 ≤ y ≤ 3 par. c kya hai?",
+          "options": ["1/6", "1/5", "6", "1/3"],
+          "answer": 0,
+          "explanation": "Constant density × area = 1, aur area = 2 × 3 = 6, toh c = 1/6. Trap: 1/5 mein sides add kar di (2 + 3), multiply karna tha.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w7-q2",
+          "question": "(X, Y) unit square [0, 1] × [0, 1] par uniform hai. P(X + Y ≤ 1) kya hai?",
+          "options": ["1/4", "1/3", "1/2", "1"],
+          "answer": 2,
+          "explanation": "X + Y ≤ 1 wala region ek triangle hai jiska area 1/2 hai. Total area 1, toh probability 1/2. Trap: 1/4 tab aata hai jab is region ko chhota square samajh lo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w7-q3",
+          "question": "f(x, y) = 4xy on [0, 1] × [0, 1]. X ka marginal PDF fX(x) kya hai?",
+          "options": ["4x", "2x", "x", "2xy"],
+          "answer": 1,
+          "explanation": "fX(x) = ∫ from 0 to 1 of 4xy dy = 4x × 1/2 = 2x. Trap: 4x mein y ko integrate karte waqt 1/2 factor bhool gaye; 2xy mein y abhi bhi bacha hai, marginal mein sirf x hona chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w7-q4",
+          "question": "f(x, y) = 4xy on [0, 1] × [0, 1]. P(X ≤ 1/2, Y ≤ 1/2) kya hai?",
+          "options": ["1/4", "1/8", "1/2", "1/16"],
+          "answer": 3,
+          "explanation": "f = (2x)(2y) hai, toh X, Y independent hain. P(X ≤ 1/2) = ∫ from 0 to 1/2 of 2x dx = 1/4, same Y ke liye. Product = 1/16. Trap: 1/4 region ka area hai, jo sirf uniform density mein probability hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w7-q5",
+          "question": "X ~ N(1, 4) aur Y ~ N(2, 5) independent hain. X − Y ka distribution kya hai?",
+          "options": ["N(−1, 1)", "N(3, 9)", "N(−1, 9)", "N(1, 1)"],
+          "answer": 2,
+          "explanation": "Mean = 1 − 2 = −1. Variance = 4 + 5 = 9 (independent RVs ke liye difference mein bhi variances add hote hain). Trap: N(−1, 1) mein variances subtract kiye; N(3, 9) X + Y ka distribution hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w7-q6",
+          "question": "(X, Y) ka joint PDF f(x, y) = 2 hai triangle 0 < y < x < 1 par. E[Y] kya hai?",
+          "options": ["1/3", "2/3", "1/2", "1/4"],
+          "answer": 0,
+          "explanation": "fY(y) = ∫ from x = y to 1 of 2 dx = 2(1 − y). E[Y] = ∫ from 0 to 1 of 2y(1 − y) dy = 2(1/2 − 1/3) = 1/3. Trap: 2/3 = E[X] hai (fX(x) = 2x se); 1/2 tab aata hai jab limits 0 se 1 rakh kar triangle ko ignore karo.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Inequalities and limit theorems",
+      "summary": "Markov aur Chebyshev inequalities se bina distribution jaane probability ka bound kaise milta hai. Weak law of large numbers aur Central Limit Theorem ka matlab aur use seekhenge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Markov inequality**: X ≥ 0 aur a > 0 ke liye P(X ≥ a) ≤ E[X]/a. Sirf mean chahiye, par bound loose hota hai.",
+        "**Chebyshev inequality**: P(|X − μ| ≥ kσ) ≤ 1/k². Equivalent: P(|X − μ| ≥ c) ≤ σ²/c². Kisi bhi distribution ke liye valid.",
+        "**Sample mean ke properties**: X̄ = (X₁ + ... + Xₙ)/n ke liye E[X̄] = μ aur Var(X̄) = σ²/n. n badhne par spread kam hota hai.",
+        "**Weak Law of Large Numbers (WLLN)**: iid samples ke liye har ε > 0 par P(|X̄ − μ| > ε) → 0 jab n → ∞. Yaani bade sample mein average true mean ke paas aata hai.",
+        "**Central Limit Theorem (CLT)**: bade n ke liye X̄ ≈ N(μ, σ²/n) aur sum Sₙ ≈ N(nμ, nσ²), original distribution chahe kuch bhi ho (finite variance ho).",
+        "**CLT use karna**: Z = (Sₙ − nμ)/(σ√n) standardize karke Φ table lagao. Binomial ke liye μ = p, σ² = p(1 − p) per trial."
+      ],
+      "example": {
+        "problem": "100 iid RVs hain, har ek ka mean 5 aur variance 4. Sum S ke liye P(S > 520) approx nikalo. Saath hi Chebyshev se P(|X̄ − 5| ≥ 0.5) ka upper bound do. (Φ(1) ≈ 0.8413)",
+        "steps": [
+          "E[S] = 100 × 5 = 500, Var(S) = 100 × 4 = 400, SD = 20.",
+          "CLT: z = (520 − 500)/20 = 1.",
+          "P(S > 520) ≈ 1 − Φ(1) = 1 − 0.8413 = 0.1587.",
+          "Chebyshev ke liye: Var(X̄) = 4/100 = 0.04.",
+          "P(|X̄ − 5| ≥ 0.5) ≤ 0.04 / 0.5² = 0.04 / 0.25 = 0.16.",
+          "Answer: P(S > 520) ≈ 0.1587 aur Chebyshev bound 0.16."
+        ]
+      },
+      "mistakes": [
+        "Chebyshev bound ko exact probability samajh lena. Yeh sirf upper bound hai; asli probability isse kaafi kam ho sakti hai.",
+        "X̄ ke standardization mein σ use karna. X̄ ka SD σ/√n hai.",
+        "Yeh sochna ki CLT ke baad har individual Xᵢ normal ho jaata hai. Sirf sum ya average approximately normal hota hai."
+      ],
+      "revision": [
+        "Markov: P(X ≥ a) ≤ E[X]/a (X ≥ 0)",
+        "Chebyshev: P(|X − μ| ≥ kσ) ≤ 1/k²",
+        "E[X̄] = μ, Var(X̄) = σ²/n",
+        "WLLN: X̄ → μ in probability",
+        "CLT: X̄ ≈ N(μ, σ²/n), Sₙ ≈ N(nμ, nσ²)"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w8-q1",
+          "question": "X ≥ 0 aur E[X] = 10. Markov inequality se P(X ≥ 50) ka upper bound kya hai?",
+          "options": ["0.5", "0.2", "0.02", "0.8"],
+          "answer": 1,
+          "explanation": "Markov: P(X ≥ 50) ≤ 10/50 = 0.2. Trap: 0.8 = 1 − 0.2 hai, jo P(X < 50) ka lower bound hota hai, upper bound nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w8-q2",
+          "question": "Chebyshev inequality ke hisaab se P(|X − μ| ≥ 3σ) ka upper bound kya hai?",
+          "options": ["1/3", "8/9", "1/6", "1/9"],
+          "answer": 3,
+          "explanation": "P(|X − μ| ≥ kσ) ≤ 1/k², k = 3 par 1/9. Trap: 1/3 mein k ko square nahi kiya; 8/9 complement hai, jo andar rehne ka lower bound hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w8-q3",
+          "question": "n = 25 iid observations, har ek ka variance σ² = 16. X̄ ka standard deviation kya hai?",
+          "options": ["0.8", "0.64", "4", "0.16"],
+          "answer": 0,
+          "explanation": "SD(X̄) = σ/√n = 4/5 = 0.8. Trap: 0.64 = σ²/n hai, yaani variance, SD nahi; 4 ek observation ka SD hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w8-q4",
+          "question": "X ka mean 50 aur variance 25 hai (distribution unknown). Chebyshev se P(40 < X < 60) ka lower bound kya hai?",
+          "options": ["1/4", "0.95", "3/4", "1/2"],
+          "answer": 2,
+          "explanation": "σ = 5, toh 10 = 2σ, k = 2. P(|X − 50| ≥ 10) ≤ 1/4, isliye P(40 < X < 60) ≥ 3/4. Trap: 0.95 normal distribution ka 2σ rule hai; yahan distribution unknown hai, toh sirf Chebyshev ka guarantee milta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w8-q5",
+          "question": "Weak Law of Large Numbers kya kehta hai? (X₁, X₂, ... iid, mean μ)",
+          "options": [
+            "n ≥ 30 hone par X̄ exactly μ ke barabar ho jaata hai",
+            "Bade n par har Xᵢ ka distribution normal ho jaata hai",
+            "n badhne ke saath Var(X̄) badhta hai",
+            "Har ε > 0 ke liye, n → ∞ par P(|X̄ − μ| > ε) → 0"
+          ],
+          "answer": 3,
+          "explanation": "WLLN kehta hai ki X̄ probability mein μ ki taraf converge karta hai. Trap: X̄ kabhi guaranteed exactly μ nahi hota; normal hone wali baat CLT ki hai aur woh bhi X̄ ke liye, individual Xᵢ ke liye nahi. Var(X̄) = σ²/n ghatta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w8-q6",
+          "question": "Ek fair coin 100 baar toss hota hai. S = heads ki sankhya. CLT se P(S ≥ 60) approx kya hai? (Continuity correction ignore karo; Φ(1) ≈ 0.8413, Φ(2) ≈ 0.9772, Φ(3) ≈ 0.9987)",
+          "options": ["0.1587", "0.0013", "0.0228", "0.4772"],
+          "answer": 2,
+          "explanation": "E[S] = 100 × 0.5 = 50, Var(S) = 100 × 0.5 × 0.5 = 25, SD = 5. z = (60 − 50)/5 = 2. P ≈ 1 − 0.9772 = 0.0228. Trap: 0.1587 tab aata hai jab SD ko √100 = 10 le lo (p(1 − p) factor bhool gaye).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Samples and statistics",
+      "summary": "Population se iid sample lena, aur sample mean, sample variance jaise statistics ke properties. Sample mean ka distribution aur n − 1 se divide karne ki wajah samjhenge.",
+      "readMinutes": 12,
+      "concepts": [
+        "**Population vs sample**: population poora group hai jiske parameters (μ, σ²) unknown hain; sample uska chhota hissa hai jisse hum estimate karte hain.",
+        "**iid sample**: X₁, ..., Xₙ independent hain aur sab ka distribution population jaisa hai.",
+        "**Statistic**: sample ka koi bhi function jisme unknown parameter na ho, jaise X̄, median, max. Statistic khud ek random variable hai.",
+        "**Sample mean**: X̄ = ΣXᵢ / n. E[X̄] = μ aur Var(X̄) = σ²/n.",
+        "**Sample variance**: S² = Σ(Xᵢ − X̄)² / (n − 1). n − 1 se divide karne par E[S²] = σ², yaani S² unbiased hai.",
+        "**Normal population**: agar Xᵢ ~ N(μ, σ²) toh X̄ ~ N(μ, σ²/n) exactly (approx nahi). Doosre populations ke liye bade n par CLT se approx.",
+        "**Descriptive statistics**: median (beech wali value), range (max − min), aur sample proportion (successes / n) bhi common statistics hain."
+      ],
+      "example": {
+        "problem": "Sample: 4, 7, 5, 8, 6. Sample mean, sample variance S² aur median nikalo.",
+        "steps": [
+          "X̄ = (4 + 7 + 5 + 8 + 6)/5 = 30/5 = 6.",
+          "Deviations: −2, 1, −1, 2, 0.",
+          "Squared deviations: 4, 1, 1, 4, 0, sum = 10.",
+          "S² = 10/(5 − 1) = 2.5, toh S ≈ 1.58.",
+          "Sorted: 4, 5, 6, 7, 8, toh median = 6.",
+          "Answer: X̄ = 6, S² = 2.5, median = 6."
+        ]
+      },
+      "mistakes": [
+        "Sample variance mein n se divide kar dena. S² ke liye n − 1 use hota hai.",
+        "Var(X̄) aur SD(X̄) mix karna. Var(X̄) = σ²/n, SD(X̄) = σ/√n.",
+        "Standardize karte waqt X̄ ke liye population ka σ use karna, σ/√n nahi."
+      ],
+      "revision": [
+        "X̄ = ΣXᵢ / n; E[X̄] = μ; Var(X̄) = σ²/n",
+        "S² = Σ(Xᵢ − X̄)² / (n − 1); E[S²] = σ²",
+        "Normal population ⇒ X̄ ~ N(μ, σ²/n)",
+        "E[X̄²] = Var(X̄) + μ²"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w9-q1",
+          "question": "Sample 3, 9, 6, 2 ka sample mean kya hai?",
+          "options": ["4", "5", "6", "20"],
+          "answer": 1,
+          "explanation": "X̄ = (3 + 9 + 6 + 2)/4 = 20/4 = 5. Trap: 20 sirf sum hai, n se divide karna bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w9-q2",
+          "question": "Sample 2, 4, 6, 8 ka sample variance S² (n − 1 wala) kya hai?",
+          "options": ["5", "4", "20/3", "10"],
+          "answer": 2,
+          "explanation": "X̄ = 5. Squared deviations: 9, 1, 1, 9, sum = 20. S² = 20/(4 − 1) = 20/3. Trap: 5 = 20/4 tab aata hai jab n se divide karo; S² mein n − 1 lagta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w9-q3",
+          "question": "Population variance σ² = 36 hai aur n = 9 ka iid sample liya. Var(X̄) kya hai?",
+          "options": ["36", "2", "12", "4"],
+          "answer": 3,
+          "explanation": "Var(X̄) = σ²/n = 36/9 = 4. Trap: 2 = σ/√n hai, yaani SD(X̄), variance nahi; 12 = 36/3 mein √n se divide kiya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w9-q4",
+          "question": "Sample variance S² mein n ki jagah n − 1 se kyun divide karte hain?",
+          "options": [
+            "Taaki E[S²] = σ² ho, yaani S² unbiased estimator bane",
+            "Taaki S² hamesha population variance se chhota aaye",
+            "Kyunki sample ka ek data point hamesha outlier hota hai",
+            "Taaki S² aur X̄ ki value same aaye"
+          ],
+          "answer": 0,
+          "explanation": "X̄ khud data se nikla hai, isliye deviations thode chhote aate hain. n − 1 se divide karke yeh correct hota hai aur E[S²] = σ² milta hai. Trap: n − 1 se divide karne par S² bada hota hai, chhota nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w9-q5",
+          "question": "X₁, ..., X₁₆ iid N(100, 64). P(X̄ > 104) kya hai? (Φ(0.5) ≈ 0.6915, Φ(1) ≈ 0.8413, Φ(2) ≈ 0.9772)",
+          "options": ["0.3085", "0.9772", "0.1587", "0.0228"],
+          "answer": 3,
+          "explanation": "X̄ ~ N(100, 64/16) = N(100, 4), SD = 2. z = (104 − 100)/2 = 2. P = 1 − 0.9772 = 0.0228. Trap: 0.3085 mein σ = 8 use kiya (√n bhool gaye); 0.1587 mein variance 4 se divide kiya, SD 2 se nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w9-q6",
+          "question": "iid sample, n = 4, population mean μ = 3 aur variance σ² = 12. E[X̄²] kya hai?",
+          "options": ["12", "9", "21", "3"],
+          "answer": 0,
+          "explanation": "E[X̄²] = Var(X̄) + (E[X̄])² = 12/4 + 3² = 3 + 9 = 12. Trap: 9 = (E[X̄])² hai, variance part bhool gaye; 21 mein σ² ko n se divide nahi kiya.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Point estimation: MoM and MLE",
+      "summary": "Data se unknown parameter ka estimate kaise banayein. Method of moments aur maximum likelihood dono step by step seekhenge, saath mein bias aur MSE.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Estimator vs estimate**: estimator ek formula hai (jaise X̄), estimate us formula ki ek number value hai jo data dalne se aati hai.",
+        "**Bias aur MSE**: Bias = E[θ̂] − θ. MSE = Var(θ̂) + Bias². Unbiased estimator ka bias 0 hota hai.",
+        "**Method of moments (MoM)**: population moments (E[X], E[X²], ...) ko sample moments (X̄, ΣXᵢ²/n, ...) ke barabar rakho aur parameter solve karo.",
+        "**Likelihood**: L(θ) = Π f(xᵢ; θ), yaani observed data ki probability (ya density) θ ke function ke roop mein.",
+        "**MLE**: L(θ) ko maximize karne wala θ. Practically log-likelihood ln L(θ) lo, derivative 0 rakho, aur solve karo.",
+        "**Common MLEs**: Bernoulli p̂ = X̄, Poisson λ̂ = X̄, Exponential λ̂ = 1/X̄, Normal μ̂ = X̄ aur σ̂² = Σ(xᵢ − x̄)²/n.",
+        "**Uniform(0, θ) special case**: MLE = max(xᵢ), derivative se nahi milta kyunki L(θ) = 1/θⁿ ghatta function hai jab θ ≥ max. MoM yahan 2X̄ deta hai."
+      ],
+      "example": {
+        "problem": "Exponential(λ) se sample: 2, 3, 5, 6. λ ka MLE aur MoM estimate nikalo.",
+        "steps": [
+          "L(λ) = Π λe^(−λxᵢ) = λ⁴ e^(−λΣxᵢ), aur Σxᵢ = 16.",
+          "ln L = 4 ln λ − 16λ.",
+          "d/dλ: 4/λ − 16 = 0, toh λ̂ = 4/16 = 0.25.",
+          "MoM: E[X] = 1/λ ko X̄ = 16/4 = 4 ke barabar rakho, toh λ = 1/4 = 0.25.",
+          "Answer: dono methods λ̂ = 0.25 dete hain."
+        ]
+      },
+      "mistakes": [
+        "Uniform(0, θ) ka MLE derivative 0 rakh kar dhoondhna. Yahan answer boundary par hai: θ̂ = max(xᵢ).",
+        "MSE mein bias ko square na karna. MSE = Var + Bias².",
+        "Log-likelihood mein Σ ln xᵢ ka sign galat le lena. 0 aur 1 ke beech ke x ka ln negative hota hai."
+      ],
+      "revision": [
+        "Bias = E[θ̂] − θ; MSE = Var(θ̂) + Bias²",
+        "MoM: E[X] = X̄ (aur zarurat ho toh E[X²] = ΣXᵢ²/n)",
+        "MLE: d/dθ ln L(θ) = 0",
+        "Bernoulli p̂ = X̄; Poisson λ̂ = X̄; Exponential λ̂ = 1/X̄",
+        "Uniform(0, θ): MLE = max xᵢ, MoM = 2X̄"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w10-q1",
+          "question": "Ek coin 20 baar toss kiya, 14 heads aaye. P(Head) = p ka MLE kya hai?",
+          "options": ["0.5", "0.3", "0.7", "14"],
+          "answer": 2,
+          "explanation": "Bernoulli/Binomial ke liye p̂ = successes / trials = 14/20 = 0.7. Trap: 0.5 fair coin ka assumption hai, data ka estimate nahi; 0.3 tails ka proportion hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w10-q2",
+          "question": "Poisson(λ) se sample: 2, 0, 3, 1, 4. λ ka MLE kya hai?",
+          "options": ["2", "10", "2.5", "√2"],
+          "answer": 0,
+          "explanation": "Poisson ka MLE λ̂ = X̄ = 10/5 = 2. Trap: 2.5 = 10/4 mein n − 1 se divide kiya; MLE mein simple mean aata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w10-q3",
+          "question": "Uniform(0, θ) se sample: 1.2, 3.5, 2.8, 0.9. Method of moments se θ ka estimate kya hai?",
+          "options": ["2.1", "4.2", "3.5", "8.4"],
+          "answer": 1,
+          "explanation": "E[X] = θ/2. X̄ = 8.4/4 = 2.1. θ/2 = 2.1 ⇒ θ̂ = 4.2. Trap: 2.1 sirf X̄ hai; 3.5 MLE (max) hai, MoM nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w10-q4",
+          "question": "Uniform(0, θ) se same sample: 1.2, 3.5, 2.8, 0.9. θ ka MLE kya hai?",
+          "options": ["4.2", "2.1", "8.4", "3.5"],
+          "answer": 3,
+          "explanation": "L(θ) = 1/θ⁴ jab θ ≥ sab observations, warna 0. Yeh θ badhne par ghatta hai, toh sabse chhota allowed θ = max = 3.5. Trap: 4.2 MoM estimate hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w10-q5",
+          "question": "Ek estimator θ̂ ke liye E[θ̂] = θ + 2 aur Var(θ̂) = 5. MSE kya hai?",
+          "options": ["5", "7", "9", "3"],
+          "answer": 2,
+          "explanation": "Bias = 2. MSE = Var + Bias² = 5 + 4 = 9. Trap: 7 mein bias ko square nahi kiya; 5 sirf variance hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w10-q6",
+          "question": "PDF f(x; θ) = θx^(θ − 1), 0 < x < 1, θ > 0. n = 4 observations ke liye Σ ln xᵢ = −8. θ ka MLE kya hai?",
+          "options": ["0.5", "2", "−0.5", "8"],
+          "answer": 0,
+          "explanation": "ln L = n ln θ + (θ − 1)Σ ln xᵢ. Derivative: n/θ + Σ ln xᵢ = 0 ⇒ θ̂ = −n / Σ ln xᵢ = −4/(−8) = 0.5. Trap: 2 = 8/4 ulta fraction hai; −0.5 mein minus sign bhool gaye (θ > 0 hona chahiye).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Bayesian estimation",
+      "summary": "Parameter ko random variable maan kar prior belief ko data se update karna. Bayes theorem se posterior, aur Beta prior ke saath coin-toss problems seekhenge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Bayesian idea**: unknown parameter θ ko random maana jaata hai. Data dekhne se pehle ka belief **prior** hai, data ke baad ka updated belief **posterior**.",
+        "**Bayes rule for parameters**: posterior ∝ likelihood × prior. Discrete prior mein har θ value ke liye likelihood × prior nikalo, phir total se divide karo.",
+        "**Beta prior**: p (0 aur 1 ke beech) ke liye Beta(α, β) prior common hai. Prior mean = α/(α + β). Beta(1, 1) = Uniform(0, 1).",
+        "**Conjugate update**: Beta(α, β) prior + n tosses mein k heads ⇒ posterior Beta(α + k, β + n − k). Heads α mein, tails β mein jud jaate hain.",
+        "**Posterior mean**: Beta posterior ka mean (α + k)/(α + β + n). Yeh prior mean aur MLE k/n ke beech aata hai.",
+        "**Bade data ka asar**: n bahut bada ho toh posterior mean MLE ke kareeb aa jaata hai, prior ka asar kam ho jaata hai."
+      ],
+      "example": {
+        "problem": "Ek coin ka p ya toh 0.5 hai ya 0.8, dono ki prior probability 1/2. Do toss mein dono Heads aaye. P(p = 0.8 | data) nikalo.",
+        "steps": [
+          "Likelihood: p = 0.5 par P(HH) = 0.25; p = 0.8 par P(HH) = 0.64.",
+          "Likelihood × prior: 0.25 × 0.5 = 0.125 aur 0.64 × 0.5 = 0.32.",
+          "Total = 0.125 + 0.32 = 0.445.",
+          "P(p = 0.8 | HH) = 0.32 / 0.445 = 64/89 ≈ 0.719.",
+          "Answer: ≈ 0.719. Do heads dekhne ke baad belief 0.5 se badhkar lagbhag 0.72 ho gaya."
+        ]
+      },
+      "mistakes": [
+        "Posterior nikalte waqt total (normalising constant) se divide karna bhool jaana.",
+        "Beta update mein tails ko β mein na jodna. Posterior Beta(α + heads, β + tails) hota hai.",
+        "Prior probability ko hi answer maan lena, jaise P(bad machine) = 0.2, jabki data ke baad belief update hona chahiye."
+      ],
+      "revision": [
+        "Posterior ∝ likelihood × prior",
+        "Beta(α, β) mean = α/(α + β)",
+        "Beta(α, β) + k heads in n ⇒ Beta(α + k, β + n − k)",
+        "Posterior mean = (α + k)/(α + β + n)",
+        "Beta(1, 1) = Uniform(0, 1)"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w11-q1",
+          "question": "p par prior Beta(2, 3) hai. Prior mean kya hai?",
+          "options": ["2/3", "2/5", "3/5", "1/2"],
+          "answer": 1,
+          "explanation": "Beta(α, β) ka mean α/(α + β) = 2/5. Trap: 2/3 = α/β hai, aur 3/5 = β/(α + β) jo ulta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w11-q2",
+          "question": "Coin ke p par Beta(1, 1) prior lene ka matlab kya hai?",
+          "options": [
+            "p = 0.5 par poora belief concentrated hai",
+            "Normal(0, 1) prior",
+            "Exponential(1) prior",
+            "Uniform(0, 1) prior, yaani 0 aur 1 ke beech har value equally plausible"
+          ],
+          "answer": 3,
+          "explanation": "Beta(1, 1) ki density 0 se 1 tak constant 1 hai, yaani Uniform(0, 1). Yeh 'koi khaas preference nahi' wala prior hai. Trap: iska mean 0.5 hai, par belief 0.5 par concentrated nahi, poori range mein faila hua hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w11-q3",
+          "question": "p par prior Beta(2, 2) hai. 10 tosses mein 7 heads aaye. Posterior distribution kya hai?",
+          "options": ["Beta(7, 3)", "Beta(5, 9)", "Beta(9, 5)", "Beta(9, 12)"],
+          "answer": 2,
+          "explanation": "Posterior = Beta(α + heads, β + tails) = Beta(2 + 7, 2 + 3) = Beta(9, 5). Trap: Beta(9, 12) mein β mein total tosses jod diye; Beta(5, 9) ulta hai; Beta(7, 3) prior ignore karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w11-q4",
+          "question": "Posterior Beta(9, 5) hai. Posterior mean kya hai?",
+          "options": ["9/14", "7/10", "9/5", "1/2"],
+          "answer": 0,
+          "explanation": "Mean = α/(α + β) = 9/14 ≈ 0.643. Yeh prior mean 0.5 aur MLE 0.7 ke beech hai. Trap: 7/10 MLE hai (sirf data); 9/5 = α/β hai, jo probability bhi nahi ho sakta (1 se bada).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w11-q5",
+          "question": "Machine 'good' hai (defect rate 0.1) probability 0.8 se, ya 'bad' hai (defect rate 0.5) probability 0.2 se. Ek item test kiya, defective nikla. P(bad | defective)?",
+          "options": ["0.2", "5/9", "0.5", "0.1"],
+          "answer": 1,
+          "explanation": "Bad: 0.2 × 0.5 = 0.1. Good: 0.8 × 0.1 = 0.08. Total = 0.18. Posterior = 0.1/0.18 = 5/9 ≈ 0.556. Trap: 0.1 numerator hai, total se divide nahi kiya; 0.2 prior hai, data ka update nahi hua.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w11-q6",
+          "question": "p par prior Beta(3, 3) hai. 4 tosses mein 4 heads aaye. Posterior mean aur MLE kya hain (is order mein)?",
+          "options": ["0.75 aur 1", "0.7 aur 0.7", "1 aur 0.7", "0.7 aur 1"],
+          "answer": 3,
+          "explanation": "Posterior = Beta(3 + 4, 3 + 0) = Beta(7, 3), mean = 7/10 = 0.7. MLE = 4/4 = 1. Prior ne estimate ko extreme value 1 se pull back kiya. Trap: 0.75 = (α − 1)/(α + β − 2) = 6/8 posterior ka mode hai, mean nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Hypothesis testing basics",
+      "summary": "Data se kisi claim ko test karna: null aur alternative hypothesis, Type I/II errors, z-test aur p-value. Decision rule step by step lagana seekhenge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**H0 aur H1**: null hypothesis H0 default claim hai (jaise μ = 50); alternative H1 woh hai jo hum evidence se dikhana chahte hain (jaise μ < 50).",
+        "**Test statistic aur rejection region**: data se ek number (jaise Z) nikalo; agar woh rejection region mein gire toh H0 reject karo.",
+        "**Type I error**: H0 true hai phir bhi reject kar diya. Iski probability α = significance level.",
+        "**Type II error aur power**: H0 false hai par reject nahi kiya, probability β. **Power** = 1 − β = H0 false hone par sahi se reject karne ki probability.",
+        "**z-test for mean (σ known)**: Z = (X̄ − μ₀)/(σ/√n). α = 0.05 par one-tailed critical value 1.645, two-tailed 1.96.",
+        "**p-value**: H0 true maan kar, itna ya isse zyada extreme result aane ki probability. Rule: p-value ≤ α ⇒ reject H0.",
+        "**Fail to reject ≠ accept**: H0 reject na hona ka matlab H0 prove ho gaya nahi; bas evidence kaafi nahi tha."
+      ],
+      "example": {
+        "problem": "Company kehti hai battery ka mean life 50 hours hai (σ = 6). 36 batteries ka x̄ = 48 aaya. α = 0.05 par test karo H0: μ = 50 vs H1: μ < 50. (Φ(2) ≈ 0.9772)",
+        "steps": [
+          "σ/√n = 6/√36 = 1.",
+          "Z = (48 − 50)/1 = −2.",
+          "Left-tailed test, α = 0.05: critical value −1.645. Reject agar Z < −1.645.",
+          "−2 < −1.645, toh H0 reject.",
+          "p-value = P(Z ≤ −2) = 1 − 0.9772 = 0.0228 < 0.05, same conclusion.",
+          "Answer: H0 reject; data suggest karta hai ki mean life 50 hours se kam hai."
+        ]
+      },
+      "mistakes": [
+        "Z mein σ/√n ki jagah sirf σ use karna. Sample mean ka spread σ/√n hota hai.",
+        "Two-tailed test mein 1.645 use karna. Two-tailed α = 0.05 ke liye 1.96 lagta hai.",
+        "Fail to reject ko 'H0 true prove ho gaya' bol dena."
+      ],
+      "revision": [
+        "α = P(reject H0 | H0 true) = Type I error",
+        "β = P(not reject H0 | H1 true); power = 1 − β",
+        "Z = (X̄ − μ₀)/(σ/√n)",
+        "α = 0.05: one-tailed 1.645, two-tailed 1.96",
+        "p-value ≤ α ⇒ reject H0"
+      ],
+      "questions": [
+        {
+          "id": "stat2-w12-q1",
+          "question": "Type I error kya hai?",
+          "options": [
+            "H0 true hone par bhi H0 ko reject karna",
+            "H0 false hone par H0 ko reject na karna",
+            "H1 true hone par H1 ko accept karna",
+            "Sample size galat choose karna"
+          ],
+          "answer": 0,
+          "explanation": "Type I error = true H0 ko galti se reject karna, probability α. Trap: 'H0 false hone par reject na karna' Type II error hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w12-q2",
+          "question": "Kisi test ki power kya hoti hai? (α = Type I error probability, β = Type II error probability)",
+          "options": ["α", "β", "1 − α", "1 − β"],
+          "answer": 3,
+          "explanation": "Power = H0 false hone par use reject karne ki probability = 1 − β. Trap: 1 − α true H0 ko sahi se accept karne ki probability hai, power nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "stat2-w12-q3",
+          "question": "σ = 10, n = 25, H0: μ = 60. Sample mean x̄ = 63. Test statistic Z kya hai?",
+          "options": ["0.3", "1.5", "7.5", "3"],
+          "answer": 1,
+          "explanation": "Z = (63 − 60)/(10/√25) = 3/2 = 1.5. Trap: 0.3 = 3/10 mein √n bhool gaye; 3 sirf difference hai, standardize nahi kiya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w12-q4",
+          "question": "Two-tailed z-test, α = 0.05, aur Z = 1.5 aaya. Sahi decision kya hai?",
+          "options": [
+            "Reject H0, kyunki Z positive hai",
+            "H0 true prove ho gaya",
+            "Fail to reject H0, kyunki |Z| = 1.5 < 1.96",
+            "Reject H0, kyunki 1.5 > 0.05"
+          ],
+          "answer": 2,
+          "explanation": "Two-tailed α = 0.05 par critical value 1.96. |1.5| < 1.96, toh rejection region mein nahi, fail to reject. Trap: fail to reject ka matlab H0 prove hona nahi; aur Z ko seedha α se compare nahi karte, p-value ko karte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w12-q5",
+          "question": "Ek test ka p-value 0.03 aaya. α = 0.05 aur α = 0.01 par decision kya hoga?",
+          "options": [
+            "α = 0.05 par reject, α = 0.01 par fail to reject",
+            "Dono levels par reject",
+            "α = 0.01 par reject, α = 0.05 par fail to reject",
+            "Dono levels par fail to reject"
+          ],
+          "answer": 0,
+          "explanation": "Rule: p-value ≤ α ⇒ reject. 0.03 ≤ 0.05 toh reject; 0.03 > 0.01 toh fail to reject. Trap: chhota α zyada strict hota hai, reject karna mushkil hota hai, aasaan nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "stat2-w12-q6",
+          "question": "Normal population, σ = 8, n = 16. H0: μ = 10 ko reject karte hain agar X̄ > 12. Type I error α aur μ = 14 par power kya hain (is order mein)? (Φ(0.5) ≈ 0.6915, Φ(1) ≈ 0.8413)",
+          "options": ["0.8413 aur 0.1587", "0.1587 aur 0.8413", "0.3085 aur 0.6915", "0.1587 aur 0.5"],
+          "answer": 1,
+          "explanation": "SD(X̄) = 8/√16 = 2. α = P(X̄ > 12 | μ = 10) = P(Z > 1) = 0.1587. Power = P(X̄ > 12 | μ = 14) = P(Z > −1) = 0.8413. Trap: 0.3085/0.6915 tab aata hai jab variance 4 ko SD le lo (z = 0.5); pehla option order ulta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

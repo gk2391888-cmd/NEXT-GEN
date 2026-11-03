@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXT GEN Phase 1 design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--nav:#0d1a33;--nav2:#152440;--bg:#f5f7fb;--white:#fff;--ink:#14213a;--muted:#718099;--border:#e4eaf2;--primary:#5364ef;--teal:#20c8ba;--red:#e9506c;--yellow:#f6b84b;--green:#22a06b}
+*{box-sizing:border-box}
+body{margin:0;background:#e9edf4;color:var(--ink);font:14px/1.55 'DM Sans',sans-serif;padding:32px 16px}
+h1,h2,h3{font-family:'Plus Jakarta Sans',sans-serif;margin:0;line-height:1.25}
+p{margin:0;color:#596982}
+.label{max-width:1180px;margin:0 auto 10px;font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--muted)}
+.label b{color:var(--primary)}
+.note{max-width:1180px;margin:0 auto 40px;font-size:13px;color:#596982}
+.frame{max-width:1180px;margin:0 auto 14px;display:flex;background:var(--bg);border-radius:16px;overflow:hidden;border:1px solid var(--border);min-height:620px}
+.side{width:220px;background:var(--nav);color:#fff;padding:24px 14px;flex:none}
+.brand{display:flex;gap:10px;align-items:center;margin:0 6px 30px}
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(130deg,#60d6ee,#6254ef);display:grid;place-items:center;font:800 22px 'Plus Jakarta Sans'}
+.brand b{font-size:17px;letter-spacing:.5px}
+.nav{padding:10px 12px;border-radius:10px;color:#a6b4d2;font-weight:600;margin:2px 0;font-size:13.5px}
+.nav.on{background:#283957;color:#fff;box-shadow:inset 3px 0 0 #36d6c5}
+.nav .new{font-size:10px;background:#36d6c5;color:#08332f;border-radius:6px;padding:1px 6px;margin-left:6px;font-weight:700}
+.main{flex:1;min-width:0;padding:26px 30px}
+.crumb{font-size:11px;letter-spacing:1.4px;color:var(--muted);font-weight:700;margin-bottom:16px}
+.crumb b{color:var(--ink)}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}
+.row{display:flex;gap:16px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer}
+.btn.p{background:var(--teal);color:#06302c}
+.btn.s{background:#fff;border:1px solid var(--border);color:var(--ink)}
+.chip{display:inline-block;font-size:11px;font-weight:700;border-radius:7px;padding:3px 8px}
+.muted{color:var(--muted);font-size:12.5px}
+/* library */
+.weeks{width:250px;flex:none;padding:10px}
+.wk{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;font-size:13px}
+.wk.on{background:#eef0fe}
+.dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none}
+.done{background:#dff7f2;color:#127a6c}.cur{background:var(--primary);color:#fff}.todo{background:#eef2f7;color:#8a98ae}
+.sec{border-top:1px solid var(--border);padding:16px 0 4px}
+.sec h3{font-size:14.5px;margin-bottom:8px}
+.box{border-radius:10px;padding:12px 14px;font-size:13.5px}
+.ex{background:#f3f6fb;font-family:ui-monospace,Consolas,monospace;font-size:13px;color:var(--ink)}
+.warn{background:#fff6e8;color:#7a5512}
+ul{margin:0;padding-left:18px;color:#3c4a63}li{margin:4px 0}
+/* quiz */
+.timer{font:800 22px 'Plus Jakarta Sans';color:var(--ink)}
+.opt{display:flex;gap:12px;align-items:center;border:1.5px solid var(--border);border-radius:12px;padding:13px 14px;margin:10px 0;font-size:14px;background:#fff}
+.opt.sel{border-color:var(--primary);background:#f2f3ff}
+.opt .k{width:26px;height:26px;border-radius:8px;background:#eef2f7;display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+.opt.sel .k{background:var(--primary);color:#fff}
+.pal{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.q{height:34px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:12.5px;border:1px solid var(--border);background:#fff;color:#8a98ae}
+.q.a{background:#dff7f2;border-color:#9fe3d7;color:#127a6c}.q.m{background:#fff3df;border-color:#f6d39a;color:#8a5a10}.q.c{border:2px solid var(--primary);color:var(--primary)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+/* result */
+.stat{flex:1;background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px}
+.stat b{display:block;font:800 26px 'Plus Jakarta Sans';margin-bottom:2px}
+.bar{height:8px;background:#eef2f7;border-radius:5px;overflow:hidden;margin-top:6px}
+.bar span{display:block;height:100%;border-radius:5px}
+.rev{border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px;background:#fff}
+.why{background:#eefaf7;border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px;color:#13584f}
+@media(max-width:860px){.side{display:none}.row{flex-direction:column}.weeks{width:auto}.main{padding:18px 16px}}
+</style>
+</head>
+<body>
+
+<div class="label">SCREEN 1 · <b>STUDY LIBRARY</b> · subject → week → notes</div>
+<div class="frame">
+  <div class="side">
+    <div class="brand"><div class="logo">N</div><b>NEXT GEN</b></div>
+    <div class="nav">Overview</div><div class="nav on">Study Library</div><div class="nav">Practice Quiz</div><div class="nav">Mock Tests <span class="new">NEW</span></div><div class="nav">Python &amp; CT Lab</div><div class="nav">Doubt Help</div><div class="nav">My Progress</div>
+  </div>
+  <div class="main">
+    <div class="crumb">STUDY LIBRARY / STATISTICS I / <b>WEEK 3</b></div>
+    <div class="row" style="align-items:flex-start">
+      <div class="card weeks">
+        <div style="padding:6px 10px 10px"><h3 style="font-size:15px">Statistics for Data Science I</h3><div class="muted">BSMA1002 · 12 weeks · 2 of 12 done</div>
+          <div class="bar"><span style="width:17%;background:var(--teal)"></span></div></div>
+        <div class="wk"><span class="dot done">✓</span>Week 1 · Types of data</div>
+        <div class="wk"><span class="dot done">✓</span>Week 2 · Categorical data</div>
+        <div class="wk on"><span class="dot cur">3</span><b>Week 3 · Numerical data</b></div>
+        <div class="wk"><span class="dot todo">4</span>Week 4 · Association</div>
+        <div class="wk"><span class="dot todo">5</span>Week 5 · Permutations</div>
+        <div class="wk"><span class="dot todo">6</span>Week 6 · Probability</div>
+        <div class="wk muted" style="padding-left:42px">+ 6 more weeks</div>
+      </div>
+      <div class="card" style="flex:1;min-width:0;padding:22px 24px">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+          <div><span class="chip" style="background:#dff7f2;color:#127a6c">WEEK 3 · 12 MIN READ</span>
+            <h2 style="font-size:22px;margin:10px 0 6px">Mean, median, mode aur spread</h2>
+            <p>Numerical data ko ek number mein summarise karna seekho, aur samjho ki data kitna faila hua hai.</p></div>
+          <div style="display:flex;gap:8px"><button class="btn s">⤓ Save as PDF</button><button class="btn s">☆ Revise later</button></div>
+        </div>
+        <div class="sec" style="margin-top:16px"><h3>1 · Concept</h3>
+          <ul><li><b>Mean</b> = sab values ka sum ÷ count. Outliers se zyada affect hota hai.</li><li><b>Median</b> = sorted data ka middle value. Outliers ka asar kam.</li><li><b>Range</b> = max − min. <b>Variance</b> batata hai values mean se kitni door hain.</li></ul></div>
+        <div class="sec"><h3>2 · Solved example</h3>
+          <div class="box ex">Data: 2, 4, 4, 5, 10<br>Mean = 25 / 5 = 5 &nbsp;·&nbsp; Median = 4 &nbsp;·&nbsp; Mode = 4 &nbsp;·&nbsp; Range = 8</div></div>
+        <div class="sec"><h3>3 · Common mistake</h3>
+          <div class="box warn">Median nikalne se pehle data sort karna mat bhoolo. Unsorted list ka middle value median nahi hota.</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap">
+          <span class="muted">Padh liya? Ab 10 questions se check karo.</span>
+          <div style="display:flex;gap:8px"><button class="btn s">Mark as done</button><button class="btn p">Practice week 3 →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Har subject ke 12 weeks. Har week ke notes ka same format: concept, solved example, common mistake aur quick revision points. "Save as PDF" se browser hi notes ki clean printable copy bana deta hai, alag se PDF files upload nahi karni padti.</div>
+
+<div class="label">SCREEN 2 · <b>MOCK TEST</b> · timer, question palette, mark for review</div>
+<div class="frame" style="min-height:560px">
+  <div class="main">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+      <div><div class="crumb" style="margin:0 0 4px">MOCK TEST · STATISTICS I</div><h2 style="font-size:19px">Quiz 1 practice · Weeks 1–4</h2></div>
+      <div style="display:flex;gap:12px;align-items:center"><div class="card" style="padding:8px 16px;text-align:center"><div class="muted" style="font-size:11px">TIME LEFT</div><div class="timer">24:18</div></div><button class="btn s" style="color:var(--red)">Submit test</button></div>
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <div class="card" style="flex:1;min-width:0;padding:22px 24px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px"><span class="chip" style="background:#eef0fe;color:#3d4bc4">QUESTION 7 OF 20</span><span class="muted">+1 marks · Week 3</span></div>
+        <h3 style="font-size:16.5px;font-weight:700;line-height:1.5">Data 3, 7, 7, 9, 24 mein se kaunsa measure outlier (24) se sabse kam affect hoga?</h3>
+        <div class="opt"><span class="k">A</span>Mean</div>
+        <div class="opt sel"><span class="k">B</span>Median</div>
+        <div class="opt"><span class="k">C</span>Range</div>
+        <div class="opt"><span class="k">D</span>Variance</div>
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-top:18px;flex-wrap:wrap">
+          <button class="btn s">← Previous</button>
+          <div style="display:flex;gap:8px"><button class="btn s">⚑ Mark for review</button><button class="btn p">Save &amp; next →</button></div>
+        </div>
+      </div>
+      <div class="card" style="width:260px;flex:none">
+        <h3 style="font-size:14px">Question palette</h3>
+        <div class="pal">
+          <div class="q a">1</div><div class="q a">2</div><div class="q m">3</div><div class="q a">4</div><div class="q a">5</div>
+          <div class="q a">6</div><div class="q c">7</div><div class="q">8</div><div class="q">9</div><div class="q">10</div>
+          <div class="q">11</div><div class="q">12</div><div class="q">13</div><div class="q">14</div><div class="q">15</div>
+          <div class="q">16</div><div class="q">17</div><div class="q">18</div><div class="q">19</div><div class="q">20</div>
+        </div>
+        <div class="legend"><span><i style="background:#9fe3d7"></i>Answered 5</span><span><i style="background:#f6d39a"></i>Review 1</span><span><i style="background:#e4eaf2"></i>Not visited 14</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Do mode honge: "Practice" (har answer ke turant baad explanation) aur "Mock test" (exam jaisa: timer, palette, end mein result). Timer khatam hote hi test apne aap submit ho jayega.</div>
+
+<div class="label">SCREEN 3 · <b>RESULT</b> · score, weak topics, Hinglish explanations</div>
+<div class="frame" style="min-height:560px">
+  <div class="main">
+    <div class="crumb">MOCK TEST / <b>RESULT</b></div>
+    <div class="row" style="margin-bottom:16px;flex-wrap:wrap">
+      <div class="stat"><b>14 / 20</b><span class="muted">Score</span></div>
+      <div class="stat"><b style="color:var(--green)">70%</b><span class="muted">Accuracy</span></div>
+      <div class="stat"><b>21:42</b><span class="muted">Time taken</span></div>
+      <div class="stat"><b style="color:var(--red)">Week 3</b><span class="muted">Weakest topic</span></div>
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <div class="card" style="width:300px;flex:none">
+        <h3 style="font-size:14px;margin-bottom:12px">Week-wise performance</h3>
+        <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>Week 1 · Types of data</span><b>5/5</b></div><div class="bar"><span style="width:100%;background:var(--teal)"></span></div></div>
+        <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>Week 2 · Categorical</span><b>4/5</b></div><div class="bar"><span style="width:80%;background:var(--teal)"></span></div></div>
+        <div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>Week 3 · Numerical</span><b>2/5</b></div><div class="bar"><span style="width:40%;background:var(--red)"></span></div></div>
+        <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>Week 4 · Association</span><b>3/5</b></div><div class="bar"><span style="width:60%;background:var(--yellow)"></span></div></div>
+        <button class="btn p" style="width:100%;justify-content:center">Revise week 3 notes →</button>
+      </div>
+      <div class="card" style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="font-size:14px">Answer review</h3>
+          <div style="display:flex;gap:6px"><span class="chip" style="background:#eef2f7;color:#3c4a63">All 20</span><span class="chip" style="background:#fdecef;color:#a3203a">Wrong 6</span><span class="chip" style="background:#eef2f7;color:#3c4a63">Skipped 0</span></div></div>
+        <div class="rev">
+          <div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:13.5px">Q12 · Data 4, 8, 6, 2 ka median kya hai?</b><span class="chip" style="background:#fdecef;color:#a3203a;flex:none">WRONG</span></div>
+          <div class="muted" style="margin-top:6px">Your answer: <b style="color:var(--red)">6</b> &nbsp;·&nbsp; Correct: <b style="color:var(--green)">5</b></div>
+          <div class="why"><b>Kyun?</b> Pehle sort karo: 2, 4, 6, 8. Values even hain, to median = do middle values ka average = (4 + 6) / 2 = 5. Aapne unsorted list ka middle value le liya.</div>
+        </div>
+        <div class="rev">
+          <div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:13.5px">Q7 · Outlier se sabse kam kaunsa measure affect hoga?</b><span class="chip" style="background:#dff7f2;color:#127a6c;flex:none">CORRECT</span></div>
+          <div class="why"><b>Kyun?</b> Median sirf middle position dekhta hai, isliye 24 jaisi badi value use nahi hilati. Mean aur range dono outlier ke saath badh jaate hain.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">Result "My Progress" mein save hoga (Phase 1 mein browser mein, Phase 2 mein login ke baad cloud mein). Weak week se seedha uske notes khulenge.</div>
+
+</body>
+</html>
