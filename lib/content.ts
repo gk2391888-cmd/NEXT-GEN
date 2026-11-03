@@ -2,6 +2,7 @@ import 'server-only';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cache } from 'react';
+import { countByLevel } from './levels';
 import type { Question, QuestionText, Subject, SubjectContent, Week, WeekRef } from './types';
 
 const CONTENT_DIR = join(process.cwd(), 'content');
@@ -36,7 +37,7 @@ export function getWeek(subjectId: string, week: number): Week | undefined {
 
 /** Lightweight week list (no notes or questions) for navigation and progress views. */
 export function getWeekRefs(subjectId: string): WeekRef[] {
-  return getWeeks(subjectId).map((w) => ({ week: w.week, title: w.title, questionCount: w.questions.length }));
+  return getWeeks(subjectId).map((w) => ({ week: w.week, title: w.title, questionCount: w.questions.length, levels: countByLevel(w.questions) }));
 }
 
 export function getQuestionsForWeeks(subjectId: string, from: number, to: number): Question[] {

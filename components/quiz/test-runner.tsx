@@ -9,11 +9,13 @@ import { ProTag } from '@/components/pro-lock';
 import { useConfirm } from '@/components/confirm-dialog';
 import { percent } from '@/lib/progress/insights';
 import type { ActiveTest, NewAnswer, TestAttempt } from '@/lib/progress/types';
-import { pickQuestions, testKey, type MockTest } from '@/lib/tests';
+import { pickQuestions, testKey, testMix, type MockTest } from '@/lib/tests';
+import { countByLevel, DIFFICULTIES, DIFFICULTY_CHIP, levelLabel, levelOf, type Level } from '@/lib/levels';
 import type { Question, Subject } from '@/lib/types';
 import { accuracyColor, accuracyTone, formatClock, InlineText, ProgressBar } from '@/components/ui';
 import { Explanation, letter, QuestionView } from './question-view';
 import { LanguageSwitch } from './language-switch';
+import { availableLevel, LevelSwitch } from './level-switch';
 
 /**
  * A section of a test that mixes subjects (the qualifier mocks): each question's `week` is then its
@@ -73,9 +75,15 @@ export function TestRunner({ subject, test, pool: original, weekTitles, sections
   const [viewingId, setViewingId] = useState<string | null>(null);
   const viewing = viewingId ? attempts.find((a) => a.id === viewingId) : undefined;
   const group = grouping(subject, weekTitles, sections);
+  // Mixed by default. A single level is offered when the pool has a whole test's worth of it; sectioned tests are always mixed.
+  const levelCounts = countByLevel(pool);
+  const [chosenLevel, setLevel] = useState<Level>('mixed');
+  const level = sections ? 'mixed' : availableLevel(chosenLevel, levelCounts, test.questionCount);
+  const levelChoice = !sections && DIFFICULTIES.some((d) => levelCounts[d] >= test.questionCount);
+  const mix = testMix(test.questionCount);
 
   function start() {
-    const questions = pickQuestions(pool, test.questionCount);
+    const questions = pickQuestions(pool, test.questionCount, Math.random, level);
     const now = Date.now();
     progress.saveActiveTest(key, {
       subjectId: subject.id,
@@ -109,6 +117,21 @@ export function TestRunner({ subject, test, pool: original, weekTitles, sections
         </div>
         <h1 className="mt-md mb-sm">{test.title}</h1>
         <p>{subject.name} · {test.questionCount} questions · {test.minutes} minutes</p>
+        {!sections && (
+          <div className="mt-md">
+            {levelChoice && (
+              <div className="level-row mb-xs">
+                <span className="muted">Question level</span>
+                <LevelSwitch value={level} onChange={setLevel} counts={levelCounts} min={test.questionCount} showCounts={false} />
+              </div>
+            )}
+            <p className="muted">
+              {level === 'mixed'
+                ? `A balanced mix: ${mix.easy} easy, ${mix.medium} medium and ${mix.hard} hard questions, spread across the weeks.`
+                : `Only ${levelLabel(level).toLowerCase()} questions, spread across the weeks (${levelCounts[level]} in this test's question bank).`}
+            </p>
+          </div>
+        )}
         {rules ?? (
           <ul className="my-lg">
             <li>The timer starts as soon as you begin. The test is submitted automatically when time runs out.</li>
@@ -126,14 +149,20 @@ export function TestRunner({ subject, test, pool: original, weekTitles, sections
           <table className="table table-stack">
             <thead><tr><th>Date</th><th>Score</th><th>Time</th><th /></tr></thead>
             <tbody>
-              {[...attempts].reverse().map((a) => (
-                <tr key={a.id}>
-                  <td>{new Date(a.submittedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</td>
-                  <td data-label="Score:"><strong className={accuracyTone(percent(a.correct, a.total))}>{a.correct}/{a.total}</strong></td>
-                  <td data-label="Time:">{formatClock(a.durationSec)}</td>
-                  <td className="text-right"><button className="btn btn-secondary" onClick={() => setViewingId(a.id)}>View result</button></td>
-                </tr>
-              ))}
+              {[...attempts].reverse().map((a) => {
+                const attemptLevel = sections ? 'mixed' : levelOf(a.questionIds.flatMap((id) => byId.get(id) ?? []));
+                return (
+                  <tr key={a.id}>
+                    <td>
+                      {new Date(a.submittedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                      {attemptLevel !== 'mixed' && <> <span className={`chip ${DIFFICULTY_CHIP[attemptLevel]}`}>{levelLabel(attemptLevel).toUpperCase()}</span></>}
+                    </td>
+                    <td data-label="Score:"><strong className={accuracyTone(percent(a.correct, a.total))}>{a.correct}/{a.total}</strong></td>
+                    <td data-label="Time:">{formatClock(a.durationSec)}</td>
+                    <td className="text-right"><button className="btn btn-secondary" onClick={() => setViewingId(a.id)}>View result</button></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

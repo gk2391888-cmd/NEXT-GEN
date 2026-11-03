@@ -7,8 +7,10 @@ An independent learning and exam-preparation site for IITM BS Foundation student
 ## What's in Phase 1
 
 - **Study Library**: 8 Foundation subjects × 12 weeks of original Hinglish notes (concept, solved example, common mistakes, quick revision). "Save as PDF" prints a clean copy.
-- **Practice Quiz**: 6 MCQs per week (576 total) with instant explanations, in English or Hinglish: each student picks with the English / Hinglish switch on practice, mock tests, My Mistakes and search (English by default, remembered in the browser).
+- **Practice Quiz**: 15 MCQs per week (1,440 total) with instant explanations, in English or Hinglish: each student picks with the English / Hinglish switch on practice, mock tests, My Mistakes and search (English by default, remembered in the browser).
+  - **Levels**: every week has at least 5 Easy, 5 Medium and 5 Hard questions. Students pick Easy, Medium, Hard or Mixed (all of the week's questions, easy first) on the practice pages; each level shows how many questions it has, and the choice is remembered in the browser.
 - **Mock Tests**: Quiz 1 (weeks 1–4), Quiz 2 (weeks 5–8) and End term (all weeks) per subject, with timer, question palette, mark-for-review, auto-submit, resume after refresh, and a result page with week-wise performance and answer review.
+  - Each test is a balanced mix by default (about 30% easy, 40% medium, 30% hard, spread across the weeks). Before starting, a student can switch it to Easy, Medium or Hard only.
 - **My Progress**: accuracy by subject, weak weeks, mock test history, weeks saved for revision.
 
 ## Qualifier Prep (`/qualifier`)
@@ -175,7 +177,8 @@ Open http://localhost:3000.
 | `lib/content.ts` | Reads content at build time |
 | `lib/qualifier.ts`, `lib/qualifier-content.ts`, `lib/qualifier-plan.ts` | Qualifier config, exam date and rules · mock loader (server) · study plan |
 | `lib/progress/` | Progress store, types and weak-topic insights |
-| `lib/tests.ts` | Mock test definitions and question picking |
+| `lib/tests.ts` | Mock test definitions and question picking (balanced mix or one level) |
+| `lib/levels.ts`, `lib/practice-level.ts` | Question levels (Easy / Medium / Hard / Mixed): counts and filtering, shared · the practice level each student picked (browser) |
 | `legacy/` | The original single-file prototype, kept for reference |
 
 ## Editing content
@@ -186,7 +189,9 @@ Edit the JSON in `content/weeks/`, then check it:
 npm run validate:content
 ```
 
-The validator checks every week has the right fields, 6 questions with 4 distinct options, valid answer indexes and ids, and that correct answers aren't bunched on one option. `npm run build` runs it first, so broken content never deploys.
+The validator checks every week has the right fields, at least 6 questions with 4 distinct options, valid answer indexes and ids, and that correct answers aren't bunched on one option. `npm run build` runs it first, so broken content never deploys.
+
+**Levels.** In the subjects listed in `LEVELLED_SUBJECTS` (`scripts/validate-content.mjs`; today the 8 Data Science Foundation subjects) every week needs at least 5 `easy`, 5 `medium` and 5 `hard` questions. Hard means multi-step, exam-level (quiz and end-term style), not obscure. When you add a question, give it the next free id in its week (`math1-w3-q16`) and never renumber or reuse an id: students' progress and My Mistakes are stored by question id.
 
 Every question also needs its English text in `content/weeks-en/<subject>.json` (`question`, `options`, `explanation`; answer, code and difficulty are shared). The validator fails if one is missing, has a different number of options, or has different `` ` `` / `**` marks, and lists any question or option whose numbers differ between the two languages so you can check the translation. Keep the options in the same order: the answer index is the same in both languages.
 
