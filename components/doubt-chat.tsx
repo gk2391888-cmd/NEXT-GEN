@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
 import { loadQuestionBank, type BankQuestion } from '@/lib/question-bank';
+import { findQualifierQuestion } from '@/lib/qualifier-questions';
 import { accessOf, PRICING, usePlan } from '@/lib/plan';
 import { limitsFor, type AiUsage } from '@/lib/ai/features';
 import { askAi } from '@/lib/ai/client';
@@ -58,8 +59,9 @@ export function DoubtChat() {
     setRestored(true);
     if (!questionId) return;
     loadQuestionBank()
-      .then((bank) => {
-        const q = bank.find((x) => x.id === questionId);
+      // Qualifier mock questions aren't in the course question bank.
+      .then(async (bank) => bank.find((x) => x.id === questionId) ?? (await findQualifierQuestion(questionId)))
+      .then((q) => {
         if (!q) return;
         setAbout(q);
         if (!id) return;

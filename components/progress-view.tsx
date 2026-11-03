@@ -5,6 +5,7 @@ import { progress, useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent, score, weakWeeks } from '@/lib/progress/insights';
 import type { Subject, WeekRef } from '@/lib/types';
+import { getQualifierMock, QUALIFIER_TEST_SUBJECT } from '@/lib/qualifier';
 import { accuracyTone, ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
 import { useAuth } from '@/components/auth/auth-provider';
 import { useConfirm } from '@/components/confirm-dialog';
@@ -110,13 +111,23 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
               <table className="table">
                 <thead><tr><th>Test</th><th>Date</th><th>Score</th></tr></thead>
                 <tbody>
-                  {[...state.tests].reverse().slice(0, 15).map((t) => (
-                    <tr key={t.id}>
-                      <td><Link href={`/tests/${t.subjectId}/${t.testId}`}>{subjectById.get(t.subjectId)?.short} · {testTitles[t.testId] ?? t.testId}</Link></td>
-                      <td className="muted">{new Date(t.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
-                      <td><strong className={accuracyTone(percent(t.correct, t.total))}>{t.correct}/{t.total}</strong></td>
-                    </tr>
-                  ))}
+                  {[...state.tests].reverse().slice(0, 15).map((t) => {
+                    // Qualifier mocks are stored as tests of the subject "qualifier".
+                    const mock = t.subjectId === QUALIFIER_TEST_SUBJECT ? getQualifierMock(t.testId) : undefined;
+                    return (
+                      <tr key={t.id}>
+                        <td>
+                          {mock ? (
+                            <Link href={`/qualifier/${mock.qualifier}/mock/${mock.id}`}>{mock.title}</Link>
+                          ) : (
+                            <Link href={`/tests/${t.subjectId}/${t.testId}`}>{subjectById.get(t.subjectId)?.short} · {testTitles[t.testId] ?? t.testId}</Link>
+                          )}
+                        </td>
+                        <td className="muted">{new Date(t.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</td>
+                        <td><strong className={accuracyTone(percent(t.correct, t.total))}>{t.correct}/{t.total}</strong></td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -1,7 +1,8 @@
 // Checks every content/weeks/<subject>.json against the shape the app expects, and that
-// content/weeks-en/<subject>.json has an English version of every question.
-// Usage: node scripts/validate-content.mjs [subjectId ...]
-import { readFileSync, existsSync } from 'node:fs';
+// content/weeks-en/<subject>.json has an English version of every question. Then checks the
+// qualifier mocks: content/qualifier/qualifiers.json and content/qualifier/mocks{,-en}/<mock>.json.
+// Usage: node scripts/validate-content.mjs [subjectId ... | qualifier]
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -13,7 +14,11 @@ const DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
 const EN_FIELDS = ['question', 'options', 'explanation'];
 
 const requested = process.argv.slice(2);
-const targets = requested.length ? requested : subjects.map((s) => s.id);
+const targets = requested.length ? requested.filter((r) => r !== 'qualifier') : subjects.map((s) => s.id);
+const checkQualifiers = !requested.length || requested.includes('qualifier');
+// Qualifier mocks: questions per section, and the limits of test_attempts (test_id ≤ 20 characters, ≤ 100 questions).
+const QUALIFIER_SECTION_QUESTIONS = [5, 25];
+const MAX_TEST_QUESTIONS = 100;
 let failures = 0;
 
 const isText = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -22,6 +27,48 @@ const letter = (i) => 'ABCD'[i];
 const count = (text, mark) => text.split(mark).length - 1;
 /** The numbers in a text, so a translation that changes one shows up for a check. */
 const numbers = (text) => (text.match(/\d+(\.\d+)?/g) ?? []).sort().join(' ');
+
+/**
+ * One question and its English version: the same options in the same order, with the same `code` and **bold** marks.
+ * Answer, code and difficulty are shared, so they're not repeated in the English file.
+ */
+function checkQuestion(q, expectedId, qat, english, enLabel, ids, answerCounts, err, warnings) {
+  if (q.id !== expectedId) err(`${qat}: id should be "${expectedId}"`);
+  if (ids.has(q.id)) err(`${qat}: duplicate id`);
+  ids.add(q.id);
+  if (!isText(q.question)) err(`${qat}: question missing`);
+  if (q.code !== undefined && !isText(q.code)) err(`${qat}: code must be a non-empty string when present`);
+  if (!isTextList(q.options, 4, 4)) err(`${qat}: needs exactly 4 options`);
+  else if (new Set(q.options.map((o) => o.trim().toLowerCase())).size !== 4) err(`${qat}: options must be distinct`);
+  if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > 3) err(`${qat}: answer must be 0–3`);
+  else answerCounts[q.answer]++;
+  if (!isText(q.explanation)) err(`${qat}: explanation missing`);
+  if (!DIFFICULTIES.has(q.difficulty)) err(`${qat}: difficulty must be easy, medium or hard`);
+
+  const e = english[q.id];
+  if (!e) return err(`${qat}: English version missing in ${enLabel}`);
+  const extra = Object.keys(e).filter((k) => !EN_FIELDS.includes(k));
+  if (extra.length) err(`${qat} (English): unexpected field(s) ${extra.join(', ')}; only ${EN_FIELDS.join(', ')} are translated`);
+  if (!isText(e.question)) err(`${qat} (English): question missing`);
+  if (!isText(e.explanation)) err(`${qat} (English): explanation missing`);
+  if (!isTextList(e.options, 4, 4) || e.options.length !== q.options?.length) return err(`${qat} (English): needs exactly 4 options, like the Hinglish`);
+  if (new Set(e.options.map((o) => o.trim().toLowerCase())).size !== 4) err(`${qat} (English): options must be distinct`);
+  if (!isText(q.question) || !isTextList(q.options, 4, 4)) return;
+  const pairs = [['question', q.question, e.question], ...q.options.map((o, k) => [`option ${letter(k)}`, o, e.options[k]])];
+  if (isText(q.explanation) && isText(e.explanation)) pairs.push(['explanation', q.explanation, e.explanation]);
+  for (const [what, hi, eng] of pairs) {
+    if (!isText(eng)) continue;
+    if (count(hi, '`') !== count(eng, '`')) err(`${qat} (English): ${what} has a different number of \` marks`);
+    if (count(hi, '**') !== count(eng, '**')) err(`${qat} (English): ${what} has a different number of ** marks`);
+    if (what !== 'explanation' && numbers(hi) !== numbers(eng)) warnings.push(`${qat} (English): ${what} numbers differ: "${hi}" → "${eng}"`);
+  }
+}
+
+/** Correct answers spread over A–D: each position at least 15% of them. */
+const bunched = (counts) => {
+  const total = counts.reduce((a, b) => a + b, 0);
+  return total > 0 && counts.some((c) => c < total * 0.15);
+};
 
 function readJson(file, label, err) {
   try {
@@ -84,39 +131,7 @@ for (const id of targets) {
       return;
     }
     w.questions.forEach((q, j) => {
-      const qat = `${at} q${j + 1}`;
-      const expectedId = `${id}-w${i + 1}-q${j + 1}`;
-      if (q.id !== expectedId) err(`${qat}: id should be "${expectedId}"`);
-      if (ids.has(q.id)) err(`${qat}: duplicate id`);
-      ids.add(q.id);
-      if (!isText(q.question)) err(`${qat}: question missing`);
-      if (q.code !== undefined && !isText(q.code)) err(`${qat}: code must be a non-empty string when present`);
-      if (!isTextList(q.options, 4, 4)) err(`${qat}: needs exactly 4 options`);
-      else if (new Set(q.options.map((o) => o.trim().toLowerCase())).size !== 4) err(`${qat}: options must be distinct`);
-      if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > 3) err(`${qat}: answer must be 0–3`);
-      else answerCounts[q.answer]++;
-      if (!isText(q.explanation)) err(`${qat}: explanation missing`);
-      if (!DIFFICULTIES.has(q.difficulty)) err(`${qat}: difficulty must be easy, medium or hard`);
-
-      // The English version: the same options in the same order, with the same `code` and **bold** marks.
-      // Answer, code and difficulty are shared, so they're not repeated in the English file.
-      const e = english[q.id];
-      if (!e) return err(`${qat}: English version missing in content/weeks-en/${id}.json`);
-      const extra = Object.keys(e).filter((k) => !EN_FIELDS.includes(k));
-      if (extra.length) err(`${qat} (English): unexpected field(s) ${extra.join(', ')}; only ${EN_FIELDS.join(', ')} are translated`);
-      if (!isText(e.question)) err(`${qat} (English): question missing`);
-      if (!isText(e.explanation)) err(`${qat} (English): explanation missing`);
-      if (!isTextList(e.options, 4, 4) || e.options.length !== q.options?.length) return err(`${qat} (English): needs exactly 4 options, like the Hinglish`);
-      if (new Set(e.options.map((o) => o.trim().toLowerCase())).size !== 4) err(`${qat} (English): options must be distinct`);
-      if (!isText(q.question) || !isTextList(q.options, 4, 4)) return;
-      const pairs = [['question', q.question, e.question], ...q.options.map((o, k) => [`option ${letter(k)}`, o, e.options[k]])];
-      if (isText(q.explanation) && isText(e.explanation)) pairs.push(['explanation', q.explanation, e.explanation]);
-      for (const [what, hi, eng] of pairs) {
-        if (!isText(eng)) continue;
-        if (count(hi, '`') !== count(eng, '`')) err(`${qat} (English): ${what} has a different number of \` marks`);
-        if (count(hi, '**') !== count(eng, '**')) err(`${qat} (English): ${what} has a different number of ** marks`);
-        if (what !== 'explanation' && numbers(hi) !== numbers(eng)) warnings.push(`${qat} (English): ${what} numbers differ: "${hi}" → "${eng}"`);
-      }
+      checkQuestion(q, `${id}-w${i + 1}-q${j + 1}`, `${at} q${j + 1}`, english, `content/weeks-en/${id}.json`, ids, answerCounts, err, warnings);
     });
   });
 
@@ -124,7 +139,7 @@ for (const id of targets) {
   if (stray.length) err(`content/weeks-en/${id}.json: unknown question id(s) ${stray.slice(0, 5).join(', ')}`);
 
   const total = answerCounts.reduce((a, b) => a + b, 0);
-  if (total && answerCounts.some((c) => c < total * 0.15)) {
+  if (bunched(answerCounts)) {
     err(`correct answers are bunched on one position (A–D counts: ${answerCounts.join(', ')}); spread them out`);
   }
 
@@ -142,4 +157,113 @@ for (const id of targets) {
   }
 }
 
+if (checkQualifiers) checkQualifierMocks();
+
 process.exit(failures ? 1 : 0);
+
+function checkQualifierMocks() {
+  const errors = [];
+  const err = (msg) => errors.push(msg);
+  const warnings = [];
+  const dir = join(root, 'content/qualifier');
+  const config = readJson(join(dir, 'qualifiers.json'), 'content/qualifier/qualifiers.json', err);
+  if (!config) return report();
+
+  const qualifiers = new Map();
+  for (const [i, q] of (Array.isArray(config.qualifiers) ? config.qualifiers : []).entries()) {
+    const at = `qualifier ${q?.id ?? i + 1}`;
+    if (!/^[a-z]+$/.test(q?.id ?? '')) err(`${at}: id should be lowercase letters`);
+    if (qualifiers.has(q.id)) err(`${at}: duplicate id`);
+    qualifiers.set(q.id, q);
+    if (!isText(q.title) || !isText(q.short)) err(`${at}: title and short are needed`);
+    if (!Array.isArray(q.programmes) || !q.programmes.length || !q.programmes.every((p) => isText(p.name) && /^https:\/\//.test(p.href ?? ''))) {
+      err(`${at}: programmes need a name and an https link`);
+    }
+    if (!Array.isArray(q.sections) || q.sections.length === 0) err(`${at}: sections missing`);
+    const sectionIds = (q.sections ?? []).map((s) => s.id);
+    if (new Set(sectionIds).size !== sectionIds.length) err(`${at}: section ids must be unique`);
+    for (const s of q.sections ?? []) {
+      if (!/^[a-z0-9]+$/.test(s.id ?? '') || !isText(s.name) || !isText(s.short)) err(`${at}: section ${s.id}: needs an id (a–z, 0–9), name and short`);
+      if (s.subjectId !== undefined && !subjects.some((x) => x.id === s.subjectId)) err(`${at}: section ${s.id}: unknown subjectId "${s.subjectId}"`);
+    }
+  }
+  if (!qualifiers.size) err('content/qualifier/qualifiers.json: no qualifiers');
+
+  const mocks = Array.isArray(config.mocks) ? config.mocks : [];
+  const mockIds = new Set();
+  let questionTotal = 0;
+  for (const mock of mocks) {
+    const at = `mock ${mock?.id}`;
+    const qualifier = qualifiers.get(mock?.qualifier);
+    if (!qualifier) {
+      err(`${at}: unknown qualifier "${mock?.qualifier}"`);
+      continue;
+    }
+    if (!new RegExp(`^${qualifier.id}-\\d+$`).test(mock.id ?? '') || mock.id.length > 20) err(`${at}: id should look like "${qualifier.id}-1"`);
+    if (mockIds.has(mock.id)) err(`${at}: duplicate id`);
+    mockIds.add(mock.id);
+    if (!isText(mock.title)) err(`${at}: title missing`);
+    if (!Number.isInteger(mock.minutes) || mock.minutes < 10 || mock.minutes > 240) err(`${at}: minutes should be 10–240`);
+    if (mock.pro !== undefined && typeof mock.pro !== 'boolean') err(`${at}: pro must be true or false`);
+
+    const file = join(dir, 'mocks', `${mock.id}.json`);
+    const enFile = join(dir, 'mocks-en', `${mock.id}.json`);
+    if (!existsSync(file)) {
+      err(`${at}: missing content/qualifier/mocks/${mock.id}.json`);
+      continue;
+    }
+    const data = readJson(file, `content/qualifier/mocks/${mock.id}.json`, err);
+    let en;
+    if (!existsSync(enFile)) err(`${at}: missing English questions file content/qualifier/mocks-en/${mock.id}.json`);
+    else en = readJson(enFile, `content/qualifier/mocks-en/${mock.id}.json`, err);
+    if (!data) continue;
+    if (data.mockId !== mock.id) err(`${at}: mockId should be "${mock.id}"`);
+    if (en && en.mockId !== mock.id) err(`content/qualifier/mocks-en/${mock.id}.json: mockId should be "${mock.id}"`);
+    const english = en?.questions && typeof en.questions === 'object' ? en.questions : {};
+
+    // The paper has one section per course, in the qualifier's order.
+    const want = qualifier.sections.map((s) => s.id).join(', ');
+    const got = (Array.isArray(data.sections) ? data.sections : []).map((s) => s.section).join(', ');
+    if (got !== want) err(`${at}: sections should be ${want} (got ${got || 'none'})`);
+
+    const ids = new Set();
+    const answerCounts = [0, 0, 0, 0];
+    for (const section of Array.isArray(data.sections) ? data.sections : []) {
+      const questions = Array.isArray(section.questions) ? section.questions : [];
+      const [min, max] = QUALIFIER_SECTION_QUESTIONS;
+      if (questions.length < min || questions.length > max) err(`${at} ${section.section}: expected ${min}–${max} questions`);
+      questions.forEach((q, j) =>
+        checkQuestion(q, `${mock.id}-${section.section}-q${j + 1}`, `${at} ${section.section} q${j + 1}`, english, `content/qualifier/mocks-en/${mock.id}.json`, ids, answerCounts, err, warnings),
+      );
+    }
+    if (ids.size > MAX_TEST_QUESTIONS) err(`${at}: at most ${MAX_TEST_QUESTIONS} questions`);
+    const stray = Object.keys(english).filter((k) => !ids.has(k));
+    if (stray.length) err(`content/qualifier/mocks-en/${mock.id}.json: unknown question id(s) ${stray.slice(0, 5).join(', ')}`);
+    if (bunched(answerCounts)) err(`${at}: correct answers are bunched on one position (A–D counts: ${answerCounts.join(', ')}); spread them out`);
+    questionTotal += ids.size;
+  }
+
+  for (const q of qualifiers.values()) {
+    if (!mocks.some((m) => m.qualifier === q.id && !m.pro)) err(`qualifier ${q.id}: needs at least one free mock`);
+  }
+  for (const folder of ['mocks', 'mocks-en']) {
+    const files = existsSync(join(dir, folder)) ? readdirSync(join(dir, folder)) : [];
+    const unknown = files.filter((f) => !mockIds.has(f.replace(/\.json$/, '')));
+    if (unknown.length) err(`content/qualifier/${folder}: file(s) not listed in qualifiers.json: ${unknown.join(', ')}`);
+  }
+  return report();
+
+  function report() {
+    if (errors.length) {
+      failures++;
+      console.log(`✗ qualifier: ${errors.length} problem(s)`);
+      errors.slice(0, 40).forEach((e) => console.log(`   - ${e}`));
+    } else {
+      console.log(`✓ qualifier: ${qualifiers.size} qualifiers, ${mocks.length} mocks, ${questionTotal} questions in Hinglish and English`);
+    }
+    if (warnings.length) {
+      console.log(`  ! qualifier: ${warnings.length} English text(s) whose numbers differ from the Hinglish; check they're faithful`);
+      warnings.slice(0, 20).forEach((w) => console.log(`     - ${w}`));
+    }
+  }
+}

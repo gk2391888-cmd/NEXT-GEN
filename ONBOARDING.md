@@ -9,6 +9,8 @@ NEXT GEN ("by THE TECH HUB") is a study site for **IIT Madras BS Foundation stud
 - **Hinglish notes** (concept, solved example, common mistakes, quick revision)
 - **6 MCQs** (576 in total), in English and Hinglish
 
+It also has a **Qualifier Prep** section for people preparing for the IITM BS qualifier exam, who aren't students yet.
+
 Around that content it adds mock tests, a Python coding lab, an AI doubt solver, spaced-repetition revision, an exam planner, progress tracking, and a paid **Pro** plan (₹99 for 30 days, with a 7-day free trial when you sign up).
 
 It was built in 3 phases, one commit each:
@@ -44,12 +46,15 @@ next-gen/
 │   ├── tests/                ← /tests, /tests/[subject]/[test]
 │   ├── mistakes/  planner/  progress/  search/  doubts/
 │   ├── lab/                  ← /lab, /lab/[id], /lab/oppe/[set]  (Coding Lab, timed OPPE exam)
+│   ├── qualifier/            ← /qualifier, /qualifier/[id], /qualifier/[id]/plan, /qualifier/[id]/mock/[mock]
 │   ├── login/  profile/  pricing/  admin/  privacy/  terms/
 │   ├── api/                  ← Server-only endpoints
 │   │   ├── ai/[feature]/route.ts      → every AI feature (POST /api/ai/doubt)
 │   │   ├── content/questions/route.ts → every question as JSON (static)
 │   │   ├── pro/coding/[id]/route.ts   → an OPPE problem; ?part=answers adds hidden tests + solution (Pro only)
 │   │   ├── pro/tests/[subject]/[test]/route.ts → the End-term question pool (Pro only)
+│   │   ├── pro/qualifier/[mock]/route.ts → a Pro qualifier mock's questions (Pro only)
+│   │   ├── content/qualifier/[mock]/route.ts → a free qualifier mock's questions (static, for the doubt solver)
 │   │   └── payments/{config,order,verify,webhook,upi,upi/review}/route.ts
 │   ├── manifest.ts           ← PWA "Add to home screen"
 │   ├── tokens.css            ← Generated CSS variables (from tokens/, don't edit)
@@ -59,7 +64,7 @@ next-gen/
 │   ├── ui.tsx                ← Small shared pieces: InlineText, PageHead, ProgressBar…
 │   ├── auth/                 ← AuthProvider, LoginForm, AccountMenu, ImportPrompt, ProfileForm
 │   ├── quiz/                 ← Practice session, mock test runner, question view, report button
-│   ├── library/  coding/  admin/
+│   ├── library/  coding/  admin/  qualifier/
 │   └── dashboard.tsx, doubt-chat.tsx, exam-planner.tsx, mistakes-view.tsx, pricing-plans.tsx, pro-lock.tsx…
 ├── lib/                      ← Logic, no UI
 │   ├── content.ts            ← Reads content/*.json (server-only)
@@ -68,6 +73,7 @@ next-gen/
 │   ├── plans.ts  plan.ts     ← guest / free / trial / pro logic + PRICING (shared) · usePlan() hook
 │   ├── ai/                   ← ★ AI features + Free/Pro limits (features.ts), askAi() (client.ts)
 │   ├── tests.ts  planner.ts  coding.ts  overrides.ts  question-bank.ts  python-runner.ts
+│   ├── qualifier.ts          ← Qualifier config: exam date, pass rules, sources (shared); qualifier-content.ts reads the mocks (server), qualifier-plan.ts builds the study plan
 │   ├── supabase/client.ts    ← Browser Supabase client + authedFetch()
 │   ├── pro-content.ts        ← fetchProContent() / useProContent(): the browser side of /api/pro/*
 │   └── server/               ← Server-only: ai/ (AI engine: providers, models, quota, handler, features/), razorpay.ts, upi.ts, pro.ts (adds 30 days), pro-access.ts (requirePro), supabase.ts (service role)
@@ -76,6 +82,7 @@ next-gen/
 │   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week (Hinglish)
 │   ├── weeks-en/<subject>.json ← English text of every question, by id
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
+│   ├── qualifier/            ← qualifiers.json (qualifiers + their mocks), mocks/<mock>.json (Hinglish), mocks-en/<mock>.json (English)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
 ├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
 ├── supabase/migrations/      ← 0001 → 0008, run by hand in the Supabase SQL editor
@@ -163,6 +170,7 @@ The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features 
 | OPPE coding sets | Server: `/api/pro/coding/<id>`. The page only has the title; statement and visible tests come from the route, hidden tests and solution only on Submit or "Show model solution" (`?part=answers`). |
 | Timed OPPE sets | Server: `/api/pro/oppe/<set>`. The page only has the set's id, title and time limit; problems come from the route with hidden tests blanked, and `?part=answers` (every problem's tests and solution) is fetched on Submit and for the score report. |
 | End-term mock tests | Server: `/api/pro/tests/<subject>/end-term`. The page has no questions. |
+| Qualifier mock 2 (DS, ES) | Server: `/api/pro/qualifier/<mock>`. The page has only the question count. |
 | AI limits (200 doubts a day, longer answers) | Server: `lib/server/ai/handler.ts` |
 | Pro-only PDF notes | Storage policies (migration 0006) |
 | Time per question, Save as PDF | UI only, on purpose: one shows the student's own timings, the other is the browser's print dialog. Nothing to protect. |
@@ -173,7 +181,7 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 
 **Layout everywhere** ([components/shell.tsx](components/shell.tsx)):
 
-- **Left sidebar** with 9 nav items, plus Admin for admins.
+- **Left sidebar** with 11 nav items (Qualifier Prep second), plus Admin for admins.
 - **Bottom of the sidebar:** a "Log in to save progress" card (guests) or a "Go Pro" card (free users).
 - **Topbar:** breadcrumb, and an account menu showing the sync chip, plan chip, avatar, Profile, Progress, Billing and Logout.
 - On mobile the sidebar becomes a ☰ drawer.
@@ -257,6 +265,41 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
      - Week-by-week bars, with a "Revise week N" button.
      - Time per question (Pro).
      - Answer review with All / Wrong / Skipped filters.
+
+### Qualifier Prep (`/qualifier`)
+
+This section is for people preparing for the IITM BS qualifier exam, so it works logged out. It's also a way into sign-up.
+
+**What's covered.** Everything is set in `content/qualifier/qualifiers.json` and typed in [lib/qualifier.ts](lib/qualifier.ts). There are two qualifiers:
+- **Data Science**: Maths I, Stats I, CT and English I. The Management and Data Science programme uses the same four courses.
+- **Electronic Systems**: English I, Math for Electronics I, Electronic Systems Thinking and Circuits, and Intro to C. Aeronautics and Space Technology uses the same four.
+
+Each section is one course. A section with a `subjectId` links to that subject's week 1–4 notes and practice; only the DS courses have one.
+
+**Pages:**
+- `/qualifier` is the landing page. It has the countdown hero ([countdown.tsx](components/qualifier/countdown.tsx)), one card per qualifier, and the process and rules ([facts.tsx](components/qualifier/facts.tsx)).
+- `/qualifier/[id]` shows the countdown, the 4 courses with week links, the mocks ([mock-list.tsx](components/qualifier/mock-list.tsx)) and the rules. Its `#rules` anchor is linked from the mock result.
+- `/qualifier/[id]/plan` is [study-plan.tsx](components/qualifier/study-plan.tsx) using `buildQualifierPlan()` ([lib/qualifier-plan.ts](lib/qualifier-plan.ts)). It's computed in the browser, since the page is static.
+  - Weeks 1–4 of every course are interleaved, week 1 of every course first, and spread evenly over the days left.
+  - The mocks go 4 and 2 days before the exam, each followed by a review of wrong answers.
+  - The last day is light revision.
+  - A DS week marked done on its notes page drops out of the plan.
+- `/qualifier/[id]/mock/[mock]` is [mock-runner.tsx](components/qualifier/mock-runner.tsx), which reuses `TestRunner`.
+  - It passes `sections`, so each question's `week` is its section number. The palette, labels and result are then per course.
+  - It passes `rules` for the intro screen.
+  - It passes `resultExtra`, which checks the score against the published General pass rule: 40% in each course and 50% on average.
+  - Free mocks get their questions as props; Pro mocks fetch them from `/api/pro/qualifier/<mock>` inside `<ProLock>`.
+
+**Where attempts go.** Attempts are normal `TestAttempt`s with `subjectId: 'qualifier'` and `testId` = the mock id. They sync to `test_attempts` with no migration (both ids fit its 20-character limits), and My Progress links them back to the mock. A sectioned test records no `answers`, so qualifier questions stay out of My Mistakes and weak weeks.
+
+**Exam date.** `QUALIFIER_EXAM_DATE` (currently 2026-11-15) is the single value behind the countdown and the plan, and every page tells students to confirm their own date.
+- This date was not on the official pages when they were checked on 4 Nov 2026. Those list the January 2027 term instead: apply by 29 Jan 2027, exam 14 Mar 2027 on the ES/AE/MG pages.
+- Recheck the date each term, along with `PASS_RULES`, `COURSE_LIMITS`, `QUALIFIER_FACTS_CHECKED` and `QUALIFIER_SOURCES`.
+- Question types, negative marking and per-course question counts aren't published, so the pages don't state them.
+
+**Doubt solver.** "Ask AI" works on qualifier questions:
+- `doubt-chat.tsx` falls back to `findQualifierQuestion()` ([lib/qualifier-questions.ts](lib/qualifier-questions.ts)), which reads free mocks from `/api/content/qualifier/<mock>` and Pro ones from the Pro route.
+- On the server, `doubt.ts` uses `getQualifierQuestion(id, isPro)`. Feature handlers now get `isPro` in their context, so a Free student can't get a Pro mock's question by guessing its id.
 
 ### Coding Lab (`/lab` → `/lab/[id]`)
 
@@ -354,7 +397,7 @@ Five tabs ([components/admin/](components/admin/admin-panel.tsx)):
 ### Site-wide pages
 
 - [app/not-found.tsx](app/not-found.tsx) and [app/error.tsx](app/error.tsx): friendly 404 and crash screens with links back to the Study Library.
-- [app/sitemap.ts](app/sitemap.ts) lists the public pages and every week's notes and practice; [app/robots.ts](app/robots.ts) keeps `/admin`, `/profile`, `/login` and `/api/` out of search. Both, and the WhatsApp/Telegram link previews (Open Graph in [app/layout.tsx](app/layout.tsx)), use `SITE_URL` from [lib/site.ts](lib/site.ts).
+- [app/sitemap.ts](app/sitemap.ts) lists the public pages, the qualifier pages and free mocks, and every week's notes and practice; [app/robots.ts](app/robots.ts) keeps `/admin`, `/profile`, `/login` and `/api/` out of search. Both, and the WhatsApp/Telegram link previews (Open Graph in [app/layout.tsx](app/layout.tsx)), use `SITE_URL` from [lib/site.ts](lib/site.ts).
 - Sync skips a change the server rejects outright (bad data, a missing column) instead of retrying it forever, and downloads page by a unique order, so long histories don't repeat or drop rows ([lib/sync.ts](lib/sync.ts)).
 
 ## 7. UI/UX conventions
@@ -419,7 +462,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
    - 6 questions per week
    - 4 distinct options per question
    - an English version of every question in `content/weeks-en/<subject>.json`, with its options in the same order
-   - question IDs like `math1-w3-q2`
+   - question IDs like `math1-w3-q2` (qualifier mocks: `ds-1-math1-q3`, one section per course in the order of `qualifiers.json`, 5–25 questions each, at least one free mock per qualifier)
    - correct answers spread across A–D
    - only `**bold**` and `` `code` `` formatting
    - original material only, never official IITM notes or papers

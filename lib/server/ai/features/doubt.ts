@@ -1,5 +1,6 @@
 import 'server-only';
 import { getQuestion } from '@/lib/content';
+import { getQualifierQuestion } from '@/lib/qualifier-content';
 import { applyPatch, localize, type QuestionPatch } from '@/lib/question-text';
 import type { FeatureHandler } from './types';
 
@@ -23,7 +24,7 @@ type Input = { messages: { role: 'user' | 'assistant'; content: string }[]; ques
 
 /** The AI Doubt Solver: a tutor chat, optionally about one practice question from the site. */
 export const doubt: FeatureHandler<{ answer: string }> = {
-  async prepare(body, { limits, admin }) {
+  async prepare(body, { limits, admin, isPro }) {
     const input = (body ?? {}) as Partial<Input>;
     const messages = (Array.isArray(input.messages) ? input.messages : [])
       .filter((m) => (m?.role === 'user' || m?.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
@@ -40,7 +41,8 @@ export const doubt: FeatureHandler<{ answer: string }> = {
     let system = SYSTEM_PROMPT;
     const english = input.lang !== 'hi';
     if (typeof input.questionId === 'string') {
-      const original = getQuestion(input.questionId);
+      // A course practice question, or one from a qualifier mock (Pro mocks only for Pro students).
+      const original = getQuestion(input.questionId) ?? getQualifierQuestion(input.questionId, isPro);
       if (original) {
         const { data } = await admin.from('content_overrides').select('data').eq('key', `q:${original.id}`).maybeSingle();
         const q = localize(applyPatch(original, data?.data as QuestionPatch | undefined), english ? 'en' : 'hi');
