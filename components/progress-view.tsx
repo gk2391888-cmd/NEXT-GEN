@@ -7,12 +7,14 @@ import { percent, score, weakWeeks } from '@/lib/progress/insights';
 import type { Subject, WeekRef } from '@/lib/types';
 import { accuracyTone, ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
 import { useAuth } from '@/components/auth/auth-provider';
+import { useConfirm } from '@/components/confirm-dialog';
 
 type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]>; testTitles: Record<string, string> };
 
 export function ProgressView({ subjects, catalog, testTitles }: Props) {
   const state = useProgress();
   const { user } = useAuth();
+  const { confirm, dialog } = useConfirm();
   const totals = score(state.answers);
   const weak = weakWeeks(state.answers);
   const subjectById = new Map(subjects.map((s) => [s.id, s]));
@@ -24,11 +26,15 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
       return { subjectId, week: Number(week) };
     });
 
-  function reset() {
-    const where = user ? 'your account (on all devices)' : 'this browser';
-    if (window.confirm(`This will permanently delete all progress (answers, tests and completed weeks) from ${where}. This can’t be undone. Continue?`)) {
-      progress.reset();
-    }
+  async function reset() {
+    const where = user ? 'your account, on all your devices' : 'this browser';
+    const ok = await confirm({
+      title: 'Reset all your progress?',
+      message: `This permanently deletes your answers, mock tests and completed weeks from ${where}. It can’t be undone.`,
+      confirmLabel: 'Reset progress',
+      tone: 'danger',
+    });
+    if (ok) progress.reset();
   }
 
   return (
@@ -143,6 +149,7 @@ export function ProgressView({ subjects, catalog, testTitles }: Props) {
         )}
       </div>
       <button className="btn btn-danger mt-md" onClick={reset}>Reset my progress</button>
+      {dialog}
     </>
   );
 }

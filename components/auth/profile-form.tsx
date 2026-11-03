@@ -6,10 +6,12 @@ import { getSupabase } from '@/lib/supabase/client';
 import { progress, useProgress } from '@/lib/progress/store';
 import type { Subject } from '@/lib/types';
 import { PageHead } from '@/components/ui';
+import { useConfirm } from '@/components/confirm-dialog';
 import { useAuth } from './auth-provider';
 
 export function ProfileForm({ subjects }: { subjects: Subject[] }) {
   const { user, ready, loaded, signOut } = useAuth();
+  const { confirm, dialog } = useConfirm();
   const state = useProgress();
   const [name, setName] = useState('');
   const [chosen, setChosen] = useState<string[]>([]);
@@ -54,8 +56,14 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
   }
 
   async function deleteAccount() {
-    const typed = window.prompt('This permanently deletes your account and all your progress. Type DELETE to confirm.');
-    if (typed?.trim().toUpperCase() !== 'DELETE') return;
+    const ok = await confirm({
+      title: 'Delete your account?',
+      message: 'This permanently deletes your account and all your progress on every device. It can’t be undone.',
+      confirmLabel: 'Delete account',
+      tone: 'danger',
+      requireText: 'DELETE',
+    });
+    if (!ok) return;
     setDeleting(true);
     const { error } = await getSupabase().rpc('delete_my_account');
     if (error) {
@@ -106,6 +114,7 @@ export function ProfileForm({ subjects }: { subjects: Subject[] }) {
           </div>
         </div>
       </form>
+      {dialog}
     </>
   );
 }

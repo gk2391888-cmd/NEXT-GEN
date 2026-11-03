@@ -309,8 +309,19 @@ npm run validate:content  # check content JSON
 npm run typecheck         # TypeScript check
 npm run tokens            # rebuild CSS variables after editing tokens/*.json
 npm run lint:tokens       # check styles only use design tokens
+npm run dev:demo          # dev server on :3001 with dummy logged-in data (see below)
 ```
 
+- **Demo mode (no real login needed):** `npm run dev:demo` starts a dev server on port 3001 where [lib/supabase/demo.ts](lib/supabase/demo.ts) replaces Supabase with dummy data kept in the browser. No requests go to the real database, and the AI and payment routes return canned replies.
+  - Add `?demo=<persona>` to any URL to switch who you are:
+    - `guest`: logged out
+    - `new`: just signed up, with progress on the device to import
+    - `free`: trial over, 3 of 5 AI doubts used today
+    - `trial`: Pro trial, 4 days left
+    - `pro`: paid Pro
+    - `admin`: Pro plus the admin panel
+  - On the login page, any email and any 6-digit code logs you in as a trial student.
+  - Demo mode only switches on when `NODE_ENV` isn't production and `NEXT_PUBLIC_DEMO_MODE=1`, so it's stripped from production builds.
 - **Without any env vars the site still works.** It falls back to the production Supabase project (the publishable key is hard-coded in [lib/supabase/client.ts](lib/supabase/client.ts)). The AI shows "being set up" and payments show "launching soon".
 - **Server env vars:** `GEMINI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `RAZORPAY_KEY_ID/SECRET`, `RAZORPAY_WEBHOOK_SECRET`, and optionally `GEMINI_MODEL` and `PRO_PRICE_INR`. They're listed in the README.
 - **Database changes:** add a new `supabase/migrations/000N_*.sql` and run it by hand in the Supabase SQL editor. There's no migration CLI.

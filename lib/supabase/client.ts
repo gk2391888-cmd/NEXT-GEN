@@ -1,6 +1,7 @@
 'use client';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createDemoClient, DEMO, demoFetch } from './demo';
 
 // The publishable key is meant to ship to the browser; Row Level Security in
 // supabase/migrations is what keeps each student's data private.
@@ -12,6 +13,7 @@ let client: SupabaseClient | null = null;
 
 /** Browser-only Supabase client (sessions live in localStorage). */
 export function getSupabase(): SupabaseClient {
+  if (!client && DEMO) client = createDemoClient() as unknown as SupabaseClient;
   if (!client) {
     client = createClient(SUPABASE_URL, SUPABASE_KEY, {
       // Implicit flow so an emailed login link works even when the student opens it
@@ -24,6 +26,7 @@ export function getSupabase(): SupabaseClient {
 
 /** fetch() to our own API routes as the signed-in student. */
 export async function authedFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  if (DEMO) return demoFetch(path, init);
   const { data } = await getSupabase().auth.getSession();
   const headers = new Headers(init.headers);
   if (data.session) headers.set('Authorization', `Bearer ${data.session.access_token}`);
@@ -33,6 +36,7 @@ export async function authedFetch(path: string, init: RequestInit = {}): Promise
 
 /** Which login providers are switched on in the Supabase dashboard (Google needs setup first). */
 export async function getAuthProviders(): Promise<{ google: boolean; email: boolean }> {
+  if (DEMO) return { google: true, email: true };
   try {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_KEY } });
     const data = await res.json();

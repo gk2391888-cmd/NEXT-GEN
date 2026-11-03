@@ -6,6 +6,7 @@ import { progress, useProgress } from '@/lib/progress/store';
 import { useCorrectedQuestions } from '@/lib/overrides';
 import { usePlan } from '@/lib/plan';
 import { ProTag } from '@/components/pro-lock';
+import { useConfirm } from '@/components/confirm-dialog';
 import { percent } from '@/lib/progress/insights';
 import type { ActiveTest, NewAnswer, TestAttempt } from '@/lib/progress/types';
 import { pickQuestions, testKey, type MockTest } from '@/lib/tests';
@@ -100,6 +101,7 @@ type RunningProps = {
 function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: RunningProps) {
   const [remaining, setRemaining] = useState(() => active.endsAt - Date.now());
   const submitted = useRef(false);
+  const { confirm, dialog } = useConfirm();
   const questions = active.questionIds.map((id) => byId.get(id)).filter((q): q is Question => Boolean(q));
   const current = Math.min(active.current, questions.length - 1);
   const question = questions[current];
@@ -164,12 +166,17 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
   const answered = active.responses.filter((r) => r !== null).length;
   const markedCount = active.marked.filter(Boolean).length;
 
-  function confirmSubmit() {
+  async function confirmSubmit() {
     const unanswered = questions.length - answered;
-    const message = unanswered
-      ? `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. Submit anyway?`
-      : 'Submit the test? You can’t change your answers after submitting.';
-    if (window.confirm(message)) submit();
+    const ok = await confirm({
+      title: 'Submit the test?',
+      message: unanswered
+        ? `You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}. You can’t change your answers after submitting.`
+        : 'You can’t change your answers after submitting.',
+      confirmLabel: 'Submit test',
+      cancelLabel: 'Keep working',
+    });
+    if (ok) submit();
   }
 
   if (!question) return null;
@@ -238,6 +245,7 @@ function RunningTest({ active, storeKey, test, subject, byId, onSubmitted }: Run
           </div>
         </aside>
       </div>
+      {dialog}
     </div>
   );
 }

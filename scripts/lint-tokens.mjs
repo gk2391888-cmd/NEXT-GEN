@@ -118,6 +118,7 @@ const PAIRS = [
   ['color.text.link', 'color.bg.surface'],
   ['color.action.primary.fg', 'color.action.primary.bg'],
   ['color.text.inverse', 'color.accent.solid'],
+  ['color.text.inverse', 'color.danger.fg'],
   ['color.accent.on-soft', 'color.accent.soft'],
   ['color.success.fg', 'color.success.soft'],
   ['color.success.fg-strong', 'color.success.bg'],

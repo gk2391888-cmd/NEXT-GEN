@@ -22,7 +22,7 @@ export function ImportPrompt({ user }: { user: User }) {
         <span className="chip chip-teal">WELCOME{name ? `, ${name.toUpperCase()}` : ''}</span>
         <h2 id="import-title" className="mt-md mb-sm">We found progress on this device</h2>
         <p>Save the practice you did before logging in to your account so it’s available on all your devices.</p>
-        <div className="grid grid-3 gap-md my-lg">
+        <div className="grid stat-row my-lg">
           <Stat value={guest.answers.length} label="answers" />
           <Stat value={guest.tests.length} label="mock tests" />
           <Stat value={weeksDone} label="weeks done" />

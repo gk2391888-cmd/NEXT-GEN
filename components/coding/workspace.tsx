@@ -6,6 +6,7 @@ import type { CodingProblem } from '@/lib/coding';
 import { runPython, warmUpPython, type RunResult } from '@/lib/python-runner';
 import { progress, useProgress } from '@/lib/progress/store';
 import { InlineText } from '@/components/ui';
+import { useConfirm } from '@/components/confirm-dialog';
 
 type Props = { problem: CodingProblem; prev?: string; next?: string; position: number; total: number };
 
@@ -28,6 +29,7 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
   const [submitted, setSubmitted] = useState<RunResult | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const { confirm, dialog } = useConfirm();
 
   const visible = problem.tests.filter((t) => !t.hidden);
 
@@ -79,8 +81,9 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
     setBusy(null);
   }
 
-  function reset() {
-    if (window.confirm('Replace your code with the starting code?')) update(problem.starter);
+  async function reset() {
+    const ok = await confirm({ title: 'Reset your code?', message: 'Your code is replaced with the starting code. This can’t be undone.', confirmLabel: 'Reset code', tone: 'danger' });
+    if (ok) update(problem.starter);
   }
 
   const passed = submitted?.results.filter((r) => r.pass).length ?? 0;
@@ -187,6 +190,7 @@ export function CodingWorkspace({ problem, prev, next, position, total }: Props)
           </div>
         )}
       </aside>
+      {dialog}
     </div>
   );
 }

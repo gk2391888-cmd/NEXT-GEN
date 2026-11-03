@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
+import { useConfirm } from '@/components/confirm-dialog';
 
 type Announcement = { id: number; title: string; body: string; active: boolean; created_at: string };
 
@@ -10,6 +11,7 @@ export function Announcements() {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [status, setStatus] = useState('');
+  const { confirm, dialog } = useConfirm();
 
   const load = useCallback(async () => {
     const { data } = await getSupabase().from('announcements').select('*').order('created_at', { ascending: false });
@@ -37,7 +39,7 @@ export function Announcements() {
   }
 
   async function remove(a: Announcement) {
-    if (!window.confirm(`Delete “${a.title}”?`)) return;
+    if (!(await confirm({ title: 'Delete this announcement?', message: `“${a.title}” is removed for everyone.`, confirmLabel: 'Delete', tone: 'danger' }))) return;
     await getSupabase().from('announcements').delete().eq('id', a.id);
     load();
   }
@@ -73,6 +75,7 @@ export function Announcements() {
           </div>
         ))}
       </div>
+      {dialog}
     </div>
   );
 }
