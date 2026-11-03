@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react';
 import { getSupabase } from './supabase/client';
 import { progress, type ServerProgress } from './progress/store';
-import { weekKey, type AnswerRecord, type SyncOp, type TestAttempt } from './progress/types';
+import { weekKey, type AnswerRecord, type CodingAttempt, type SyncOp, type TestAttempt } from './progress/types';
 
 /* ---------------- status (for the topbar chip) ---------------- */
 
@@ -99,6 +99,12 @@ async function sendOne(userId: string, op: Exclude<SyncOp, { kind: 'answers' }>)
       );
     case 'test':
       return check(await db.from('test_attempts').upsert(testRow(userId, op.attempt), { onConflict: 'user_id,id', ignoreDuplicates: true }));
+    case 'coding': {
+      const { error } = await db.from('coding_attempts').upsert(codingRow(userId, op.attempt), { onConflict: 'user_id,id', ignoreDuplicates: true });
+      // Before migration 0007 is run the attempt stays on this device only, rather than blocking every later upload.
+      if (missingTable(error)) return console.warn('[sync] coding_attempts table missing; run supabase/migrations/0007_coding_attempts.sql');
+      return check({ error });
+    }
     case 'visit':
       return check(await db.from('profiles').update({ last_visited: op.lastVisited, updated_at: new Date().toISOString() }).eq('id', userId));
     case 'profile':
@@ -112,6 +118,10 @@ async function sendOne(userId: string, op: Exclude<SyncOp, { kind: 'answers' }>)
     case 'reset':
       check(await db.from('answers').delete().eq('user_id', userId));
       check(await db.from('test_attempts').delete().eq('user_id', userId));
+      {
+        const { error } = await db.from('coding_attempts').delete().eq('user_id', userId);
+        if (!missingTable(error)) check({ error });
+      }
       check(await db.from('week_status').delete().eq('user_id', userId));
       return check(await db.from('profiles').update({ last_visited: null }).eq('id', userId));
   }
@@ -143,6 +153,23 @@ const testRow = (userId: string, t: TestAttempt) => ({
   time_spent: t.timeSpent ?? null,
 });
 
+const codingRow = (userId: string, a: CodingAttempt) => ({
+  user_id: userId,
+  id: a.id,
+  set_id: a.setId,
+  started_at: a.startedAt,
+  submitted_at: a.submittedAt,
+  duration_sec: a.durationSec,
+  score: a.score,
+  problems: a.problems,
+});
+
+/** PostgREST's "no such table" (older and newer codes), e.g. a migration that hasn't been run yet. */
+const missingTable = (error: unknown) => {
+  const code = (error as { code?: string } | null)?.code;
+  return code === 'PGRST205' || code === '42P01';
+};
+
 /* ---------------- download ---------------- */
 
 async function fetchAll<T>(table: string, userId: string, order: string): Promise<T[]> {
@@ -158,15 +185,27 @@ async function fetchAll<T>(table: string, userId: string, order: string): Promis
 
 type AnswerRow = ReturnType<typeof answerRow>;
 type TestRow = ReturnType<typeof testRow>;
+type CodingRow = ReturnType<typeof codingRow>;
 type WeekRow = { subject_id: string; week: number; done: boolean; saved: boolean };
+
+/** Like fetchAll, but undefined when the table doesn't exist yet. */
+async function fetchOptional<T>(table: string, userId: string, order: string): Promise<T[] | undefined> {
+  try {
+    return await fetchAll<T>(table, userId, order);
+  } catch (error) {
+    if (missingTable(error)) return undefined;
+    throw error;
+  }
+}
 
 async function pullAll(userId: string) {
   const db = getSupabase();
-  const [profileRes, weeks, answers, tests] = await Promise.all([
+  const [profileRes, weeks, answers, tests, coding] = await Promise.all([
     db.from('profiles').select('full_name, subjects, last_visited, trial_ends_at, pro_until, exam_name, exam_date').eq('id', userId).maybeSingle(),
     fetchAll<WeekRow>('week_status', userId, 'subject_id'),
     fetchAll<AnswerRow>('answers', userId, 'answered_at'),
     fetchAll<TestRow>('test_attempts', userId, 'submitted_at'),
+    fetchOptional<CodingRow>('coding_attempts', userId, 'submitted_at'),
   ]);
   if (profileRes.error) throw profileRes.error;
 
@@ -193,6 +232,15 @@ async function pullAll(userId: string) {
       correct: t.correct,
       total: t.total,
       timeSpent: t.time_spent ?? undefined,
+    })),
+    codingAttempts: coding?.map((a) => ({
+      id: a.id,
+      setId: a.set_id,
+      startedAt: a.started_at,
+      submittedAt: a.submitted_at,
+      durationSec: a.duration_sec,
+      score: a.score,
+      problems: a.problems,
     })),
     lastVisited: profileRes.data?.last_visited ?? undefined,
     profile: profileRes.data ? { fullName: profileRes.data.full_name ?? '', subjects: profileRes.data.subjects ?? [] } : undefined,

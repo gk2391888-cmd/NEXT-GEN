@@ -11,7 +11,7 @@ type Summary = Pick<CodingProblem, 'id' | 'tier' | 'set' | 'week' | 'title' | 'd
 const DIFFICULTY_CHIP = { easy: 'chip-teal', medium: 'chip-yellow', hard: 'chip-red' } as const;
 
 export function ProblemList({ problems, sets }: { problems: Summary[]; sets: { id: string; title: string; minutes: number }[] }) {
-  const { coding = {} } = useProgress();
+  const { coding = {}, codingAttempts = [] } = useProgress();
   const { isPro } = usePlan();
   const practice = problems.filter((p) => p.tier === 'practice');
   const solvedCount = practice.filter((p) => coding[p.id]).length;
@@ -45,15 +45,17 @@ export function ProblemList({ problems, sets }: { problems: Summary[]; sets: { i
         {sets.map((set) => {
           const list = problems.filter((p) => p.set === set.id);
           const done = list.filter((p) => coding[p.id]).length;
+          const best = codingAttempts.filter((a) => a.setId === set.id).reduce<number | null>((b, a) => Math.max(b ?? 0, a.score), null);
           return (
             <div key={set.id} className="card test-card">
               <div className="flex-between">
                 <strong>{set.title}</strong>
                 <ProTag />
               </div>
-              <div className="test-meta"><span>{list.length} problems</span><span>~{set.minutes} min</span><span>Hidden tests</span></div>
-              {isPro && <div className="muted">{done} of {list.length} solved</div>}
-              <Link className="btn btn-secondary" href={`/lab/${list[0]?.id}`}>{isPro ? (done ? 'Continue' : 'Start set') : 'See what’s inside'} →</Link>
+              <div className="test-meta"><span>{list.length} problems</span><span>{set.minutes} min timer</span><span>Hidden tests</span></div>
+              {isPro && <div className="muted">{done} of {list.length} solved{best !== null && ` · Best exam score ${best}/100`}</div>}
+              <Link className="btn btn-primary" href={`/lab/oppe/${set.id}`}>{isPro ? 'Take timed exam' : 'See what’s inside'} →</Link>
+              {isPro && <Link className="link" href={`/lab/${list[0]?.id}`}>{done ? 'Continue practising' : 'Practise untimed'} →</Link>}
             </div>
           );
         })}

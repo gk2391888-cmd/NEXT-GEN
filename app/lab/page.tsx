@@ -14,7 +14,7 @@ export default function LabPage() {
       <PageHead
         kicker="Learn by doing"
         title="Python Coding Lab"
-        description="Write Python right in your browser and check it against test cases instantly. Practice problems are free; OPPE-style sets with hidden tests are part of Pro."
+        description="Write Python right in your browser and check it against test cases instantly. Practice problems are free; OPPE-style sets with hidden tests and a timed exam mode are part of Pro."
       />
       <ProblemList problems={summary} sets={OPPE_SETS} />
 

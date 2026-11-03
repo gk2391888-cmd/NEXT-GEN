@@ -55,3 +55,13 @@ export const accuracyColor = (accuracy: number) =>
 
 /** Text class for an accuracy figure, with readable contrast: tone-good / tone-fair / tone-poor. */
 export const accuracyTone = (accuracy: number) => (accuracy >= 75 ? 'tone-good' : accuracy >= 50 ? 'tone-fair' : 'tone-poor');
+
+/** Seconds as mm:ss, or h:mm:ss from an hour. */
+export function formatClock(totalSeconds: number) {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const mm = String(m).padStart(2, '0');
+  const ss = String(s).padStart(2, '0');
+  return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+}
