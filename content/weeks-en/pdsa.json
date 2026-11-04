@@ -1,0 +1,725 @@
+{
+  "subjectId": "pdsa",
+  "questions": {
+    "pdsa-w1-q1": {
+      "question": "What does this code print?",
+      "options": [
+        "3 4 5",
+        "4 4 5",
+        "4 4 4",
+        "5 5 5"
+      ],
+      "explanation": "`b = a` is an alias, so `b.append(4)` also makes a equal to [1, 2, 3, 4] (len 4, and b is the same list). `c = a[:]` is a copy taken at that moment, i.e. [1, 2, 3, 4], and then 5 is appended to it, so len 5. Output \"4 4 5\", option B. Trap: option A, treating `b = a` as a copy and keeping a at 3; option D, treating `a[:]` as an alias too."
+    },
+    "pdsa-w1-q2": {
+      "question": "A fictional app has 10⁶ user ids, and on every request it must check whether an id is in a blocked list. Which structure gives the fastest check for the blocked ids?",
+      "options": [
+        "Python list, check `x in blocked`",
+        "tuple, check `x in blocked`",
+        "set, check `x in blocked`",
+        "Sorted list, with a linear scan from the start"
+      ],
+      "explanation": "A set is a hash table, so `x in blocked` is O(1) on average, option C. For a list or a tuple, `in` looks at the elements one by one (O(n)), so options A and B are slow. Option D's trap: a sorted list only helps if you use binary search (O(log n)); a linear scan is still O(n)."
+    },
+    "pdsa-w1-q3": {
+      "question": "What does this code print?",
+      "options": [
+        "[3]",
+        "[1, 2]",
+        "A TypeError is raised",
+        "[1, 2, 3]"
+      ],
+      "explanation": "The default value `bucket=[]` is created only once, when `def` runs. All three calls without a bucket append to that one list, so after the third call it is [1, 2, 3], option D. Trap: option A, assuming each call gets a fresh empty list. Fix: `bucket=None` and inside `if bucket is None: bucket = []`."
+    },
+    "pdsa-w1-q4": {
+      "question": "In the naive recursive Fibonacci, how many times is the function called when running `fib(5)` (including the first call)?",
+      "options": [
+        "15",
+        "5",
+        "9",
+        "31"
+      ],
+      "explanation": "The call count is C(n) = 1 + C(n−1) + C(n−2), with C(0) = C(1) = 1. So C(2) = 3, C(3) = 5, C(4) = 9, C(5) = 1 + 9 + 5 = 15, option A. This exponential blow-up is what memoization (week 9) fixes. Traps: option B, taking the value fib(5) = 5 as the call count; option C, C(4) = 9, i.e. counting one level too few; option D, 2⁵ − 1 = 31, assuming a full balanced binary tree, while the fib(n − 2) branch is actually shorter."
+    },
+    "pdsa-w1-q5": {
+      "question": "What does this code print?",
+      "options": [
+        "['c', 'a', 'b']",
+        "['b', 'a', 'c']",
+        "['a', 'b', 'c']",
+        "TypeError: '<' not supported"
+      ],
+      "explanation": "`sorted()` compares objects with `<`, and `<` calls `__lt__`. Here `__lt__` is reversed: `self.pr > other.pr`, so the job with the larger priority counts as \"smaller\" and comes first. In order of priority 5, 2, 1: ['b', 'a', 'c'], option B. Trap: option A, reading `sorted` as plain ascending priority; option D, forgetting that defining `__lt__` makes the objects comparable."
+    },
+    "pdsa-w1-q6": {
+      "question": "What does this code print? (`end=\" \"` prints a space instead of a newline.)",
+      "options": [
+        "Z E -1 2",
+        "-1 2 Z F E F",
+        "Z F E F -1 2",
+        "Z -1 E F 2"
+      ],
+      "explanation": "Arguments are evaluated first, left to right. `g(0)`: `10 // 0` raises ZeroDivisionError, the `except` block prints \"Z\" and executes `return -1`, but before the function returns `finally` prints \"F\". `g(5)`: no error, so `else` prints \"E\" and returns 2, and `finally` still prints \"F\". Finally `print` writes \"-1 2\". Output \"Z F E F -1 2\", option C. Trap: option A, thinking `finally` is skipped after a `return`; option B, thinking the outer `print` produces its output first."
+    },
+    "pdsa-w2-q1": {
+      "question": "For very large n, which of these functions grows the fastest?",
+      "options": [
+        "100·n²",
+        "50·n·log₂ n",
+        "2^(log₂ n)",
+        "n³/1000"
+      ],
+      "explanation": "In an asymptotic comparison constants do not matter, only the power of n. n³/1000 = Θ(n³), which grows faster than n²; from about n = 10⁵ onwards it overtakes 100·n². So option D. Trap: option A, picking it because of the big constant 100. Option C is really just n, since 2^(log₂ n) = n."
+    },
+    "pdsa-w2-q2": {
+      "question": "On which input does insertion sort do the least work, i.e. take Θ(n) time?",
+      "options": [
+        "A list already sorted in ascending order",
+        "A list in descending order (reverse sorted)",
+        "A list in random order",
+        "Any list whose elements are all distinct"
+      ],
+      "explanation": "On sorted input each new element is compared once with its left neighbour and nothing is shifted, so there are n − 1 comparisons in all: Θ(n), option A. Option B is the worst case: every element must shift past the whole sorted part, n(n − 1)/2 shifts. Trap: option D, having distinct elements does not reduce the work; the work depends on the number of inversions."
+    },
+    "pdsa-w2-q3": {
+      "question": "What does this code print?",
+      "options": [
+        "384",
+        "63",
+        "6",
+        "4096"
+      ],
+      "explanation": "The outer loop runs for i = 1, 2, 4, 8, 16, 32 (it stops at 64). The inner loop does i steps each time: 1 + 2 + 4 + 8 + 16 + 32 = 63, option B. This is a geometric series whose total is below n, so the code is Θ(n), not Θ(n log n). Trap: option A, taking 6 outer passes × 64 = 384, i.e. a full n in every pass; option D, seeing a nested loop and writing n² = 4096."
+    },
+    "pdsa-w2-q4": {
+      "question": "What does this code print?",
+      "options": [
+        "4 1 -1",
+        "4 1 0 -1",
+        "4 1 2 -1",
+        "4 2 -1"
+      ],
+      "explanation": "lo = 0, hi = 8. mid = 4: a[4] = 23 > 10, so hi = 3. mid = (0 + 3) // 2 = 1: a[1] = 8 < 10, so lo = 2. mid = (2 + 3) // 2 = 2: a[2] = 12 > 10, so hi = 1. Now lo > hi, the loop ends and -1 is returned. Output \"4 1 2 -1\", option C. Trap: option A, stopping as soon as you see 10 would fall between 8 and 12, while the code checks one more mid; option B, wrongly moving left when 8 < 10."
+    },
+    "pdsa-w2-q5": {
+      "question": "The records are selection-sorted on the first number (the key) only. What is the output?",
+      "options": [
+        "z x y",
+        "x y z",
+        "y x z",
+        "z y x"
+      ],
+      "explanation": "i = 0: the minimum key 1 is at index 2, so indices 0 and 2 are swapped: [(1, z), (2, y), (2, x)]. i = 1: `a[2][0] < a[1][0]`, i.e. 2 < 2, is False, so no swap. Output \"z y x\", option D. The equal-key records x and y have changed order, which shows that selection sort is not stable. Trap: option A, assuming x stays before y as in a stable sort."
+    },
+    "pdsa-w2-q6": {
+      "question": "This quicksort uses the first element as pivot and counts element-pivot comparisons in `comps`. What does it print for 8 already-sorted elements?",
+      "options": [
+        "24",
+        "36",
+        "28",
+        "64"
+      ],
+      "explanation": "On sorted input the pivot (the first element) is always the smallest, so every partition leaves one side empty and all remaining elements on the other. A partition of size 8 does 7 comparisons, then size 7 does 6, ..., size 2 does 1: 7 + 6 + ... + 1 = 28 = n(n − 1)/2, option C. This is the Θ(n²) worst case. Trap: option A, using the average case n log₂ n = 8 × 3 = 24; option B, n(n + 1)/2 = 36, counting one extra comparison per partition."
+    },
+    "pdsa-w3-q1": {
+      "question": "What does this code print?",
+      "options": [
+        "2 [4, 9]",
+        "7 [9, 2]",
+        "2 [4, 7, 9]",
+        "2 [4, 9, 2]"
+      ],
+      "explanation": "The list is used as a stack: `pop()` removes the last item. [4, 7] → pop (7 removed) → [4] → push 9 and 2 → [4, 9, 2] → pop returns 2 and the list stays [4, 9]. Output \"2 [4, 9]\", option A. Trap: option B, removing from the front as in a queue (FIFO); option D, treating `pop()` as a peek that does not remove the item."
+    },
+    "pdsa-w3-q2": {
+      "question": "For a Python list `a` (n items) and a dict `d`, which of these operations takes time proportional to n, i.e. Θ(n)?",
+      "options": [
+        "`a.append(x)`",
+        "`a.pop()`",
+        "`d[key]` lookup",
+        "`a.pop(0)`"
+      ],
+      "explanation": "`a.pop(0)` removes the first item, so the remaining n − 1 references must all shift one place: Θ(n), option D. Option A is amortized O(1), option B removes the last item (O(1)), and option C is a hash lookup (O(1) on average). Trap: option A, calling append O(n) because of the occasional resize; its amortized cost is still O(1)."
+    },
+    "pdsa-w3-q3": {
+      "question": "For which input does `balanced` return True?",
+      "options": [
+        "([)]",
+        "(()",
+        "{[()()]}",
+        "())("
+      ],
+      "explanation": "\"{[()()]}\": every closing bracket matches the opening bracket on top of the stack, and the stack is empty at the end, so True, option C. In option A, `)` arrives while `[` is on top, a mismatch. Option B ends with one `(` left over, so `not st` is False. In option D the third character `)` arrives when the stack is empty. Trap: option A, accepting it because the bracket counts match; the order must match too."
+    },
+    "pdsa-w3-q4": {
+      "question": "A hash table has size 7, h(k) = k mod 7, and linear probing on collision (next slot, wrapping to index 0 after the last). The keys are inserted in this order: 10, 17, 24, 3. At which index does key 3 end up?",
+      "options": [
+        "3",
+        "6",
+        "4",
+        "0"
+      ],
+      "explanation": "10 mod 7 = 3, so 10 goes to index 3. 17 mod 7 = 3 (taken), so 4. 24 mod 7 = 3 (taken), 4 (taken), so 5. 3 mod 7 = 3: 3, 4 and 5 are all taken, so 6, option B. This is primary clustering: keys with the same home slot form one long run. Trap: option A, using only the home slot 3 and ignoring the collision; option C, stopping after one probe."
+    },
+    "pdsa-w3-q5": {
+      "question": "This code simulates a hash table's resizing rule: before an insert, if (n + 1)/m > 0.75 then m doubles. What does it print after 13 inserts?",
+      "options": [
+        "16 1",
+        "32 2",
+        "64 3",
+        "24 2"
+      ],
+      "explanation": "With m = 8 there is no resize up to 6 keys (6/8 = 0.75, not above the threshold). The 7th insert gives 7/8 > 0.75, so m = 16. Up to 12 keys 12/16 = 0.75 is fine; the 13th gives 13/16 > 0.75, so m = 32. Two resizes: \"32 2\", option B. Trap: option A, counting only the first resize; option D, adding 8 slots each time (24), while the rule doubles."
+    },
+    "pdsa-w3-q6": {
+      "question": "A queue built from two stacks. What does it print?",
+      "options": [
+        "3 2 1 1 0",
+        "1 2 3 0 1",
+        "1 2 4 1 0",
+        "1 2 3 1 0"
+      ],
+      "explanation": "On the first `deq`, `out` is empty, so `inb` [1, 2, 3] is reversed into `out` = [3, 2, 1]; pop gives 1. Then 4 goes into `inb`. On the next two `deq` calls `out` is not empty, so 2 and 3 come from there; 4 stays in `inb`. Output \"1 2 3 1 0\", option D. Each element moves at most once, so dequeue is amortized O(1). Trap: option B, thinking every `deq` moves everything from `inb` into `out`; option A, treating it as a stack (LIFO)."
+    },
+    "pdsa-w4-q1": {
+      "question": "The 6 vertices of an undirected graph have degrees 3, 2, 2, 3, 1, 1. How many edges does the graph have?",
+      "options": [
+        "12",
+        "5",
+        "6",
+        "3"
+      ],
+      "explanation": "Each edge adds one to the degree of each of its two ends, so Σ degree = 2m. Here 3 + 2 + 2 + 3 + 1 + 1 = 12 = 2m, so m = 6, option C. Trap: option A, taking the degree sum itself as the edge count (forgetting to divide by 2); option B, assuming a 6-vertex graph has n − 1 = 5 edges, which is true only for a tree."
+    },
+    "pdsa-w4-q2": {
+      "question": "A graph with n vertices and m edges is stored as an **adjacency matrix**. What is the running time (tight bound) of BFS over the whole graph?",
+      "options": [
+        "Θ(n + m)",
+        "Θ(n²)",
+        "Θ(m log n)",
+        "Θ(n · m)"
+      ],
+      "explanation": "BFS takes each vertex out of the queue once, and to find its neighbours it must read the whole matrix row (n entries). n vertices × n entries = Θ(n²), option B, even if the graph has few edges. Trap: option A, which is right for an adjacency **list**; with a matrix the neighbours are not found in O(degree)."
+    },
+    "pdsa-w4-q3": {
+      "question": "What does this BFS code print? (Neighbours are examined in the order given in the lists.)",
+      "options": [
+        "[0, 1, 2, 3, 4, 5] 3",
+        "[0, 2, 4, 1, 3, 5] 4",
+        "[0, 2, 1, 4, 3, 5] 4",
+        "[0, 2, 1, 4, 3, 5] 3"
+      ],
+      "explanation": "Queue [0]. 0 is removed: 2, 1 discovered (order 0, 2, 1). 2 is removed: 4 is new (parent 2). 1 is removed: 3 is new (parent 1); 4 is already seen. 4 is removed: 5 is new, parent[5] = 4. Then 3 and 5 find nothing new. Output \"[0, 2, 1, 4, 3, 5] 4\", option C. Trap: option D, thinking 3 discovered 5 (3 is also a neighbour of 5, but 4 was ahead in the queue); option B is the DFS order; option A assumes sorted neighbours."
+    },
+    "pdsa-w4-q4": {
+      "question": "DFS is run on this directed graph; a vertex is added to `post` when its DFS call finishes. What is printed?",
+      "options": [
+        "d b e c a",
+        "a b d c e",
+        "d e b c a",
+        "a c e b d"
+      ],
+      "explanation": "a → b → d: d has no out-edges, so d finishes; then b finishes. Back at a, go to c: d is already visited, go to e; e → b is visited, so e finishes; then c, then a. Post order \"d b e c a\", option A. Its reverse (option D) is a valid topological order. Trap: option B, writing the visit (pre) order; option D, reversing the post order too early."
+    },
+    "pdsa-w4-q5": {
+      "question": "The prerequisites of courses A–F in a fictional degree form this graph (X → Y means X comes first). What does Kahn's algorithm print?",
+      "options": [
+        "A B C D F E",
+        "A C B D F E",
+        "F B A D C E",
+        "A B F C D E"
+      ],
+      "explanation": "Indegrees: A 0, B 0, C 2, D 2, E 2, F 0. The queue starts in dict order as [A, B, F]. A out: C → 1. B out: C → 0 (enqueued), D → 1. F out: D → 0 (enqueued). C out: E → 1. D out: E → 0. Then E. Output \"A B F C D E\", option D. Trap: option A, running C before F as soon as C reaches 0; the queue is FIFO and F was already waiting."
+    },
+    "pdsa-w4-q6": {
+      "question": "A DAG has 6 vertices a, b, c, d, e, f and only these edges: a → c, b → c, c → d, c → e. (f has no edges.) How many different valid topological orders are there?",
+      "options": [
+        "4",
+        "24",
+        "20",
+        "720"
+      ],
+      "explanation": "Both a and b must come before c (2 orders: ab or ba), and d and e come after c (2 orders). So a, b, c, d, e have 2 × 2 = 4 orders. f has no constraint, so in each order it can go in any of 6 positions: 4 × 6 = 24, option B. Traps: option A, forgetting the isolated vertex f; option C, counting only 5 places for f instead of 6, i.e. missing one end (4 × 5); option D, ignoring the constraints and taking 6! = 720."
+    },
+    "pdsa-w5-q1": {
+      "question": "For Dijkstra's algorithm to guarantee correct shortest distances, which condition must the graph satisfy?",
+      "options": [
+        "The graph is undirected",
+        "All edge weights are non-negative",
+        "The graph has no cycle",
+        "All edge weights are distinct"
+      ],
+      "explanation": "When Dijkstra finalises a vertex it assumes no cheaper route will appear later. That holds only if no edge weight is negative, option B. Directed vs undirected (option A) and cycles (option C) do not matter. Trap: option C, borrowing Bellman–Ford's \"no negative cycle\" condition; for Dijkstra a single negative edge is enough to cause a wrong answer."
+    },
+    "pdsa-w5-q2": {
+      "question": "A graph has 6 vertices and 15 edges, and no negative cycle. How many rounds over all the edges does Bellman–Ford need (in the worst case) for all distances to be final?",
+      "options": [
+        "15",
+        "6",
+        "5",
+        "36"
+      ],
+      "explanation": "Any shortest path has at most n − 1 = 5 edges (a path with a cycle is never shorter when there is no negative cycle). After round i all shortest paths with up to i edges are correct, so 5 rounds are enough, option C. Trap: option B, n rounds; the n-th round is run only to check for a negative cycle. Option A is the number of edges, not rounds."
+    },
+    "pdsa-w5-q3": {
+      "question": "Edges of an undirected graph (weights in brackets): A–B (4), A–C (1), C–B (2), B–D (5), C–D (8), C–E (10), D–E (2), D–F (6), E–F (3). Run Dijkstra from A. What are the final distances of E and F?",
+      "options": [
+        "11 14",
+        "10 14",
+        "9 12",
+        "10 13"
+      ],
+      "explanation": "A = 0, C = 1. B = min(4, 1 + 2) = 3. D = min(3 + 5, 1 + 8) = 8. E = min(1 + 10, 8 + 2) = 10. F = min(8 + 6, 10 + 3) = 13. Output \"10 13\", option D (path A–C–B–D–E–F). Trap: option A, finalising E through the direct C–E edge (1 + 10 = 11) because that edge was seen first; option B, taking F only through D–F and missing the cheaper route through E–F."
+    },
+    "pdsa-w5-q4": {
+      "question": "Edges of an undirected graph: P–Q (7), P–R (3), Q–R (1), Q–S (6), R–S (8), R–T (5), S–T (4), S–U (2), T–U (9). Build the MST with Kruskal. What are the total weight and the number of edges?",
+      "options": [
+        "15 (5 edges)",
+        "10 (4 edges)",
+        "21 (6 edges)",
+        "16 (5 edges)"
+      ],
+      "explanation": "Sorted order: Q–R 1 ✓, S–U 2 ✓, P–R 3 ✓, S–T 4 ✓, R–T 5 ✓ (joins {P, Q, R} to {S, T, U}). Now there are n − 1 = 5 edges for 6 vertices; Q–S 6 and the rest would make cycles. Total 1 + 2 + 3 + 4 + 5 = 15, option A. Trap: option B, stopping at 4 edges while the graph is still in two pieces; option C, also adding Q–S, which makes a cycle."
+    },
+    "pdsa-w5-q5": {
+      "question": "Same graph as before: P–Q (7), P–R (3), Q–R (1), Q–S (6), R–S (8), R–T (5), S–T (4), S–U (2), T–U (9). Run Prim's algorithm from P. In what order are edges added to the tree?",
+      "options": [
+        "Q–R, S–U, P–R, S–T, R–T",
+        "P–R, Q–R, Q–S, S–U, T–U",
+        "P–R, Q–R, R–T, S–T, S–U",
+        "P–R, R–T, S–T, S–U, Q–R"
+      ],
+      "explanation": "Tree {P}: the lightest crossing edge is P–R (3). {P, R}: Q–R (1). {P, Q, R}: crossing edges Q–S 6, R–S 8, R–T 5 (P–Q is now inside the tree); R–T (5). Then S–T (4), and finally S–U (2). Order \"P–R, Q–R, R–T, S–T, S–U\", option C; the total is still 15. Trap: option A is Kruskal's order (globally sorted); option B looks only at the neighbours of the most recently added vertex (Q–S from Q), while Prim considers every edge leaving the whole tree."
+    },
+    "pdsa-w5-q6": {
+      "question": "This Dijkstra code has one negative edge (B → A, weight −4). What does it print?",
+      "options": [
+        "1 4",
+        "2 5",
+        "1 5",
+        "Error: negative weight"
+      ],
+      "explanation": "S is final (0): A = 2, B = 5. A (2) comes out of the heap and is finalised, C = 2 + 3 = 5. Between (5, 'B') and (5, 'C') the tuple comparison puts B first: B is finalised, but B → A is not relaxed because A is in `done`. Then C. Output \"2 5\", option B, while the true distances are A = 5 − 4 = 1 and C = 4 (option A). Trap: option A, writing the true shortest distances instead of what the code does; option C, thinking A gets updated but C does not. Python raises no error (option D)."
+    },
+    "pdsa-w6-q1": {
+      "question": "In a binary heap stored in a 0-indexed Python list, what are the indexes of the children and the parent of the node at index 4?",
+      "options": [
+        "Children 8, 9; parent 2",
+        "Children 9, 10; parent 2",
+        "Children 8, 9; parent 1",
+        "Children 9, 10; parent 1"
+      ],
+      "explanation": "In a 0-indexed heap the children are 2i + 1 = 9 and 2i + 2 = 10, and the parent is (i − 1)//2 = 3//2 = 1, option D. Check: the children of index 1 are 3 and 4, so the parent of 4 is indeed 1. Trap: option A, applying the 1-indexed formulas (2i, 2i + 1, i//2) to a 0-indexed list."
+    },
+    "pdsa-w6-q2": {
+      "question": "The keys 1, 2, 3, ..., n are inserted in this sorted order into an empty (unbalanced) BST. What is the worst-case time to search for a key in this tree?",
+      "options": [
+        "Θ(log n), because search in a BST is always log n",
+        "Θ(n), because the tree becomes one long chain",
+        "Θ(1), because the keys are sorted",
+        "Θ(n log n)"
+      ],
+      "explanation": "Each new key is larger than the previous one, so it always becomes a right child. The tree becomes a right-leaning chain of height n − 1, and search is Θ(h) = Θ(n), option B. Trap: option A, assuming a BST is automatically balanced; O(log n) is guaranteed only for a balanced tree (such as AVL, week 7)."
+    },
+    "pdsa-w6-q3": {
+      "question": "What does this code print?",
+      "options": [
+        "1 [2, 3, 5, 8, 9]",
+        "1 [3, 2, 5, 9, 8]",
+        "1 [2, 3, 8, 5, 9]",
+        "9 [1, 3, 2, 5, 8]"
+      ],
+      "explanation": "After the pushes the heap is [1, 3, 2, 5, 9, 8] (2 swapped with 8). `heappop` returns the root 1 and moves the last element 8 to the root: [8, 3, 2, 5, 9]. Sift down: of the children 3 and 2 the smaller is 2, swap → [2, 3, 8, 5, 9]; index 2 has no children. Output \"1 [2, 3, 8, 5, 9]\", option C. Trap: option A, assuming the heap list is sorted; option B, thinking pop just removes the first element; option D, assuming heapq is a max-heap."
+    },
+    "pdsa-w6-q4": {
+      "question": "The keys are inserted into an empty BST in this order: 40, 20, 60, 10, 30, 50, 70, 25. What is the **preorder** traversal of the tree?",
+      "options": [
+        "40 20 10 30 25 60 50 70",
+        "10 20 25 30 40 50 60 70",
+        "40 20 60 10 30 50 70 25",
+        "10 25 30 20 50 70 60 40"
+      ],
+      "explanation": "Tree: root 40; left 20 (children 10 and 30), right 60 (children 50 and 70); 25 < 40, 25 > 20, 25 < 30, so it is the left child of 30. Preorder (node, left, right): 40, 20, 10, 30, 25, 60, 50, 70, option A. Option B is inorder (sorted), option C is level order (the same as the insert order here), option D is postorder. Trap: option C, thinking preorder equals the insertion order."
+    },
+    "pdsa-w6-q5": {
+      "question": "Union-find with union by size. What does it print?",
+      "options": [
+        "4 6 2",
+        "0 6 3",
+        "0 6 2",
+        "4 2 3"
+      ],
+      "explanation": "union(0, 1): 1 → 0, size[0] = 2. union(2, 3): 3 → 2. union(1, 3): roots 0 and 2, equal sizes, so 2 → 0, size[0] = 4. union(4, 5): 5 → 4, size[4] = 2. union(5, 0): roots 4 (size 2) and 0 (size 4); the smaller 4 goes under the larger 0, size[0] = 6. union(6, 7): 7 → 6. find(5) = 5 → 4 → 0. Groups {0..5} and {6, 7}: output \"0 6 2\", option C. Trap: option A, ignoring the size check and making the first argument's root (4) the root."
+    },
+    "pdsa-w6-q6": {
+      "question": "The root 50 is deleted from the BST (inorder successor for a node with two children). What does it print?",
+      "options": [
+        "40 30 20 70 60 65 80",
+        "60 30 20 40 70 65 80",
+        "60 30 20 40 70 80",
+        "70 30 20 40 60 65 80"
+      ],
+      "explanation": "Tree: 50 (left 30 → 20, 40; right 70 → 60, 80; 65 is the right child of 60). 50 has two children, so the successor = minimum of the right subtree = 60. The root's key becomes 60, and 60 is deleted from the right subtree; it has only a right child 65, which becomes the left child of 70. Preorder: 60 30 20 40 70 65 80, option B. Trap: option C, losing the successor's child 65 while removing it; option A uses the predecessor (40), which is not this code's rule."
+    },
+    "pdsa-w7-q1": {
+      "question": "From a fictional auditorium's booking requests (start, end), we want to choose as many non-overlapping bookings as possible. Which greedy rule always gives an optimal answer?",
+      "options": [
+        "Take the booking that starts first",
+        "Take the shortest booking first",
+        "Take the booking that finishes first",
+        "Take the booking with the fewest conflicts first"
+      ],
+      "explanation": "Earliest finish time, option C: the booking that ends first leaves the most time for the rest, and an exchange argument shows the first booking of any optimal solution can be swapped for this choice. Trap: option A; one long booking that starts first can take the whole day. Options B and D also have counterexamples."
+    },
+    "pdsa-w7-q2": {
+      "question": "The keys 10, 20, 30 are inserted in this order into an empty AVL tree. What happens after inserting 30?",
+      "options": [
+        "Left rotation (at 10), new root 20",
+        "Right rotation (at 10), new root 20",
+        "Left-right double rotation, new root 20",
+        "No rotation, the root stays 10"
+      ],
+      "explanation": "10 → 20 → 30 is a right-right chain: the balance factor of 10 is 0 − 2 = −2. This is the RR case, so one left rotation at 10: 20 becomes the root with 10 as left child and 30 as right child, option A. Trap: option B, rotating in the wrong direction (a right rotation is for the LL case); option C, a double rotation is needed only for a zig-zag (LR/RL) shape."
+    },
+    "pdsa-w7-q3": {
+      "question": "Intervals (start, end): (0, 10), (1, 3), (2, 4), (3, 5), (4, 6), (5, 7), (6, 9), (8, 10). If one interval's end equals another's start, both can be chosen. What is the largest number of non-overlapping intervals that can be chosen?",
+      "options": [
+        "1",
+        "3",
+        "5",
+        "4"
+      ],
+      "explanation": "Greedy after sorting by finish time: take (1, 3); (2, 4) overlaps; take (3, 5) (3 ≥ 3); (4, 6) overlaps; take (5, 7); (6, 9) and (0, 10) overlap; take (8, 10). Total 4, option D, and brute force also gives 4. Trap: option A, the earliest-start rule takes (0, 10) first and blocks everything else; option B, treating end = start as an overlap."
+    },
+    "pdsa-w7-q4": {
+      "question": "A fictional log file has 100 characters: p = 20, q = 5, r = 10, s = 30, t = 15, u = 20. How many bits does the whole file take with Huffman coding?",
+      "options": [
+        "300",
+        "245",
+        "145",
+        "100"
+      ],
+      "explanation": "Merges: q5 + r10 = 15; 15 + t15 = 30; p20 + u20 = 40; 30 + s30 = 60; 40 + 60 = 100. Total bits = sum of all merge sums = 15 + 30 + 40 + 60 + 100 = 245, option B. (By depth too: p, u, s = 2; t = 3; q, r = 4.) Trap: option C, forgetting to count the final root merge (100); option A is fixed-length 3 bits × 100, which is not Huffman."
+    },
+    "pdsa-w7-q5": {
+      "question": "A fictional currency has only coins of 1, 4 and 5. For the amount 8, how many coins does the \"largest coin first\" greedy use, and what is the minimum possible?",
+      "options": [
+        "4 and 2",
+        "2 and 2",
+        "4 and 3",
+        "3 and 2"
+      ],
+      "explanation": "Greedy: take 5 (3 left), then 4 does not fit, so 1 + 1 + 1: 4 coins in total. Best: 4 + 4 = 2 coins. Answer \"4 and 2\", option A. This shows greedy is not optimal for every coin system; the right method here is DP. Trap: option B, assuming greedy is always optimal, as it is for Indian notes."
+    },
+    "pdsa-w7-q6": {
+      "question": "The keys are inserted in this order into an empty AVL tree: 50, 20, 70, 10, 30, 25. What is the preorder traversal of the final tree?",
+      "options": [
+        "50 20 10 30 25 70",
+        "20 10 50 30 25 70",
+        "30 20 10 50 25 70",
+        "30 20 10 25 50 70"
+      ],
+      "explanation": "The tree is balanced until 25: 50 (20 → 10, 30; 70). 25 becomes the left child of 30. Now 50's balance: left height 3, right 1, i.e. +2; its left child 20 has balance −1 (right heavy). This is the LR case: left rotation at 20, then right rotation at 50. New root 30: left 20 (10, 25), right 50 (–, 70). Preorder 30 20 10 25 50 70, option D. Trap: option B, treating LR as LL and doing only a right rotation; option C, giving 30's left subtree (25) to 50 on the wrong side; option A forgets the rotation altogether."
+    },
+    "pdsa-w8-q1": {
+      "question": "What is the solution of the recurrence T(n) = 2T(n/2) + Θ(n) (as in merge sort)?",
+      "options": [
+        "Θ(n)",
+        "Θ(n²)",
+        "Θ(n log n)",
+        "Θ(log n)"
+      ],
+      "explanation": "a = 2, b = 2, so n^(log₂ 2) = n, and f(n) = Θ(n) is the same: case 2 of the master theorem, T(n) = Θ(n log n), option C. From the recursion tree: n work in total on every level, and log₂ n levels. Trap: option A, looking at the work of one level (n) and forgetting the number of levels."
+    },
+    "pdsa-w8-q2": {
+      "question": "How many inversions does the list [2, 4, 1, 3, 5] have? (Inversion: i < j and a[i] > a[j].)",
+      "options": [
+        "1",
+        "7",
+        "10",
+        "3"
+      ],
+      "explanation": "The pairs where the larger number comes first: (2, 1), (4, 1), (4, 3). Total 3, option D. Trap: option A, counting only adjacent pairs, where only (4, 1) appears; option B, counting the opposite, i.e. the pairs already in order (10 − 3 = 7); option C is the total number of pairs 5·4/2."
+    },
+    "pdsa-w8-q3": {
+      "question": "What is the solution of the recurrence T(n) = 8T(n/2) + n²?",
+      "options": [
+        "Θ(n² log n)",
+        "Θ(n³)",
+        "Θ(n²)",
+        "Θ(n³ log n)"
+      ],
+      "explanation": "a = 8, b = 2, so n^(log₂ 8) = n³. f(n) = n² is polynomially smaller (n^(3 − 1)), so case 1: the leaves dominate, T(n) = Θ(n³), option B. This is like naive block matrix multiplication. Trap: option A, seeing f(n) = n² and applying case 2; first compute n^(log_b a), then compare."
+    },
+    "pdsa-w8-q4": {
+      "question": "Code that counts inversions with merge sort. What does it print?",
+      "options": [
+        "6",
+        "3",
+        "5",
+        "10"
+      ],
+      "explanation": "[5, 3] | [8, 1, 4]. Left: 5 > 3, 1 inversion. Right: in the merge of [8] and [1, 4], both 1 and 4 come before 8, 1 + 1 = 2. Top merge [3, 5] + [1, 4, 8]: when 1 is taken 2 left elements remain (+2), when 4 is taken only 5 remains (+1), total 3. Altogether 1 + 2 + 3 = 6, option A. Trap: option C, adding just 1 each time instead of `len(L) - i` gives 5; option B is only the top-level cross inversions."
+    },
+    "pdsa-w8-q5": {
+      "question": "Karatsuba multiplication multiplies two n-digit numbers using 3 half-size multiplications and O(n) extra work: T(n) = 3T(n/2) + O(n). What is its running time?",
+      "options": [
+        "Θ(n log n)",
+        "Θ(n²)",
+        "Θ(n^1.585) (i.e. n^(log₂ 3))",
+        "Θ(n^1.5)"
+      ],
+      "explanation": "a = 3, b = 2: n^(log₂ 3) ≈ n^1.585. f(n) = n is polynomially smaller, so case 1: T(n) = Θ(n^(log₂ 3)), option C. Trap: option A, saying n log n because it looks like merge sort; merge sort has a = 2, here a = 3. Option B is the time of the schoolbook method (or of D&C with 4 subproblems)."
+    },
+    "pdsa-w8-q6": {
+      "question": "What is the tight solution of the recurrence T(n) = 2T(n/2) + n log n?",
+      "options": [
+        "Θ(n log n)",
+        "Θ(n log² n)",
+        "Θ(n²)",
+        "Θ(n^1.5)"
+      ],
+      "explanation": "n^(log₂ 2) = n, and f(n) = n log n = n · log¹ n. It is larger than n only by a log factor, not polynomially, so case 3 does not apply. Extended case 2 (k = 1): T(n) = Θ(n log² n), option B. From the recursion tree: level i does n · log(n/2ⁱ) work, and Σ (log n − i) ≈ (log² n)/2. Trap: option A, treating f(n) as \"larger\" and using case 3 to write Θ(f(n)) = n log n."
+    },
+    "pdsa-w9-q1": {
+      "question": "Matrix A is 10 × 30 and B is 30 × 5. How many scalar multiplications does the standard method need to compute A·B?",
+      "options": [
+        "450",
+        "1500",
+        "50",
+        "300"
+      ],
+      "explanation": "The result is 10 × 5, i.e. 50 entries, and each entry is a sum of 30 products. Total 10 × 30 × 5 = 1500, option B. Trap: option C, counting only the result entries (50) and forgetting the 30 multiplications per entry; option A, adding instead of multiplying the dimensions (10·30 + 30·5)."
+    },
+    "pdsa-w9-q2": {
+      "question": "Fibonacci with `lru_cache`. What does it print?",
+      "options": [
+        "30",
+        "2692537",
+        "832040",
+        "31"
+      ],
+      "explanation": "Because of the cache the function body runs only once for each n (0 to 30); every other call returns from the cache without increasing `calls`. So 31 distinct values, output 31, option D. Trap: option B, the call count of the naive recursion without memo (2·F(31) − 1 = 2692537); option C, the value of fib(30); option A, forgetting the call for n = 0."
+    },
+    "pdsa-w9-q3": {
+      "question": "What does this LCS code print?",
+      "options": [
+        "4",
+        "2",
+        "5",
+        "6"
+      ],
+      "explanation": "A longest common subsequence of \"PYTHON\" and \"PHOTON\" is \"PHON\" (or \"PTON\"), length 4, option A. In the table L[6][6] = 4. Trap: option B, counting the longest common **substring** (\"ON\", contiguous); option C, counting the common letters P, T, H, O, N without respecting order (T and H appear in opposite orders in the two strings, so both cannot be used)."
+    },
+    "pdsa-w9-q4": {
+      "question": "What is the minimum number of operations to turn \"PLANET\" into \"PLATE\"? (One operation: insert, delete or substitute one character.)",
+      "options": [
+        "3",
+        "1",
+        "2",
+        "4"
+      ],
+      "explanation": "Substitute N with T (PLATET), then delete the last T (PLATE): 2 operations, option C. 1 is impossible, because reducing the length needs one delete and that still leaves a string like \"PLAET\" or \"PLANE\", not PLATE. Trap: option A, counting with insert/delete only: 6 + 5 − 2 × LCS(4) = 3, which does not allow substitution as one operation; option B, only the difference in lengths."
+    },
+    "pdsa-w9-q5": {
+      "question": "Knapsack capacity 10 kg. Fictional items (weight, value): A (6, 30), B (5, 20), C (5, 20), D (2, 5). Each item is taken whole or not at all (0/1). What is the maximum value?",
+      "options": [
+        "35",
+        "46",
+        "30",
+        "40"
+      ],
+      "explanation": "B + C: weight 10, value 40, option D. Other combinations: A + D = 35 (weight 8), A alone 30; B or C does not fit with A. Trap: option A, the value/weight ratio greedy (A with ratio 5 first, then D), which is not optimal for 0/1 knapsack; option B, the fractional answer (A + 4/5 of B = 30 + 16), valid only if items could be split."
+    },
+    "pdsa-w9-q6": {
+      "question": "Matrices A₁ (5 × 10), A₂ (10 × 3), A₃ (3 × 12), A₄ (12 × 5). What is the minimum number of scalar multiplications to compute A₁A₂A₃A₄?",
+      "options": [
+        "630",
+        "405",
+        "580",
+        "1260"
+      ],
+      "explanation": "Best bracketing (A₁A₂)(A₃A₄): A₁A₂ = 5·10·3 = 150 (5 × 3), A₃A₄ = 3·12·5 = 180 (3 × 5), then (5 × 3)(3 × 5) = 5·3·5 = 75. Total 405, option B. Others: ((A₁A₂)A₃)A₄ = 150 + 180 + 300 = 630, A₁(A₂(A₃A₄)) = 180 + 150 + 250 = 580, and two more give 1210 and 1260. Trap: option A, multiplying straight left to right; option C, right to left. DP tries every split point k."
+    },
+    "pdsa-w10-q1": {
+      "question": "The text has length 10 and the pattern has length 3. How many starting positions (alignments) does the naive matcher try?",
+      "options": [
+        "10",
+        "30",
+        "8",
+        "7"
+      ],
+      "explanation": "The pattern can be placed at shifts s = 0, 1, ..., n − m, i.e. n − m + 1 = 10 − 3 + 1 = 8 alignments, option C. Trap: option D, forgetting the +1 (n − m); option A, treating every text position as a start, though the whole pattern does not fit at the last 2 positions. Option B is the n·m upper bound on comparisons, not alignments."
+    },
+    "pdsa-w10-q2": {
+      "question": "What is the prefix function π of the pattern \"ABAB\"?",
+      "options": [
+        "[0, 0, 1, 2]",
+        "[1, 2, 3, 4]",
+        "[0, 0, 1, 0]",
+        "[0, 1, 0, 1]"
+      ],
+      "explanation": "π[0] = 0 (a single character has no proper prefix that is also a suffix). \"AB\": 0. \"ABA\": \"A\" is both a prefix and a suffix, 1. \"ABAB\": \"AB\", 2. Answer [0, 0, 1, 2], option A. Trap: option B, counting the whole string as its own prefix-suffix (it is not proper); option C, looking only at the last character in the final step."
+    },
+    "pdsa-w10-q3": {
+      "question": "What does this code print?",
+      "options": [
+        "[0, 0, 1, 0, 1, 2, 3, 4]",
+        "[0, 0, 1, 0, 1, 2, 3, 0]",
+        "[0, 1, 0, 0, 1, 2, 3, 2]",
+        "[0, 0, 1, 0, 1, 2, 3, 2]"
+      ],
+      "explanation": "Up to i = 6: π of \"ABACABA\" is 3 (\"ABA\"). At i = 7, P[7] = 'B' and P[3] = 'C' mismatch, so k = π[2] = 1; now P[7] = 'B' and P[1] = 'B' match, k = 2. Answer [0, 0, 1, 0, 1, 2, 3, 2], option D (\"AB\" is both a prefix and a suffix). Trap: option A, increasing k even after a mismatch; option B, dropping straight to 0 on a mismatch and forgetting the π[k − 1] fallback."
+    },
+    "pdsa-w10-q4": {
+      "question": "Rabin–Karp: text \"27182818\", pattern \"18\", and hash = (2-digit number) mod 7. How many windows have a hash equal to the pattern's hash, and how many of these are spurious hits?",
+      "options": [
+        "2 and 0",
+        "3 and 1",
+        "3 and 2",
+        "4 and 2"
+      ],
+      "explanation": "Pattern hash 18 mod 7 = 4. Windows: 27 → 6, 71 → 1, 18 → 4, 82 → 5, 28 → 0, 81 → 4, 18 → 4. Three windows (18, 81, 18) hash to 4; on verification 81 is not a real match, so 1 spurious hit. Answer \"3 and 1\", option B. Trap: option A, counting only real matches and missing the spurious hit; option C, also treating one of the two 18s as spurious."
+    },
+    "pdsa-w10-q5": {
+      "question": "The words \"car\", \"cart\", \"cat\", \"dog\", \"do\" are inserted into an empty trie. How many nodes does the trie have apart from the root? (Each node is one character.)",
+      "options": [
+        "15",
+        "9",
+        "6",
+        "8"
+      ],
+      "explanation": "c → a → r → t, plus a separate t under a (\"cat\"): c, a, r, t, t = 5 nodes. d → o → g = 3 nodes; \"do\" needs no new node, only an end flag on o. Total 8, option D. Trap: option A, adding up the characters of every word (3 + 4 + 3 + 3 + 2 = 15) and forgetting that common prefixes are shared; option B, counting the root too."
+    },
+    "pdsa-w10-q6": {
+      "question": "KMP and `str.count` both look for \"ABA\" in \"ABABABA\". What does it print?",
+      "options": [
+        "[0, 4] 2",
+        "[0, 2, 4] 3",
+        "[0, 2, 4] 2",
+        "[0, 2] 2"
+      ],
+      "explanation": "\"ABA\" starts at positions 0, 2 and 4, and these overlap. After a match KMP sets j = π[2] = 1 (\"A\" is already matched), so it finds all three: [0, 2, 4]. `str.count` counts non-overlapping matches: after the match at 0 it searches from index 3, the next match is at 4, total 2. Output \"[0, 2, 4] 2\", option C. Trap: option B, assuming count is overlapping too; option A, assuming KMP also skips the whole pattern after a match."
+    },
+    "pdsa-w11-q1": {
+      "question": "In a flow network one s-t cut has capacity 17. What can be said for certain about the maximum flow of this network?",
+      "options": [
+        "Max flow = 17",
+        "Max flow ≤ 17",
+        "Max flow ≥ 17",
+        "Nothing can be said"
+      ],
+      "explanation": "Every flow from s to t must cross the S → T edges of every cut, so every flow is ≤ the capacity of every cut. So max flow ≤ 17, option B. Equality holds only for a **minimum** cut (the max-flow min-cut theorem). Trap: option A, assuming any cut is the min cut; if this cut is not minimum, the max flow is less than 17."
+    },
+    "pdsa-w11-q2": {
+      "question": "Problem A has a polynomial-time reduction to problem B (A ≤p B). If a polynomial-time algorithm for B is found, what follows about A?",
+      "options": [
+        "A is NP-hard",
+        "Nothing follows about A",
+        "A can also be solved in polynomial time",
+        "B is NP-complete"
+      ],
+      "explanation": "Transform A's input into B's input in polynomial time, then run B's polynomial algorithm: polynomial in total. So A is also in P, option C. Trap: option B, reading the direction backwards; if it were B ≤p A, an easy B would tell us nothing about A, but here the reduction goes from A to B."
+    },
+    "pdsa-w11-q3": {
+      "question": "Flow network (capacities in brackets): s→a (10), s→b (8), a→c (7), a→b (5), b→a (4), b→d (10), c→t (9), d→c (6), d→t (6). What is the maximum flow from s to t?",
+      "options": [
+        "18",
+        "20",
+        "17",
+        "15"
+      ],
+      "explanation": "The edges into t, c→t (9) and d→t (6), total 15, so the cut ({s, a, b, c, d}, {t}) has capacity 15 and no flow can exceed 15. 15 is also achieved: s→a→c→t 7, s→b→d→t 6, s→b→d→c→t 2 (c→t carries 7 + 2 = 9). Max flow 15, option D. Trap: option A, taking the capacity leaving s (10 + 8) as the answer; options B and C are real cuts (({s, a}) = 20, ({s, a, b}) = 17), but not minimum ones."
+    },
+    "pdsa-w11-q4": {
+      "question": "In the same network: s→a (10), s→b (8), a→c (7), a→b (5), b→a (4), b→d (10), c→t (9), d→c (6), d→t (6). What is the capacity of the cut S = {s, a}, T = {b, c, d, t}?",
+      "options": [
+        "20",
+        "16",
+        "24",
+        "15"
+      ],
+      "explanation": "Only the edges going from S to T: s→b (8), a→b (5), a→c (7). Total 20, option A. b→a (4) goes from T to S and is not counted in the cut capacity. Trap: option B, subtracting the backward edge (20 − 4); option C, adding it (20 + 4); option D, thinking every cut has capacity equal to the max flow (15)."
+    },
+    "pdsa-w11-q5": {
+      "question": "A fictional bakery makes x trays of cake and y trays of cookies. Oven: x + y ≤ 4 hours, decoration: x + 3y ≤ 6 hours, x, y ≥ 0. The profit 2x + 3y (thousand ₹) is to be maximised. What is the optimum?",
+      "options": [
+        "x = 4, y = 0, profit 8",
+        "x = 0, y = 2, profit 6",
+        "x = 2, y = 2, profit 10",
+        "x = 3, y = 1, profit 9"
+      ],
+      "explanation": "Corners of the feasible region: (0, 0) → 0, (4, 0) → 8, (0, 2) → 6, and the intersection of the two constraints: x + y = 4, x + 3y = 6 ⇒ y = 1, x = 3 → 2·3 + 3·1 = 9. The largest is 9, option D. Trap: option C, (2, 2) gives x + 3y = 8 > 6, so it is not even feasible; option A, checking only the corners on the axes and forgetting the intersection of the two lines."
+    },
+    "pdsa-w11-q6": {
+      "question": "Fictional workers and their eligible jobs: W1: J1, J2; W2: J1; W3: J1, J2; W4: J3, J4; W5: J3. Each worker gets at most one job and each job at most one worker. What is the largest number of worker-job pairs? (This equals the max flow with unit capacities.)",
+      "options": [
+        "3",
+        "4",
+        "5",
+        "2"
+      ],
+      "explanation": "W1, W2 and W3 are all eligible only for {J1, J2}, so at most 2 of them can be matched (Hall's condition fails), which makes 5 impossible. W4 and W5 can both be matched using J3 and J4. One matching: W2–J1, W1–J2, W5–J3, W4–J4 = 4, option B. Trap: option A, stopping at the greedy result (W1 takes the first free job J1, then W2 gets nothing, W3–J2, W4–J3, W5 gets nothing); an augmenting path (through a reverse edge) shifts W1 from J1 to J2 and makes room for W2. Option C, assuming 5 workers means a perfect matching."
+    },
+    "pdsa-w12-q1": {
+      "question": "What is the tight worst-case time of `heapq.heapify` (bottom-up build-heap) on a list of n elements?",
+      "options": [
+        "Θ(n log n)",
+        "Θ(n)",
+        "Θ(log n)",
+        "Θ(n²)"
+      ],
+      "explanation": "In the bottom-up build half the nodes are leaves (no work), a quarter sift down at most 1 level, and so on; Σ (n/2^(h+1)) · h = Θ(n). So option B. Trap: option A, reasoning n nodes × O(log n) sift down each = n log n; that upper bound is valid but not tight, because most nodes are near the bottom and move only a little. Doing n `heappush` calls is what costs O(n log n)."
+    },
+    "pdsa-w12-q2": {
+      "question": "In a fictional metro map, travelling between any two connected stations counts as one \"stop\". We want a route with the fewest stops between two stations. Which is the most direct correct algorithm?",
+      "options": [
+        "Kruskal (MST)",
+        "Bellman–Ford",
+        "BFS",
+        "Topological sort"
+      ],
+      "explanation": "Every edge has the same weight (1 stop), so this is an unweighted shortest path: BFS finds the path with the fewest edges in O(n + m), option C. Dijkstra would also be correct but pays for a heap, and Bellman–Ford (option B) is O(nm) and meant for negative weights. Trap: option A, an MST connects all stations cheaply, but the path between two stations in the MST need not be the shortest."
+    },
+    "pdsa-w12-q3": {
+      "question": "What does this code print?",
+      "options": [
+        "(0, 3)",
+        "(1, 2)",
+        "(2, 1)",
+        "None"
+      ],
+      "explanation": "i = 0, x = 3: 7 is not in `seen` yet; seen = {3: 0}. i = 1, x = 8: 2 is not there; 8: 1 is added. i = 2, x = 2: 10 − 2 = 8 is in seen (index 1), so (1, 2) is returned, option B. This is the pair whose **second** element appears earliest; one pass, O(n). Trap: option A, expecting the pair for the first element, 3 + 7; 7 is at index 3, and the function returns before reaching it. Option C has the tuple in the wrong order."
+    },
+    "pdsa-w12-q4": {
+      "question": "What is the time complexity of this code in terms of n?",
+      "options": [
+        "Θ(n log n)",
+        "Θ(n)",
+        "Θ(n²)",
+        "Θ(log n)"
+      ],
+      "explanation": "The outer loop runs n times. Inside, j = 1, 2, 4, ... while j < n, i.e. ⌈log₂ n⌉ times, and it restarts from j = 1 in every outer iteration. Total n · ⌈log₂ n⌉ = Θ(n log n), option A (for n = 1024, 1024 × 10 steps). Trap: option C, saying n² as soon as you see a nested loop; option B, treating it like the geometric-series case of week 2, but there the inner loop's size depended on the outer variable, while here it is a full log n each time."
+    },
+    "pdsa-w12-q5": {
+      "question": "k-th largest element using a min-heap of size k. What does it print?",
+      "options": [
+        "7",
+        "5",
+        "11",
+        "9"
+      ],
+      "explanation": "The heap always keeps the k = 3 largest elements seen so far; as soon as it reaches size 4 the smallest is removed. At the end the heap is {9, 9, 11}, and `h[0]` is the smallest of them, 9. In descending order 11, 9, 9, 7, ... the third is 9, option D. Time O(n log k). Trap: option A, counting the duplicate 9 once and taking the third distinct value (7); option C, thinking `h[0]` is the heap's maximum; option B is the third smallest."
+    },
+    "pdsa-w12-q6": {
+      "question": "The O(n log n) LIS code with `bisect`. What does it print?",
+      "options": [
+        "[4, 8, 9] 3",
+        "[2, 5] 2",
+        "[2, 5, 9] 3",
+        "[2, 4, 5, 8, 9] 5"
+      ],
+      "explanation": "4 → [4]; 8 → [4, 8]; 9 → [4, 8, 9]; 2: bisect_left 0, replace → [2, 8, 9]; 5: bisect_left 1, replace → [2, 5, 9]. Output \"[2, 5, 9] 3\", option C. The length 3 is the correct LIS length (e.g. 4, 8, 9), but `tails` itself is not a subsequence: 9 comes before 2 and 5 in the list. tails[i] = the smallest possible end of an increasing subsequence of length i + 1. Trap: option A, taking tails to be the actual LIS; option D, inserting instead of replacing (which just sorts the list); option B, assuming everything resets when 2 arrives."
+    }
+  }
+}

@@ -1,0 +1,1429 @@
+{
+  "subjectId": "mlt",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Representation learning and PCA",
+      "summary": "Is week aap seekhoge ki unsupervised representation learning kya hai aur Principal Component Analysis (PCA) data ko center karke, covariance matrix ke eigenvectors se kam dimensions mein kaise represent karta hai.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Representation learning** ka goal hai data ko aisi compact form mein likhna jo uski zaroori structure bachaaye. n data points x₁, …, xₙ ∈ ℝᵈ hain; agar ye points kisi chhote subspace ke paas pade hain to har point ko d numbers ke bajaye k ≪ d coefficients se likh sakte hain. Labels ki zaroorat nahi, isliye ye unsupervised learning hai.",
+        "**Projection aur reconstruction**: unit vector w (‖w‖ = 1) ki direction mein point x ka projection (xᵀw)w hai aur scalar xᵀw ko score kehte hain. Reconstruction error ‖x − (xᵀw)w‖² = ‖x‖² − (xᵀw)² hai, isliye error kam karna aur projection ka square (yaani variance) badhaana ek hi problem hai.",
+        "**Centering**: pehle mean x̄ = (1/n) Σ xᵢ nikaal kar har point se ghatao. Bina centering ke pehli direction aksar sirf mean ki taraf point karti hai, spread ki taraf nahi. Is course ki convention: covariance C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ, jo d × d symmetric aur positive semi-definite hai.",
+        "**Principal directions**: unit w ke along data ka variance wᵀCw hai. Ise maximise karne par Cw = λw milta hai, yaani best direction C ka sabse bade eigenvalue wala eigenvector hai, aur us direction ka variance wahi eigenvalue λ₁ hai. Agli direction pichhli sab ke orthogonal hoti hai aur agle eigenvalue wali hoti hai.",
+        "**Variance explained**: k components rakhne par captured fraction = (λ₁ + … + λₖ) / (λ₁ + … + λ_d). Practice mein k wo sabse chhota number chuna jaata hai jisse ye fraction 90% ya 95% jaisa threshold paar kar le. Total variance = trace(C) = sab eigenvalues ka sum.",
+        "**Rank aur computation**: n centered points maximum n − 1 dimensional subspace span karte hain, isliye C ke at most n − 1 nonzero eigenvalues hote hain. Jab d ≫ n (jaise images ya gene data), d × d matrix ke bajaye n × n matrix XᵀX ka eigen-decomposition sasta padta hai; ye idea agle week kernel PCA ki neev hai.",
+        "**1/n vs 1/(n − 1)**: dono conventions mein eigenvectors same aate hain aur variance explained ka fraction bhi same; sirf eigenvalues ka scale badalta hai. Isliye directions aur percentages convention se independent hain, absolute eigenvalue nahi."
+      ],
+      "example": {
+        "problem": "Ek fictional sensor dataset ke 4 points hain: (5, 4), (−1, 2), (3, 6), (1, 0). PCA (1/n convention) se pehli principal direction, uska variance explained aur point (5, 4) ka 1-D reconstruction nikaalo.",
+        "steps": [
+          "Mean: x̄ = ((5 − 1 + 3 + 1)/4, (4 + 2 + 6 + 0)/4) = (2, 3).",
+          "Centered points: (3, 1), (−3, −1), (1, 3), (−1, −3).",
+          "C₁₁ = (9 + 9 + 1 + 1)/4 = 5, C₂₂ = 5, C₁₂ = (3 + 3 + 3 + 3)/4 = 3, to C = [[5, 3], [3, 5]].",
+          "Eigenvalues: trace 10, determinant 25 − 9 = 16, to λ² − 10λ + 16 = 0 ⇒ λ₁ = 8, λ₂ = 2. λ₁ ka eigenvector w₁ = (1, 1)/√2.",
+          "Variance explained by PC1 = 8 / (8 + 2) = 80%.",
+          "Point (5, 4): centered (3, 1), score = (3 + 1)/√2 = 2√2 ≈ 2.83, reconstruction = x̄ + score · w₁ = (2, 3) + (2, 2) = (4, 5).",
+          "**Answer**: w₁ = (1, 1)/√2, 80% variance explained, (5, 4) ka reconstruction (4, 5) aur squared error 1² + 1² = 2."
+        ],
+        "code": "pts = [(5, 4), (-1, 2), (3, 6), (1, 0)]\nn = len(pts)\nmx = sum(p[0] for p in pts) / n\nmy = sum(p[1] for p in pts) / n\nX = [(x - mx, y - my) for x, y in pts]\na = sum(x * x for x, y in X) / n\nb = sum(x * y for x, y in X) / n\nd = sum(y * y for x, y in X) / n\ntr, det = a + d, a * d - b * b\nl1 = tr / 2 + (tr * tr / 4 - det) ** 0.5\nl2 = tr - l1\nprint([[a, b], [b, d]], l1, l2, l1 / (l1 + l2))\n# [[5.0, 3.0], [3.0, 5.0]] 8.0 2.0 0.8"
+      },
+      "mistakes": [
+        "Centering bhool jaana: uncentered data par (1/n) Σ xxᵀ ka top eigenvector mean ki direction pakad leta hai. Hamesha pehle x̄ ghatao, aur reconstruction mein x̄ wapas jodo.",
+        "Eigenvalue ko 'percentage' samajh lena: λ₁ = 8 ka matlab 8% nahi. Fraction nikaalne ke liye sab eigenvalues ke sum se divide karo.",
+        "Unit vector na lena: w = (1, 1) se score 4 aayega jo galat hai. Projection ke liye w ko ‖w‖ = 1 par normalise karo, yahan (1, 1)/√2."
+      ],
+      "revision": [
+        "C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ, symmetric aur PSD.",
+        "Direction w ke along variance = wᵀCw; maximum λ₁ par, w = top eigenvector.",
+        "Variance explained (k) = (λ₁ + … + λₖ) / Σ λ.",
+        "Reconstruction error minimise karna = projected variance maximise karna.",
+        "n centered points ⇒ at most n − 1 nonzero eigenvalues."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w1-q1",
+          "question": "PCA mein covariance matrix banane se pehle data ko center (mean ghatana) kyun kiya jaata hai?",
+          "options": [
+            "Taaki har feature ki variance exactly 1 ho jaaye",
+            "Taaki principal directions data ke spread ko pakdein; bina centering ke top direction mean ki taraf jhuk jaati hai",
+            "Taaki covariance matrix ke eigenvalues negative na aayein",
+            "Taaki data ke dimensions apne aap kam ho jaayein"
+          ],
+          "answer": 1,
+          "explanation": "Variance mean ke around spread hai. Agar mean nahi ghataya, to (1/n) Σ xxᵀ ka top eigenvector mostly mean vector ki direction dikhata hai, spread ki nahi, isliye option B sahi hai. Option A ka trap: variance 1 karna standardization hai (har feature ko uske standard deviation se divide karna), centering nahi. Option C galat hai kyunki (1/n) Σ xxᵀ waise bhi PSD hai, centering ke bina bhi eigenvalues negative nahi hote.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w1-q2",
+          "question": "Ek 3-feature dataset ke covariance matrix ke eigenvalues 6, 3 aur 1 hain. Pehle do principal components total variance ka kitna hissa capture karte hain?",
+          "options": [
+            "60%",
+            "97.8%",
+            "66.7%",
+            "90%"
+          ],
+          "answer": 3,
+          "explanation": "Variance explained = (6 + 3) / (6 + 3 + 1) = 9/10 = 90%, isliye option D. Option A (60%) sirf pehla component hai. Option B eigenvalues ke squares lene se aata hai: (36 + 9)/46 ≈ 97.8%; eigenvalue khud hi variance hai, uska square nahi lena. Option C mein 6/9 liya gaya hai, jo total ke bajaye sirf pehle do ke sum se divide karna hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w1-q3",
+          "question": "Centered 2-D data ka covariance matrix C = [[4, 2], [2, 1]] hai. Pehli principal direction aur uska variance kya hai?",
+          "options": [
+            "Direction (2, 1)/√5, variance 5",
+            "Direction (1, 2)/√5, variance 5",
+            "Direction (1, 0), variance 4",
+            "Direction (1, −2)/√5, variance 0"
+          ],
+          "answer": 0,
+          "explanation": "Trace = 5, determinant = 4 − 4 = 0, to eigenvalues 5 aur 0. λ = 5 ke liye (C − 5I)v = 0 ⇒ −v₁ + 2v₂ = 0 ⇒ v = (2, 1)/√5; check: C(2, 1) = (10, 5) = 5(2, 1). Isliye option A. Option B mein components ulat gaye hain: C(1, 2) = (8, 4), jo (1, 2) ka multiple nahi. Option C sirf sabse badi diagonal entry (C₁₁ = 4) dekhta hai aur covariance term ignore karta hai. Option D doosri (zero-variance) direction hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w1-q4",
+          "question": "Ek centered point x = (3, 1) ko unit direction w = (1, 1)/√2 par project karke 1-D mein reconstruct kiya gaya. Squared reconstruction error ‖x − x̂‖² kitna hai?",
+          "options": [
+            "0",
+            "8",
+            "2",
+            "10"
+          ],
+          "answer": 2,
+          "explanation": "Score = xᵀw = (3 + 1)/√2 = 2√2. Reconstruction x̂ = (xᵀw)w = 2√2 · (1, 1)/√2 = (2, 2). Error = (3 − 2)² + (1 − 2)² = 2, isliye option C. Shortcut: ‖x‖² − (xᵀw)² = 10 − 8 = 2. Option B (8) projected part ka squared length (score²) hai, error nahi. Option D (10) poora ‖x‖² hai, jaise kuch project hi na kiya ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w1-q5",
+          "question": "Ek 5-feature dataset ke covariance eigenvalues (descending) 5.0, 2.5, 1.5, 0.6, 0.4 hain. Kam se kam 95% variance retain karne ke liye minimum kitne principal components chahiye?",
+          "options": [
+            "2",
+            "3",
+            "5",
+            "4"
+          ],
+          "answer": 3,
+          "explanation": "Total = 10. Cumulative fractions: k = 1 par 50%, k = 2 par 75%, k = 3 par 90%, k = 4 par 96%. 95% pehli baar k = 4 par paar hota hai, isliye option D. Option B (3) ka trap: 90% ko 'kaafi paas' maan lena; threshold strictly 95% hai. Option C (5) sab components rakhta hai, jo dimension reduction hi nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w1-q6",
+          "question": "Ek fictional gene-expression study mein n = 50 samples hain, har ek d = 1000 features ka. Data center karke (1/n) convention se 1000 × 1000 covariance matrix banaya. Is matrix ke maximum kitne eigenvalues nonzero ho sakte hain?",
+          "options": [
+            "49",
+            "50",
+            "1000",
+            "950"
+          ],
+          "answer": 0,
+          "explanation": "C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ, 50 rank-1 matrices ka sum hai, par centered vectors ka sum zero hai (Σ (xᵢ − x̄) = 0), isliye ve linearly dependent hain aur maximum 49 dimensional subspace span karte hain. Rank ≤ n − 1 = 49, isliye option A. Option B (50) centering se aayi ek extra dependency bhool jaata hai. Option C maan leta hai ki d × d matrix hamesha full rank hoga, jo d > n mein possible hi nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Kernels and kernel PCA",
+      "summary": "Is week aap seekhoge ki non-linear structure pakadne ke liye feature map φ kaise kaam karta hai, polynomial aur RBF kernels kya hain, kernel trick se φ bina banaye dot products kaise milte hain, aur kernel matrix ko center karke kernel PCA kaise chalta hai.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Linear PCA ki limit**: PCA sirf linear subspace dhoondhta hai. Agar data ek circle ya curve par pada hai, to koi bhi seedhi line usse achhe se represent nahi karti. Idea: pehle har point ko feature map φ: ℝᵈ → ℝᴰ se ek bade space mein le jao jahan structure linear ho jaaye, phir wahan PCA chalao.",
+        "**Feature map ka cost**: degree p ke saare monomials (constant term ke saath) ki ginti C(d + p, p) hai. d = 2, p = 2 par 6 features (1, x₁, x₂, x₁², x₂², x₁x₂), par d = 1000, p = 3 par lagbhag 1.7 × 10⁸. φ ko explicitly banana jaldi hi impractical ho jaata hai.",
+        "**Kernel function** k(x, y) = φ(x)ᵀφ(y) seedhe original space mein compute hota hai. Polynomial kernel: k(x, y) = (xᵀy + c)ᵖ (c = 0 homogeneous, c > 0 se lower-degree terms bhi aate hain). RBF/Gaussian kernel: k(x, y) = exp(−‖x − y‖²/(2σ²)); iska φ infinite-dimensional hai, phir bhi k ek number hai jo O(d) mein nikalta hai. RBF mein k(x, x) = 1 aur 0 < k ≤ 1.",
+        "**Kernel trick**: agar koi algorithm data ko sirf dot products xᵢᵀxⱼ ke through use karta hai, to har dot product ko k(xᵢ, xⱼ) se replace kar do. Saari information n × n kernel (Gram) matrix K mein aa jaati hai, Kᵢⱼ = k(xᵢ, xⱼ). Valid kernel (Mercer) ke liye K har dataset par symmetric aur PSD hona chahiye.",
+        "**PCA ko dot products mein likhna**: covariance C = (1/n) Σ φ(xᵢ)φ(xᵢ)ᵀ ka har eigenvector w data ka linear combination hai: w = Σ αᵢ φ(xᵢ). Isse problem Kα = μα (n × n eigenproblem) ban jaati hai. ‖w‖ = 1 ke liye αᵀKα = 1 chahiye, yaani unit eigenvector β ko α = β/√μ se scale karo.",
+        "**Kernel matrix centering**: feature space mein mean ghatana ho, par φ explicit nahi hai. Solution: K̃ = (I − 1ₙ)K(I − 1ₙ), jahan 1ₙ ki har entry 1/n hai. Entry-wise: K̃ᵢⱼ = Kᵢⱼ − (row i ka mean) − (column j ka mean) + (poore K ka mean). Kernel PCA hamesha K̃ par chalta hai.",
+        "**Projection**: naye ya training point x ka j-th kernel PC score Σᵢ αᵢ k(xᵢ, x) hai (centered kernel ke saath). Training point xᵢ ke liye ye (K̃α)ᵢ = μ αᵢ = √μ βᵢ ban jaata hai. Linear kernel k(x, y) = xᵀy lene par kernel PCA bilkul normal PCA ke scores deta hai."
+      ],
+      "example": {
+        "problem": "(a) x = (1, 2), y = (3, −1) ke liye polynomial kernel (xᵀy + 1)² nikaalo aur explicit feature map se check karo. (b) 1-D points 0, 1, 2 ka linear kernel matrix banao aur use center karo.",
+        "steps": [
+          "(a) xᵀy = 3 − 2 = 1, to k = (1 + 1)² = 4.",
+          "Explicit map: φ(x) = (1, √2x₁, √2x₂, x₁², x₂², √2x₁x₂). φ(1, 2) = (1, √2, 2√2, 1, 4, 2√2), φ(3, −1) = (1, 3√2, −√2, 9, 1, −3√2).",
+          "Dot product: 1 + 6 − 4 + 9 + 4 − 12 = 4. Same answer, par kernel ne 6-D vectors banaye hi nahi.",
+          "(b) Linear kernel Kᵢⱼ = xᵢxⱼ: K = [[0, 0, 0], [0, 1, 2], [0, 2, 4]].",
+          "Row means = (0, 1, 2), column means = (0, 1, 2), overall mean = 9/9 = 1.",
+          "K̃ᵢⱼ = Kᵢⱼ − rowᵢ − colⱼ + 1, jaise K̃₃₃ = 4 − 2 − 2 + 1 = 1 aur K̃₁₃ = 0 − 0 − 2 + 1 = −1.",
+          "**Answer**: k = 4, aur K̃ = [[1, 0, −1], [0, 0, 0], [−1, 0, 1]], jo centered points −1, 0, 1 ke dot products hi hain."
+        ]
+      },
+      "mistakes": [
+        "Kernel matrix ko center kiye bina eigenvectors nikaalna. Tab pehla component feature-space mean ko pakad leta hai; pehle K̃ = (I − 1ₙ)K(I − 1ₙ) banao.",
+        "α ko normalise na karna: K ka unit eigenvector β seedha use karne se w ka norm √μ ho jaata hai aur scores galat scale par aate hain. α = β/√μ lo.",
+        "Koi bhi similarity function ko kernel maan lena. Jaise (xᵀy − 1)² 1-D points 0 aur 1 par K = [[1, 1], [1, 0]] deta hai jiska determinant −1 hai, yaani PSD nahi, isliye valid kernel nahi."
+      ],
+      "revision": [
+        "k(x, y) = φ(x)ᵀφ(y); polynomial (xᵀy + c)ᵖ, RBF exp(−‖x − y‖²/(2σ²)).",
+        "Degree-p polynomial features (constant ke saath): C(d + p, p).",
+        "Kernel PCA: K̃α = μα, α = β/√μ taaki ‖w‖ = 1.",
+        "K̃ᵢⱼ = Kᵢⱼ − row mean − column mean + overall mean.",
+        "Training point ka score = √μ · βᵢ."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w2-q1",
+          "question": "RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)) mein kisi bhi point x ke liye k(x, x) ki value kya hai?",
+          "options": [
+            "0",
+            "σ²",
+            "1",
+            "‖x‖² par depend karta hai"
+          ],
+          "answer": 2,
+          "explanation": "x = y par ‖x − y‖² = 0, to k(x, x) = exp(0) = 1, chahe σ ya x kuch bhi ho, isliye option C. Har point ka feature-space norm 1 hai. Option D ka trap linear ya polynomial kernel se aata hai jahan k(x, x) = ‖x‖² ya (‖x‖² + c)ᵖ hota hai; RBF sirf distance par depend karta hai. Option A ulta hai: distance zero hone par similarity maximum hoti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w2-q2",
+          "question": "x = (1, 2) aur y = (3, −1) ke liye polynomial kernel k(x, y) = (xᵀy + 1)² ki value kya hai?",
+          "options": [
+            "4",
+            "1",
+            "36",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "xᵀy = 1·3 + 2·(−1) = 1, to k = (1 + 1)² = 4, isliye option A. Option B (1) homogeneous kernel (xᵀy)² hai, yaani +1 bhool gaye. Option C (36) tab aata hai jab −1 ka sign ignore karke xᵀy = 5 le liya. Option D (2) mein square hi nahi kiya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w2-q3",
+          "question": "x ∈ ℝ² ke liye kernel k(x, y) = (xᵀy + 1)³ kis dimension ke feature space ke dot product ke barabar hai (sab monomials degree ≤ 3, constant ke saath)?",
+          "options": [
+            "3",
+            "8",
+            "4",
+            "10"
+          ],
+          "answer": 3,
+          "explanation": "c > 0 hone se degree 0 se 3 tak ke saare monomials aate hain: count = C(d + p, p) = C(5, 3) = 10 (1 constant, 2 linear, 3 quadratic, 4 cubic). Isliye option D. Option C (4) sirf degree-3 monomials hain, jo homogeneous kernel (xᵀy)³ ka dimension hai. Option B (8) 2³ ordered products ginta hai jisme x₁x₂ aur x₂x₁ jaise duplicate shaamil hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w2-q4",
+          "question": "RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)) σ = 1 ke saath hai. x = (1, 2) aur y = (2, 0) ke liye k(x, y) lagbhag kitna hai?",
+          "options": [
+            "0.0067",
+            "0.082",
+            "0.327",
+            "0.287"
+          ],
+          "answer": 1,
+          "explanation": "‖x − y‖² = (1 − 2)² + (2 − 0)² = 1 + 4 = 5. k = exp(−5/2) = exp(−2.5) ≈ 0.082, isliye option B. Option A exp(−5) hai, yaani 2σ² wala factor 2 bhool gaye. Option C mein squared distance ki jagah distance √5 use hua. Option D mein 2σ² ko (2σ)² = 4 padh liya gaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w2-q5",
+          "question": "1-D points 0, 1, 2 ka linear kernel matrix K = [[0, 0, 0], [0, 1, 2], [0, 2, 4]] hai. Centered kernel K̃ = (I − 1ₙ)K(I − 1ₙ) ki (3, 3) entry kya hai?",
+          "options": [
+            "1",
+            "3",
+            "2",
+            "4"
+          ],
+          "answer": 0,
+          "explanation": "K̃₃₃ = K₃₃ − (row 3 mean) − (column 3 mean) + (overall mean) = 4 − 2 − 2 + 1 = 1, isliye option A. Check: centered points −1, 0, 1 hain aur 1·1 = 1. Option B (3) sirf overall mean ghatata hai. Option C (2) sirf row mean ghatata hai, jo one-sided centering hai. Option D (4) bina centering ki entry hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w2-q6",
+          "question": "Kernel PCA mein centered kernel matrix K̃ ka sabse bada eigenvalue μ = 4 hai, unit eigenvector β = (1/√2, 0, −1/√2) ke saath. Coefficients α ko is tarah scale kiya gaya hai ki feature-space direction w = Σ αᵢ φ(xᵢ) ka norm 1 ho. Training point x₁ ka is component par score (projection) kya hai?",
+          "options": [
+            "0.354",
+            "2.828",
+            "1.414",
+            "0.707"
+          ],
+          "answer": 2,
+          "explanation": "‖w‖² = αᵀK̃α = 1 ke liye α = β/√μ = β/2. Score of x₁ = Σⱼ αⱼ K̃₁ⱼ = (K̃α)₁ = μα₁ = √μ β₁ = 2 · (1/√2) = √2 ≈ 1.414, isliye option C. Option A (0.354) sirf α₁ hai, K̃ se multiply kiye bina. Option B (2.828) μβ₁ hai, yaani β ko normalise kiye bina use kiya. Option D (0.707) β₁ khud hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Clustering with k-means",
+      "summary": "Is week aap seekhoge ki k-means clustering ka objective kya hai, Lloyd's algorithm assignment aur update steps se use kaise ghatata hai, initialisation (k-means++) kyun matter karta hai, aur kernel k-means non-convex clusters kaise pakadta hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Clustering problem**: n points ko k groups mein baantna hai, bina labels ke, taaki ek group ke points aapas mein paas hon. k-means har cluster ko ek centroid (mean) μₖ se represent karta hai aur har point zᵢ ∈ {1, …, k} ek cluster ko assign hota hai.",
+        "**Objective (within-cluster sum of squares)**: J(z, μ) = Σᵢ ‖xᵢ − μ_zᵢ‖². Saare possible assignments try karna kⁿ options hain (NP-hard problem), isliye hum ek local search algorithm use karte hain.",
+        "**Lloyd's algorithm**: (1) Assignment step: har point ko nearest centroid do, zᵢ = argminₖ ‖xᵢ − μₖ‖². (2) Update step: har centroid ko apne points ka mean bana do, μₖ = (1/|Cₖ|) Σ_{i ∈ Cₖ} xᵢ. Jab tak assignments badalna band na ho, dohraate raho.",
+        "**Convergence**: dono steps J ko kabhi badhaate nahi (assignment step fixed μ par best z chunta hai, update step fixed z par mean hi squared error minimise karta hai). Assignments finite hain aur koi repeat nahi hota (agar J strictly ghatta hai), isliye algorithm finite steps mein rukta hai, par sirf local minimum par, global ki guarantee nahi.",
+        "**Initialisation aur k-means++**: alag initial centroids alag final clusterings de sakte hain. k-means++ pehla centre random point chunta hai, phir har agla centre point x ko probability ∝ D(x)² se, jahan D(x) = sabse paas wale chune hue centre ki distance. Isse centres door-door bikharte hain; practice mein kai random restarts karke sabse kam J wala result lete hain.",
+        "**k choose karna**: k badhaane se J hamesha ghatta hai (k = n par J = 0), isliye sirf J dekh kar k nahi chun sakte. Elbow method (J vs k ka 'mod') ya silhouette score jaise criteria use hote hain, aur domain knowledge bhi.",
+        "**Limitations aur kernel k-means**: k-means Voronoi (linear) boundaries banata hai, isliye concentric circles jaise non-convex clusters nahi pakadta, aur outliers se mean khinch jaata hai. Kernel k-means distance ko sirf kernel values se likhta hai: ‖φ(x) − μ_C‖² = k(x, x) − (2/|C|) Σ_{j ∈ C} k(x, xⱼ) + (1/|C|²) Σ_{i, j ∈ C} k(xᵢ, xⱼ), isliye φ explicit banaye bina feature space mein clustering ho jaati hai."
+      ],
+      "example": {
+        "problem": "Fictional delivery locations: A(1, 1), B(2, 1), C(1, 2), D(5, 4), E(6, 5), F(4, 5). k = 2, initial centroids μ₁ = A = (1, 1), μ₂ = B = (2, 1). Lloyd's algorithm chala kar final clusters aur objective J nikaalo.",
+        "steps": [
+          "Iteration 1, assignment: C ke liye d² = 1 (μ₁) vs 2 (μ₂) ⇒ μ₁. D ke liye 25 vs 18 ⇒ μ₂. E, F bhi μ₂. Clusters: {A, C} aur {B, D, E, F}.",
+          "Update: μ₁ = (1, 1.5), μ₂ = ((2 + 5 + 6 + 4)/4, (1 + 4 + 5 + 5)/4) = (4.25, 3.75). Is assignment par J = 20.",
+          "Iteration 2, assignment: B ke liye d² = 1 + 0.25 = 1.25 (μ₁) vs 5.0625 + 7.5625 = 12.625 (μ₂) ⇒ B μ₁ mein chala gaya. Baaki same.",
+          "Update: μ₁ = mean(A, B, C) = (4/3, 4/3) ≈ (1.33, 1.33), μ₂ = mean(D, E, F) = (5, 14/3) ≈ (5, 4.67).",
+          "Iteration 3: koi assignment nahi badla ⇒ converged.",
+          "J = cluster 1 (4/3) + cluster 2 (8/3) = 4.",
+          "**Answer**: clusters {A, B, C} aur {D, E, F}, centroids ≈ (1.33, 1.33) aur (5, 4.67), J = 4. Bura initialisation (dono centres ek hi group mein) bhi yahan 2 iterations mein theek ho gaya, par har baar aisa nahi hota."
+        ],
+        "code": "pts = [(1, 1), (2, 1), (1, 2), (5, 4), (6, 5), (4, 5)]\nmus = [(1, 1), (2, 1)]\n\ndef d2(p, q):\n    return (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2\n\nwhile True:\n    z = [min(range(len(mus)), key=lambda k: d2(p, mus[k])) for p in pts]\n    new = []\n    for k in range(len(mus)):\n        mem = [p for p, c in zip(pts, z) if c == k]\n        new.append((sum(p[0] for p in mem) / len(mem), sum(p[1] for p in mem) / len(mem)))\n    if new == mus:\n        break\n    mus = new\nsse = sum(d2(p, mus[c]) for p, c in zip(pts, z))\nprint(z, [(round(a, 2), round(b, 2)) for a, b in mus], round(sse, 2))\n# [0, 0, 0, 1, 1, 1] [(1.33, 1.33), (5.0, 4.67)] 4.0"
+      },
+      "mistakes": [
+        "Sochna ki Lloyd's algorithm global optimum deta hai. Ye sirf local minimum deta hai; kai initialisations (ya k-means++) chala kar sabse kam J wala result lo.",
+        "Features scale kiye bina k-means chalana. Agar ek feature rupees mein (lakhs) aur doosra years mein hai, to distance poora rupees wala feature decide karega; pehle standardise karo.",
+        "k chunne ke liye sabse kam J wala k lena. J k ke saath hamesha ghatta hai, isliye elbow ya silhouette jaisa criterion chahiye."
+      ],
+      "revision": [
+        "J = Σ ‖xᵢ − μ_zᵢ‖²; Lloyd's: assign to nearest, phir mean update.",
+        "J kabhi nahi badhta; finite steps mein local minimum.",
+        "k-means++: agla centre probability ∝ D(x)².",
+        "k badhao to J ghatega; k = n par J = 0.",
+        "Kernel k-means: ‖φ(x) − μ_C‖² sirf kernel values se."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w3-q1",
+          "question": "Lloyd's algorithm (k-means) ke baare mein kaunsa statement sahi hai?",
+          "options": [
+            "Har assignment aur update step objective J ko kabhi badhaata nahi, aur algorithm finite steps mein ek local minimum par ruk jaata hai",
+            "Algorithm hamesha J ka global minimum deta hai, chahe initialisation kuch bhi ho",
+            "Update step mein J badh sakta hai, sirf assignment step use ghatata hai",
+            "Algorithm sirf k = 2 ke liye converge karta hai"
+          ],
+          "answer": 0,
+          "explanation": "Assignment step fixed centroids par har point ka best cluster chunta hai aur update step fixed clusters par mean leta hai, jo squared distance ka exact minimiser hai; dono J ko non-increasing rakhte hain, aur assignments finite hain, isliye option A sahi hai. Option B sabse common trap hai: convergence ki guarantee local minimum tak hai, global tak nahi, isliye initialisation matter karta hai. Option C galat hai kyunki mean hi squared error ka minimiser hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w3-q2",
+          "question": "Assignment step ke baad ek cluster mein points (1, 2), (3, 4) aur (5, 0) hain. Update step ke baad iska naya centroid kya hoga?",
+          "options": [
+            "(3, 3)",
+            "(9, 6)",
+            "(3, 2)",
+            "(4.5, 3)"
+          ],
+          "answer": 2,
+          "explanation": "Centroid = mean = ((1 + 3 + 5)/3, (2 + 4 + 0)/3) = (9/3, 6/3) = (3, 2), isliye option C. Option B sirf sum hai, 3 se divide karna bhool gaye. Option D 2 se divide karta hai (galat count). Option A mein y-coordinate ka 0 ignore karke (2 + 4)/2 = 3 liya gaya hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w3-q3",
+          "question": "1-D points 0, 1, 3, 6 par k-means++ chal raha hai aur pehla centre 0 chuna gaya. Doosre centre ke roop mein point 6 ke chune jaane ki probability kya hai?",
+          "options": [
+            "0.25",
+            "0.783",
+            "0.6",
+            "0.196"
+          ],
+          "answer": 1,
+          "explanation": "Har point ki nearest centre (0) se distance D = 0, 1, 3, 6, to D² = 0, 1, 9, 36, sum = 46. P(6) = 36/46 ≈ 0.783, isliye option B. Option C (0.6) distance ke proportional hai (6/10), squared distance ke nahi. Option A (0.25) uniform random choice hai, jo plain random initialisation hai. Option D point 3 ki probability (9/46) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w3-q4",
+          "question": "k = 2 clustering: cluster 1 = {(0, 0), (2, 0), (1, 3)}, cluster 2 = {(6, 6), (8, 6)}, aur har centroid apne cluster ka mean hai. k-means objective J (within-cluster sum of squared distances) kitna hai?",
+          "options": [
+            "8",
+            "2",
+            "6.83",
+            "10"
+          ],
+          "answer": 3,
+          "explanation": "Cluster 1 ka mean (1, 1): squared distances 2, 2, 4 ⇒ 8. Cluster 2 ka mean (7, 6): squared distances 1, 1 ⇒ 2. J = 8 + 2 = 10, isliye option D. Option C (≈ 6.83) squared ke bajaye plain distances (√2 + √2 + 2 + 1 + 1) ka sum hai. Options A aur B sirf ek-ek cluster ka contribution hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w3-q5",
+          "question": "Kernel k-means mein cluster C = {a, b} hai. Kernel values: k(x, x) = 1, k(x, a) = 0.5, k(x, b) = 0.3, k(a, a) = k(b, b) = 1, k(a, b) = 0.4. Feature space mein ‖φ(x) − μ_C‖² kitna hai?",
+          "options": [
+            "0.2",
+            "0.9",
+            "1.6",
+            "0.7"
+          ],
+          "answer": 1,
+          "explanation": "‖φ(x) − μ_C‖² = k(x, x) − (2/|C|) Σ k(x, xⱼ) + (1/|C|²) Σᵢ Σⱼ k(xᵢ, xⱼ) = 1 − (2/2)(0.5 + 0.3) + (1/4)(1 + 1 + 0.4 + 0.4) = 1 − 0.8 + 0.7 = 0.9, isliye option B. Option A (0.2) teesra term (centroid ka apna norm²) bhool jaata hai. Option C (1.6) teesre term mein 1/|C|² ki jagah 1/|C| leta hai. Option D (0.7) double sum mein k(a, b) aur k(b, a) cross terms chhod deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w3-q6",
+          "question": "1-D points 1, 2, 3, 8, 9, 20 par k = 2 Lloyd's algorithm initial centroids 1 aur 2 se convergence tak chalaya. Final centroids kya honge?",
+          "options": [
+            "1 aur 8.4",
+            "4.6 aur 20",
+            "2 aur 12.33",
+            "2 aur 8.5"
+          ],
+          "answer": 2,
+          "explanation": "Iteration 1: sirf 1 centroid 1 ke paas hai, baaki 2, 3, 8, 9, 20 centroid 2 ke ⇒ update 1 aur (2 + 3 + 8 + 9 + 20)/5 = 8.4. Iteration 2: 1, 2, 3 centroid 1 ke paas (3 ke liye 4 vs 29.16), 8, 9, 20 centroid 8.4 ke ⇒ update 2 aur 37/3 ≈ 12.33. Iteration 3: assignments same ⇒ converged, isliye option C. Option A ek iteration ke baad ruk jaata hai. Option B ek alag local minimum hai (initial centroids 1 aur 20 se milta hai, J = 53.2 vs yahan 90.67), jo dikhata hai ki result initialisation par depend karta hai, par is run mein wahan nahi pahunchte. Option D outlier 20 ko ignore karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Estimation, mixture models and EM",
+      "summary": "Is week aap seekhoge ki maximum likelihood aur Bayesian estimation (prior, posterior, conjugacy, MAP) parameters kaise estimate karte hain, aur Gaussian mixture model ko EM algorithm ke E-step aur M-step se kaise fit karte hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Maximum likelihood estimation (MLE)**: i.i.d. data x₁, …, xₙ ke liye parameter θ wo chuno jo likelihood L(θ) = Π p(xᵢ; θ) ya log-likelihood ℓ(θ) = Σ log p(xᵢ; θ) ko maximise kare. Bernoulli: θ̂ = (successes)/n. Gaussian: μ̂ = sample mean, σ̂² = (1/n) Σ (xᵢ − μ̂)² (n se divide, n − 1 se nahi, isliye ye thoda biased hai).",
+        "**Bayesian estimation**: θ ko random variable maano jiska prior p(θ) hai. Data ke baad posterior p(θ | data) ∝ p(data | θ) · p(θ). Output ek poori distribution hai, sirf ek number nahi; isse uncertainty bhi pata chalti hai, aur kam data par prior estimate ko extreme hone se rokta hai.",
+        "**Conjugate prior**: jab posterior prior wali family mein hi rahe. Bernoulli likelihood + Beta(α, β) prior ⇒ h successes aur t failures ke baad posterior Beta(α + h, β + t). Prior ke α − 1, β − 1 ko 'pseudo-counts' ki tarah socho. Gaussian mean (known variance) ke liye Gaussian prior conjugate hai.",
+        "**Point estimates from posterior**: posterior mean (Beta ke liye α/(α + β)) aur MAP = posterior ka mode (Beta ke liye (α − 1)/(α + β − 2), jab α, β > 1). Uniform prior Beta(1, 1) par MAP = MLE. Data badhne par teeno estimates paas aa jaate hain.",
+        "**Gaussian mixture model (GMM)**: p(x) = Σₖ πₖ N(x; μₖ, Σₖ), πₖ ≥ 0, Σ πₖ = 1. Generative story: pehle latent cluster z ~ Categorical(π) chuno, phir x ~ N(μ_z, Σ_z). k-means ke hard assignment ke bajaye GMM har point ko har cluster mein ek probability deta hai (soft clustering), aur clusters elliptical aur alag size ke ho sakte hain.",
+        "**EM algorithm**: log-likelihood mein log ke andar sum hone se closed form nahi milta. E-step: responsibilities rᵢₖ = πₖ N(xᵢ; μₖ, Σₖ) / Σⱼ πⱼ N(xᵢ; μⱼ, Σⱼ). M-step: Nₖ = Σᵢ rᵢₖ, πₖ = Nₖ/n, μₖ = (1/Nₖ) Σ rᵢₖ xᵢ, Σₖ = (1/Nₖ) Σ rᵢₖ (xᵢ − μₖ)(xᵢ − μₖ)ᵀ. Har iteration log-likelihood ko kabhi ghatati nahi, par local maximum par ruk sakti hai.",
+        "**k-means se rishta**: agar sab components ka covariance σ²I ho aur σ → 0, to responsibilities 0 ya 1 ban jaati hain aur EM bilkul Lloyd's algorithm jaisa ho jaata hai. Practice mein GMM ko aksar k-means ke result se initialise karte hain."
+      ],
+      "example": {
+        "problem": "1-D data 0, 2, 3, 6 par 2-component GMM. Initial values: π₁ = π₂ = 0.5, μ₁ = 1, μ₂ = 5, dono σ = 2 (fixed rakho). Ek EM iteration chala kar responsibilities, naye π₁, μ₁, μ₂ aur log-likelihood ka badlav nikaalo.",
+        "steps": [
+          "Equal π aur σ hone se rᵢ₁ = 1 / (1 + exp(−[(xᵢ − 5)² − (xᵢ − 1)²]/8)); normalising constants cancel ho jaate hain.",
+          "E-step: x = 0 par exponent (25 − 1)/8 = 3 ⇒ r = 0.953; x = 2 par (9 − 1)/8 = 1 ⇒ r = 0.731; x = 3 par 0 ⇒ r = 0.5; x = 6 par −3 ⇒ r = 0.047.",
+          "N₁ = 0.953 + 0.731 + 0.5 + 0.047 = 2.231, N₂ = 4 − 2.231 = 1.769, to π₁ = 2.231/4 ≈ 0.558.",
+          "μ₁ = (0·0.953 + 2·0.731 + 3·0.5 + 6·0.047)/2.231 = 3.247/2.231 ≈ 1.455.",
+          "μ₂ = (0·0.047 + 2·0.269 + 3·0.5 + 6·0.953)/1.769 ≈ 4.383.",
+          "Log-likelihood −8.992 se badh kar −8.779 ho gaya, jaisa EM guarantee karta hai.",
+          "**Answer**: responsibilities (0.953, 0.731, 0.5, 0.047), π₁ ≈ 0.558, μ₁ ≈ 1.455, μ₂ ≈ 4.383. Point 3 dono clusters mein aadha-aadha baata gaya; k-means ise kisi ek mein daal deta."
+        ]
+      },
+      "mistakes": [
+        "M-step mein weighted mean ko n se divide karna. Cluster k ka mean Σ rᵢₖ xᵢ / Nₖ hai, jahan Nₖ = Σ rᵢₖ; n se divide sirf πₖ = Nₖ/n mein hota hai.",
+        "Responsibility nikaalte waqt prior πₖ ya Gaussian ka normalising factor 1/σ bhool jaana. Alag variance wale components mein 1/σ cancel nahi hota aur answer badal jaata hai.",
+        "MAP aur posterior mean ko same samajhna. Beta(11, 5) ka mean 11/16 = 0.6875 hai par mode (MAP) 10/14 ≈ 0.714 hai."
+      ],
+      "revision": [
+        "MLE: Bernoulli θ̂ = h/n; Gaussian σ̂² mein 1/n.",
+        "Beta(α, β) + h successes, t failures ⇒ Beta(α + h, β + t).",
+        "Beta mean α/(α + β), MAP (α − 1)/(α + β − 2).",
+        "E-step: rᵢₖ ∝ πₖ N(xᵢ; μₖ, Σₖ); M-step: πₖ = Nₖ/n, μₖ = Σ rᵢₖ xᵢ / Nₖ.",
+        "EM log-likelihood ko kabhi ghatata nahi; local optimum possible."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w4-q1",
+          "question": "Data 2, 4, 6 ko Gaussian maan kar variance σ² ka maximum likelihood estimate kya hai?",
+          "options": [
+            "4",
+            "1.63",
+            "8",
+            "2.67"
+          ],
+          "answer": 3,
+          "explanation": "μ̂ = 4. MLE σ̂² = (1/n) Σ (xᵢ − μ̂)² = (4 + 0 + 4)/3 = 8/3 ≈ 2.67, isliye option D. Option A (4) n − 1 = 2 se divide karta hai; ye unbiased sample variance hai, MLE nahi. Option B (1.63) standard deviation √(8/3) hai, variance nahi. Option C (8) sirf squared deviations ka sum hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w4-q2",
+          "question": "Ek click-through probability θ par prior Beta(2, 2) hai. 10 impressions mein 7 clicks aur 3 non-clicks aaye (Bernoulli likelihood). Posterior distribution kya hai?",
+          "options": [
+            "Beta(7, 3)",
+            "Beta(9, 5)",
+            "Beta(5, 9)",
+            "Beta(9, 12)"
+          ],
+          "answer": 1,
+          "explanation": "Beta prior Bernoulli likelihood ke liye conjugate hai: Beta(α + h, β + t) = Beta(2 + 7, 2 + 3) = Beta(9, 5), isliye option B. Option C mein clicks aur non-clicks ulte jode gaye. Option A prior ko bilkul ignore karta hai. Option D β mein total trials (10) jodta hai, sirf failures (3) nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w4-q3",
+          "question": "Prior Beta(3, 3) hai aur 10 Bernoulli trials mein 8 successes aaye. θ ka MAP estimate kya hai?",
+          "options": [
+            "0.8",
+            "0.6875",
+            "0.714",
+            "0.786"
+          ],
+          "answer": 2,
+          "explanation": "Posterior Beta(3 + 8, 3 + 2) = Beta(11, 5). MAP = mode = (α − 1)/(α + β − 2) = 10/14 ≈ 0.714, isliye option C. Option B (11/16 = 0.6875) posterior mean hai, mode nahi. Option A (0.8) MLE hai jo prior ignore karta hai. Option D (11/14) formula mein numerator ka −1 bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w4-q4",
+          "question": "1-D GMM ke do components hain: π₁ = 0.2, μ₁ = 0, σ₁ = 1 aur π₂ = 0.8, μ₂ = 3, σ₂ = 1. Point x = 1.5 ke liye component 1 ki responsibility r₁ kya hai?",
+          "options": [
+            "0.2",
+            "0.5",
+            "0.8",
+            "0.25"
+          ],
+          "answer": 0,
+          "explanation": "x = 1.5 dono means se barabar door hai aur σ same hai, to N(1.5; 0, 1) = N(1.5; 3, 1). Isliye r₁ = 0.2·N / (0.2·N + 0.8·N) = 0.2, option A. Option B ka trap: sirf distance dekh kar 0.5 bol dena aur mixing weights ignore karna. Option D (0.25) ratio π₁/π₂ hai, normalised probability nahi. Option C component 2 ki responsibility hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w4-q5",
+          "question": "Data 0, 2, 6 par E-step ke baad component 1 ki responsibilities (1, 0.5, 0) aayi. M-step mein μ₁ aur π₁ kya honge?",
+          "options": [
+            "μ₁ = 0.333, π₁ = 0.5",
+            "μ₁ = 1, π₁ = 0.5",
+            "μ₁ = 0.667, π₁ = 0.5",
+            "μ₁ = 0.667, π₁ = 1.5"
+          ],
+          "answer": 2,
+          "explanation": "N₁ = 1 + 0.5 + 0 = 1.5. μ₁ = (1·0 + 0.5·2 + 0·6)/1.5 = 1/1.5 ≈ 0.667 aur π₁ = N₁/n = 1.5/3 = 0.5, isliye option C. Option A weighted sum ko N₁ ke bajaye n = 3 se divide karta hai. Option B un points ka simple average (0 + 2)/2 leta hai jinki responsibility nonzero hai, weights ignore karke. Option D mein π₁ ko n se divide nahi kiya, jo probability ho hi nahi sakta (> 1).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w4-q6",
+          "question": "1-D GMM: π₁ = π₂ = 0.5, dono means 0, par σ₁ = 1 aur σ₂ = 2. Point x = 2 ke liye component 1 ki responsibility r₁ lagbhag kitni hai?",
+          "options": [
+            "0.5",
+            "0.309",
+            "0.667",
+            "0.182"
+          ],
+          "answer": 1,
+          "explanation": "N(2; 0, 1) = e^(−2)/√(2π) ≈ 0.1353/√(2π) aur N(2; 0, 2) = e^(−0.5)/(2√(2π)) ≈ 0.3033/√(2π). r₁ = 0.1353/(0.1353 + 0.3033) ≈ 0.309, isliye option B. Wider component tails mein jeet jaata hai. Option A ka trap: same means dekh kar 0.5 bol dena. Option D (0.182) Gaussian ka 1/σ normalising factor bhool jaata hai, jo alag σ par cancel nahi hota. Option C (2/3) x = 0 par sahi hota, x = 2 par nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Linear regression by least squares",
+      "summary": "Is week aap seekhoge ki supervised regression mein least squares objective kaise banta hai, normal equations se closed-form solution kaise milta hai, iska geometric meaning (projection) kya hai, aur Gaussian noise maan kar MLE wahi solution kyun deta hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Supervised regression setup**: data (xᵢ, yᵢ), xᵢ ∈ ℝᵈ, yᵢ ∈ ℝ. Linear model ŷ = wᵀx; intercept ke liye har x mein ek constant feature 1 jod do. Saare inputs ko n × d design matrix X ki rows mein rakho, targets ko vector y mein.",
+        "**Least squares objective**: J(w) = Σ (yᵢ − wᵀxᵢ)² = ‖y − Xw‖². Gradient ∇J = −2Xᵀ(y − Xw) = 0 se **normal equations** XᵀXw = Xᵀy milte hain. XᵀX invertible ho to ŵ = (XᵀX)⁻¹Xᵀy. J convex hai, isliye ye global minimum hai.",
+        "**Geometric view**: Xw ki saari possible values X ke column space ka subspace banaati hain. ŷ = Xŵ is subspace par y ka orthogonal projection hai, H = X(XᵀX)⁻¹Xᵀ projection (hat) matrix hai. Residual r = y − ŷ har column ke orthogonal hota hai: Xᵀr = 0. Intercept column hone par isi se Σ rᵢ = 0 milta hai.",
+        "**Probabilistic view**: maan lo yᵢ = wᵀxᵢ + εᵢ, εᵢ ~ N(0, σ²) i.i.d. Log-likelihood = −(n/2) log(2πσ²) − (1/(2σ²)) Σ (yᵢ − wᵀxᵢ)². w ke liye maximise karna squared error minimise karne ke barabar hai, isliye ŵ_MLE = ŵ_LS, chahe σ² kuch bhi ho. Phir σ̂² = (1/n) Σ rᵢ² (MLE).",
+        "**Kab unique solution nahi**: agar features linearly dependent hain (jaise ek column doosre ka multiple) ya d > n, to XᵀX singular hai. Tab infinitely many w same minimum error dete hain, par projection ŷ unique rehta hai. Pseudo-inverse X⁺y minimum-norm solution chunta hai; agle week ka ridge bhi isko theek karta hai.",
+        "**Computation**: (XᵀX)⁻¹ ka cost lagbhag O(nd² + d³). Bade d ke liye gradient descent w ← w + η Xᵀ(y − Xw) (factor 2 learning rate mein absorb) ya stochastic gradient descent use hota hai. Numerically, inverse ke bajaye linear system solve karna (QR/Cholesky) behtar hai."
+      ],
+      "example": {
+        "problem": "Fictional data: ad spend x (₹ lakh) = 1, 2, 3 aur sales y (₹ lakh) = 2, 3, 5. Intercept ke saath least squares line fit karo, residuals check karo aur x = 4 par prediction nikaalo.",
+        "steps": [
+          "Design matrix rows: (1, 1), (1, 2), (1, 3). XᵀX = [[3, 6], [6, 14]], Xᵀy = (10, 23).",
+          "det(XᵀX) = 42 − 36 = 6, (XᵀX)⁻¹ = (1/6)[[14, −6], [−6, 3]].",
+          "ŵ = (1/6)(14·10 − 6·23, −6·10 + 3·23) = (1/6)(2, 9) = (1/3, 3/2). Line: ŷ = 0.333 + 1.5x.",
+          "Predictions: 1.833, 3.333, 4.833. Residuals: 1/6, −1/3, 1/6.",
+          "Check: Σ r = 0 (intercept column ke orthogonal) aur Σ xᵢrᵢ = 1/6 − 2/3 + 1/2 = 0 (x column ke orthogonal).",
+          "SSE = 1/36 + 1/9 + 1/36 = 1/6; MLE noise variance σ̂² = (1/6)/3 = 1/18 ≈ 0.056.",
+          "**Answer**: ŷ = 1/3 + 1.5x; x = 4 par ŷ = 1/3 + 6 = 19/3 ≈ 6.33 lakh."
+        ]
+      },
+      "mistakes": [
+        "Intercept column bhool jaana. Tab line origin se guzarne par majboor hoti hai aur slope galat aata hai (yahan 23/14 ≈ 1.643 vs 1.5).",
+        "(XᵀX)⁻¹ ko element-wise inverse samajhna ya Xᵀy se multiply karne ki jagah divide karna. 2 × 2 inverse = (1/det)[[d, −b], [−c, a]].",
+        "σ² MLE mein n − 1 ya n − d se divide karna. MLE n se divide karta hai; n − d wala unbiased estimate alag cheez hai."
+      ],
+      "revision": [
+        "Normal equations: XᵀXw = Xᵀy; ŵ = (XᵀX)⁻¹Xᵀy.",
+        "ŷ = projection of y on column space of X; Xᵀ(y − ŷ) = 0.",
+        "Gaussian noise ⇒ MLE = least squares; σ̂² = SSE/n.",
+        "XᵀX singular ⇒ infinitely many ŵ, par ŷ unique.",
+        "Without intercept: ŵ = Σxᵢyᵢ / Σxᵢ² (1-D)."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w5-q1",
+          "question": "Least squares fit ŵ ke residual vector r = y − Xŵ ke baare mein kaunsa statement hamesha sahi hai?",
+          "options": [
+            "r = 0, yaani training data par error hamesha zero hota hai",
+            "Xᵀr = 0, yaani r design matrix ke har column ke orthogonal hai",
+            "r prediction vector ŷ ke parallel hota hai",
+            "‖r‖ = ‖y‖ hota hai"
+          ],
+          "answer": 1,
+          "explanation": "Normal equations XᵀXŵ = Xᵀy ko likho Xᵀ(y − Xŵ) = 0, yaani Xᵀr = 0, isliye option B. Geometric matlab: ŷ column space par projection hai aur residual us space ke perpendicular hai. Option A sirf tab sahi hai jab y column space mein ho (perfect fit), hamesha nahi. Option C ulta hai: r aur ŷ orthogonal hain (ŷ column space mein hai), parallel nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w5-q2",
+          "question": "Model yᵢ = wᵀxᵢ + εᵢ mein εᵢ i.i.d. N(0, σ²) hai. w ka maximum likelihood estimate kya karta hai?",
+          "options": [
+            "Squared errors ka sum Σ (yᵢ − wᵀxᵢ)² minimise karta hai",
+            "Absolute errors ka sum Σ |yᵢ − wᵀxᵢ| minimise karta hai",
+            "Sabse bada error maxᵢ |yᵢ − wᵀxᵢ| minimise karta hai",
+            "σ² ki value par depend karta hai, alag σ² par alag ŵ milta hai"
+          ],
+          "answer": 0,
+          "explanation": "Gaussian log-likelihood mein w sirf −(1/(2σ²)) Σ (yᵢ − wᵀxᵢ)² term mein aata hai; σ² ek positive constant factor hai, isliye maximiser wahi hai jo squared error minimise kare, option A. Option B tab hota jab noise Laplace distribution ka hota. Option D ka trap: σ² sirf objective ko scale karta hai, minimiser nahi badalta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w5-q3",
+          "question": "Data x = 1, 2, 3 aur y = 2, 3, 5 par bina intercept ka model ŷ = wx least squares se fit kiya. ŵ kitna hai?",
+          "options": [
+            "1.5",
+            "1.667",
+            "0.609",
+            "1.643"
+          ],
+          "answer": 3,
+          "explanation": "Bina intercept: ŵ = Σxᵢyᵢ / Σxᵢ² = (2 + 6 + 15)/(1 + 4 + 9) = 23/14 ≈ 1.643, isliye option D. Option A (1.5) intercept wale model ka slope hai; intercept hatane par slope badal jaata hai. Option B ȳ/x̄ = 3.333/2 hai, jo least squares nahi. Option C fraction ulta (14/23) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w5-q4",
+          "question": "Ek regression problem mein XᵀX = [[2, 1], [1, 2]] aur Xᵀy = (4, 5) hai. Least squares solution ŵ kya hai?",
+          "options": [
+            "(2, 2.5)",
+            "(13, 14)",
+            "(1, 2)",
+            "(2, 1)"
+          ],
+          "answer": 2,
+          "explanation": "(XᵀX)⁻¹ = (1/3)[[2, −1], [−1, 2]] (det = 3). ŵ = (1/3)(8 − 5, −4 + 10) = (1/3)(3, 6) = (1, 2), isliye option C. Check: [[2, 1], [1, 2]](1, 2) = (4, 5). Option A sirf diagonal se divide karta hai aur off-diagonal coupling ignore karta hai. Option B mein inverse ki jagah XᵀX se hi multiply kar diya. Option D sahi numbers ulte order mein hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w5-q5",
+          "question": "Gaussian noise model ke saath linear regression fit karne par 3 training points ke residuals 0.5, −1, 0.5 aaye. Noise variance σ² ka MLE kya hai?",
+          "options": [
+            "0.5",
+            "0.75",
+            "1.5",
+            "0"
+          ],
+          "answer": 0,
+          "explanation": "SSE = 0.25 + 1 + 0.25 = 1.5. MLE σ̂² = SSE/n = 1.5/3 = 0.5, isliye option A. Option B (0.75) n − 1 = 2 se divide karta hai, jo MLE nahi. Option C sirf SSE hai. Option D residuals ka mean hai (jo intercept hone par hamesha 0 hota hai), variance nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w5-q6",
+          "question": "Ek fictional pricing dataset mein n = 100 rows hain, intercept ke saath do features x₁ aur x₂, jahan galti se x₂ = 2x₁ har row mein hai. Least squares ke baare mein kya sahi hai?",
+          "options": [
+            "XᵀX invertible hai, isliye ŵ unique hai",
+            "Koi bhi w squared error ka minimum nahi deta, isliye solution exist hi nahi karta",
+            "ŵ unique hai, par alag solvers alag predictions ŷ dete hain",
+            "XᵀX singular hai, infinitely many w same minimum error dete hain, aur sabka prediction vector ŷ same hai"
+          ],
+          "answer": 3,
+          "explanation": "x₂ = 2x₁ se X ke columns linearly dependent hain, rank < 3, to XᵀX singular hai. Normal equations ke infinitely many solutions hain (w₁ + 2w₂ fixed rakh kar w₁, w₂ badal sakte ho), par ŷ column space par y ka projection hai jo unique hai; isliye option D. Option B galat hai kyunki convex quadratic ka minimum hamesha exist karta hai, bas unique nahi. Option C ulta hai: w non-unique hai, ŷ unique.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Regularisation: ridge, LASSO and model selection",
+      "summary": "Is week aap seekhoge ki overfitting rokne ke liye ridge (L2) aur LASSO (L1) penalty kaise kaam karti hain, ridge ka closed form kya hai, LASSO sparse solution kyun deta hai, bias–variance trade-off kya hai, aur cross-validation se λ kaise chunte hain.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Overfitting aur bias–variance**: expected test error = bias² + variance + irreducible noise. Bahut flexible model (bahut features, kam data) training data ka noise bhi yaad kar leta hai: low bias, high variance. Regularisation model ko 'simple' rakhne ke liye weights par penalty lagata hai, thoda bias badhaata hai par variance zyada ghatata hai.",
+        "**Ridge regression**: minimise ‖y − Xw‖² + λ‖w‖². Gradient zero karne par ŵ_ridge = (XᵀX + λI)⁻¹Xᵀy. λ > 0 par XᵀX + λI hamesha invertible hai, isliye collinear features ya d > n mein bhi unique solution milta hai. λ = 0 par OLS, λ → ∞ par ŵ → 0.",
+        "**Ridge ka Bayesian view**: Gaussian noise N(0, σ²) ke saath prior w ~ N(0, γ²I) lo. MAP estimate ridge hi hai, λ = σ²/γ². Strong prior (chhota γ²) ⇒ bada λ ⇒ zyada shrinkage.",
+        "**LASSO**: minimise ‖y − Xw‖² + λ‖w‖₁ (‖w‖₁ = Σ |wⱼ|). Closed form general case mein nahi hai (|w| non-differentiable at 0), isliye coordinate descent ya subgradient methods use hote hain. Orthonormal design (XᵀX = I) mein z = Xᵀy lekar: ridge ŵⱼ = zⱼ/(1 + λ), LASSO ŵⱼ = sign(zⱼ) · max(|zⱼ| − λ/2, 0) (soft-thresholding).",
+        "**Sparsity kyun**: constraint form mein L1 ball ‖w‖₁ ≤ t ke corners axes par hote hain, aur squared-error ke elliptical contours aksar pehle corner ko chhoote hain, jahan kuch wⱼ exactly 0 hote hain. L2 ball gol hai, isliye ridge weights ko chhota karta hai par exactly zero nahi. Isliye LASSO feature selection bhi karta hai.",
+        "**Cross-validation se λ**: data ko k folds mein baanto; har λ ke liye k baar train karo (k − 1 folds par) aur bache fold par validation error nikaalo, phir average lo. Sabse kam average validation error wala λ chuno aur poore training data par refit karo. Training error se λ kabhi mat chuno; wo hamesha λ = 0 ko favour karega.",
+        "**Practical points**: penalty lagane se pehle features standardise karo (warna penalty scale-dependent ho jaati hai), aur intercept ko usually penalise nahi karte. Elastic net dono penalties ko jodta hai jab correlated features ke groups hon."
+      ],
+      "example": {
+        "problem": "Design matrix rows (1, 0), (0, 1), (1, 1) aur targets y = (1, 2, 3) hain (koi intercept nahi). OLS aur λ = 1 wala ridge solution compare karo.",
+        "steps": [
+          "XᵀX = [[2, 1], [1, 2]], Xᵀy = (1 + 3, 2 + 3) = (4, 5).",
+          "OLS: ŵ = (1/3)[[2, −1], [−1, 2]](4, 5) = (1, 2). Predictions (1, 2, 3), training SSE = 0.",
+          "Ridge: XᵀX + λI = [[3, 1], [1, 3]], det = 8, inverse = (1/8)[[3, −1], [−1, 3]].",
+          "ŵ_ridge = (1/8)(12 − 5, −4 + 15) = (7/8, 11/8) = (0.875, 1.375).",
+          "‖ŵ‖ 2.236 se ghat kar 1.630 ho gaya (shrinkage). Ridge predictions (0.875, 1.375, 2.25), training SSE = 0.969.",
+          "**Answer**: ridge ne training error badhaaya (bias) par weights chhote kiye; noisy naye data par aisa model aksar behtar generalise karta hai, aur sahi λ cross-validation batata hai."
+        ]
+      },
+      "mistakes": [
+        "λ ko training error dekh kar chunna. Training error λ badhaane par hamesha badhta hai, isliye wo λ = 0 hi chunega; validation/CV error use karo.",
+        "Ridge ko feature selection maan lena. Ridge weights shrink karta hai par exactly zero nahi; zero coefficients chahiye to LASSO (ya elastic net) use karo.",
+        "Soft-thresholding mein clip bhool jaana: |zⱼ| ≤ λ/2 hone par ŵⱼ = 0 hai, negative side par nahi jaata. Jaise z = −0.4, λ = 1 par ŵ = 0, −0.9 nahi."
+      ],
+      "revision": [
+        "Ridge: ŵ = (XᵀX + λI)⁻¹Xᵀy, hamesha unique for λ > 0.",
+        "λ ↑ ⇒ bias ↑, variance ↓.",
+        "Ridge = MAP with Gaussian prior, λ = σ²/γ².",
+        "LASSO (XᵀX = I): ŵⱼ = sign(zⱼ) max(|zⱼ| − λ/2, 0) ⇒ sparse.",
+        "λ ko k-fold CV ke minimum average validation error se chuno."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w6-q1",
+          "question": "Ridge regression mein regularisation strength λ ko badhaate jaane par aam taur par kya hota hai?",
+          "options": [
+            "Bias aur variance dono ghatte hain",
+            "Bias ghatta hai aur variance badhta hai",
+            "Bias badhta hai aur variance ghatta hai",
+            "Bias aur variance par koi asar nahi, sirf training time badalta hai"
+          ],
+          "answer": 2,
+          "explanation": "Bada λ weights ko 0 ki taraf kheenchta hai, model kam flexible ho jaata hai: training data ke noise par kam react karta hai (variance ↓) par true relation se systematic deviation badhti hai (bias ↑). Isliye option C. Option B ulta hai; wo λ ghataane par hota hai. Option A ka trap 'regularisation sab kuch better karta hai' wali soch hai; asal mein ye ek trade-off hai, isliye λ tune karna padta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w6-q2",
+          "question": "Kaunsa method aam taur par kuch coefficients ko exactly zero kar deta hai, jisse automatic feature selection hota hai?",
+          "options": [
+            "Ridge regression (L2 penalty)",
+            "Ordinary least squares",
+            "Bahut chhote λ wala ridge",
+            "LASSO (L1 penalty)"
+          ],
+          "answer": 3,
+          "explanation": "L1 penalty ka constraint region (diamond/cross-polytope) axes par corners rakhta hai; optimum aksar in corners par padta hai jahan kuch coordinates exactly 0 hote hain. Isliye option D. Option A ka trap: ridge bhi weights chhote karta hai, par L2 ball smooth hai, isliye coefficients 0 ke paas aate hain, exactly 0 nahi (orthonormal case mein zⱼ/(1 + λ), jo zⱼ ≠ 0 par kabhi 0 nahi).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w6-q3",
+          "question": "Data x = 1, 2, 3, y = 2, 3, 5 par bina intercept ka ridge model fit kiya: minimise Σ (yᵢ − wxᵢ)² + λw², λ = 1. ŵ kitna hai?",
+          "options": [
+            "1.643",
+            "1.533",
+            "1.769",
+            "0.821"
+          ],
+          "answer": 1,
+          "explanation": "1-D ridge: ŵ = Σxᵢyᵢ / (Σxᵢ² + λ) = 23/(14 + 1) = 23/15 ≈ 1.533, isliye option B. Option A (23/14) OLS hai, penalty ke bina. Option C (23/13) mein λ ghata diya gaya, jo shrink ke bajaye weight badha deta hai. Option D (23/28) denominator ko (1 + λ) se multiply karta hai, jo sirf orthonormal features par sahi formula hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w6-q4",
+          "question": "XᵀX = [[2, 1], [1, 2]] aur Xᵀy = (4, 5) hai. λ = 1 ke saath ridge solution ŵ = (XᵀX + λI)⁻¹Xᵀy kya hai?",
+          "options": [
+            "(0.875, 1.375)",
+            "(1, 2)",
+            "(0.5, 1)",
+            "(1.333, 1.667)"
+          ],
+          "answer": 0,
+          "explanation": "XᵀX + I = [[3, 1], [1, 3]], det = 8, inverse (1/8)[[3, −1], [−1, 3]]. ŵ = (1/8)(12 − 5, −4 + 15) = (7/8, 11/8) = (0.875, 1.375), isliye option A. Option B OLS solution hai (λ = 0). Option C OLS ko (1 + λ) se divide karta hai, jo sirf XᵀX = I par valid shortcut hai. Option D sirf diagonal (3, 3) se divide karta hai aur off-diagonal 1 ignore karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w6-q5",
+          "question": "5-fold cross-validation se ridge ka λ chunna hai. Average results (MSE): λ = 0: train 2.0, validation 6.8; λ = 0.1: train 2.1, validation 5.2; λ = 1: train 2.6, validation 3.9; λ = 10: train 4.0, validation 4.6; λ = 100: train 9.5, validation 9.8. Kaunsa λ chunna chahiye?",
+          "options": [
+            "λ = 0",
+            "λ = 1",
+            "λ = 100",
+            "λ = 10"
+          ],
+          "answer": 1,
+          "explanation": "λ ko average validation error ke minimum se chunte hain: 3.9 (λ = 1) sabse kam hai, isliye option B. Option A ka trap: λ = 0 ka training error sabse kam (2.0) hai, par validation 6.8 hai, yaani overfitting. Option C (100) mein train aur validation dono high hain: underfitting (high bias). Option D (10) theek hai par 4.6 > 3.9.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w6-q6",
+          "question": "Orthonormal design (XᵀX = I) mein z = Xᵀy = (3, −0.4, 1) hai. Objective ‖y − Xw‖² + λ‖w‖₁, λ = 1 ke saath LASSO solution ŵ kya hai?",
+          "options": [
+            "(2.5, 0, 0.5)",
+            "(1.5, −0.2, 0.5)",
+            "(2, 0, 0)",
+            "(2.5, −0.9, 0.5)"
+          ],
+          "answer": 0,
+          "explanation": "XᵀX = I par objective coordinate-wise alag ho jaata hai: wⱼ² − 2zⱼwⱼ + λ|wⱼ| (constant chhod kar), jiska minimiser ŵⱼ = sign(zⱼ) max(|zⱼ| − λ/2, 0) hai. Threshold 0.5: 3 → 2.5, −0.4 → 0 (|−0.4| < 0.5), 1 → 0.5. Isliye option A. Option B ridge ka zⱼ/(1 + λ) hai. Option C threshold λ = 1 leta hai, λ/2 nahi (ye objective ke ½ wale version ka formula hai). Option D clip nahi karta aur −0.4 − 0.5 = −0.9 kar deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Classification with k-NN and decision trees",
+      "summary": "Is week aap seekhoge ki classification ke do non-parametric tareeke kaise kaam karte hain: k-nearest neighbours (distance, k ka choice, feature scaling) aur decision trees (entropy, Gini, information gain se split chunna, pruning).",
+      "readMinutes": 16,
+      "concepts": [
+        "**Classification setup**: labels discrete hain, jaise yᵢ ∈ {spam, not spam}. Performance aam taur par 0-1 loss (misclassification rate) se naapte hain. Is week ke dono methods non-parametric hain: model ki complexity data ke saath badhti hai, ek fixed weight vector nahi hota.",
+        "**k-nearest neighbours (k-NN)**: query point ke k sabse paas wale training points dhoondho (aam taur par Euclidean distance) aur unke labels ka majority vote do. Training sirf data store karna hai; prediction ka cost O(nd) per query hai, isliye bade data par KD-trees ya approximate search lagte hain. Ties todne ke liye odd k ya distance-weighted vote use karte hain.",
+        "**k ka choice aur scaling**: k = 1 par training error 0 (har point khud ka neighbour), boundary bahut jagged: low bias, high variance. Bada k boundary ko smooth karta hai; k = n par har query ko majority class milti hai. k cross-validation se chuno. Distance scale-sensitive hai, isliye features ko standardise ya min-max scale karna zaroori hai, warna bade units wala feature akela decide karega. High dimensions mein distances concentrate ho jaate hain (curse of dimensionality).",
+        "**Decision tree**: har internal node ek feature par test karta hai (jaise 'income ≤ 50k?'), leaves class predict karti hain. Tree greedily upar se neeche banta hai: har node par wo split chuno jo child nodes ko sabse 'pure' banaye. Interpretable hai aur scaling ki zaroorat nahi.",
+        "**Impurity measures**: node mein class proportions p₁, …, p_K. Entropy H = −Σ pₖ log₂ pₖ (pure node par 0, do equal classes par 1 bit). Gini = 1 − Σ pₖ² (do equal classes par 0.5). Information gain = H(parent) − Σ (nⱼ/n) H(childⱼ); children ko unke size se weight karna zaroori hai.",
+        "**Overfitting aur pruning**: tree ko bina roke badhne do to har leaf pure ho jaati hai aur training error 0, par test error kharab. Rokne ke tareeke: max depth, min samples per leaf, minimum gain, ya poora tree banakar validation set se cost-complexity pruning. Bahut saari unique values wale feature (jaise customer ID) ka IG artificially high hota hai; gain ratio isko correct karta hai."
+      ],
+      "example": {
+        "problem": "Fictional loan data: 10 applicants, 4 defaulted (Y), 6 nahi (N). Feature income: low = 4 applicants (3Y, 1N), high = 6 (1Y, 5N). Feature credit card: yes = 5 (2Y, 3N), no = 5 (2Y, 3N). Root par kaunsa split chunoge?",
+        "steps": [
+          "Parent entropy: H(0.4, 0.6) = −0.4 log₂ 0.4 − 0.6 log₂ 0.6 ≈ 0.971 bits.",
+          "Income: low node H(3/4, 1/4) ≈ 0.811; high node H(1/6, 5/6) ≈ 0.650.",
+          "Weighted child entropy = 0.4 × 0.811 + 0.6 × 0.650 ≈ 0.715, to IG(income) ≈ 0.971 − 0.715 = 0.256.",
+          "Credit card: dono children (2Y, 3N) parent jaisi hi mixture hain, to IG(card) = 0.971 − 0.971 = 0.",
+          "Gini se cross-check: parent 1 − 0.16 − 0.36 = 0.48; income split 0.4 × 0.375 + 0.6 × 0.278 ≈ 0.317; decrease ≈ 0.163 (card ka 0).",
+          "**Answer**: root par income se split karo; credit card is data mein label ke baare mein koi information nahi deta."
+        ]
+      },
+      "mistakes": [
+        "Information gain mein children ki entropy ka simple average lena. Har child ko uske size nⱼ/n se weight karo; chhota pure child bade impure child ke barabar nahi.",
+        "k-NN se pehle features scale na karna. Income rupees mein aur age years mein ho to distance lagbhag sirf income se tay hoga.",
+        "Entropy natural log se nikaal kar bits wale answer se compare karna. Binary entropy ka maximum log₂ mein 1 hai, ln mein 0.693."
+      ],
+      "revision": [
+        "k-NN: k nearest points ka majority vote; k = 1 ⇒ zero training error, high variance.",
+        "Distance-based methods se pehle features scale karo.",
+        "Entropy H = −Σ p log₂ p; Gini = 1 − Σ p².",
+        "IG = H(parent) − Σ (nⱼ/n) H(childⱼ).",
+        "Deep tree overfit karta hai: depth limit ya pruning lagao."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w7-q1",
+          "question": "Ek decision-tree node mein 6 positive aur 2 negative examples hain. Iski entropy (base 2) kitni hai?",
+          "options": [
+            "0.811",
+            "0.562",
+            "0.375",
+            "1"
+          ],
+          "answer": 0,
+          "explanation": "p = 6/8 = 0.75. H = −0.75 log₂ 0.75 − 0.25 log₂ 0.25 = 0.311 + 0.5 ≈ 0.811 bits, isliye option A. Option B (0.562) wahi formula natural log se hai. Option C (0.375) is node ka Gini impurity 1 − 0.5625 − 0.0625 hai, entropy nahi. Option D (1) sirf 50-50 node ki entropy hoti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w7-q2",
+          "question": "k-NN classifier mein k = 1 lene ke baare mein kaunsa statement sahi hai (maan lo koi do training points same location par alag labels ke saath nahi hain)?",
+          "options": [
+            "Model high bias aur low variance wala hota hai",
+            "Training error 0 hota hai, par decision boundary bahut jagged hoti hai aur model noise par overfit kar sakta hai",
+            "k = 1 hamesha sabse achhi test accuracy deta hai",
+            "k = 1 aur k = n hamesha same predictions dete hain"
+          ],
+          "answer": 1,
+          "explanation": "k = 1 par har training point ka nearest neighbour wo khud hai (distance 0), isliye training error 0. Har noisy point apne aas-paas ek chhota region bana leta hai: low bias, high variance, isliye option B. Option A ulta hai; high bias bade k par aata hai. Option C ka trap: training error 0 ko test performance samajhna; k validation se chunna padta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w7-q3",
+          "question": "Query point (0, 0) hai. Training points (label ke saath): (1, 0) A, (0, 2) B, (−2, 1) B, (1, −1) A, (3, 0) B, (−3, −3) A. Euclidean distance se k = 3 aur k = 5 ke majority-vote predictions kya hain?",
+          "options": [
+            "k = 3: A, k = 5: A",
+            "k = 3: B, k = 5: B",
+            "k = 3: B, k = 5: A",
+            "k = 3: A, k = 5: B"
+          ],
+          "answer": 3,
+          "explanation": "Squared distances: (1, 0) A → 1, (1, −1) A → 2, (0, 2) B → 4, (−2, 1) B → 5, (3, 0) B → 9, (−3, −3) A → 18. k = 3: A, A, B ⇒ A. k = 5: A, A, B, B, B ⇒ B. Isliye option D. Option A ka trap: sochna ki k badhaane se nearest points ka faisla nahi badlega. Option C mein order ulta hai. Ye example dikhata hai ki k ek real hyperparameter hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w7-q4",
+          "question": "Ek 3-class node mein class counts 5, 3 aur 2 hain. Is node ka Gini impurity kya hai?",
+          "options": [
+            "0.38",
+            "1.485",
+            "0.62",
+            "0.5"
+          ],
+          "answer": 2,
+          "explanation": "Proportions 0.5, 0.3, 0.2. Gini = 1 − (0.25 + 0.09 + 0.04) = 1 − 0.38 = 0.62, isliye option C. Option A (0.38) sirf Σ p² hai, 1 se ghataana bhool gaye. Option B (≈ 1.485) isi node ki entropy (bits) hai. Option D (0.5) do equal classes wale node ka Gini hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w7-q5",
+          "question": "Parent node mein 6 positive aur 4 negative hain. Ek split se left child (4 positive, 0 negative) aur right child (2 positive, 4 negative) bante hain. Information gain (base 2) kitna hai?",
+          "options": [
+            "0.971",
+            "0.551",
+            "0.512",
+            "0.420"
+          ],
+          "answer": 3,
+          "explanation": "H(parent) = H(0.6, 0.4) ≈ 0.971. Left pure hai, H = 0. Right H(1/3, 2/3) ≈ 0.918. Weighted = (4/10)·0 + (6/10)·0.918 ≈ 0.551. IG = 0.971 − 0.551 ≈ 0.420, isliye option D. Option C (0.512) children ki entropy ka simple average (0 + 0.918)/2 leta hai, size se weight nahi karta. Option B weighted child entropy hai, gain nahi. Option A parent entropy hai, jo sirf tab gain hota jab dono children pure hote.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w7-q6",
+          "question": "Fictional loan data par 1-NN chal raha hai. Query: age 26, income ₹47,000. P1: age 25, income ₹40,000, label Approve. P2: age 45, income ₹42,000, label Reject. Raw features par Euclidean distance se, aur phir min-max scaling (age range 20–60, income range ₹20,000–₹100,000) ke baad, prediction kya hogi?",
+          "options": [
+            "Raw: Approve, scaled: Approve",
+            "Raw: Reject, scaled: Approve",
+            "Raw: Approve, scaled: Reject",
+            "Raw: Reject, scaled: Reject"
+          ],
+          "answer": 1,
+          "explanation": "Raw: d²(P1) = 1² + 7000² ≈ 4.9 × 10⁷, d²(P2) = 19² + 5000² ≈ 2.5 × 10⁷, to P2 (Reject) nearest. Scaled: age /40, income /80,000. P1: (1/40)² + (7000/80000)² ≈ 0.0083; P2: (19/40)² + (5000/80000)² ≈ 0.2295, to P1 (Approve) nearest. Isliye option B. Option D ka trap: maan lena ki scaling se ranking nahi badalti; raw distance mein age ka 19 saal ka fark rupees ke saamne invisible ho jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Generative classifiers and naive Bayes",
+      "summary": "Is week aap seekhoge ki generative classifier P(x | y) aur P(y) model karke Bayes rule se P(y | x) kaise nikaalta hai, naive Bayes ki conditional independence assumption kya hai, Bernoulli aur Gaussian naive Bayes kaise fit hote hain, aur Laplace smoothing zero-probability problem kaise theek karta hai.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Generative vs discriminative**: discriminative model seedha P(y | x) ya decision boundary seekhta hai (jaise logistic regression, agle week). Generative model class prior P(y) aur class-conditional P(x | y) seekhta hai, phir Bayes rule lagata hai: P(y | x) = P(x | y)P(y) / Σ_c P(x | c)P(c). Prediction ke liye denominator ki zaroorat nahi: argmax_y P(x | y)P(y).",
+        "**Naive Bayes assumption**: class diya ho to features conditionally independent hain: P(x₁, …, x_d | y) = Π P(xⱼ | y). Bina is assumption ke d binary features ke liye har class mein 2ᵈ − 1 parameters chahiye; assumption ke saath sirf d. Assumption aksar galat hota hai (words correlated hote hain), phir bhi ranking/classification kaafi achha kaam karta hai.",
+        "**Bernoulli naive Bayes**: binary features (word present ya nahi). MLE: P(y = c) = n_c/n aur pⱼ|c = (class c ke jin examples mein feature j = 1 hai) / n_c. Prediction mein feature 0 hone par (1 − pⱼ|c) multiply hota hai; absent features ko ignore karna galat hai. 2 classes, d features ⇒ 2d + 1 free parameters.",
+        "**Laplace (add-one) smoothing**: agar training mein koi word kisi class mein kabhi nahi aaya, MLE 0 deta hai aur poora product 0 ho jaata hai, chahe baaki evidence kitna bhi strong ho. Fix: pⱼ|c = (count + 1)/(n_c + 2) binary features ke liye (har feature ki 2 possible values). Ye uniform Beta(1, 1) prior ke saath posterior mean hai (ya Beta(2, 2) prior ke saath MAP).",
+        "**Gaussian naive Bayes**: continuous features ke liye har class aur har feature ka alag mean μⱼ|c aur variance σ²ⱼ|c. Agar 1-D mein dono classes ka variance same ho, decision boundary x* = (μ₀ + μ₁)/2 + σ² ln(π₀/π₁)/(μ₁ − μ₀) hai: equal priors par midpoint, warna less likely class ki taraf khisak jaata hai. Shared covariance par boundary linear (LDA), alag par quadratic.",
+        "**Numerical practice**: bahut saare chhote probabilities multiply karne se underflow hota hai, isliye log space mein kaam karo: log P(y) + Σ log P(xⱼ | y). Posterior chahiye to log-sum-exp se normalise karo. Training sirf counting hai, isliye naive Bayes bahut tez aur text classification ke liye strong baseline hai."
+      ],
+      "example": {
+        "problem": "Fictional inbox: 10 emails, 4 spam aur 6 ham. 'offer' word 3 spam aur 1 ham email mein hai; 'meeting' 0 spam aur 4 ham emails mein hai. Nayi email mein 'offer' hai par 'meeting' nahi. Laplace smoothing (likelihoods par, priors par nahi) ke saath P(spam | email) nikaalo.",
+        "steps": [
+          "Priors: P(spam) = 0.4, P(ham) = 0.6.",
+          "Smoothed likelihoods, spam: P(offer) = (3 + 1)/(4 + 2) = 2/3, P(meeting) = (0 + 1)/6 = 1/6 ⇒ P(no meeting) = 5/6.",
+          "Ham: P(offer) = (1 + 1)/(6 + 2) = 1/4, P(meeting) = (4 + 1)/8 = 5/8 ⇒ P(no meeting) = 3/8.",
+          "Spam score = 0.4 × 2/3 × 5/6 = 2/9 ≈ 0.2222. Ham score = 0.6 × 1/4 × 3/8 = 0.05625.",
+          "Normalise: P(spam | email) = 0.2222/(0.2222 + 0.05625) ≈ 0.798.",
+          "Bina smoothing: spam = 0.4 × 3/4 × 1 = 0.3, ham = 0.6 × 1/6 × 2/6 ≈ 0.0333 ⇒ 0.9. Smoothing ne extreme estimates (P(meeting | spam) = 0) ko naram kiya.",
+          "**Answer**: P(spam | email) ≈ 0.798, isliye email spam classify hogi."
+        ]
+      },
+      "mistakes": [
+        "Bernoulli NB mein absent features ko chhod dena. Feature 0 hai to (1 − pⱼ|c) multiply karo; wo bhi evidence hai.",
+        "Smoothing ke denominator mein sirf +1 jodna. Binary feature ke do outcomes hain, isliye (count + 1)/(n_c + 2); K values wale feature ke liye + K.",
+        "Unnormalised score (jaise 0.2222) ko hi probability bata dena. Posterior ke liye sab classes ke scores ke sum se divide karo."
+      ],
+      "revision": [
+        "P(y | x) ∝ P(y) Π P(xⱼ | y) (naive assumption).",
+        "Bernoulli NB, 2 classes, d features ⇒ 2d + 1 parameters.",
+        "Laplace: (count + 1)/(n_c + 2) for binary features.",
+        "Gaussian NB (equal σ², 1-D): x* = (μ₀ + μ₁)/2 + σ² ln(π₀/π₁)/(μ₁ − μ₀).",
+        "Log space mein multiply = add; underflow se bachao."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w8-q1",
+          "question": "Naive Bayes classifier ki 'naive' assumption exactly kya hai?",
+          "options": [
+            "Saare features ek doosre se unconditionally independent hain",
+            "Saari classes equally likely hain",
+            "Har feature Gaussian distribution follow karta hai",
+            "Class label diya ho to features ek doosre se conditionally independent hain"
+          ],
+          "answer": 3,
+          "explanation": "Naive Bayes P(x₁, …, x_d | y) = Π P(xⱼ | y) maanta hai, yaani independence class ke andar (given y), isliye option D. Option A ka trap: unconditional independence alag (aur zyada strong) cheez hai; spam aur ham mila kar dekho to 'offer' aur 'free' correlated ho sakte hain, phir bhi model chalega. Option B galat hai kyunki priors data se estimate hote hain. Option C sirf Gaussian NB variant hai, Bernoulli/multinomial NB nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w8-q2",
+          "question": "Bernoulli naive Bayes mein 8 spam training emails hain aur word 'invoice' unme se kisi mein nahi aaya. Laplace (add-one) smoothing, yaani (count + 1)/(n_c + 2), ke baad P(invoice present | spam) kya hai?",
+          "options": [
+            "0",
+            "0.111",
+            "0.1",
+            "0.125"
+          ],
+          "answer": 2,
+          "explanation": "Binary feature ke do outcomes hain, isliye (count + 1)/(n_spam + 2) = (0 + 1)/(8 + 2) = 0.1, option C. Option A unsmoothed MLE hai, jo poore product ko 0 kar deta hai. Option B (1/9) denominator mein sirf +1 jodta hai. Option D (1/8) numerator mein +1 karta hai par denominator mein kuch nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w8-q3",
+          "question": "Ek binary text classifier (2 classes) 1000 binary word features use karta hai. Bernoulli naive Bayes mein kitne free parameters estimate karne padte hain?",
+          "options": [
+            "2001",
+            "2(2¹⁰⁰⁰ − 1) + 1",
+            "1001",
+            "4002"
+          ],
+          "answer": 0,
+          "explanation": "Har class ke liye har feature ka ek pⱼ|c: 2 × 1000 = 2000, plus class prior ka 1 free parameter (P(class 2) = 1 − P(class 1)). Total 2001, option A. Option B wo count hai jo naive assumption ke bina poora joint distribution model karne mein lagta; isi explosion se bachne ke liye assumption hai. Option C har class ke alag parameters bhool jaata hai. Option D pⱼ aur 1 − pⱼ dono ko alag ginta hai, jo free nahi hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w8-q4",
+          "question": "Fictional inbox: 10 emails, 4 spam, 6 ham. 'offer' 3 spam aur 1 ham email mein hai; 'meeting' 0 spam aur 4 ham emails mein. Nayi email mein 'offer' hai, 'meeting' nahi. Bernoulli naive Bayes (MLE, bina smoothing) se P(spam | email) kya hai?",
+          "options": [
+            "0.75",
+            "0.9",
+            "0.4",
+            "0"
+          ],
+          "answer": 1,
+          "explanation": "Spam: 0.4 × P(offer | spam) × P(no meeting | spam) = 0.4 × 3/4 × (1 − 0/4) = 0.3. Ham: 0.6 × 1/6 × (1 − 4/6) = 0.6 × 1/6 × 1/3 ≈ 0.0333. Posterior = 0.3/(0.3 + 0.0333) = 0.9, option B. Option A (0.75) absent word 'meeting' ko ignore karne se aata hai. Option D tab aata hai jab absent word ke liye 1 − p ki jagah P(meeting | spam) = 0 multiply kar diya. Option C sirf prior hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w8-q5",
+          "question": "Wahi fictional inbox: 4 spam, 6 ham; 'offer' 3 spam aur 1 ham mein, 'meeting' 0 spam aur 4 ham mein. Nayi email mein 'offer' hai, 'meeting' nahi. Ab likelihoods par Laplace smoothing (count + 1)/(n_c + 2) lagao (priors 0.4 aur 0.6 hi rakho). P(spam | email) lagbhag kya hai?",
+          "options": [
+            "0.9",
+            "0.839",
+            "0.798",
+            "0.222"
+          ],
+          "answer": 2,
+          "explanation": "Spam: P(offer) = 4/6, P(no meeting) = 1 − 1/6 = 5/6 ⇒ 0.4 × 2/3 × 5/6 ≈ 0.2222. Ham: P(offer) = 2/8, P(no meeting) = 1 − 5/8 = 3/8 ⇒ 0.6 × 1/4 × 3/8 = 0.05625. Posterior = 0.2222/0.2785 ≈ 0.798, option C. Option A unsmoothed answer hai. Option B denominator mein +2 ki jagah +1 jodne se aata hai. Option D spam ka unnormalised score hai, probability nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w8-q6",
+          "question": "1-D Gaussian naive Bayes: class 0 ~ N(2, 4), class 1 ~ N(6, 4) (variance 4 dono mein), priors P(class 0) = 0.8, P(class 1) = 0.2. Kis x ke upar model class 1 predict karta hai (decision boundary)?",
+          "options": [
+            "x ≈ 5.386",
+            "x = 4",
+            "x ≈ 2.614",
+            "x ≈ 4.693"
+          ],
+          "answer": 0,
+          "explanation": "Class 1 chuno jab 0.2 N(x; 6, 4) > 0.8 N(x; 2, 4). Log lekar: [(x − 2)² − (x − 6)²]/8 > ln 4 ⇒ (8x − 32)/8 > ln 4 ⇒ x > 4 + ln 4 ≈ 5.386, option A. General form: (μ₀ + μ₁)/2 + σ² ln(π₀/π₁)/(μ₁ − μ₀). Option B equal priors wala midpoint hai, priors ignore karta hai. Option C shift ko ulti direction (frequent class ki taraf) le jaata hai. Option D σ² = 4 ki jagah σ = 2 use karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Perceptron and logistic regression",
+      "summary": "Is week aap seekhoge ki discriminative linear classifiers kaise kaam karte hain: perceptron ka mistake-driven update rule aur separable data par uski convergence guarantee, aur logistic regression ka sigmoid, log-loss aur gradient descent update.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Linear classifier**: prediction ŷ = sign(wᵀx + b). Bias b ko handle karne ke liye har x mein constant feature 1 jod do, phir sirf sign(wᵀx). Decision boundary wᵀx = 0 ek hyperplane hai aur w uske perpendicular hai. Labels yahan y ∈ {−1, +1} (perceptron) ya {0, 1} (logistic) convention mein hain.",
+        "**Perceptron algorithm**: w = 0 se shuru karo, points ek-ek karke dekho. Agar y · wᵀx ≤ 0 (galat ya boundary par), update w ← w + yx; warna kuch mat karo. Update ke baad y · wᵀx ki value ‖x‖² se badhti hai, yaani us point ke liye w sahi direction mein khisakta hai.",
+        "**Convergence theorem**: agar data linearly separable hai margin γ ke saath (koi unit w* jisme har i par yᵢ w*ᵀxᵢ ≥ γ) aur ‖xᵢ‖ ≤ R, to perceptron at most R²/γ² mistakes karta hai, chahe n kitna bhi bada ho. Non-separable data (jaise XOR) par ye kabhi rukta nahi, aur separable par bhi jo boundary milti hai wo max-margin nahi hoti.",
+        "**Logistic regression**: P(y = 1 | x) = σ(wᵀx), jahan σ(z) = 1/(1 + e⁻ᶻ). σ(0) = 0.5, σ(−z) = 1 − σ(z), σ′(z) = σ(z)(1 − σ(z)). Log-odds log(p/(1 − p)) = wᵀx linear hai, isliye boundary (p = 0.5) phir bhi hyperplane wᵀx = 0 hai.",
+        "**Log-loss (cross-entropy)**: MLE se loss L(w) = −Σ [yᵢ log pᵢ + (1 − yᵢ) log(1 − pᵢ)], pᵢ = σ(wᵀxᵢ). Confident galat prediction ka loss bahut bada hota hai (p → 0 jab y = 1 ⇒ loss → ∞). L convex hai, par closed-form solution nahi, isliye gradient descent use karte hain.",
+        "**Gradient aur update**: ∇L = Σ (pᵢ − yᵢ) xᵢ. Gradient descent: w ← w − η Σ (pᵢ − yᵢ) xᵢ. Structure perceptron jaisa hai, bas hard 0/1 mistake ki jagah soft error (pᵢ − yᵢ) se weight hota hai. Separable data par unregularised weights ‖w‖ → ∞ ki taraf jaate hain, isliye practice mein L2 penalty lagaate hain."
+      ],
+      "example": {
+        "problem": "AND gate ko perceptron se seekho. Inputs (x₁, x₂, 1) jahan last 1 bias feature hai: (0, 0) → −1, (0, 1) → −1, (1, 0) → −1, (1, 1) → +1. w = 0 se shuru, isi order mein epochs chalao.",
+        "steps": [
+          "Epoch 1: (0, 0, 1) par wᵀx = 0 ≤ 0 ⇒ mistake, w = (0, 0, −1). (0, 1, 1) aur (1, 0, 1) par y · wᵀx = 1 > 0, theek.",
+          "(1, 1, 1) par wᵀx = −1, y = +1 ⇒ mistake, w = (0, 0, −1) + (1, 1, 1) = (1, 1, 0). Epoch 1 mein 2 mistakes.",
+          "Epoch 2: (0, 0, 1) par 0 ⇒ w = (1, 1, −1); (0, 1, 1) par 0 ⇒ w = (1, 0, −2); (1, 1, 1) par −1 ⇒ w = (2, 1, −1). 3 mistakes.",
+          "Aise hi chalte hue epoch 9 mein pehli baar zero mistakes, final w = (3, 2, −4).",
+          "Check: (0, 0) → −4, (0, 1) → −2, (1, 0) → −1 (sab negative), (1, 1) → 1 (positive). Sab sahi.",
+          "**Answer**: w = (3, 2, −4), yaani boundary 3x₁ + 2x₂ = 4. AND separable hai isliye convergence hua; XOR par yahi loop kabhi khatam nahi hota."
+        ],
+        "code": "# AND gate, last feature = bias 1, labels in {-1, +1}\ndata = [((0, 0, 1), -1), ((0, 1, 1), -1), ((1, 0, 1), -1), ((1, 1, 1), 1)]\nw = [0, 0, 0]\nfor epoch in range(1, 10):\n    mistakes = 0\n    for x, y in data:\n        if y * sum(wi * xi for wi, xi in zip(w, x)) <= 0:\n            w = [wi + y * xi for wi, xi in zip(w, x)]\n            mistakes += 1\n    print(epoch, mistakes, w)\n    if mistakes == 0:\n        break\n# last line printed: 9 0 [3, 2, -4]"
+      },
+      "mistakes": [
+        "wᵀx = 0 wale point ko 'sahi' maan lena. Standard convention y · wᵀx ≤ 0 ko mistake ginta hai; isi se w = 0 par pehla update hota hai.",
+        "Logistic gradient descent mein sign ulta lena (w + η∇L). Loss ghataane ke liye gradient ki ulti direction mein jao: w ← w − η Σ (pᵢ − yᵢ)xᵢ.",
+        "Log-loss mein galat term lena: y = 0 par loss −log(1 − p) hai, −log p nahi. p = 0.9, y = 0 par loss ≈ 2.303 (bada), 0.105 nahi."
+      ],
+      "revision": [
+        "Perceptron: y · wᵀx ≤ 0 ⇒ w ← w + yx.",
+        "Separable, margin γ, ‖x‖ ≤ R ⇒ mistakes ≤ R²/γ².",
+        "σ(z) = 1/(1 + e⁻ᶻ), σ(0) = 0.5, σ′ = σ(1 − σ).",
+        "Log-loss = −[y log p + (1 − y) log(1 − p)].",
+        "∇L = Σ (pᵢ − yᵢ)xᵢ; update w ← w − η∇L."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w9-q1",
+          "question": "Logistic regression model mein w = (2, −1) aur bias b = 1 hai. Point x = (1, 3) ke liye P(y = 1 | x) kya hai?",
+          "options": [
+            "0",
+            "0.5",
+            "1",
+            "0.269"
+          ],
+          "answer": 1,
+          "explanation": "z = wᵀx + b = 2·1 + (−1)·3 + 1 = 0, aur σ(0) = 1/(1 + 1) = 0.5, isliye option B. Point bilkul decision boundary par hai. Option A ka trap: z = 0 ko probability 0 samajh lena; probability σ(z) hai, z nahi. Option D (σ(−1) ≈ 0.269) bias b = 1 jodna bhool jaane se aata hai: z = −1.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w9-q2",
+          "question": "Perceptron algorithm ki convergence ke baare mein kaunsa statement sahi hai?",
+          "options": [
+            "Ye kisi bhi dataset par finite updates mein converge karta hai",
+            "Ye hamesha maximum-margin separating hyperplane par converge karta hai",
+            "Linearly separable data par ye finite updates ke baad ruk jaata hai; XOR jaise non-separable data par ye kabhi nahi rukta",
+            "Converge karne ke liye learning rate ko har step par ghatana zaroori hai"
+          ],
+          "answer": 2,
+          "explanation": "Convergence theorem sirf separable data ke liye hai: mistakes ≤ R²/γ². XOR mein koi hyperplane sab points sahi nahi karta, isliye har epoch mein koi na koi mistake hoti rahegi; isliye option C. Option B ka trap: perceptron koi bhi separating hyperplane deta hai (order par depend), max-margin wala SVM deta hai. Option D galat hai; perceptron mein learning rate 1 bhi theek hai kyunki w = 0 se shuru karne par scale se sign nahi badalta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w9-q3",
+          "question": "Perceptron ka current weight w = (1, −1) hai (bias nahi). Point x = (2, 1) ka label y = −1 aata hai. Is point ko process karne ke baad w kya hoga?",
+          "options": [
+            "(−1, −2)",
+            "(3, 0)",
+            "(1, −1)",
+            "(−2, −1)"
+          ],
+          "answer": 0,
+          "explanation": "wᵀx = 2 − 1 = 1, to y · wᵀx = −1 ≤ 0: mistake. Update w ← w + yx = (1, −1) − (2, 1) = (−1, −2), isliye option A. Option B mein label ka sign ignore karke x jod diya. Option C maanta hai ki koi update nahi chahiye, jo tab hota jab prediction sahi hoti. Option D sirf −x hai, purana w bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w9-q4",
+          "question": "Ek fraud-detection logistic model ek transaction ko P(fraud) = 0.9 deta hai, par asal label y = 0 (fraud nahi) hai. Is example ka log-loss (natural log) kitna hai?",
+          "options": [
+            "0.105",
+            "0.9",
+            "0.1",
+            "2.303"
+          ],
+          "answer": 3,
+          "explanation": "y = 0 par loss = −log(1 − p) = −ln(0.1) ≈ 2.303, isliye option D. Confident galat prediction ko bhaari penalty milti hai. Option A (−ln 0.9 ≈ 0.105) y = 1 wala term hai, jo tab sahi hota jab transaction sach mein fraud hota. Options B aur C probabilities hain, loss nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w9-q5",
+          "question": "Logistic regression w = (0, 0) se shuru hota hai (bias nahi). Ek example x = (1, 2), y = 1 par learning rate η = 0.5 ke saath ek gradient descent step (log-loss) lene par naya w kya hoga?",
+          "options": [
+            "(0.25, 0.5)",
+            "(−0.25, −0.5)",
+            "(0.5, 1)",
+            "(0.125, 0.25)"
+          ],
+          "answer": 0,
+          "explanation": "p = σ(0) = 0.5. Gradient = (p − y)x = (−0.5)(1, 2) = (−0.5, −1). w ← w − η · gradient = (0, 0) − 0.5(−0.5, −1) = (0.25, 0.5), isliye option A. Option B gradient ki direction mein (w + η∇L) chalta hai, jo loss badhaata hai. Option C mein p = 0 maan liya, yaani error (y − p) = 1 le liya, jabki σ(0) = 0.5 hai. Option D η ko do baar laga deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w9-q6",
+          "question": "Perceptron w = (0, 0, 0) se shuru hota hai (teesra feature bias 1 hai) aur mistake ka rule y · wᵀx ≤ 0 hai. Points isi order mein ek baar process hote hain: (1, 1, 1) → +1, (2, 0, 1) → +1, (0, 0, 1) → −1, (−1, 1, 1) → −1. Is pass ke baad w aur mistakes ki sankhya kya hai?",
+          "options": [
+            "w = (1, 1, 0), 2 mistakes",
+            "w = (0, 0, −1), 1 mistake",
+            "w = (2, 0, −1), 3 mistakes",
+            "w = (4, 0, 0), 4 updates"
+          ],
+          "answer": 2,
+          "explanation": "(1, 1, 1): wᵀx = 0 ⇒ mistake, w = (1, 1, 1). (2, 0, 1): wᵀx = 3 > 0, theek. (0, 0, 1): wᵀx = 1, y = −1 ⇒ mistake, w = (1, 1, 0). (−1, 1, 1): wᵀx = 0 ⇒ mistake, w = (1, 1, 0) − (−1, 1, 1) = (2, 0, −1). Total 3 mistakes, option C (ye w sab chaar points sahi classify karta hai). Option B tab aata hai jab wᵀx = 0 ko +1 prediction maan kar mistake na gina jaaye. Option A aakhri point ka update bhool jaata hai. Option D har point par update karta hai, sirf mistakes par nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Support vector machines",
+      "summary": "Is week aap seekhoge ki SVM margin ko maximise karke separating hyperplane kaise chunta hai, hard aur soft margin formulations, hinge loss, dual form aur support vectors ka role kya hai, aur kernels se non-linear boundaries kaise banti hain.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Margin ka idea**: separable data ke liye anginat hyperplanes hote hain (perceptron koi bhi ek de deta hai). SVM wo chunta hai jo nearest points se sabse door ho, kyunki bada margin noise ke against robust hota hai aur better generalisation deta hai. Point x ki hyperplane wᵀx + b = 0 se distance |wᵀx + b|/‖w‖ hai.",
+        "**Hard-margin SVM**: scale aisa fix karo ki nearest points par yᵢ(wᵀxᵢ + b) = 1. Tab margin width (dono taraf ki margin lines ke beech) 2/‖w‖ hai. Problem: minimise ½‖w‖² subject to yᵢ(wᵀxᵢ + b) ≥ 1 sab i ke liye. Ye convex quadratic program hai, unique solution ke saath.",
+        "**Support vectors aur dual**: Lagrange multipliers αᵢ ≥ 0 se dual milta hai: maximise Σ αᵢ − ½ Σᵢ Σⱼ αᵢαⱼyᵢyⱼ xᵢᵀxⱼ subject to Σ αᵢyᵢ = 0. Solution w = Σ αᵢyᵢxᵢ. Complementary slackness: αᵢ > 0 sirf un points par jo margin par hain (yᵢf(xᵢ) = 1); yahi support vectors hain. Baaki points hata do to bhi solution same rehta hai.",
+        "**Soft margin**: real data separable nahi hota. Slack ξᵢ ≥ 0 allow karo: minimise ½‖w‖² + C Σ ξᵢ, subject to yᵢ(wᵀxᵢ + b) ≥ 1 − ξᵢ. Bada C violations ko mehenga banata hai (narrow margin, hard-margin jaisa, overfit risk); chhota C wider margin aur zyada violations allow karta hai. Dual mein bas 0 ≤ αᵢ ≤ C ho jaata hai.",
+        "**Hinge loss view**: soft-margin SVM = minimise Σ max(0, 1 − yᵢf(xᵢ)) + (λ/2)‖w‖², jahan f(x) = wᵀx + b. yf ≥ 1 par loss 0 (sahi side, margin ke bahar), 0 < yf < 1 par chhota loss (sahi par margin ke andar), yf ≤ 0 par loss ≥ 1 (misclassified). Logistic loss ki tarah ye bhi 0-1 loss ka convex upper bound hai, par yf ≥ 1 par exactly zero.",
+        "**Kernel SVM**: dual aur prediction sirf dot products xᵢᵀxⱼ use karte hain, isliye unhe k(xᵢ, xⱼ) se badal do: f(x) = Σ αᵢyᵢ k(xᵢ, x) + b. RBF kernel ke saath boundary bahut flexible ho sakti hai; σ (ya γ) aur C dono cross-validation se tune hote hain. Prediction cost support vectors ki sankhya par depend karta hai, n par nahi."
+      ],
+      "example": {
+        "problem": "Teen points: (1, 1) → +1, (2, 3) → +1, (−1, −1) → −1. Hard-margin SVM ka w, b, support vectors, margin width aur dual α nikaalo.",
+        "steps": [
+          "Opposite classes ke sabse paas wale points (1, 1) aur (−1, −1) hain; boundary inke perpendicular bisector par hogi, w ∝ (1, 1) aur midpoint (0, 0) par f = 0 ⇒ b = 0.",
+          "w = (a, a) lo. Support vector (1, 1) par yf = 2a = 1 ⇒ a = 0.5, to w = (0.5, 0.5), b = 0.",
+          "Check (2, 3): f = 0.5·2 + 0.5·3 = 2.5 ≥ 1, constraint slack ke saath satisfied ⇒ support vector nahi, α = 0.",
+          "Margin width = 2/‖w‖ = 2/√0.5 = 2√2 ≈ 2.83, jo (1, 1) aur (−1, −1) ki distance hi hai.",
+          "Dual: α = 0.25 dono support vectors par. w = 0.25·(+1)(1, 1) + 0.25·(−1)(−1, −1) = (0.5, 0.5) aur Σ αᵢyᵢ = 0.25 − 0.25 = 0, dono conditions satisfied.",
+          "Naya point (0.5, 0) label −1 ke saath: f = 0.25, yf = −0.25 ⇒ hinge loss = 1 − (−0.25) = 1.25 (misclassified).",
+          "**Answer**: w = (0.5, 0.5), b = 0, support vectors (1, 1) aur (−1, −1), margin ≈ 2.83, α = (0.25, 0, 0.25)."
+        ]
+      },
+      "mistakes": [
+        "Margin width ko 1/‖w‖ ya ‖w‖ bata dena. Canonical scaling (SV par yf = 1) mein do margin lines ke beech ki doori 2/‖w‖ hai; hyperplane se ek side ki doori 1/‖w‖.",
+        "Sochna ki correctly classified point ka hinge loss hamesha 0 hai. Agar 0 < yf < 1 (margin ke andar), loss 1 − yf > 0 hai.",
+        "w ko kisi bhi multiple mein likhna, jaise (1, 1) aur b = 0. Sign same rehta hai par SVM ki canonical scaling (SV par yf = 1, minimum ‖w‖) toot jaati hai, aur margin galat nikalta hai."
+      ],
+      "revision": [
+        "Hard margin: min ½‖w‖² s.t. yᵢ(wᵀxᵢ + b) ≥ 1; margin = 2/‖w‖.",
+        "w = Σ αᵢyᵢxᵢ, Σ αᵢyᵢ = 0; αᵢ > 0 ⇒ support vector.",
+        "Soft margin: + C Σ ξᵢ; bada C ⇒ kam violations, narrow margin.",
+        "Hinge loss = max(0, 1 − yf).",
+        "Kernel SVM: f(x) = Σ αᵢyᵢ k(xᵢ, x) + b."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w10-q1",
+          "question": "Ek hard-margin SVM ka solution w = (3, 4) hai (canonical scaling, support vectors par yf = 1). Do margin hyperplanes ke beech ki doori (margin width) kitni hai?",
+          "options": [
+            "5",
+            "0.2",
+            "0.4",
+            "2.5"
+          ],
+          "answer": 2,
+          "explanation": "‖w‖ = √(9 + 16) = 5. Margin width = 2/‖w‖ = 2/5 = 0.4, isliye option C. Option B (1/‖w‖ = 0.2) sirf decision boundary se ek margin line tak ki doori hai. Option A ‖w‖ khud hai; bada ‖w‖ chhota margin deta hai, bada nahi. Option D ‖w‖/2 hai, formula ulta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w10-q2",
+          "question": "Ek SVM ka score f(x) = 0.3 hai aur true label y = +1. Is point ka hinge loss max(0, 1 − yf(x)) kitna hai?",
+          "options": [
+            "0.7",
+            "0",
+            "1.3",
+            "0.3"
+          ],
+          "answer": 0,
+          "explanation": "yf = 0.3, to hinge loss = max(0, 1 − 0.3) = 0.7, isliye option A. Option B ka trap: point sahi side par hai (f > 0), isliye loss 0 maan lena; par wo margin ke andar hai (yf < 1), to penalty lagti hai. Option C 1 + 0.3 hai, jo y = −1 par hota. Option D sirf f hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w10-q3",
+          "question": "Ek hard-margin SVM ka solution w = (1, 1), b = −3 hai. Training points: (1, 1) → −1, (2, 2) → +1, (0, 0) → −1, (3, 3) → +1. Kaunse points support vectors hain?",
+          "options": [
+            "(0, 0) aur (3, 3)",
+            "(1, 1) aur (2, 2)",
+            "Chaaron points",
+            "Sirf (2, 2)"
+          ],
+          "answer": 1,
+          "explanation": "yf nikaalo: (1, 1): −1 × (1 + 1 − 3) = 1; (2, 2): +1 × (4 − 3) = 1; (0, 0): −1 × (−3) = 3; (3, 3): +1 × (6 − 3) = 3. Support vectors wo hain jo margin par hain (yf = 1): (1, 1) aur (2, 2), option B. Option A ka trap: sabse 'extreme' points ko important samajhna; asal mein boundary se door wale points (yf > 1) ka α = 0 hai aur unhe hata do to solution nahi badalta. Option D bhool jaata hai ki Σ αᵢyᵢ = 0 ke liye dono classes se support vector chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w10-q4",
+          "question": "SVM dual ka solution do support vectors deta hai: x₁ = (1, 1), y₁ = −1, α₁ = 1 aur x₂ = (2, 2), y₂ = +1, α₂ = 1 (baaki sab α = 0). Primal weight vector w = Σ αᵢyᵢxᵢ kya hai?",
+          "options": [
+            "(3, 3)",
+            "(−1, −1)",
+            "(0.5, 0.5)",
+            "(1, 1)"
+          ],
+          "answer": 3,
+          "explanation": "w = 1·(−1)(1, 1) + 1·(+1)(2, 2) = (−1, −1) + (2, 2) = (1, 1), isliye option D. Ye in points ke hard-margin solution w = (1, 1) se match karta hai, aur Σ αᵢyᵢ = −1 + 1 = 0 bhi satisfied hai. Option A labels yᵢ ignore karke points jod deta hai. Option B signs ulte lagata hai (positive point ko minus). Option C α se multiply karne ke bajaye average le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w10-q5",
+          "question": "Soft-margin SVM (minimise ½‖w‖² + C Σ ξᵢ) mein C ko bahut bada karne ka aam taur par kya asar hota hai?",
+          "options": [
+            "Margin wide hota hai aur zyada training points margin ke andar ya galat side par allow hote hain",
+            "C sirf training speed badalta hai, decision boundary par koi asar nahi",
+            "Model apne aap non-linear (kernel) ban jaata hai",
+            "Margin violations bahut mehenge ho jaate hain, margin narrow hota hai aur model hard-margin jaisa behave karke noise par overfit kar sakta hai"
+          ],
+          "answer": 3,
+          "explanation": "C slack ka price hai. C → ∞ par koi ξᵢ > 0 sasta nahi, isliye optimiser margin chhota karke bhi har point ko sahi side par rakhne ki koshish karta hai, yaani hard-margin jaisa behaviour, isliye option D. Option A chhote C ka description hai, ulta trap. Option C galat hai kyunki non-linearity kernel choice se aati hai, C se nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w10-q6",
+          "question": "Sirf do training points hain: (3, 3) → +1 aur (1, 1) → −1. Hard-margin SVM ka canonical solution (w, b) kya hai?",
+          "options": [
+            "w = (1, 1), b = −4",
+            "w = (0.5, 0.5), b = −2",
+            "w = (2, 2), b = −8",
+            "w = (0.5, 0.5), b = 2"
+          ],
+          "answer": 1,
+          "explanation": "Do points ke liye boundary unke perpendicular bisector par hoti hai: w ∝ (3, 3) − (1, 1) = (2, 2), midpoint (2, 2). Dono par yf = 1 chahiye: w = (a, a) lo, to 6a + b = 1 aur −(2a + b) = 1 ⇒ 4a = 2 ⇒ a = 0.5, b = −2. Isliye option B; margin 2/‖w‖ = 2.83 = points ki distance. Options A aur C wahi boundary dete hain par yf = 2 aur 4 (canonical nahi; ‖w‖ minimum nahi), ye 'koi bhi scaling chalega' wala trap hai. Option D mein b ka sign galat hai: (3, 3) par f = 5 aur (1, 1) par f = 3, dono positive.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Ensembles: bagging, random forests and boosting",
+      "summary": "Is week aap seekhoge ki kai models ko jodkar ek strong model kaise banta hai: bagging aur bootstrap sampling variance kaise ghataate hain, random forest features ko randomise karke trees ko decorrelate kaise karta hai, aur AdaBoost sample weights aur learner weights αₜ se bias kaise ghataata hai.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Ensemble ka idea**: agar M classifiers ke errors independent hon aur har ek 50% se behtar ho, to majority vote individual se zyada accurate hota hai. Jaise 3 independent classifiers, har ek 0.7 accurate: majority sahi hone ki probability 0.7³ + 3(0.7²)(0.3) = 0.784. Asal mein errors correlated hote hain, isliye ensemble methods diversity paida karne ke tareeke hain.",
+        "**Bootstrap sampling**: n points ke dataset se n points with replacement chuno. Kisi specific point ke ek bhi baar na chune jaane ki probability (1 − 1/n)ⁿ hai, jo bade n par 1/e ≈ 0.368 ke paas hai. Yaani har bootstrap sample mein lagbhag 63.2% unique points hote hain; baaki out-of-bag (OOB) points validation ke kaam aate hain.",
+        "**Bagging (bootstrap aggregating)**: B bootstrap samples par B alag models train karo (aam taur par deep, high-variance trees), phir classification mein majority vote ya regression mein average lo. Averaging variance ghataata hai, bias lagbhag same rehta hai. Models parallel mein train ho sakte hain.",
+        "**Random forest**: bagging + har split par sirf random subset of features consider karna (classification mein aksar √d, jaise d = 64 par 8). Isse ek strong feature har tree ki root par nahi aata, trees kam correlated hote hain aur averaging zyada variance ghataata hai. OOB error aur feature importance free mein milte hain.",
+        "**Boosting aur AdaBoost**: weak learners (jaise depth-1 stumps) ko sequentially train karo, har round pichhli galtiyon par focus kare. AdaBoost (labels ±1): weights Dᵢ = 1/n se shuru. Round t: weighted error εₜ = Σ Dᵢ [hₜ(xᵢ) ≠ yᵢ], learner weight αₜ = ½ ln((1 − εₜ)/εₜ). Update Dᵢ ← Dᵢ · exp(−αₜ yᵢ hₜ(xᵢ)) / Zₜ: galat points ka weight e^αₜ se badhta hai, sahi ka e^−αₜ se ghatta hai.",
+        "**AdaBoost ke properties**: final classifier H(x) = sign(Σ αₜ hₜ(x)), weighted vote, simple majority nahi. εₜ = 0.5 par αₜ = 0 (random guess ka koi vote nahi), εₜ < 0.5 par αₜ > 0. Update ke baad galat points ka total weight exactly 0.5 ho jaata hai, isliye same learner agle round mein kaam ka nahi rehta. Boosting mainly bias ghataata hai; ye exponential loss Σ exp(−yᵢ f(xᵢ)) ka greedy minimisation hai aur label noise par sensitive hai."
+      ],
+      "example": {
+        "problem": "AdaBoost, 10 training points, shuru mein har weight 0.1. Pehla decision stump 3 points (index 2, 5, 8) galat classify karta hai. ε₁, α₁ aur updated weights nikaalo.",
+        "steps": [
+          "ε₁ = 3 × 0.1 = 0.3.",
+          "α₁ = ½ ln((1 − 0.3)/0.3) = ½ ln(7/3) ≈ 0.424.",
+          "Unnormalised: galat points 0.1 × e^0.424 ≈ 0.1528, sahi points 0.1 × e^−0.424 ≈ 0.0655.",
+          "Z = 3 × 0.1528 + 7 × 0.0655 ≈ 0.9165.",
+          "Normalised: galat points 0.1528/0.9165 = 1/6 ≈ 0.1667, sahi points 1/14 ≈ 0.0714.",
+          "Galat points ka total weight = 3 × 1/6 = 0.5, sahi ka bhi 0.5. Isliye agla stump in teen points par zyada dhyaan dega.",
+          "**Answer**: ε₁ = 0.3, α₁ ≈ 0.424, weights: misclassified 0.1667 each, correctly classified 0.0714 each."
+        ],
+        "code": "import math\n\nn = 10\nw = [1 / n] * n\nwrong = {2, 5, 8}                      # points the first stump misclassifies\neps = sum(w[i] for i in wrong)\nalpha = 0.5 * math.log((1 - eps) / eps)\nw = [wi * math.exp(alpha if i in wrong else -alpha) for i, wi in enumerate(w)]\nZ = sum(w)\nw = [wi / Z for wi in w]\nprint(round(eps, 3), round(alpha, 3), round(w[2], 4), round(w[0], 4))\nprint(round(sum(w[i] for i in wrong), 3))\n# 0.3 0.424 0.1667 0.0714\n# 0.5"
+      },
+      "mistakes": [
+        "AdaBoost ka final output simple majority vote samajhna. H(x) = sign(Σ αₜhₜ(x)); ek accurate learner (bada α) do kamzor learners ko overrule kar sakta hai.",
+        "Weights update ke baad normalise karna bhool jaana. Bina Zₜ se divide kiye weights distribution nahi rehte aur agla εₜ galat aata hai.",
+        "Bagging ko bias ghataane ka tool samajhna. Bagging high-variance models (deep trees) ka variance ghataata hai; high-bias models (stumps) ke liye boosting behtar hai."
+      ],
+      "revision": [
+        "P(point bootstrap mein nahi) = (1 − 1/n)ⁿ → 1/e ≈ 0.368.",
+        "Bagging: parallel, variance ↓; boosting: sequential, bias ↓.",
+        "Random forest: har split par random feature subset (≈ √d).",
+        "αₜ = ½ ln((1 − εₜ)/εₜ); galat × e^αₜ, sahi × e^−αₜ, phir normalise.",
+        "H(x) = sign(Σ αₜhₜ(x))."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w11-q1",
+          "question": "Bagging aur boosting ke farak ke baare mein kaunsa statement sabse sahi hai?",
+          "options": [
+            "Bagging independent bootstrap samples par parallel models train karke mainly variance ghataata hai; boosting sequentially pichhli galtiyon par focus karke mainly bias ghataata hai",
+            "Bagging mainly bias ghataata hai aur boosting mainly variance",
+            "Dono same algorithm hain, sirf models ki sankhya alag hai",
+            "Bagging har naye model ko pichhle model ke misclassified points par zyada weight dekar train karta hai"
+          ],
+          "answer": 0,
+          "explanation": "Bagging alag bootstrap samples par high-variance models (jaise deep trees) average karta hai, jo variance ghataata hai; boosting weak (high-bias) learners ko sequentially jodkar bias ghataata hai. Isliye option A. Option B roles ulte kar deta hai. Option D boosting (AdaBoost) ka description hai jo bagging ke naam se diya gaya; bagging mein models ek doosre se independent hote hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w11-q2",
+          "question": "AdaBoost ke ek round mein weak learner ka weighted error ε = 0.2 hai. Iska learner weight α = ½ ln((1 − ε)/ε) kitna hai?",
+          "options": [
+            "0.2",
+            "1.386",
+            "0.8",
+            "0.693"
+          ],
+          "answer": 3,
+          "explanation": "α = ½ ln(0.8/0.2) = ½ ln 4 ≈ 0.693, isliye option D. Option B (ln 4 ≈ 1.386) ½ ka factor bhool jaata hai. Option C (0.8) accuracy 1 − ε hai aur option A error khud; dono ko vote weight samajhna common trap hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w11-q3",
+          "question": "AdaBoost: 10 points, sabka weight 0.1. Pehla stump 3 points galat classify karta hai (ε = 0.3). Update aur normalisation ke baad har misclassified point ka weight kya hoga?",
+          "options": [
+            "0.1",
+            "0.153",
+            "0.167",
+            "0.333"
+          ],
+          "answer": 2,
+          "explanation": "α = ½ ln(7/3) ≈ 0.424. Galat: 0.1 e^0.424 ≈ 0.1528; sahi: 0.1 e^−0.424 ≈ 0.0655. Z = 3(0.1528) + 7(0.0655) ≈ 0.9165. Normalised galat weight ≈ 0.1528/0.9165 = 1/6 ≈ 0.167, isliye option C (galat points ka total 0.5 ho jaata hai). Option B unnormalised value hai, Z se divide karna bhool gaye. Option D 0.1/0.3 hai, jaise saara weight sirf galat points mein baant diya. Option A maanta hai ki weights badalte hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w11-q4",
+          "question": "5 points ke dataset se size 5 ka ek bootstrap sample (with replacement) banaya. Kisi ek specific point ke sample mein ek bhi baar na aane ki probability kya hai?",
+          "options": [
+            "0.2",
+            "0.328",
+            "0.368",
+            "0.672"
+          ],
+          "answer": 1,
+          "explanation": "Har draw mein us point ke na aane ki probability 4/5 hai, aur 5 independent draws hain: (0.8)⁵ = 0.32768 ≈ 0.328, isliye option B. Option C (1/e ≈ 0.368) bade n ki limit hai, n = 5 par exact value nahi. Option D complement hai (kam se kam ek baar aane ki probability). Option A sirf ek draw ka 1/5 hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w11-q5",
+          "question": "Teen independent classifiers hain, har ek ki accuracy 0.7. Inke majority vote (kam se kam 2 sahi) ki accuracy kya hai?",
+          "options": [
+            "0.7",
+            "0.343",
+            "0.784",
+            "0.973"
+          ],
+          "answer": 2,
+          "explanation": "P(teeno sahi) = 0.7³ = 0.343, P(exactly 2 sahi) = 3 × 0.7² × 0.3 = 0.441. Total = 0.784, isliye option C. Option B sirf 'teeno sahi' wala case hai. Option D (1 − 0.3³) 'kam se kam ek sahi' hai, jo majority vote nahi. Option A maanta hai ki ensemble se kuch nahi badalta; independence hone par badalta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w11-q6",
+          "question": "AdaBoost ke teen rounds mein weighted errors ε₁ = 0.4, ε₂ = 0.1, ε₃ = 0.3 the. Ek naye point x par learners ke outputs h₁(x) = +1, h₂(x) = −1, h₃(x) = +1 hain. Final prediction H(x) = sign(Σ αₜhₜ(x)) kya hai?",
+          "options": [
+            "+1, kyunki teen mein se do learners +1 kehte hain",
+            "+1, score ≈ +0.47",
+            "−1, score ≈ −1.10",
+            "−1, score ≈ −0.47"
+          ],
+          "answer": 3,
+          "explanation": "α₁ = ½ ln(0.6/0.4) ≈ 0.203, α₂ = ½ ln(0.9/0.1) ≈ 1.099, α₃ = ½ ln(0.7/0.3) ≈ 0.424. Score = 0.203 − 1.099 + 0.424 ≈ −0.472 < 0, isliye H(x) = −1, option D. Option A ka trap: simple majority vote lena; sabse accurate learner (ε = 0.1) ka vote baaki dono ke milaakar se bhaari hai. Option B sign galat le leta hai. Option C sirf h₂ ka αh dekhta hai aur baaki votes bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Neural networks and multiclass classification",
+      "summary": "Is week aap seekhoge ki perceptron se multi-layer perceptron (MLP) kaise banta hai, activation functions kyun zaroori hain, forward pass aur backpropagation (chain rule) kaise chalte hain, aur multiclass problems softmax, cross-entropy, one-vs-rest aur one-vs-one se kaise solve hote hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Perceptron se MLP**: ek linear unit sirf linear boundary bana sakta hai, isliye XOR jaisa pattern nahi seekh sakta. Beech mein hidden layers lagao: h = g(W₁x + b₁), output = f(W₂h + b₂). Layer d_in → d_out mein d_in · d_out weights + d_out biases hote hain.",
+        "**Activation functions**: non-linearity g ke bina saari layers milkar ek hi linear map ban jaati hain (W₂W₁x), depth bekaar. Common choices: sigmoid σ(z) (0 se 1, saturate hota hai), tanh (−1 se 1), ReLU max(0, z) (sasta, positive side par gradient 1, isliye deep networks mein default). Universal approximation: ek kaafi wide hidden layer kisi bhi continuous function ko compact set par approximate kar sakti hai.",
+        "**Forward pass**: input se output tak layer by layer: z₁ = W₁x + b₁, h = g(z₁), z₂ = W₂h + b₂, ŷ = f(z₂). Binary output ke liye f = sigmoid aur log-loss, regression ke liye f = identity aur squared loss.",
+        "**Backpropagation**: loss ka har weight ke saath gradient chain rule se, output se input ki taraf. Sigmoid + log-loss ya softmax + cross-entropy ke liye ∂L/∂z₂ = ŷ − y (bahut saaf form). Phir ∂L/∂W₂ = (∂L/∂z₂) hᵀ, ∂L/∂h = W₂ᵀ(∂L/∂z₂), ∂L/∂z₁ = ∂L/∂h ⊙ g′(z₁), ∂L/∂W₁ = (∂L/∂z₁) xᵀ. ReLU ka g′ 0 hai jab z < 0, isliye wahan se gradient aage nahi jaata. Ek backward pass ka cost forward pass ke same order (kuch guna) ka hota hai, isliye lakhon weights ke gradients ek saath sasta milte hain.",
+        "**Training**: mini-batch stochastic gradient descent (ya Adam jaise variants) se weights update. Loss non-convex hai, isliye initialisation matter karta hai (sab weights 0 rakhne se hidden units symmetric reh jaate hain). Overfitting rokne ke liye L2 weight decay, early stopping aur dropout.",
+        "**Multiclass: softmax aur cross-entropy**: K classes ke liye K logits z, pₖ = e^zₖ / Σⱼ e^zⱼ (positive, sum 1; sab logits mein constant jodne se p nahi badalta). Loss = −log p_true. Gradient w.r.t. logits = p − y (y one-hot). K = 2 par softmax logistic regression ban jaata hai.",
+        "**One-vs-rest aur one-vs-one**: binary classifiers (SVM, perceptron) se multiclass: OvR mein K classifiers (class k vs baaki sab), sabse bada score jeetta hai; class imbalance aur scores ki calibration issue ho sakti hai. OvO mein K(K − 1)/2 classifiers (har pair), majority vote; har classifier chhote data par train hota hai."
+      ],
+      "example": {
+        "problem": "Network: input x = (1, 2), hidden layer W₁ = [[1, −1], [0.5, 1]], b₁ = (0, −1), ReLU; output w₂ = (2, −1), b₂ = 0.5, sigmoid. True label y = 1, loss = log-loss. Forward pass, loss aur backprop gradients nikaalo.",
+        "steps": [
+          "z₁ = (1·1 − 1·2 + 0, 0.5·1 + 1·2 − 1) = (−1, 1.5). ReLU: h = (0, 1.5).",
+          "z₂ = 2·0 − 1·1.5 + 0.5 = −1, ŷ = σ(−1) ≈ 0.269. Loss = −ln 0.269 ≈ 1.313.",
+          "Output delta: ∂L/∂z₂ = ŷ − y ≈ 0.269 − 1 = −0.731.",
+          "∂L/∂w₂ = (ŷ − y) h = (0, −1.097); ∂L/∂b₂ = −0.731. Pehla hidden unit (h₁ = 0) w₂ ke gradient mein kuch contribute nahi karta.",
+          "∂L/∂h = (ŷ − y) w₂ = (−1.462, 0.731). ReLU′(z₁) = (0, 1) kyunki z₁₁ = −1 < 0, to ∂L/∂z₁ = (0, 0.731).",
+          "∂L/∂W₁: pehli row (0, 0), doosri row 0.731 · x = (0.731, 1.462). Numerical (finite-difference) check se yahi values milti hain.",
+          "**Answer**: ŷ ≈ 0.269, loss ≈ 1.313; gradient descent w₂ ke doosre weight ko badhaayega (−1 se upar) aur W₁ ki doosri row ko ghataayega, taaki ŷ 1 ki taraf jaaye."
+        ],
+        "code": "import math\n\ndef sigmoid(z):\n    return 1 / (1 + math.exp(-z))\n\nx = [1, 2]\nW1 = [[1, -1], [0.5, 1]]\nb1 = [0, -1]\nw2 = [2, -1]\nb2 = 0.5\ny = 1\n\nz1 = [sum(w * xi for w, xi in zip(row, x)) + b for row, b in zip(W1, b1)]\nh = [max(0, z) for z in z1]\nz2 = sum(w * hi for w, hi in zip(w2, h)) + b2\np = sigmoid(z2)\nloss = -math.log(p)\n\nd2 = p - y                                   # dL/dz2 for sigmoid + log-loss\ngrad_w2 = [d2 * hi for hi in h]\nd1 = [d2 * w * (1 if z > 0 else 0) for w, z in zip(w2, z1)]\ngrad_W1 = [[d * xi for xi in x] for d in d1]\nprint(z1, h, z2, round(p, 3), round(loss, 3))\nprint([round(g, 3) for g in grad_w2], [[round(g, 3) for g in r] for r in grad_W1])\n# [-1, 1.5] [0, 1.5] -1.0 0.269 1.313\n# [-0.0, -1.097] [[-0.0, -0.0], [0.731, 1.462]]"
+      },
+      "mistakes": [
+        "Parameters ginte waqt biases bhool jaana: 4 → 8 → 3 network mein 4·8 + 8 + 8·3 + 3 = 67 parameters hain, sirf 56 weights nahi.",
+        "Backprop mein activation ka derivative chhod dena. ReLU unit jiska z < 0 tha, uske incoming weights ka gradient 0 hai; sigmoid layer mein σ(1 − σ) se multiply karna padta hai.",
+        "Softmax ko 'z ko sum se divide karna' samajhna. pₖ = e^zₖ / Σ e^zⱼ hai; exponent ke bina negative logits par probability negative bhi aa sakti hai."
+      ],
+      "revision": [
+        "Non-linear activation ke bina deep network = linear model.",
+        "Layer params = d_in · d_out + d_out.",
+        "Sigmoid + log-loss ya softmax + CE: ∂L/∂z = ŷ − y.",
+        "ReLU′ = 1 (z > 0), 0 (z < 0); backprop = chain rule, output se input.",
+        "OvR: K classifiers; OvO: K(K − 1)/2."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w12-q1",
+          "question": "Ek fully connected network ki architecture 4 → 8 → 3 hai (4 inputs, 8 hidden units, 3 outputs), har layer mein bias ke saath. Total kitne trainable parameters hain?",
+          "options": [
+            "56",
+            "15",
+            "96",
+            "67"
+          ],
+          "answer": 3,
+          "explanation": "Input → hidden: 4 × 8 weights + 8 biases = 40. Hidden → output: 8 × 3 + 3 = 27. Total 67, isliye option D. Option A (56) sirf weights ginta hai, biases bhool jaata hai. Option B (15) neurons ki ginti hai. Option C (96) 4 × 8 × 3 multiply karta hai, jaise har input seedha har output se har hidden unit ke through alag weight rakhta ho.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w12-q2",
+          "question": "5 classes wali problem ko binary SVMs se one-vs-one (OvO) strategy se solve karna hai. Kitne binary classifiers train karne padenge?",
+          "options": [
+            "5",
+            "10",
+            "20",
+            "25"
+          ],
+          "answer": 1,
+          "explanation": "OvO har unordered pair ke liye ek classifier banata hai: K(K − 1)/2 = 5 × 4/2 = 10, isliye option B. Option A (5) one-vs-rest ka count hai. Option C (20) ordered pairs ginta hai, jabki (A vs B) aur (B vs A) ek hi classifier hai. Option D (25) K² hai, jisme class ka khud se pair bhi shaamil ho gaya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w12-q3",
+          "question": "Input x = (2, 1). Hidden layer: W₁ = [[1, −3], [1, 1]], bias 0, ReLU activation. Output: w₂ = (2, −0.5), b₂ = 0.5, sigmoid. Network ka output lagbhag kya hai?",
+          "options": [
+            "0.731",
+            "0.182",
+            "0.269",
+            "0.047"
+          ],
+          "answer": 2,
+          "explanation": "z₁ = (2 − 3, 2 + 1) = (−1, 3), ReLU ⇒ h = (0, 3). z₂ = 2·0 − 0.5·3 + 0.5 = −1, σ(−1) ≈ 0.269, isliye option C. Option D (σ(−3) ≈ 0.047) ReLU lagana bhool jaata hai aur −1 ko aage bhej deta hai. Option B (σ(−1.5)) output bias b₂ chhod deta hai. Option A σ(+1) hai, sign galat.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w12-q4",
+          "question": "Ek 3-class classifier ke logits z = (3, 1, 0) hain. Softmax ke baad class 1 ki probability lagbhag kya hai?",
+          "options": [
+            "0.844",
+            "0.75",
+            "0.953",
+            "0.114"
+          ],
+          "answer": 0,
+          "explanation": "e³ ≈ 20.09, e¹ ≈ 2.718, e⁰ = 1, sum ≈ 23.80. p₁ = 20.09/23.80 ≈ 0.844, isliye option A. Option B (3/4) logits ko seedha unke sum se divide karta hai, exponent ke bina. Option C σ(3) hai, jo binary sigmoid hai aur baaki classes ko ignore karta hai. Option D class 2 ki probability hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w12-q5",
+          "question": "Softmax output p = (0.7, 0.2, 0.1) hai aur true class doosri (class 2) hai. Cross-entropy loss ka logits z ke saath gradient ∂L/∂z kya hai?",
+          "options": [
+            "(0.7, −0.8, 0.1)",
+            "(−0.7, 0.8, −0.1)",
+            "(0, −0.8, 0)",
+            "(0.7, 0.2, −0.9)"
+          ],
+          "answer": 0,
+          "explanation": "Softmax + cross-entropy ke liye ∂L/∂z = p − y, y = (0, 1, 0). To (0.7 − 0, 0.2 − 1, 0.1 − 0) = (0.7, −0.8, 0.1), isliye option A. Gradient descent galat class 1 ke logit ko ghataayega aur true class ke logit ko badhaayega. Option B y − p hai (sign ulta, ascent direction). Option C sirf true class ka component rakhta hai; softmax ki coupling ki wajah se baaki logits ka gradient bhi nonzero hai. Option D one-hot galat position (class 3) par rakhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w12-q6",
+          "question": "Ek chhota network: z = w₁x, h = ReLU(z), ŷ = w₂h, loss L = ½(ŷ − y)². Values: x = 2, w₁ = 0.5, w₂ = 3, y = 1. Backpropagation se ∂L/∂w₁ kitna hai?",
+          "options": [
+            "2",
+            "12",
+            "6",
+            "24"
+          ],
+          "answer": 1,
+          "explanation": "Forward: z = 1, h = 1, ŷ = 3. ∂L/∂ŷ = ŷ − y = 2. Chain rule: ∂L/∂w₁ = (ŷ − y) · w₂ · ReLU′(z) · x = 2 · 3 · 1 · 2 = 12, isliye option B (finite difference se bhi 12 aata hai). Option A (2) ∂L/∂w₂ = (ŷ − y)h hai, galat weight. Option C (6) input x se multiply karna bhool jaata hai. Option D (24) loss ka ½ ignore karke ∂L/∂ŷ = 2(ŷ − y) = 4 leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

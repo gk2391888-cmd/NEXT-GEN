@@ -1,0 +1,1438 @@
+{
+  "subjectId": "dlgenai",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Neurons, Activations and the Forward Pass",
+      "summary": "Is week aap ek artificial neuron ka maths, activation functions, loss functions aur ek poore network ka forward pass haath se calculate karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Artificial neuron**: inputs x₁…xₙ ka weighted sum leta hai, bias jodta hai aur activation lagata hai: z = w·x + b, a = φ(z). Weights batate hain ki kaunsa input kitna important hai, aur bias decision boundary ko origin se shift karta hai.",
+        "**Layer aur matrix form**: ek dense (fully connected) layer jisme n inputs aur m neurons hain, use W (m × n) aur b (m) se likhte hain: a = φ(Wx + b). Is layer ke parameters = n·m + m. Poora network bas aisi layers ki chain hai.",
+        "**Activation functions**: sigmoid σ(z) = 1/(1 + e^(−z)) output (0, 1) deta hai; tanh output (−1, 1) deta hai aur zero-centred hai; ReLU = max(0, z) sasta hai aur positive side par saturate nahi hota. Sigmoid/tanh bade |z| par saturate hote hain, isliye unka gradient lagbhag 0 ho jaata hai.",
+        "**Non-linearity kyun zaroori hai**: do linear layers W₂(W₁x + b₁) + b₂ = (W₂W₁)x + (W₂b₁ + b₂) phir se ek hi linear map hai. Activation ke bina kitni bhi layers stack karo, model linear hi rahega aur XOR jaisa simple pattern bhi nahi seekh paayega.",
+        "**Output layer aur softmax**: multi-class classification mein last layer logits z₁…z_K deti hai aur softmax pₖ = e^(zₖ) / Σⱼ e^(zⱼ) unhe probabilities banata hai (sab positive, sum = 1). Binary case mein ek sigmoid output kaafi hai.",
+        "**Loss functions**: regression ke liye MSE = (1/N) Σ (y − ŷ)². Classification ke liye cross-entropy = −ln(sahi class ki predicted probability). Binary cross-entropy = −[y ln p + (1 − y) ln(1 − p)]. Batch par in losses ka mean lete hain.",
+        "**Forward pass**: input se shuru karke har layer mein z = Wx + b aur a = φ(z) compute karte jao, last mein loss nikaalo. Training (next week) isi forward pass ke baad backpropagation se gradients nikaal kar weights update karti hai."
+      ],
+      "example": {
+        "problem": "Ek chhota network: input x = [1, 2]. Hidden layer ke 2 ReLU neurons: W₁ = [[1, −1], [0.5, 1]], b₁ = [0, −1]. Output neuron linear hai: w₂ = [2, −3], b₂ = 1. Output ŷ nikaalo, aur agar target y = −3 hai to squared error bhi batao.",
+        "steps": [
+          "Hidden neuron 1: z₁ = 1·1 + (−1)·2 + 0 = −1, ReLU(−1) = 0.",
+          "Hidden neuron 2: z₂ = 0.5·1 + 1·2 − 1 = 1.5, ReLU(1.5) = 1.5.",
+          "Hidden activation vector h = [0, 1.5]. Dhyaan do, neuron 1 'dead' hai is input ke liye, iska output 0 hai.",
+          "Output: ŷ = 2·0 + (−3)·1.5 + 1 = −3.5. Output linear hai, isliye yahan koi ReLU nahi lagta.",
+          "Squared error = (y − ŷ)² = (−3 − (−3.5))² = 0.5² = 0.25.",
+          "**Answer: ŷ = −3.5 aur squared error = 0.25.**"
+        ],
+        "code": "import math\n\ndef relu(z):\n    return max(0.0, z)\n\nx = [1, 2]\nW1 = [[1, -1], [0.5, 1]]\nb1 = [0, -1]\nh = [relu(sum(w * xi for w, xi in zip(row, x)) + b) for row, b in zip(W1, b1)]\ny_hat = 2 * h[0] - 3 * h[1] + 1\nprint(h, y_hat, (-3 - y_hat) ** 2)   # [0.0, 1.5] -3.5 0.25"
+      },
+      "mistakes": [
+        "Bias ko bhool jaana: z = w·x likh dena aur b chhod dena. Har neuron ka apna bias hota hai, isliye parameter count mein bhi har neuron ka +1 jodna padta hai.",
+        "Softmax ke baad cross-entropy mein galat class ki probability le lena. Loss hamesha −ln(p of the TRUE class) hota hai, sabse badi probability ka nahi.",
+        "Output layer par bhi ReLU laga dena jab target negative ho sakta hai (regression). Regression ke output par usually linear activation rakho, warna model negative value predict hi nahi kar paayega."
+      ],
+      "revision": [
+        "Neuron: z = w·x + b, a = φ(z).",
+        "Dense layer params = inputs × units + units.",
+        "Activation ke bina deep network = ek linear model.",
+        "Softmax: pₖ = e^(zₖ)/Σ e^(zⱼ); cross-entropy = −ln(p_true).",
+        "BCE = −[y ln p + (1 − y) ln(1 − p)], batch par mean."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w1-q1",
+          "question": "Ek neuron ke weights w = [0.5, −1, 2], bias b = −0.5 aur activation ReLU hai. Input x = [2, 1, 0.5] ke liye neuron ka output kya hoga?",
+          "options": [
+            "1.0",
+            "0.5",
+            "0.62",
+            "0"
+          ],
+          "answer": 1,
+          "explanation": "z = 0.5·2 + (−1)·1 + 2·0.5 − 0.5 = 1 − 1 + 1 − 0.5 = 0.5, aur ReLU(0.5) = 0.5, isliye option B sahi hai. Option A (1.0) tab aata hai jab bias −0.5 jodna bhool jaao. Option C (0.62) sigmoid(0.5) hai, yaani galat activation. Option D tab hota jab z negative hota, par yahan z positive hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w1-q2",
+          "question": "Ek 5-layer network ke saare hidden layers se activation functions hata diye jaayein (sirf z = Wx + b bache). Iska sabse sahi nateeja kya hai?",
+          "options": [
+            "Network phir bhi koi bhi non-linear function seekh sakta hai, bas training slow ho jaayegi",
+            "Saare gradients exactly zero ho jaayenge, isliye training ruk jaayegi",
+            "Output hamesha 0 aur 1 ke beech rahega",
+            "Poora network ek single affine map (Ax + c) ke barabar ho jaata hai, isliye extra layers se koi nayi expressive power nahi milti"
+          ],
+          "answer": 3,
+          "explanation": "Affine maps ka composition affine hi hota hai: W₂(W₁x + b₁) + b₂ = (W₂W₁)x + (W₂b₁ + b₂). Isliye 5 layers bhi ek hi linear layer jitna hi kar sakti hain, option D sahi hai. Option A sabse tempting trap hai: depth akele non-linearity nahi laati, activation laata hai. Option B galat hai, linear network ke gradients non-zero hote hain. Option C sigmoid output ke baare mein hai, yahan koi squashing hai hi nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w1-q3",
+          "question": "Ek 3-class classifier ke logits [2, 1, 0] hain aur sahi class doosri wali hai (logit 1). Softmax ke baad cross-entropy loss (natural log) kitna hai?",
+          "options": [
+            "0.41",
+            "0.24",
+            "1.41",
+            "0.61"
+          ],
+          "answer": 2,
+          "explanation": "Softmax: e² + e¹ + e⁰ = 7.389 + 2.718 + 1 = 11.107, to sahi class ki probability = 2.718/11.107 = 0.245. Loss = −ln(0.245) = 1.41, option C. Option A (0.41) = −ln(0.665) pehli class ka loss hai, yaani sabse badi probability utha li. Option B (0.24) probability khud hai, loss nahi. Option D (0.61) log base 10 se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w1-q4",
+          "question": "MNIST ke liye ek MLP: input 784 → Dense(128) → Dense(64) → Dense(10). Har Dense layer mein bias hai. Total trainable parameters kitne hain?",
+          "options": [
+            "109184",
+            "110170",
+            "100480",
+            "109386"
+          ],
+          "answer": 3,
+          "explanation": "Har layer: inputs × units + units. 784·128 + 128 = 100480; 128·64 + 64 = 8256; 64·10 + 10 = 650. Total = 109386, option D. Option A (109184) biases chhod deta hai. Option B (110170) input layer ke 784 'neurons' ke liye bhi bias jod deta hai, jabki input layer ke koi parameters nahi hote. Option C sirf pehli layer ka count hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w1-q5",
+          "question": "Binary classifier do examples par probability p = 0.8 (class 1 ki) predict karta hai. Pehle ka true label 1 hai, doosre ka 0. Mean binary cross-entropy (natural log) kya hai?",
+          "options": [
+            "0.916",
+            "0.223",
+            "1.609",
+            "1.833"
+          ],
+          "answer": 0,
+          "explanation": "Label 1: −ln(0.8) = 0.223. Label 0: −ln(1 − 0.8) = −ln(0.2) = 1.609. Mean = (0.223 + 1.609)/2 = 0.916, option A. Option B tab aata hai jab doosre example ke liye bhi −ln(0.8) le lo, yaani label 0 par (1 − p) lena bhool jaao. Option C sirf doosre example ka loss hai, aur option D (1.833) sum hai, mean nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w1-q6",
+          "question": "Input x = [1, 2]. Hidden layer ke 2 ReLU neurons: W₁ = [[1, −1], [0.5, 1]] (har row ek neuron), b₁ = [0, −1]. Output neuron linear hai: w₂ = [2, −3], b₂ = 1. Network ka output kya hai?",
+          "options": [
+            "−5.5",
+            "−3.5",
+            "−4.5",
+            "0"
+          ],
+          "answer": 1,
+          "explanation": "z₁ = 1 − 2 + 0 = −1 → ReLU = 0; z₂ = 0.5 + 2 − 1 = 1.5 → ReLU = 1.5. Output = 2·0 − 3·1.5 + 1 = −3.5, option B. Option A (−5.5) ReLU skip karke z₁ = −1 ko seedha use karta hai. Option C (−4.5) output bias b₂ bhool jaata hai. Option D output par bhi ReLU laga deta hai, jabki output neuron linear hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Training Networks: Optimisers and Regularisation",
+      "summary": "Is week aap backpropagation ka idea, mini-batch gradient descent, momentum/Adam jaise optimisers, learning rate ka role, aur overfitting rokne ke liye L2, dropout aur early stopping seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Training loop**: forward pass se loss nikaalo, backpropagation se har parameter ka gradient ∂L/∂w nikaalo (chain rule, output se input ki taraf), phir update karo: w ← w − η·∂L/∂w. Yahan η learning rate hai. Frameworks gradients khud nikaalte hain (autodiff), par maths yahi hai.",
+        "**Mini-batch, step aur epoch**: ek step = ek mini-batch par ek update. Ek epoch = poora training data ek baar. N samples aur batch size B ho to ek epoch mein ⌈N/B⌉ steps hote hain (aakhri batch chhota ho sakta hai). Chhota batch noisy par sasta gradient deta hai, jo aksar generalisation mein madad karta hai.",
+        "**Learning rate**: bahut bada η ho to loss oscillate ya diverge karta hai; bahut chhota ho to training bahut slow hoti hai ya bure region mein atak jaati hai. Practice mein η sabse important hyperparameter hai; schedules (step decay, cosine, warm-up) training ke saath η ko ghatate hain.",
+        "**Momentum aur Adam**: momentum pichhle gradients ka running sum rakhta hai: v ← βv + g, w ← w − ηv (β ≈ 0.9), jisse consistent direction mein speed badhti hai aur zig-zag kam hota hai. RMSProp har parameter ka step uske recent gradient magnitude se scale karta hai. Adam dono ko jodta hai (first moment + second moment, bias correction ke saath) aur ek accha default hai.",
+        "**Overfitting**: training loss girta rahe par validation loss ek point ke baad badhne lage, to model training data ko yaad kar raha hai. Isliye data ko train/validation/test mein baanto; hyperparameters validation par chuno aur test set sirf final report ke liye rakho.",
+        "**L2 regularisation (weight decay)**: loss mein λΣw² jodne se gradient mein 2λw add hota hai, jo har step weights ko zero ki taraf kheenchta hai. Chhote weights = smooth function = kam overfitting.",
+        "**Dropout aur early stopping**: dropout training ke time har unit ko probability p (rate) se zero kar deta hai; inverted dropout bache hue units ko 1/(1 − p) se scale karta hai taaki inference par kuch badalna na pade. Early stopping validation loss monitor karta hai aur kuch epochs (patience) tak sudhaar na ho to training rok kar best weights wapas le aata hai.",
+        "**Keras workflow**: `Sequential` mein layers likho, `compile` mein optimizer, loss aur metrics do, phir `fit` mein epochs, batch_size aur validation data. Integer labels ke liye `sparse_categorical_crossentropy` aur one-hot labels ke liye `categorical_crossentropy` use hota hai."
+      ],
+      "example": {
+        "problem": "Ek linear neuron ŷ = wx + b hai, w = 0.5, b = 0. Ek sample x = 2, y = 3. Loss L = (ŷ − y)², learning rate η = 0.1. Ek gradient descent step ke baad naye w, b aur naya loss nikaalo.",
+        "steps": [
+          "Forward: ŷ = 0.5·2 + 0 = 1, loss = (1 − 3)² = 4.",
+          "Chain rule: ∂L/∂ŷ = 2(ŷ − y) = 2(1 − 3) = −4.",
+          "∂L/∂w = ∂L/∂ŷ · x = −4·2 = −8, aur ∂L/∂b = ∂L/∂ŷ · 1 = −4.",
+          "Update: w = 0.5 − 0.1·(−8) = 1.3, b = 0 − 0.1·(−4) = 0.4.",
+          "Naya forward: ŷ = 1.3·2 + 0.4 = 3.0, naya loss = 0. Gradient negative tha, isliye weights badhe.",
+          "**Answer: w = 1.3, b = 0.4, naya loss = 0.**"
+        ],
+        "code": "x, y = 2.0, 3.0\nw, b, lr = 0.5, 0.0, 0.1\ny_hat = w * x + b\ndL_dyhat = 2 * (y_hat - y)\nw -= lr * dL_dyhat * x\nb -= lr * dL_dyhat\nprint(w, b, (w * x + b - y) ** 2)   # 1.3 0.4 0.0"
+      },
+      "mistakes": [
+        "Gradient ki direction ulti le lena: update hamesha w − η·grad hota hai. Plus sign lagaoge to loss badhega (gradient ascent).",
+        "Test set par dekh kar epochs ya dropout rate tune karna. Isse test score optimistic ho jaata hai; tuning ke liye alag validation set rakho.",
+        "Dropout ko inference par bhi chalu rakhna ya inverted scaling bhool jaana. Frameworks inference mode mein dropout band kar dete hain; manual implementation mein training ke time 1/(1 − p) scaling zaroor karo."
+      ],
+      "revision": [
+        "Update rule: w ← w − η·∂L/∂w.",
+        "Steps per epoch = ⌈N / batch size⌉.",
+        "Momentum: v ← βv + g, w ← w − ηv.",
+        "L2 penalty λΣw² gradient mein 2λw jodta hai.",
+        "Inverted dropout: bache units × 1/(1 − p) training mein, inference par kuch nahi.",
+        "Train loss ↓ par val loss ↑ = overfitting → early stopping / regularisation."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w2-q1",
+          "question": "Ek weight w = 0.8 hai, uska gradient ∂L/∂w = 0.5 aur learning rate 0.1 hai. Plain SGD ke ek step ke baad w kya hoga?",
+          "options": [
+            "0.85",
+            "0.3",
+            "0.75",
+            "0.05"
+          ],
+          "answer": 2,
+          "explanation": "w ← w − η·grad = 0.8 − 0.1·0.5 = 0.75, option C. Option A (0.85) gradient ko jodta hai, yaani ulti direction mein jaata hai. Option B (0.3) learning rate bhool kar poora gradient ghata deta hai. Option D (0.05) sirf step size η·grad hai, naya weight nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w2-q2",
+          "question": "Ek image classifier ka training loss har epoch girta ja raha hai, par validation loss epoch 15 ke baad lagaataar badh raha hai. Sabse sahi diagnosis aur action kya hai?",
+          "options": [
+            "Overfitting ho raha hai; val loss par early stopping lagao aur dropout ya L2 jaisa regularisation try karo",
+            "Underfitting ho raha hai; aur layers jodo aur 100 epochs tak chalao",
+            "Learning rate bahut chhota hai; use 10 guna kar do",
+            "Validation set galat hai; use training set mein mila do taaki val loss na dikhe"
+          ],
+          "answer": 0,
+          "explanation": "Train loss ↓ aur val loss ↑ overfitting ka classic sign hai: model training examples yaad kar raha hai. Isliye option A sahi hai. Option B ulta hai: underfitting mein training loss bhi high rehta hai, aur zyada capacity overfitting badhayegi. Option C se training loss girna nahi rukta, gap nahi bharta. Option D se generalisation ka measurement hi khatam ho jaata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w2-q3",
+          "question": "Momentum update v ← βv + g, w ← w − ηv use ho raha hai, jahan β = 0.9, η = 0.1, shuru mein v = 0 aur w = 2. Do steps tak gradient g = 1 aata hai. Do steps ke baad w kya hai?",
+          "options": [
+            "1.80",
+            "2.29",
+            "1.971",
+            "1.71"
+          ],
+          "answer": 3,
+          "explanation": "Step 1: v = 0.9·0 + 1 = 1, w = 2 − 0.1·1 = 1.9. Step 2: v = 0.9·1 + 1 = 1.9, w = 1.9 − 0.1·1.9 = 1.71, option D. Option A (1.80) plain SGD hai, momentum ka build-up ignore karta hai. Option C (1.971) ek alag EMA form v ← βv + (1 − β)g use karta hai, jo is question ka rule nahi hai. Option B (2.29) update ka sign ulta kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w2-q4",
+          "question": "Training set mein 50000 images hain, batch size 128 hai aur model 10 epochs train hota hai. Aakhri chhota batch bhi use hota hai. Kul kitne optimizer steps (weight updates) honge?",
+          "options": [
+            "3900",
+            "3910",
+            "391",
+            "500000"
+          ],
+          "answer": 1,
+          "explanation": "Steps per epoch = ⌈50000/128⌉ = ⌈390.6⌉ = 391, aur 10 epochs mein 3910, option B. Option A (3900) floor le leta hai aur aakhri partial batch gira deta hai, jabki question kehta hai woh use hota hai. Option C sirf ek epoch ke steps hain. Option D (500000) har image par alag update maan leta hai (batch size 1).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w2-q5",
+          "question": "Ek layer ke baad inverted dropout hai, rate p = 0.2 (20% units zero hote hain). Training ke time ek unit ki activation 4.0 thi aur woh drop nahi hua. Dropout ke baad uski value kya hogi?",
+          "options": [
+            "5.0",
+            "3.2",
+            "4.0",
+            "0.8"
+          ],
+          "answer": 0,
+          "explanation": "Inverted dropout bache hue units ko 1/(1 − p) = 1/0.8 = 1.25 se scale karta hai, to 4.0 × 1.25 = 5.0, option A. Isse expected activation training aur inference mein same rehti hai. Option B (3.2 = 4 × 0.8) purane 'inference par scale down' wale tareeke ko training par laga deta hai. Option C scaling bhool jaata hai. Option D (0.8) keep probability ko hi value bana deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w2-q6",
+          "question": "Loss = data loss + λΣw², λ = 0.01. Ek weight w = 1.5 hai, data loss ka gradient us par 0.2 hai, aur learning rate 0.1 hai. Ek SGD step ke baad w kya hoga?",
+          "options": [
+            "1.48",
+            "1.4785",
+            "1.477",
+            "1.523"
+          ],
+          "answer": 2,
+          "explanation": "λw² ka derivative 2λw = 2·0.01·1.5 = 0.03 hai, to total gradient = 0.2 + 0.03 = 0.23. Naya w = 1.5 − 0.1·0.23 = 1.477, option C. Option B (1.4785) penalty ka gradient λw = 0.015 le leta hai, factor 2 bhool kar. Option A (1.48) regularisation ignore karta hai. Option D (1.523) update ka sign ulta kar deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Convolutional Networks: How Convolution Works",
+      "summary": "Is week aap convolution operation, filters aur feature maps, stride/padding ke saath output size, pooling, receptive field aur CNN layers ke parameter count nikaalna seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Dense layer images ke liye kyun nahi**: 224 × 224 × 3 image flatten karo to 150528 inputs; sirf 1000 units ki dense layer mein ~15 crore weights. Saath hi dense layer pixels ki spatial position ka structure ignore karti hai. CNN do ideas se ye problem solve karta hai: **local connectivity** (har output sirf chhote patch ko dekhta hai) aur **weight sharing** (same filter poori image par slide hota hai).",
+        "**Convolution operation**: k × k × C_in ka filter image ke har position par rakha jaata hai, element-wise multiply karke sum kiya jaata hai aur bias joda jaata hai. Deep learning libraries technically cross-correlation karti hain (kernel flip nahi hota), par isse 'convolution' hi kehte hain. Har filter ek feature map deta hai; C_out filters = C_out output channels.",
+        "**Output size formula**: har spatial dimension ke liye out = ⌊(n + 2p − k)/s⌋ + 1, jahan n input size, k kernel size, p padding (har side), s stride. 'valid' matlab p = 0; stride 1 par 'same' padding p = (k − 1)/2 rakh kar size same rakhta hai. Stride 2 size ko lagbhag aadha karta hai.",
+        "**Parameter count**: ek Conv2D layer ke params = (k × k × C_in + 1) × C_out. Ye image ke size par depend nahi karta, sirf filter size aur channels par. Isi wajah se CNN dense network se bahut kam parameters mein kaam karta hai.",
+        "**Pooling**: max pooling har window ka maximum, average pooling mean leta hai. 2 × 2 window, stride 2 se height-width aadhe ho jaate hain, channels same rehte hain, aur pooling ke koi trainable parameters nahi hote. Ye chhote shifts ke prati thodi invariance deta hai aur computation ghatata hai.",
+        "**Receptive field**: input ka woh region jo ek output unit ko affect karta hai. Stride 1 ki L stacked 3 × 3 convs ka receptive field (2L + 1) × (2L + 1) hota hai. Teen 3 × 3 layers ek 7 × 7 jaisa field dekhti hain, par kam weights (27C² vs 49C²) aur zyada non-linearities ke saath.",
+        "**Typical CNN layout**: [Conv → ReLU] blocks, beech beech mein pooling ya stride-2 conv, jisse spatial size ghatta hai aur channels badhte hain (jaise 32 → 64 → 128). Ant mein Flatten ya global average pooling, phir Dense layers aur softmax. Shuru ki layers edges/texture, gehri layers parts/objects jaise features seekhti hain."
+      ],
+      "example": {
+        "problem": "4 × 4 grayscale image I = [[1, 2, 0, 1], [0, 1, 3, 1], [2, 1, 0, 0], [1, 0, 1, 2]] par 3 × 3 vertical-edge filter K = [[1, 0, −1], [1, 0, −1], [1, 0, −1]] lagao (stride 1, no padding, bias 0). Output feature map nikaalo.",
+        "steps": [
+          "Output size = (4 − 3)/1 + 1 = 2, yaani 2 × 2 map.",
+          "Is filter ka output = (patch ke left column ka sum) − (right column ka sum), kyunki middle column ka weight 0 hai.",
+          "Position (0, 0): rows 0–2, cols 0–2. Left col = 1 + 0 + 2 = 3, right col = 0 + 3 + 0 = 3, output = 0.",
+          "Position (0, 1): cols 1–3. Left = 2 + 1 + 1 = 4, right = 1 + 1 + 0 = 2, output = 2.",
+          "Position (1, 0): rows 1–3, cols 0–2. Left = 0 + 2 + 1 = 3, right = 3 + 0 + 1 = 4, output = −1.",
+          "Position (1, 1): left = 1 + 1 + 0 = 2, right = 1 + 0 + 2 = 3, output = −1.",
+          "**Answer: [[0, 2], [−1, −1]].** ReLU lagao to [[0, 2], [0, 0]] bachega."
+        ],
+        "code": "I = [[1, 2, 0, 1], [0, 1, 3, 1], [2, 1, 0, 0], [1, 0, 1, 2]]\nK = [[1, 0, -1], [1, 0, -1], [1, 0, -1]]\nout = [[sum(I[r + i][c + j] * K[i][j] for i in range(3) for j in range(3))\n        for c in range(2)] for r in range(2)]\nprint(out)   # [[0, 2], [-1, -1]]"
+      },
+      "mistakes": [
+        "Conv params mein input channels bhool jaana: 3 × 3 filter RGB input par actually 3 × 3 × 3 = 27 weights rakhta hai. Formula (k·k·C_in + 1)·C_out yaad rakho.",
+        "Output size mein +1 bhool jaana ya padding ko sirf ek side gin-na. Formula ⌊(n + 2p − k)/s⌋ + 1 hai, 2p dono sides ke liye.",
+        "Pooling layer ke parameters ginn lena. Max/average pooling ke koi trainable weights nahi hote; parameters sirf conv aur dense layers mein hote hain."
+      ],
+      "revision": [
+        "out = ⌊(n + 2p − k)/s⌋ + 1.",
+        "Conv2D params = (k·k·C_in + 1)·C_out.",
+        "Pooling: size ghatata hai, channels same, 0 params.",
+        "L stacked 3 × 3 (stride 1) → receptive field (2L + 1) × (2L + 1).",
+        "Weight sharing + local connectivity = kam parameters, translation equivariance."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w3-q1",
+          "question": "32 × 32 input par 5 × 5 filter, stride 1 aur koi padding nahi ('valid') ke saath convolution lagta hai. Output feature map ki height × width kya hogi?",
+          "options": [
+            "28 × 28",
+            "27 × 27",
+            "32 × 32",
+            "6 × 6"
+          ],
+          "answer": 0,
+          "explanation": "out = (32 + 0 − 5)/1 + 1 = 28, isliye option A. Option B (27) formula ka +1 bhool jaata hai. Option C (32) 'same' padding maan leta hai, jabki yahan padding nahi hai. Option D stride ko kernel size (5) maan leta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w3-q2",
+          "question": "RGB image (3 channels) par ek Conv2D layer hai jisme 64 filters, kernel 3 × 3 aur bias hai. Is layer ke trainable parameters kitne hain?",
+          "options": [
+            "640",
+            "1728",
+            "1731",
+            "1792"
+          ],
+          "answer": 3,
+          "explanation": "Har filter mein 3 × 3 × 3 = 27 weights + 1 bias = 28, aur 64 filters: 28 × 64 = 1792, option D. Option B (1728) biases chhod deta hai. Option A (640) input channels bhool kar har filter ko sirf 3 × 3 + 1 maan leta hai. Option C (1731) input aur output channels ki jagah badal deta hai: (3·3·64 + 1)·3.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w3-q3",
+          "question": "224 × 224 input par 7 × 7 conv lagta hai, stride 2 aur har side padding 3. Output ki height (aur width) kya hai?",
+          "options": [
+            "109",
+            "112",
+            "111",
+            "224"
+          ],
+          "answer": 1,
+          "explanation": "out = ⌊(224 + 2·3 − 7)/2⌋ + 1 = ⌊223/2⌋ + 1 = 111 + 1 = 112, option B. Option A (109) padding ignore karta hai: ⌊217/2⌋ + 1. Option C (111) floor ke baad +1 bhool jaata hai. Option D maan leta hai ki padding size same rakhti hai, jabki stride 2 size ko lagbhag aadha kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w3-q4",
+          "question": "Neeche diye 4 × 4 feature map par 2 × 2 max pooling, stride 2 lagaya jaata hai. Output kya hai?",
+          "code": "1 3 2 0\n4 6 1 5\n7 2 9 8\n0 1 3 4",
+          "options": [
+            "[[3.5, 2], [2.5, 6]]",
+            "[[1, 0], [0, 3]]",
+            "[[6, 5], [7, 9]]",
+            "[[1, 2], [7, 9]]"
+          ],
+          "answer": 2,
+          "explanation": "Chaar non-overlapping 2 × 2 windows: {1, 3, 4, 6} → 6, {2, 0, 1, 5} → 5, {7, 2, 0, 1} → 7, {9, 8, 3, 4} → 9. Isliye option C. Option A average pooling ka result hai, option B min pooling ka. Option D har window ka pehla (top-left) element utha leta hai, jo pooling nahi, sirf subsampling hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w3-q5",
+          "question": "Teen Conv2D layers ek ke baad ek lagi hain, har ek 3 × 3 kernel, stride 1, aur beech mein koi pooling nahi. Teesri layer ke ek output unit ka receptive field (original input par) kitna hai?",
+          "options": [
+            "7 × 7",
+            "9 × 9",
+            "3 × 3",
+            "6 × 6"
+          ],
+          "answer": 0,
+          "explanation": "Stride 1 par har 3 × 3 layer receptive field ko 2 se badhata hai: 3 → 5 → 7, yaani 7 × 7, option A. Option B (9 × 9) kernel sizes add karke (3 + 3 + 3) aata hai. Option C sirf aakhri layer ka kernel dekhta hai. Option D (6 × 6) har layer ke liye +2 ki jagah 3 + 3 maan leta hai bina overlap ke.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w3-q6",
+          "question": "Input 28 × 28 × 1. Model: Conv2D(32 filters, 3 × 3, valid) → MaxPool(2 × 2, stride 2) → Conv2D(64 filters, 3 × 3, valid) → Flatten → Dense(10). Saari conv/dense layers mein bias hai. Total trainable parameters kitne hain?",
+          "options": [
+            "96160",
+            "126986",
+            "387466",
+            "96266"
+          ],
+          "answer": 3,
+          "explanation": "Conv1: (9·1 + 1)·32 = 320, output 26 × 26 × 32. Pool: 13 × 13 × 32, 0 params. Conv2: (9·32 + 1)·64 = 18496, output 11 × 11 × 64. Flatten = 7744, Dense: 7744·10 + 10 = 77450. Total = 320 + 18496 + 77450 = 96266, option D. Option A (96160) biases chhod deta hai. Option B (126986) conv2 ka output size galat 13 × 13 maan leta hai (valid padding ka shrink bhool kar). Option C (387466) pooling layer ko ignore kar deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "CNNs in Practice: Pipelines, Augmentation, Transfer Learning",
+      "summary": "Is week aap ek real image classification pipeline banana seekhoge: preprocessing, data augmentation, transfer learning (feature extraction aur fine-tuning), global average pooling aur precision/recall se evaluation.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Image pipeline**: images load karo, ek fixed size par resize karo, pixel values ko scale karo (jaise 0–255 ko /255 se 0–1, ya per-channel mean/std se standardise), batches banao aur shuffle karo. Jo preprocessing training mein hui, wahi exactly inference par bhi honi chahiye, warna model ko alag distribution dikhega.",
+        "**Data splits**: train / validation / test alag rakho, aur ek hi object ki near-duplicate images (jaise ek patient ke kai scans) ko alag splits mein mat jaane do. Ye leakage validation accuracy ko jhootha high dikhata hai.",
+        "**Data augmentation**: label-preserving random transforms, jaise horizontal flip, random crop, chhota rotation, brightness/contrast jitter. Ye har epoch training images ke naye versions banata hai aur overfitting ghatata hai. Sirf training data par lagao; validation/test images deterministic rehni chahiye. Transform task ke hisaab se chuno: digits mein '6' ko 180° ghumaoge to '9' ban jaayega.",
+        "**Transfer learning**: badi dataset par pretrained CNN ke shuruaati layers generic features (edges, textures, shapes) seekh chuke hote hain. Chhote dataset par: (1) **feature extraction**: backbone freeze karo (`trainable = False`) aur sirf naya head train karo; (2) **fine-tuning**: head stable hone ke baad upar ki kuch layers unfreeze karke bahut chhote learning rate se train karo, taaki pretrained features toot na jaayein.",
+        "**Global average pooling (GAP)**: H × W × C feature map ke har channel ka mean leke C-length vector banata hai. Flatten ki tulna mein head ke parameters bahut kam hote hain (7 × 7 × 512 par Dense(10): Flatten se 250890, GAP se 5130), isliye overfitting kam hota hai aur model alag input sizes bhi le sakta hai.",
+        "**Evaluation**: accuracy imbalanced classes par dhokha de sakti hai. Confusion matrix se har class ka precision = TP/(TP + FP) aur recall = TP/(TP + FN) nikaalo; F1 = 2PR/(P + R). Defect ya disease detection jaise tasks mein missed positives (FN) mehenge padte hain, isliye recall par khaas dhyaan do.",
+        "**Debugging checklist**: pehle ek chhota batch overfit karke dekho (loss lagbhag 0 hona chahiye), labels aur images ka mapping check karo, kuch augmented images khud dekho, aur learning rate ko sabse pehle tune karo."
+      ],
+      "example": {
+        "problem": "Ek fictional startup 'LeafCheck' 5 plant-disease classes ke liye sirf 3000 photos rakhta hai. Pretrained backbone (frozen) 7 × 7 × 1280 feature map deta hai. Head ke do options: (a) Flatten → Dense(5), (b) GlobalAveragePooling → Dense(5). Dono ke trainable parameters nikaalo aur batao kaunsa behtar hai.",
+        "steps": [
+          "(a) Flatten size = 7 × 7 × 1280 = 62720. Dense(5) params = 62720·5 + 5 = 313605.",
+          "(b) GAP ke baad vector size = 1280. Dense(5) params = 1280·5 + 5 = 6405.",
+          "Backbone frozen hai, isliye trainable params sirf head ke hain.",
+          "3000 images ke liye 313605 parameters zyada hain aur overfitting ka risk bada hai; GAP head ~49 guna chhota hai.",
+          "Training: pehle sirf head train karo, phir chaaho to upar ke kuch blocks bahut chhote learning rate (jaise 1e-5) se fine-tune karo.",
+          "**Answer: Flatten head = 313605, GAP head = 6405 trainable params; chhote dataset ke liye GAP head behtar hai.**"
+        ],
+        "code": "# Keras sketch (illustrative)\nbase = keras.applications.MobileNetV2(include_top=False, weights=\"imagenet\", input_shape=(224, 224, 3))\nbase.trainable = False\nmodel = keras.Sequential([\n    base,\n    keras.layers.GlobalAveragePooling2D(),\n    keras.layers.Dense(5, activation=\"softmax\"),\n])\nmodel.compile(optimizer=\"adam\", loss=\"sparse_categorical_crossentropy\", metrics=[\"accuracy\"])"
+      },
+      "mistakes": [
+        "Validation/test images par bhi random augmentation lagana. Isse har baar alag score aata hai aur evaluation reproducible nahi rehta; augmentation sirf training ke liye hai.",
+        "Fine-tuning ki shuruaat mein hi poora network unfreeze karke bada learning rate lagana. Random head ke bade gradients pretrained features bigaad dete hain; pehle head train karo, phir chhote LR se unfreeze karo.",
+        "Pretrained model ke saath uski expected preprocessing (input size, scaling) use na karna. Model ne jis scale par seekha, wahi input do."
+      ],
+      "revision": [
+        "Augmentation: sirf train par, label-preserving transforms.",
+        "Feature extraction = backbone frozen + naya head; fine-tuning = phir chhote LR se upar ki layers unfreeze.",
+        "GAP head params = C·classes + classes (Flatten se bahut kam).",
+        "Precision = TP/(TP + FP), recall = TP/(TP + FN).",
+        "Same preprocessing training aur inference dono mein."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w4-q1",
+          "question": "Ek image classifier mein random flips aur random crops jaisa data augmentation sahi tareeke se kaise use hota hai?",
+          "options": [
+            "Train, validation aur test teeno par, har evaluation mein naya random version",
+            "Sirf training data par, har epoch on-the-fly naye random versions",
+            "Sirf test data par, taaki model robust dikhe",
+            "Training se pehle ek baar augmented copies banao aur unhe test set mein bhi daal do"
+          ],
+          "answer": 1,
+          "explanation": "Augmentation training data ki variety badhakar overfitting ghatata hai, isliye sirf training par, har epoch naye random transforms ke saath, option B. Option A sabse tempting trap hai: validation/test par randomness se score har run badalta hai aur evaluation fair nahi rehta. Option C aur D test set ko badal dete hain, jisse generalisation ka measurement bigad jaata hai (D mein leakage bhi hai).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w4-q2",
+          "question": "Ek pretrained backbone freeze kiya gaya hai (trainable = False). Uske output par global average pooling se 512-length vector milta hai, jiske upar naya Dense(5) softmax head hai. Training ke time kitne parameters update honge?",
+          "options": [
+            "2560",
+            "0",
+            "2565",
+            "Backbone ke saare parameters + 2565"
+          ],
+          "answer": 2,
+          "explanation": "Frozen backbone ke weights update nahi hote, aur GAP ke koi parameters nahi. Sirf head: 512·5 + 5 = 2565, option C. Option A (2560) head ke 5 biases bhool jaata hai. Option B maan leta hai ki 'frozen' ka matlab poora model frozen hai, par naya head trainable hai. Option D freezing ko ignore karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w4-q3",
+          "question": "Last conv block ka output 7 × 7 × 512 hai aur us par Dense(10) classifier lagta hai (bias ke saath). Flatten ki jagah global average pooling use karne se head ke parameters kitne kam ho jaate hain?",
+          "options": [
+            "250890",
+            "5130",
+            "25088",
+            "245760"
+          ],
+          "answer": 3,
+          "explanation": "Flatten: 7·7·512 = 25088 inputs, params = 25088·10 + 10 = 250890. GAP: 512 inputs, params = 512·10 + 10 = 5130. Fark = 250890 − 5130 = 245760, option D. Option A Flatten head ka poora count hai, option B GAP head ka count, dono 'kitne kam' ka jawab nahi. Option C (25088) flatten vector ki length hai, parameters nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w4-q4",
+          "question": "Ek fictional factory ka defect detector 200 test images par: TP = 40, FP = 10, FN = 20, TN = 130 ('defect' positive class hai). Defect class ka recall kya hai?",
+          "options": [
+            "0.667",
+            "0.8",
+            "0.85",
+            "0.727"
+          ],
+          "answer": 0,
+          "explanation": "Recall = TP/(TP + FN) = 40/60 = 0.667, option A: asli defects mein se ek-tihaai model ne miss kiye. Option B (0.8) precision hai, TP/(TP + FP) = 40/50; precision aur recall mixing sabse common trap hai. Option C (0.85) accuracy = 170/200 hai. Option D (0.727) F1 score hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w4-q5",
+          "question": "Aapke paas sirf 2000 labelled X-ray images hain aur ek badi natural-image dataset par pretrained CNN available hai. Kaunsa training recipe sabse standard aur safe hai?",
+          "options": [
+            "Shuru se hi saari layers unfreeze karke bada learning rate (jaise 0.1) use karo",
+            "Naye head ko random hi rehne do aur sirf backbone train karo",
+            "Pretrained weights hata kar architecture ko scratch se train karo, kyunki domain alag hai",
+            "Pehle backbone freeze karke naya head train karo, phir upar ki kuch layers unfreeze karke bahut chhote learning rate se fine-tune karo"
+          ],
+          "answer": 3,
+          "explanation": "Two-stage recipe (option D) pehle random head ko stable karta hai, phir chhote LR se sirf upar ki task-specific layers ko adjust karta hai, jisse generic low-level features bache rehte hain. Option A ka bada LR aur random head ke bade gradients pretrained features ko bigaad dete hain. Option C 2000 images par scratch training se overfitting laata hai; domain alag hone par bhi edges/textures jaise features kaam aate hain. Option B head ko kabhi seekhne hi nahi deta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w4-q6",
+          "question": "Training images 256 × 256 hain. Augmentation: har baar ek 224 × 224 crop kisi bhi integer position se (pixel by pixel) liya jaata hai, aur phir 50% chance se horizontal flip. Ek image se kitne alag-alag (crop position, flip) combinations ban sakte hain?",
+          "options": [
+            "2048",
+            "2178",
+            "1089",
+            "1024"
+          ],
+          "answer": 1,
+          "explanation": "Har axis par crop ka top-left corner 0 se 32 tak ho sakta hai, yaani 256 − 224 + 1 = 33 positions. 33 × 33 = 1089 crops, aur flip ya no-flip se ×2 = 2178, option B. Option A (2048 = 32² × 2) +1 bhool jaata hai, ek classic off-by-one. Option C flip ko nahi ginta. Option D dono galtiyaan karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Recurrent Networks, Vanishing Gradients and LSTM/GRU",
+      "summary": "Is week aap sequence data ke liye RNN ka recurrence, backpropagation through time, vanishing/exploding gradients, aur LSTM/GRU ke gates ka kaam aur unke parameter count seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Sequence data**: text, speech, sensor readings, stock prices — inme order matter karta hai aur length badalti rehti hai. Dense network fixed-size input leta hai aur position ke beech weights share nahi karta; RNN ek hi cell ko har time step par dobara use karta hai.",
+        "**Simple RNN cell**: hₜ = tanh(Wₓxₜ + Wₕhₜ₋₁ + b). Hidden state hₜ ab tak ki sequence ka summary hai. Input dim d aur units n ho to params = n·d (input) + n·n (recurrent) + n (bias) = n(d + n + 1). Ye sequence length par depend nahi karta, kyunki weights har step share hote hain.",
+        "**Input–output patterns**: many-to-one (sentiment: poore review se ek label), many-to-many aligned (har word ka POS tag), seq-to-seq (translation: encoder poori sentence padhta hai, decoder nayi sequence banata hai), one-to-many (image se caption).",
+        "**Backpropagation through time (BPTT)**: network ko time mein unroll karke normal backprop chalate hain. Gradient ∂hₜ/∂hₖ mein har step ka Jacobian multiply hota hai; har factor roughly Wₕ·tanh′. Agar ye factor < 1 hai to gradient exponentially chhota hota hai (vanishing), > 1 hai to exponentially bada (exploding). Isliye simple RNN lambi dependencies (50+ steps) nahi seekh paata.",
+        "**Exploding gradients ka ilaaj**: gradient clipping (norm ko ek threshold par cap karna). Vanishing ka ilaaj architecture se hota hai: gated cells (LSTM/GRU), aur aage chal kar attention.",
+        "**LSTM**: ek alag cell state cₜ rakhta hai aur teen gates (sigmoid, 0–1): forget fₜ, input iₜ, output oₜ, plus candidate gₜ = tanh(…). Update: cₜ = fₜ ⊙ cₜ₋₁ + iₜ ⊙ gₜ, hₜ = oₜ ⊙ tanh(cₜ). Cell state par update additive hai, isliye fₜ ≈ 1 hone par gradient lambe time tak bina khatam hue flow karta hai. Params = 4·n(d + n + 1), kyunki chaar blocks (f, i, o, g) mein se har ek ek simple-RNN-size layer hai.",
+        "**GRU**: do gates — update gate zₜ (purana state kitna rakhna) aur reset gate rₜ (candidate banate waqt purana state kitna use karna). Alag cell state nahi hota. Teen weight blocks hone ke kaaran LSTM se lagbhag 3/4 parameters, aur kai tasks par performance milti-julti hoti hai."
+      ],
+      "example": {
+        "problem": "Ek 1-unit RNN: hₜ = tanh(0.8·hₜ₋₁ + 1.0·xₜ), h₀ = 0, input sequence x = [1, 0, −1]. h₁, h₂, h₃ nikaalo, aur ∂h₃/∂h₁ bhi nikaal kar dekho gradient kitna shrink hota hai.",
+        "steps": [
+          "h₁ = tanh(0 + 1) = 0.762.",
+          "h₂ = tanh(0.8·0.762 + 0) = tanh(0.609) = 0.544.",
+          "h₃ = tanh(0.8·0.544 − 1) = tanh(−0.565) = −0.512.",
+          "Har step ka local derivative: ∂hₜ/∂hₜ₋₁ = 0.8·(1 − hₜ²). Step 3 ke liye 0.8·(1 − 0.262) = 0.590, step 2 ke liye 0.8·(1 − 0.296) = 0.564.",
+          "∂h₃/∂h₁ = 0.590 × 0.564 = 0.333. Sirf do steps mein gradient ek-tihaai reh gaya; 30 steps mein ye lagbhag khatam ho jaayega.",
+          "**Answer: h = [0.762, 0.544, −0.512], ∂h₃/∂h₁ ≈ 0.333 (vanishing gradient ka chhota demo).**"
+        ],
+        "code": "import math\nh, hs = 0.0, []\nfor x in [1, 0, -1]:\n    h = math.tanh(0.8 * h + 1.0 * x)\n    hs.append(round(h, 3))\nprint(hs)   # [0.762, 0.544, -0.512]"
+      },
+      "mistakes": [
+        "RNN params mein recurrent weights (n × n) bhool jaana. Simple RNN = n(d + n + 1), LSTM = 4n(d + n + 1).",
+        "Ye sochna ki LSTM ka cell state har step multiply hota hai jaise simple RNN ka hidden state. cₜ = fₜcₜ₋₁ + iₜgₜ additive path hai; isi wajah se gradient lambi doori tak pahunchta hai.",
+        "Exploding gradients ko learning rate badha kar theek karne ki koshish karna. Sahi ilaaj gradient clipping aur (agar zaroori ho) chhota learning rate hai."
+      ],
+      "revision": [
+        "RNN: hₜ = tanh(Wₓxₜ + Wₕhₜ₋₁ + b), weights har step shared.",
+        "Simple RNN params = n(d + n + 1); LSTM = 4n(d + n + 1).",
+        "BPTT mein factors multiply hote hain → vanishing (< 1) ya exploding (> 1).",
+        "LSTM: cₜ = fₜcₜ₋₁ + iₜgₜ, hₜ = oₜ tanh(cₜ).",
+        "GRU: update + reset gate, LSTM se kam params."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w5-q1",
+          "question": "Ek simple RNN layer mein 20 units hain aur har time step ka input 10-dimensional hai (bias ke saath). Is layer ke trainable parameters kitne hain?",
+          "options": [
+            "220",
+            "600",
+            "2480",
+            "620"
+          ],
+          "answer": 3,
+          "explanation": "Input weights 20·10 = 200, recurrent weights 20·20 = 400, bias 20: total 620, option D. Option A (220) recurrent weights Wₕ bhool jaata hai, jo RNN ki asli pehchaan hai. Option B (600) bias chhod deta hai. Option C (2480) LSTM ka count hai (4 guna).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w5-q2",
+          "question": "LSTM cell mein kaunsa component decide karta hai ki pichhle cell state cₜ₋₁ ka kitna hissa agle step mein rakha jaaye?",
+          "options": [
+            "Input gate",
+            "Forget gate",
+            "Output gate",
+            "Candidate layer gₜ"
+          ],
+          "answer": 1,
+          "explanation": "cₜ = fₜ ⊙ cₜ₋₁ + iₜ ⊙ gₜ mein cₜ₋₁ ko seedha forget gate fₜ multiply karta hai, isliye option B. Option A (input gate) decide karta hai ki naya candidate gₜ kitna joda jaaye, purana nahi. Option C cell state se hₜ kitna bahar jaaye, ye control karta hai. Option D sirf naya content propose karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w5-q3",
+          "question": "1-unit RNN: hₜ = tanh(0.5·xₜ + 1.0·hₜ₋₁), h₀ = 0, bias 0. Input sequence x = [1, 2]. h₂ kya hai (3 decimal tak)?",
+          "options": [
+            "0.898",
+            "0.762",
+            "1.462",
+            "0.462"
+          ],
+          "answer": 0,
+          "explanation": "h₁ = tanh(0.5·1 + 0) = tanh(0.5) = 0.462. h₂ = tanh(0.5·2 + 1.0·0.462) = tanh(1.462) = 0.898, option A. Option B (0.762 = tanh(1)) pichhla state h₁ ignore karta hai, yaani recurrence bhool jaata hai. Option C tanh lagana bhool jaata hai. Option D sirf h₁ hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w5-q4",
+          "question": "Ek LSTM layer mein 20 units hain aur input dimension 10 hai (bias ke saath). Is layer ke trainable parameters kitne hain?",
+          "options": [
+            "620",
+            "1860",
+            "2480",
+            "2400"
+          ],
+          "answer": 2,
+          "explanation": "LSTM ke chaar blocks (forget, input, output gate aur candidate) mein se har ek ek simple RNN jitna hai: 20·(10 + 20 + 1) = 620. Total = 4 × 620 = 2480, option C. Option A sirf ek block (simple RNN) hai. Option B (1860) teen gates gin kar candidate layer bhool jaata hai. Option D (2400) biases chhod deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w5-q5",
+          "question": "Ek simple RNN mein backprop ke time har time step par gradient lagbhag 0.8 factor se multiply hota hai. 30 steps peeche pahunchte-pahunchte gradient original ka lagbhag kitna reh jaata hai?",
+          "options": [
+            "24 guna",
+            "0.0012 guna",
+            "0.2 guna",
+            "0.8 guna"
+          ],
+          "answer": 1,
+          "explanation": "Factors multiply hote hain: 0.8³⁰ ≈ 0.0012, yaani gradient lagbhag 800 guna chhota ho jaata hai. Yahi vanishing gradient hai, option B. Option A (0.8 × 30 = 24) power lene ki jagah 30 se simple multiply kar deta hai. Option C (1 − 0.8) aur option D maan lete hain ki shrinking sirf ek baar hoti hai, jabki BPTT mein ye har step repeat hoti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w5-q6",
+          "question": "Ek LSTM step mein (single unit): cₜ₋₁ = 2, forget gate fₜ = 0.9, input gate iₜ = 0.5, candidate gₜ = 0.4, output gate oₜ = 0.5. Naya hidden state hₜ kya hai (3 decimal tak)?",
+          "options": [
+            "1.000",
+            "0.964",
+            "0.473",
+            "0.482"
+          ],
+          "answer": 3,
+          "explanation": "cₜ = 0.9·2 + 0.5·0.4 = 1.8 + 0.2 = 2.0. hₜ = oₜ·tanh(cₜ) = 0.5·tanh(2.0) = 0.5·0.964 = 0.482, option D. Option A (0.5·2.0) cell state par tanh lagana bhool jaata hai. Option B tanh(cₜ) to hai par output gate se multiply nahi kiya. Option C (0.473 = 0.5·tanh(1.8)) input gate wala iₜgₜ term jodna bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Sequence Models in Practice: Text and Time Series",
+      "summary": "Is week aap text ko tokens aur embeddings mein badalna, padding/masking, sentiment classifier, next-token text generation (temperature, perplexity) aur time-series forecasting ke liye windowing seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Text ko numbers banana**: text ko tokens mein todo (word ya character level), training data se vocabulary banao, har token ko integer id do, aur anjaan words ke liye ek OOV id rakho. Vocabulary sirf training split se banao, warna test ka information leak hota hai.",
+        "**Padding, truncation aur masking**: batch mein sab sequences ek length (maxlen) ki honi chahiye. Chhoti sequences mein padding id (aksar 0) bharo, lambi ko kaat do. Masking model ko batata hai ki pad positions ignore karo, taaki RNN ka final state padding se bigde nahi.",
+        "**Embedding layer**: V × d ka lookup table; token id i ki row uska d-dimensional vector hai. Params = V·d (koi bias nahi). Ye one-hot × weight matrix ke barabar hai par bahut sasta. Embeddings training ke saath seekhe jaate hain ya pretrained vectors se initialise kiye ja sakte hain.",
+        "**Sentiment classifier (many-to-one)**: Embedding → LSTM/GRU (ya bidirectional, jo dono directions se padhta hai) → last hidden state → Dense(1, sigmoid), loss binary cross-entropy. Bidirectional sirf tab use karo jab poori sequence pehle se available ho; real-time next-step prediction mein future nahi dekh sakte.",
+        "**Text generation**: language model ko har position par agla token predict karna sikhaate hain (target = input ek step shift karke; isse teacher forcing kehte hain). Generation ke time ek-ek token sample karke wapas input mein daalte hain. Temperature T: logits ko T se divide karke softmax; T < 1 distribution ko sharp (safe, repetitive), T > 1 flat (diverse, zyada galtiyaan) banata hai.",
+        "**Perplexity**: PP = exp(average negative log-likelihood per token). Ye 'model kitne options ke beech confuse hai' jaisa effective branching factor hai; kam perplexity behtar. Har token par probability 1/4 ho to PP = 4.",
+        "**Time-series setup**: sliding windows banao: pichhle W values input, agle h values target. Split hamesha chronological (past → train, future → test), shuffle across time mat karo. Scaling ke mean/std sirf training period se nikaalo. Hamesha naive baseline (kal ki value = aaj ki value) se compare karo; agar model ise nahi harata to woh kuch kaam ka nahi seekh raha."
+      ],
+      "example": {
+        "problem": "Fictional daily demand series: [10, 12, 13, 15, 18, 20]. Window W = 3, horizon 1 (agla ek din). Training samples banao, aur naive baseline (agla = last value) ka MAE nikaalo.",
+        "steps": [
+          "Samples = n − W = 6 − 3 = 3 (har sample ko apna target bhi chahiye).",
+          "[10, 12, 13] → 15, [12, 13, 15] → 18, [13, 15, 18] → 20.",
+          "Naive baseline har window ki last value predict karta hai: 13, 15, 18.",
+          "Absolute errors: |15 − 13| = 2, |18 − 15| = 3, |20 − 18| = 2.",
+          "MAE = (2 + 3 + 2)/3 = 2.33. LSTM model ka validation MAE isse kam hona chahiye, tabhi woh useful hai.",
+          "**Answer: 3 samples; naive baseline MAE = 2.33.**"
+        ],
+        "code": "series = [10, 12, 13, 15, 18, 20]\nW = 3\nX = [series[i:i + W] for i in range(len(series) - W)]\ny = [series[i + W] for i in range(len(series) - W)]\nmae = sum(abs(t - x[-1]) for x, t in zip(X, y)) / len(y)\nprint(X, y, round(mae, 2))   # [[10, 12, 13], [12, 13, 15], [13, 15, 18]] [15, 18, 20] 2.33"
+      },
+      "mistakes": [
+        "Time series ko random shuffle karke train/test split karna. Isse model future ke data par train hota hai aur test score jhootha accha aata hai; chronological split karo.",
+        "Padding ke baad masking na lagana ya pad id ko ek asli word ki id de dena. Model padding ko content samajh kar galat seekhta hai.",
+        "Generation mein hamesha argmax (greedy) lena aur phir repetitive text par hairaan hona. Temperature ya top-k/top-p sampling se diversity control karo."
+      ],
+      "revision": [
+        "Embedding params = vocab × dim (no bias).",
+        "Windows = n − W (horizon 1 ke saath).",
+        "Temperature: softmax(z/T); T < 1 sharp, T > 1 flat.",
+        "Perplexity = exp(mean NLL); kam = behtar.",
+        "Time series: chronological split, train-only scaling, naive baseline."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w6-q1",
+          "question": "Product reviews (alag-alag lengths) ko positive ya negative mein classify karna kis sequence pattern ka task hai?",
+          "options": [
+            "One-to-many",
+            "Many-to-many (har token ka ek label)",
+            "Many-to-one",
+            "One-to-one"
+          ],
+          "answer": 2,
+          "explanation": "Input poori token sequence hai aur output ek single label, isliye many-to-one, option C. Option B tab hota jab har word ka label chahiye (jaise POS tagging). Option A ek input se sequence banata hai (jaise image captioning). Option D sequence structure ko ignore karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w6-q2",
+          "question": "Ek Embedding layer ki vocabulary size 10000 aur embedding dimension 64 hai. Is layer ke kitne trainable parameters hain?",
+          "options": [
+            "640000",
+            "640064",
+            "10064",
+            "64000"
+          ],
+          "answer": 0,
+          "explanation": "Embedding ek 10000 × 64 lookup table hai: 640000 parameters, option A. Option B ek 64-size bias jodta hai, par embedding layer mein bias nahi hota, sirf rows ka lookup hota hai. Option C vocab aur dim ko add karta hai. Option D ek zero kam rakhta hai (1000 × 64), yaani vocab galat padha.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w6-q3",
+          "question": "Ek univariate series mein 100 values hain. Model input ke roop mein pichhli 10 values leta hai aur ek step aage ki value predict karta hai (stride 1). Kitne (input, target) training pairs banenge?",
+          "options": [
+            "91",
+            "90",
+            "10",
+            "100"
+          ],
+          "answer": 1,
+          "explanation": "Input window index i se i + 9 tak aur target i + 10 par hai, aur i + 10 ≤ 99 hona chahiye, isliye i = 0 … 89: 90 pairs, option B. Option A (91) 10-length windows gin leta hai par bhool jaata hai ki aakhri window ka koi target nahi bachta. Option C window length hai, aur option D har value ko ek sample maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w6-q4",
+          "question": "Ek character-level language model agle character ke liye sirf do candidates ke logits [2, 1] deta hai. Temperature T = 0.5 par sampling ho to pehle candidate ki probability kya hai?",
+          "options": [
+            "0.731",
+            "0.622",
+            "0.667",
+            "0.881"
+          ],
+          "answer": 3,
+          "explanation": "Logits ko T se divide karo: [4, 2]. Softmax: e⁴/(e⁴ + e²) = 1/(1 + e⁻²) = 0.881, option D. T < 1 distribution ko sharp karta hai. Option A (0.731) T = 1 ka result hai (temperature ignore). Option B (0.622) T se divide ki jagah multiply karta hai, yaani T = 2 jaisa flat kar deta hai. Option C (2/3) softmax ki jagah logits ko seedha normalise karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w6-q5",
+          "question": "Chaar token sequences ki lengths 3, 7, 5 aur 2 hain. Inhe maxlen = 5 par laaya jaata hai: chhoti sequences pad hoti hain, lambi truncate. Kul kitne padding tokens judte hain aur kitne asli tokens kat-te hain?",
+          "options": [
+            "11 padding, 0 kate",
+            "5 padding, 0 kate",
+            "5 padding, 2 kate",
+            "2 padding, 5 kate"
+          ],
+          "answer": 2,
+          "explanation": "Padding: (5 − 3) + 0 + 0 + (5 − 2) = 2 + 3 = 5. Truncation sirf length 7 wali mein: 7 − 5 = 2 tokens kat-te hain. Isliye option C. Option A sabko sabse lambi sequence (7) tak pad karta hai, maxlen = 5 ignore karke: 4 + 0 + 2 + 5 = 11. Option B truncation bhool jaata hai. Option D dono numbers ulat deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w6-q6",
+          "question": "Ek language model 4 tokens ki test sequence ke sahi tokens ko probabilities 0.5, 0.25, 0.5 aur 0.125 deta hai. Is sequence par model ki perplexity kya hai?",
+          "options": [
+            "3.36",
+            "1.75",
+            "4.00",
+            "0.34"
+          ],
+          "answer": 0,
+          "explanation": "NLL (bits mein): 1, 2, 1, 3, mean = 1.75 bits. Perplexity = 2^1.75 = 3.36 (natural log se bhi same: exp(1.75·ln 2)), option A. Option B (1.75) average NLL hai, perplexity nahi; exponent lena bhool gaye. Option C (4.00) 1/p values (2, 4, 2, 8) ka arithmetic mean hai, jabki perplexity geometric mean hai. Option D (0.34) probabilities ka mean hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Generative Models I: Autoencoders, VAEs and GANs",
+      "summary": "Is week aap autoencoder ka bottleneck idea, VAE ka reparameterisation trick aur ELBO (reconstruction + KL), aur GAN ka generator–discriminator game, uske losses aur mode collapse samjhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Generative vs discriminative**: discriminative model p(y | x) seekhta hai (ye image cat hai ya dog). Generative model data ka distribution p(x) seekhta hai, taaki naye realistic samples bana sake. Is week ke teen models isi ke alag-alag tareeke hain.",
+        "**Autoencoder (AE)**: encoder x ko chhote latent code z (bottleneck) mein compress karta hai, decoder z se x̂ banata hai; loss = reconstruction error (MSE ya BCE) between x̂ aur x. Uses: compression, denoising (noisy input → clean target), anomaly detection (high reconstruction error = unusual). Par plain AE ka latent space 'gaps' wala hota hai, isliye random z se decode karke achhe naye samples nahi milte.",
+        "**Variational autoencoder (VAE)**: encoder har x ke liye ek distribution q(z | x) = N(μ, σ²) deta hai (aksar μ aur log σ² output karta hai). Sample karke decoder ko diya jaata hai. Prior p(z) = N(0, I) rakha jaata hai, taaki generation ke time seedha z ~ N(0, I) se sample karke decode kar sakein.",
+        "**Reparameterisation trick**: z = μ + σ ⊙ ε, ε ~ N(0, I). Randomness ε mein chali jaati hai, aur z ab μ, σ ka differentiable function hai, isliye backprop encoder tak pahunchta hai. Seedha 'sample from N(μ, σ²)' likhne par gradient nahi bahta.",
+        "**ELBO idea**: log p(x) ≥ E_q[log p(x | z)] − KL(q(z | x) ‖ p(z)). Isse maximise karna = loss (reconstruction + KL) minimise karna. Diagonal Gaussian ke liye har dimension ka KL = ½(μ² + σ² − ln σ² − 1); ye 0 tab hota hai jab μ = 0, σ = 1. KL term latent space ko smooth aur 'bhara hua' rakhta hai; trade-off ki wajah se VAE samples thode blurry hote hain.",
+        "**GAN**: generator G noise z se fake sample banata hai; discriminator D(x) batata hai x real hone ki probability. Minimax game: min_G max_D E[ln D(x)] + E[ln(1 − D(G(z)))]. Fixed G ke liye optimal D*(x) = p_data(x)/(p_data(x) + p_g(x)); equilibrium par p_g = p_data aur D* = 0.5 har jagah.",
+        "**GAN training practice**: D aur G ko alternate steps mein update karte hain. Shuruaat mein D aasaani se jeet jaata hai aur ln(1 − D(G(z))) saturate ho jaata hai, isliye generator 'non-saturating' loss −ln D(G(z)) minimise karta hai. Problems: unstable training, aur **mode collapse** (G sirf kuch types ke samples banata hai jo D ko bewakoof banate hain, diversity khatam).",
+        "**Kab kya**: AE representation/denoising ke liye; VAE jab smooth latent space aur likelihood-based training chahiye (samples thode blurry); GAN sharp samples deta hai par training mushkil aur coverage (diversity) kam ho sakti hai."
+      ],
+      "example": {
+        "problem": "Ek VAE ka 2-D latent hai. Ek image x = [1, 0, 1] ke liye encoder μ = (0.5, −1) aur log σ² = (0, ln 0.25) deta hai; decoder ka reconstruction x̂ = [0.8, 0.1, 0.7] hai. Loss = squared-error sum + KL. ε = (1, −2) ke saath z bhi nikaalo.",
+        "steps": [
+          "σ² = (e⁰, 0.25) = (1, 0.25), isliye σ = (1, 0.5).",
+          "Reparameterisation: z = μ + σ ⊙ ε = (0.5 + 1·1, −1 + 0.5·(−2)) = (1.5, −2).",
+          "KL dim 1: ½(0.25 + 1 − 0 − 1) = 0.125.",
+          "KL dim 2: ½(1 + 0.25 − ln 0.25 − 1) = ½(0.25 + 1.386) = 0.818. Total KL = 0.943.",
+          "Reconstruction: (0.2)² + (0.1)² + (0.3)² = 0.04 + 0.01 + 0.09 = 0.14.",
+          "**Answer: z = (1.5, −2); loss = 0.14 + 0.943 = 1.083.** Dhyaan do, yahan KL reconstruction se bada hai, yaani latent ko prior ki taraf kaafi kheencha ja raha hai."
+        ],
+        "code": "import math\nmu, logvar, eps = [0.5, -1], [0.0, math.log(0.25)], [1, -2]\nz = [m + math.exp(lv / 2) * e for m, lv, e in zip(mu, logvar, eps)]\nkl = sum(0.5 * (m * m + math.exp(lv) - lv - 1) for m, lv in zip(mu, logvar))\nrec = sum((a - b) ** 2 for a, b in zip([1, 0, 1], [0.8, 0.1, 0.7]))\nprint(z, round(kl, 3), round(rec + kl, 3))   # [1.5, -2.0] 0.943 1.083"
+      },
+      "mistakes": [
+        "Reparameterisation mein σ ki jagah variance σ² se ε ko multiply karna. Agar encoder log σ² deta hai to σ = exp(½ log σ²).",
+        "GAN mein discriminator ki accuracy ~100% ko achhi training samajhna. Iska matlab aksar ye hai ki generator ko useful gradient nahi mil raha; D aur G ka balance chahiye.",
+        "VAE se generate karte waqt encoder use karna. Naye samples ke liye z ko prior N(0, I) se sample karke sirf decoder chalao; encoder sirf training aur reconstruction ke liye hai."
+      ],
+      "revision": [
+        "AE loss = reconstruction(x̂, x); VAE loss = reconstruction + KL.",
+        "z = μ + σ ⊙ ε, ε ~ N(0, I).",
+        "KL(N(μ, σ²) ‖ N(0, 1)) = ½(μ² + σ² − ln σ² − 1).",
+        "Optimal D*(x) = p_data/(p_data + p_g); equilibrium par 0.5.",
+        "Non-saturating G loss = −ln D(G(z)); mode collapse = kam diversity."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w7-q1",
+          "question": "Ek plain (non-variational) autoencoder ko train karte waqt loss kin do cheezon ke beech compute hota hai?",
+          "options": [
+            "Latent code z aur class label",
+            "Decoder ka reconstruction x̂ aur original input x",
+            "Latent code z aur standard normal noise",
+            "Generator output aur discriminator output"
+          ],
+          "answer": 1,
+          "explanation": "Autoencoder ka target input khud hai: loss = reconstruction error(x̂, x), option B. Isliye ise labels nahi chahiye (self-supervised). Option A supervised classification hai. Option C VAE ke KL term jaisa lagta hai, par plain AE mein latent par koi prior nahi hota. Option D GAN ka setup hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w7-q2",
+          "question": "VAE encoder ek 1-D latent ke liye μ = 1.0 aur σ = 0.5 deta hai. Reparameterisation trick mein sampled noise ε = −0.4 hai. z kya hoga?",
+          "options": [
+            "1.2",
+            "0.9",
+            "−0.2",
+            "0.8"
+          ],
+          "answer": 3,
+          "explanation": "z = μ + σ·ε = 1.0 + 0.5·(−0.4) = 0.8, option D. Option B (0.9) σ ki jagah variance σ² = 0.25 se multiply karta hai. Option A (1.2) ε ka sign ignore karta hai. Option C (−0.2) sirf σ·ε hai, mean μ jodna bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w7-q3",
+          "question": "VAE ka latent 2-D hai aur prior N(0, I). Ek input ke liye encoder μ = (1, 0) aur σ² = (1, 0.5) deta hai. KL(q(z | x) ‖ p(z)) kitna hai (natural log)?",
+          "options": [
+            "0.500",
+            "1.193",
+            "0.597",
+            "0.097"
+          ],
+          "answer": 2,
+          "explanation": "Har dimension: ½(μ² + σ² − ln σ² − 1). Dim 1: ½(1 + 1 − 0 − 1) = 0.5. Dim 2: ½(0 + 0.5 + 0.693 − 1) = 0.097. Total = 0.597, option C. Option B (1.193) ½ factor bhool jaata hai. Option A sirf pehli dimension hai, aur option D sirf doosri; KL independent dimensions par add hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w7-q4",
+          "question": "Ek GAN mein generator fixed hai. Kisi point x par real data density p_data(x) = 0.3 aur generator density p_g(x) = 0.1 hai. Is x par optimal discriminator D*(x) kya output karega?",
+          "options": [
+            "0.75",
+            "0.50",
+            "0.25",
+            "3.00"
+          ],
+          "answer": 0,
+          "explanation": "D*(x) = p_data/(p_data + p_g) = 0.3/0.4 = 0.75, option A. Option B (0.50) tab hota hai jab p_g = p_data (equilibrium), jo yahan nahi hai; ye sabse common trap hai. Option C (0.25) generator wali density ko numerator mein rakh deta hai. Option D (3.00) sirf ratio hai, jo probability nahi ho sakti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w7-q5",
+          "question": "Handwritten digits (0–9) par train hua ek GAN bahut sharp images banata hai, par lagbhag saari images sirf '1' aur '7' ki hain, chahe noise z kuch bhi ho. Is problem ka sabse sahi naam kya hai?",
+          "options": [
+            "Discriminator ka training set par overfitting",
+            "Generator mein exploding gradients",
+            "Posterior collapse",
+            "Mode collapse: generator data distribution ke kuch hi modes cover kar raha hai"
+          ],
+          "answer": 3,
+          "explanation": "Alag z ke liye bhi output kuch hi classes mein simat jaana mode collapse hai, option D: G ne kuch aise samples dhoondh liye jo D ko bewakoof banate hain aur baaki modes chhod diye. Option C posterior collapse VAE ki problem hai (decoder latent ko ignore karta hai), GAN ki nahi. Option B se training unstable hoti hai, specific 'kam diversity' pattern nahi. Option A se samples ki sharpness/diversity ka ye pattern explain nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w7-q6",
+          "question": "Ek training step mein discriminator ek real image ko D(x) = 0.9 aur ek fake image ko D(G(z)) = 0.2 deta hai. Discriminator loss −[ln D(x) + ln(1 − D(G(z)))] aur generator ka non-saturating loss −ln D(G(z)) kya hain? (D loss, G loss)",
+          "options": [
+            "(1.715, 1.609)",
+            "(0.329, 1.609)",
+            "(0.329, 0.223)",
+            "(1.715, 0.223)"
+          ],
+          "answer": 1,
+          "explanation": "D loss = −ln 0.9 − ln 0.8 = 0.105 + 0.223 = 0.329. G loss = −ln 0.2 = 1.609. Isliye option B. 1.715 wale options (A, D) fake ke liye ln(1 − 0.2) ki jagah ln 0.2 le lete hain, yaani fake ko 'real' label de dete hain. 0.223 wale options (C, D) generator ke liye purana minimax term ln(1 − D(G(z))) use karte hain, jo non-saturating loss nahi hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Generative Models II: Diffusion Models",
+      "summary": "Is week aap diffusion models ka forward noising process, noise schedule (β, α, ᾱ), closed-form x_t, noise-prediction training objective aur step-by-step reverse sampling numbers ke saath samjhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Core idea**: data ko dheere-dheere Gaussian noise se tab tak kharab karo jab tak woh pure noise na ban jaaye (forward process), phir ek network ko ye process ulta chalana sikhao (reverse process). Generation = pure noise se shuru karke step-by-step denoise karna.",
+        "**Forward process**: q(xₜ | xₜ₋₁) = N(√(1 − βₜ)·xₜ₋₁, βₜI), t = 1 … T (jaise T = 1000). βₜ chhote numbers hain (noise schedule, linear ya cosine). Ye process fixed hai, isme kuch seekha nahi jaata. √(1 − βₜ) scaling ki wajah se variance control mein rehta hai aur end mein xₜ lagbhag N(0, I) ho jaata hai.",
+        "**Closed form**: αₜ = 1 − βₜ aur ᾱₜ = α₁α₂…αₜ. Tab xₜ = √ᾱₜ·x₀ + √(1 − ᾱₜ)·ε, ε ~ N(0, I). Isliye training mein kisi bhi t ka noisy sample ek hi step mein ban jaata hai, saare beech ke steps chalane ki zaroorat nahi. Signal-to-noise ratio = ᾱₜ/(1 − ᾱₜ), jo t badhne par girta hai.",
+        "**Training objective**: x₀ data se lo, t uniformly random, ε ~ N(0, I), xₜ banao, aur network ε_θ(xₜ, t) ko ε predict karne do. Loss = ‖ε − ε_θ(xₜ, t)‖² (MSE). Ye simplified objective ELBO se nikalta hai. Network aam taur par ek U-Net hota hai jise timestep t ka embedding bhi diya jaata hai.",
+        "**x₀ ka estimate**: predicted noise se x̂₀ = (xₜ − √(1 − ᾱₜ)·ε̂)/√ᾱₜ. Ye batata hai ki model ke hisaab se 'saaf image' kaisi dikhti hai; samplers isse internally use karte hain.",
+        "**Reverse sampling (DDPM)**: x_T ~ N(0, I) se shuru. Har step: xₜ₋₁ = (1/√αₜ)·(xₜ − (βₜ/√(1 − ᾱₜ))·ε_θ(xₜ, t)) + σₜz, z ~ N(0, I) (last step par z = 0). T steps = T network evaluations, isliye sampling slow hai. DDIM jaise samplers kam steps (jaise 50) mein achhe samples dete hain.",
+        "**GAN/VAE se tulna**: diffusion training stable hai (simple MSE, koi adversarial game nahi) aur data ke saare modes achhe se cover karta hai; samples high quality hote hain. Kami: generation slow, kyunki network ko bahut baar chalana padta hai."
+      ],
+      "example": {
+        "problem": "Schedule β = (0.1, 0.2), T = 2. Ek scalar data point x₀ = 1.0 aur noise ε = 0.5. x₂ banao. Maan lo network ne noise bilkul sahi predict kiya (ε̂ = 0.5). Ek DDPM reverse step ka mean (x₁ ki taraf) aur x̂₀ nikaalo.",
+        "steps": [
+          "α = (0.9, 0.8), ᾱ₁ = 0.9, ᾱ₂ = 0.9 × 0.8 = 0.72.",
+          "x₂ = √0.72·1.0 + √0.28·0.5 = 0.849 + 0.265 = 1.113.",
+          "Reverse mean = (1/√α₂)·(x₂ − (β₂/√(1 − ᾱ₂))·ε̂) = (1/√0.8)·(1.113 − (0.2/0.529)·0.5) = 1.118 × (1.113 − 0.189) = 1.033.",
+          "x̂₀ = (x₂ − √0.28·0.5)/√0.72 = (1.113 − 0.265)/0.849 = 1.0, yaani perfect noise prediction se original data wapas mil jaata hai.",
+          "Asli sampling mein is mean mein σ₂z noise joda jaata hai aur phir t = 1 ka step chalta hai.",
+          "**Answer: x₂ = 1.113, reverse mean = 1.033, x̂₀ = 1.0.**"
+        ],
+        "code": "import math\nbeta = [0.1, 0.2]\nalpha = [1 - b for b in beta]\nabar = [alpha[0], alpha[0] * alpha[1]]\nx0, eps = 1.0, 0.5\nx2 = math.sqrt(abar[1]) * x0 + math.sqrt(1 - abar[1]) * eps\nmean = (x2 - beta[1] / math.sqrt(1 - abar[1]) * eps) / math.sqrt(alpha[1])\nx0_hat = (x2 - math.sqrt(1 - abar[1]) * eps) / math.sqrt(abar[1])\nprint(round(x2, 3), round(mean, 3), round(x0_hat, 3))   # 1.113 1.033 1.0"
+      },
+      "mistakes": [
+        "Closed form mein square roots bhool jaana: xₜ = ᾱₜx₀ + (1 − ᾱₜ)ε galat hai. Sahi: √ᾱₜ·x₀ + √(1 − ᾱₜ)·ε, kyunki ᾱₜ aur 1 − ᾱₜ variances ke coefficients hain.",
+        "ᾱₜ ko 1 − Σβ samajhna. ᾱₜ product hai: Π(1 − βₛ). Chhote β ke liye dono kareeb hote hain, par bade t par bahut alag ho jaate hain.",
+        "Ye maan lena ki forward process bhi train hota hai. Sirf reverse/denoising network ε_θ ke parameters seekhe jaate hain; forward schedule pehle se fixed hai."
+      ],
+      "revision": [
+        "αₜ = 1 − βₜ, ᾱₜ = Π αₛ.",
+        "xₜ = √ᾱₜ·x₀ + √(1 − ᾱₜ)·ε.",
+        "Loss = ‖ε − ε_θ(xₜ, t)‖².",
+        "x̂₀ = (xₜ − √(1 − ᾱₜ)·ε̂)/√ᾱₜ.",
+        "Sampling: x_T ~ N(0, I) se T reverse steps; DDIM kam steps."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w8-q1",
+          "question": "DDPM-style diffusion model ke forward (noising) process ke baare mein kaunsa statement sahi hai?",
+          "options": [
+            "Ye fixed hai: har step thoda Gaussian noise add karta hai aur isme koi trainable parameter nahi hota",
+            "Ye ek neural network hai jo image se noise hatana seekhta hai",
+            "Ye GAN discriminator ki tarah har image ko real ya fake classify karta hai",
+            "Ye image ko ek hi step mein pure noise bana deta hai aur sampling ke time chalaya jaata hai"
+          ],
+          "answer": 0,
+          "explanation": "Forward process ek fixed Markov chain hai jo schedule βₜ ke hisaab se noise jodta hai; kuch seekha nahi jaata, option A. Option B reverse process (ε_θ network) ka description hai, yahi sabse common confusion hai. Option C GAN ka concept hai. Option D galat hai: noise kai chhote steps mein judta hai (closed form sirf shortcut hai), aur sampling ke time reverse process chalta hai, forward nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w8-q2",
+          "question": "Ek diffusion model ka noise schedule constant hai: har step βₜ = 0.1. Teen steps ke baad ᾱ₃ kya hai?",
+          "options": [
+            "0.700",
+            "0.271",
+            "0.729",
+            "0.300"
+          ],
+          "answer": 2,
+          "explanation": "αₜ = 1 − 0.1 = 0.9 aur ᾱ₃ = 0.9 × 0.9 × 0.9 = 0.729, option C. Option A (0.700 = 1 − 3β) product ki jagah β ko add karta hai; chhote β par ye approximation lagta hai par exact nahi. Option B (0.271) noise variance 1 − ᾱ₃ hai. Option D sirf βs ka sum hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w8-q3",
+          "question": "Ek scalar data point x₀ = 2 hai. Timestep t par ᾱₜ = 0.64 aur sampled noise ε = 0.5 hai. Closed form se noisy sample xₜ kya hai?",
+          "options": [
+            "1.46",
+            "2.5",
+            "1.6",
+            "1.9"
+          ],
+          "answer": 3,
+          "explanation": "xₜ = √0.64·2 + √(1 − 0.64)·0.5 = 0.8·2 + 0.6·0.5 = 1.6 + 0.3 = 1.9, option D. Option A (1.46 = 0.64·2 + 0.36·0.5) square roots bhool jaata hai, ye sabse common trap hai. Option C noise term chhod deta hai. Option B (2.5) x₀ + ε hai, signal ko scale hi nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w8-q4",
+          "question": "Ek step par xₜ = 1.0, ᾱₜ = 0.25, aur network ka predicted noise ε̂ = 0.4 hai. Model ka clean-data estimate x̂₀ = (xₜ − √(1 − ᾱₜ)·ε̂)/√ᾱₜ kya hai (3 decimal tak)?",
+          "options": [
+            "0.654",
+            "1.307",
+            "1.400",
+            "2.693"
+          ],
+          "answer": 1,
+          "explanation": "√(1 − 0.25) = 0.866, to xₜ − 0.866·0.4 = 1 − 0.346 = 0.654. Phir √0.25 = 0.5 se divide: 0.654/0.5 = 1.307, option B. Option A √ᾱₜ se divide karna bhool jaata hai. Option C (1.400) 1 − ᾱₜ = 0.75 ko bina square root ke use karta hai. Option D (2.693) noise ko subtract karne ki jagah add kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w8-q5",
+          "question": "Ek training example mein sampled noise ε = [1, −1, 0.5, 0] hai aur network predict karta hai ε̂ = [0.8, −0.6, 0.5, 0.2]. Simplified diffusion loss (elements par mean squared error) kya hai?",
+          "options": [
+            "0.06",
+            "0.24",
+            "0.20",
+            "0.245"
+          ],
+          "answer": 0,
+          "explanation": "Errors: 0.2, −0.4, 0, −0.2; squares: 0.04, 0.16, 0, 0.04; sum = 0.24, mean = 0.24/4 = 0.06, option A. Option B (0.24) mean ki jagah sum hai. Option C (0.20) mean absolute error hai. Option D (0.245) RMSE (√0.06) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w8-q6",
+          "question": "Ek schedule mein har step βₜ = 0.02 constant hai. Sabse chhota t kaunsa hai jiske liye ᾱₜ < 0.5 ho jaata hai (yaani signal ka variance-coefficient noise se kam ho jaata hai)?",
+          "options": [
+            "25",
+            "34",
+            "35",
+            "50"
+          ],
+          "answer": 2,
+          "explanation": "ᾱₜ = 0.98ᵗ < 0.5 ⇒ t > ln 0.5/ln 0.98 = 34.3, isliye t = 35, option C. Check: 0.98³⁴ = 0.503 (abhi bhi ≥ 0.5) aur 0.98³⁵ = 0.493. Option B (34) rounding down ka off-by-one hai. Option A (25) 1 − tβ = 0.5 se aata hai, yaani product ki jagah sum. Option D (50) β ke reciprocal ka confusion hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Generative Vision in Practice: Guidance, Evaluation, Ethics",
+      "summary": "Is week aap pretrained text-to-image diffusion pipelines ke parts, latent diffusion, classifier-free guidance, GAN latent tricks, FID jaise evaluation metrics aur generated images ke responsible use ko practical numbers ke saath samjhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Text-to-image pipeline**: (1) text encoder prompt ko embeddings mein badalta hai; (2) denoiser (U-Net ya transformer) har step par noise predict karta hai aur cross-attention se text embeddings ko dekhta hai; (3) scheduler decide karta hai kitne steps aur kaise update; (4) decoder final latent ko image banata hai. Random seed shuruaati noise tay karta hai, isliye same seed + same settings = same image (reproducibility).",
+        "**Latent diffusion**: pixel space (jaise 512 × 512 × 3) ki jagah ek pretrained autoencoder ke chhote latent space (jaise 64 × 64 × 4) mein diffusion chalate hain. Har step par kaafi kam numbers process hote hain, isliye training aur sampling dono saste. Ant mein decoder latent ko wapas image banata hai.",
+        "**Classifier-free guidance (CFG)**: training ke time kuch fraction examples mein condition (prompt) hata di jaati hai, taaki ek hi model conditional ε_c aur unconditional ε_u dono predict kar sake. Sampling par ε̃ = ε_u + w·(ε_c − ε_u). w = 1 normal conditional model hai; w > 1 prompt-adherence badhata hai par diversity ghatata hai, aur bahut bada w over-saturated ya artefact wali images deta hai. Har step par do predictions lagti hain, isliye cost lagbhag double.",
+        "**Editing modes**: img2img mein input image ko kisi intermediate t tak noise karke wahan se denoise karte hain ('strength' = kitna noise, yaani kitni azaadi). Inpainting mein sirf mask wale region ko regenerate karte hain. Negative prompt unconditional branch ki jagah use hota hai, taaki guidance unwanted features se door le jaaye.",
+        "**GAN practice**: latent space mein do z ke beech interpolation karke smooth transitions dekh sakte hain. Truncation trick (z ko mean ke paas se sample karna) quality badhata hai par diversity ghatata hai. Conditional GAN class label ko G aur D dono ko deta hai, taaki chuni hui class generate ho.",
+        "**Evaluation**: FID real aur generated images ke feature vectors (ek pretrained image network se) ko Gaussians maan kar unke beech Fréchet distance nikaalta hai: ‖μ₁ − μ₂‖² + Tr(Σ₁ + Σ₂ − 2(Σ₁Σ₂)^½). Kam FID = behtar; ye quality aur diversity dono pakadta hai par bahut samples chahiye aur feature extractor ke bias ke saath aata hai. Prompt alignment ke liye text–image similarity scores aur human evaluation bhi use hote hain.",
+        "**Ethics aur responsible use**: real logon ki likeness bina consent (deepfakes), copyrighted ya bina permission ke training data, demographic bias (jaise 'doctor' prompt par ek hi type ke log), aur misinformation bade risks hain. Achhe practices: synthetic content ko disclose/label karna, provenance metadata ya watermark rakhna, model/licence terms follow karna, aur outputs ka bias audit karna."
+      ],
+      "example": {
+        "problem": "Ek fictional design studio 8 images banata hai: 25 sampling steps, CFG scale w = 7.5, latent diffusion (512 × 512 × 3 image ↔ 64 × 64 × 4 latent). (a) Kisi ek latent element par ε_u = 0.1, ε_c = 0.3 ho to guided noise kya hai? (b) Kul kitni noise predictions (image-level) lagengi? (c) Latent kitna chhota hai?",
+        "steps": [
+          "(a) ε̃ = ε_u + w(ε_c − ε_u) = 0.1 + 7.5 × 0.2 = 1.6. Guidance difference ko 7.5 guna kheench deta hai.",
+          "(b) Har image, har step par 2 predictions (conditional + unconditional): 8 × 25 × 2 = 400.",
+          "(c) Image elements = 512 × 512 × 3 = 786432; latent elements = 64 × 64 × 4 = 16384.",
+          "Ratio = 786432/16384 = 48, yaani denoiser har step par 48 guna kam numbers process karta hai.",
+          "**Answer: ε̃ = 1.6, 400 noise predictions, latent 48 guna chhota.**"
+        ],
+        "code": "eps_u, eps_c, w = 0.1, 0.3, 7.5\nprint(round(eps_u + w * (eps_c - eps_u), 2))      # 1.6\nprint(8 * 25 * 2)                                  # 400\nprint((512 * 512 * 3) // (64 * 64 * 4))            # 48"
+      },
+      "mistakes": [
+        "Guidance scale ko 'jitna bada utna achha' samajhna. Bahut bada w images ko over-saturated, kam diverse aur artefact wala bana deta hai; ek moderate range try karke dekho.",
+        "Bas kuch dozen images par FID report karna ya alag sample sizes ke FID compare karna. FID ka estimate sample size par depend karta hai; hazaaron samples aur same setup rakho.",
+        "Generated images ko 'real photo' ki tarah publish karna ya kisi asli insaan ki likeness bina consent use karna. Disclose karo aur consent/licence check karo."
+      ],
+      "revision": [
+        "CFG: ε̃ = ε_u + w(ε_c − ε_u); w > 1 = zyada prompt adherence, kam diversity.",
+        "CFG ke saath har step par 2 noise predictions.",
+        "Latent diffusion: chhote latent mein denoise, decoder se image.",
+        "FID: Gaussian features ka Fréchet distance; kam = behtar.",
+        "Responsible use: consent, disclosure/provenance, bias audit, licence."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w9-q1",
+          "question": "Text-to-image diffusion mein classifier-free guidance scale w ko 1 se badha kar kaafi bada karne ka typical effect kya hota hai?",
+          "options": [
+            "Images prompt se kam match karti hain par zyada diverse hoti hain",
+            "Sampling steps apne aap kam ho jaate hain",
+            "Model ke weights prompt ke hisaab se fine-tune ho jaate hain",
+            "Images prompt ko zyada closely follow karti hain, par diversity ghatti hai aur bahut bade w par over-saturation/artefacts aa sakte hain"
+          ],
+          "answer": 3,
+          "explanation": "ε̃ = ε_u + w(ε_c − ε_u) mein bada w prediction ko conditional direction mein aur zor se dhakelta hai: adherence ↑, diversity ↓, aur extreme w par artefacts, option D. Option A ulta effect batata hai. Option B galat hai: steps scheduler setting hai, guidance se nahi badalte. Option C galat hai: guidance sirf sampling-time combination hai, weights update nahi hote.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w9-q2",
+          "question": "Ek fictional company 'PixelNest' apne ad campaign mein AI-generated images use karna chahti hai. Inme se kaunsa practice sabse responsible hai?",
+          "options": [
+            "Images ko synthetic ke roop mein disclose karna, kisi asli insaan ki likeness bina consent use na karna, aur model/licence terms check karna",
+            "Kisi famous actor jaisa chehra generate karke use endorsement ki tarah dikhana, kyunki image technically nayi hai",
+            "Provenance metadata ya watermark hata dena taaki images asli photos lagein",
+            "Bias check skip karna, kyunki pretrained model pehle se bade dataset par train hua hai"
+          ],
+          "answer": 0,
+          "explanation": "Disclosure, consent aur licence compliance responsible use ke basic pillars hain, option A. Option B 'nayi image' hone ke bawajood ek asli insaan ki likeness ka misuse aur misleading endorsement hai. Option C jaan-boojh kar dhokha dena hai. Option D galat assumption hai: bade datasets se bias khatam nahi hota, aksar wahi se aata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w9-q3",
+          "question": "Ek sampling step par kisi latent element ke liye unconditional prediction ε_u = 0.2 aur conditional prediction ε_c = 0.5 hai. Guidance scale w = 3 ke saath classifier-free guided noise ε̃ kya hai? (Convention: ε̃ = ε_u + w(ε_c − ε_u))",
+          "options": [
+            "0.9",
+            "1.5",
+            "1.1",
+            "0.5"
+          ],
+          "answer": 2,
+          "explanation": "ε̃ = ε_u + w(ε_c − ε_u) = 0.2 + 3 × 0.3 = 1.1, option C. Option A (0.9) sirf w(ε_c − ε_u) hai, base ε_u jodna bhool gaye. Option B (1.5 = 3 × 0.5) conditional prediction ko seedha scale kar deta hai. Option D sirf ε_c hai, jo w = 1 par milta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w9-q4",
+          "question": "Ek latent diffusion model 512 × 512 × 3 images ko 64 × 64 × 4 latent mein encode karta hai. Denoiser ko har step par pixel space ki tulna mein kitne guna kam numbers process karne padte hain?",
+          "options": [
+            "8",
+            "48",
+            "64",
+            "192"
+          ],
+          "answer": 1,
+          "explanation": "Image: 512·512·3 = 786432 elements; latent: 64·64·4 = 16384. Ratio = 48, option B. Option A (8) sirf ek side ka downsampling factor hai. Option C (64 = 8²) spatial area ka factor hai par channels (3 → 4) ignore karta hai. Option D (192) latent ke 4 channels bhool kar sirf 64 × 64 ginta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w9-q5",
+          "question": "Ek prompt se 4 images banani hain, 30 sampling steps, classifier-free guidance ke saath (har image ke liye har step par conditional aur unconditional prediction alag-alag ginni hai). Kul kitni noise predictions (image-level network evaluations) lagengi?",
+          "options": [
+            "120",
+            "60",
+            "30",
+            "240"
+          ],
+          "answer": 3,
+          "explanation": "4 images × 30 steps × 2 predictions = 240, option D. Option A (120) CFG ki doosri (unconditional) prediction bhool jaata hai, ye sabse common trap hai. Option B (60) sirf ek image ka count hai. Option C sirf steps hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w9-q6",
+          "question": "Ek toy 1-D 'FID' mein real images ke features ~ N(2, 1) aur generated images ke features ~ N(1.5, 0.25) hain (second number variance hai). Fréchet distance (μ₁ − μ₂)² + σ₁² + σ₂² − 2σ₁σ₂ kya hai?",
+          "options": [
+            "0.50",
+            "0.8125",
+            "1.50",
+            "0.25"
+          ],
+          "answer": 0,
+          "explanation": "σ₁ = 1, σ₂ = √0.25 = 0.5. FD = 0.5² + 1 + 0.25 − 2·1·0.5 = 0.25 + 0.25 = 0.5, option A; 1-D mein ye (Δμ)² + (σ₁ − σ₂)² hai. Option B (0.8125) standard deviations ki jagah variances ka difference square karta hai: 0.25 + 0.75². Option C (1.50) cross term −2σ₁σ₂ bhool jaata hai. Option D sirf mean ka difference ginta hai aur spread ka mismatch ignore karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Language Models I: Tokens, Embeddings and Attention",
+      "summary": "Is week aap subword tokenisation (BPE), word embeddings aur cosine similarity, scaled dot-product attention, multi-head attention ke parameters, positional encoding aur transformer block ka structure seekhoge.",
+      "readMinutes": 20,
+      "concepts": [
+        "**Tokenisation**: word-level vocab mein naye/rare words OOV ban jaate hain; character-level mein sequences bahut lambi ho jaati hain. Subword methods (BPE, WordPiece, unigram) beech ka raasta hain: common words ek token, rare words chhote tukdon mein. BPE characters se shuru karke baar-baar sabse frequent adjacent pair ko merge karta hai. Isliye 1 token ≠ 1 word; context limits aur cost tokens mein gine jaate hain.",
+        "**Word embeddings**: har token ek dense vector hai. Distributional idea: jo words similar contexts mein aate hain unke vectors paas hote hain (word2vec/GloVe jaise methods). Similarity aksar cosine se naapte hain: cos = (u·v)/(‖u‖‖v‖). Static embeddings har word ka ek hi vector dete hain; transformer ke contextual embeddings same word ko context ke hisaab se alag vector dete hain ('bank' of a river vs bank account).",
+        "**Scaled dot-product attention**: Q = XW_Q, K = XW_K, V = XW_V. Attention(Q, K, V) = softmax(QKᵀ/√d_k)·V. Har query sabhi keys se similarity score nikaalti hai, softmax se weights banate hain, aur output values ka weighted average hai. √d_k se divide isliye karte hain kyunki bade d_k par dot products ka variance badhta hai aur softmax saturate hokar gradients chhote kar deta hai.",
+        "**Multi-head attention**: h heads, har head d_k = d_model/h size ke apne Q, K, V projections ke saath alag-alag relations (jaise syntax, coreference) dekh sakta hai. Heads ke outputs concat karke W_O se project karte hain. Total projection params = 4·(d_model² + d_model) (bias ke saath), heads ki sankhya se independent, kyunki heads d_model ko baant lete hain.",
+        "**Positional encoding**: attention khud order-agnostic hai (tokens shuffle karo to bas outputs shuffle hote hain). Isliye position information jodte hain. Sinusoidal: PE(pos, 2i) = sin(pos/10000^(2i/d)), PE(pos, 2i + 1) = cos(pos/10000^(2i/d)); kam index wale dimensions tezi se ghoomte hain, zyada index wale dheere. Learned position embeddings aur relative/rotary schemes bhi common hain.",
+        "**Transformer block**: [multi-head self-attention → residual add → LayerNorm] → [position-wise feed-forward (aksar 4·d_model hidden, non-linear) → residual add → LayerNorm]. Kai blocks stack hote hain. RNN ki tarah step-by-step nahi chalta, isliye poori sequence parallel process hoti hai; par attention ka cost sequence length n ke saath n² badhta hai.",
+        "**Self vs cross attention, aur masking**: self-attention mein Q, K, V ek hi sequence se aate hain; cross-attention mein Q ek sequence (decoder) se aur K, V doosri (encoder output) se. Causal mask future positions ke scores ko −∞ kar deta hai, taaki token i sirf positions ≤ i ko dekhe; ye language generation ke liye zaroori hai (next week detail mein)."
+      ],
+      "example": {
+        "problem": "Ek chhota fictional corpus: 'data' × 4, 'date' × 3, 'gate' × 2. Characters se shuru karke BPE ke pehle teen merges nikaalo.",
+        "steps": [
+          "Shuru: d a t a (4), d a t e (3), g a t e (2).",
+          "Pair counts: (a, t) = 4 + 3 + 2 = 9, (d, a) = 7, (t, e) = 5, (t, a) = 4, (g, a) = 2. Merge 1: a + t → 'at'.",
+          "Ab: d at a, d at e, g at e. Counts: (d, at) = 7, (at, e) = 5, (at, a) = 4, (g, at) = 2. Merge 2: d + at → 'dat'.",
+          "Ab: dat a, dat e, g at e. Counts: (dat, a) = 4, (dat, e) = 3, (g, at) = 2, (at, e) = 2. Merge 3: dat + a → 'data'.",
+          "Final segmentation: 'data' = 1 token, 'date' = dat + e, 'gate' = g + at + e. Frequent word ek token ban gaya, kam frequent words tukdon mein.",
+          "**Answer: merges = 'at', 'dat', 'data'.**"
+        ],
+        "code": "from collections import Counter\ncorpus = {(\"d\", \"a\", \"t\", \"a\"): 4, (\"d\", \"a\", \"t\", \"e\"): 3, (\"g\", \"a\", \"t\", \"e\"): 2}\nmerges = []\nfor _ in range(3):\n    pairs = Counter()\n    for w, f in corpus.items():\n        for p in zip(w, w[1:]):\n            pairs[p] += f\n    a, b = max(pairs, key=pairs.get)\n    merges.append(a + b)\n    new = {}\n    for w, f in corpus.items():\n        out, i = [], 0\n        while i < len(w):\n            if i + 1 < len(w) and (w[i], w[i + 1]) == (a, b):\n                out.append(a + b)\n                i += 2\n            else:\n                out.append(w[i])\n                i += 1\n        new[tuple(out)] = f\n    corpus = new\nprint(merges)   # ['at', 'dat', 'data']"
+      },
+      "mistakes": [
+        "√d_k ki jagah d_k se divide karna, ya scaling bilkul bhool jaana. Bina scaling ke softmax bahut peaky ho jaata hai (kuch tokens par lagbhag saara weight).",
+        "Ye sochna ki zyada heads = zyada parameters. Standard design mein har head d_model/h size ka hota hai, isliye attention ke projection params heads badalne se nahi badalte.",
+        "Token count ko word count ke barabar maan lena. Subword tokenisation mein ek word kai tokens ho sakta hai, khaaskar rare words, numbers aur non-English text."
+      ],
+      "revision": [
+        "BPE: sabse frequent adjacent pair ko baar-baar merge karo.",
+        "cos(u, v) = u·v/(‖u‖‖v‖).",
+        "Attention = softmax(QKᵀ/√d_k)·V.",
+        "MHA projection params = 4(d_model² + d_model), h se independent.",
+        "PE(pos, 2i) = sin(pos/10000^(2i/d)), PE(pos, 2i + 1) = cos(…)."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w10-q1",
+          "question": "Do word embeddings u = [1, 2, 2] aur v = [2, 1, 2] hain. Unki cosine similarity kya hai?",
+          "options": [
+            "8",
+            "0.889",
+            "1.414",
+            "0.111"
+          ],
+          "answer": 1,
+          "explanation": "u·v = 2 + 2 + 4 = 8, aur ‖u‖ = ‖v‖ = √9 = 3. cos = 8/9 = 0.889, option B. Option A sirf dot product hai, norms se divide nahi kiya. Option C (√2) Euclidean distance hai. Option D (1/9) cosine distance (1 − cos) hai, similarity nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w10-q2",
+          "question": "Scaled dot-product attention mein key dimension d_k = 64 hai. Softmax se pehle QKᵀ ke scores ko kis number se divide kiya jaata hai?",
+          "options": [
+            "64",
+            "4096",
+            "0.125",
+            "8"
+          ],
+          "answer": 3,
+          "explanation": "Scores ko √d_k = √64 = 8 se divide karte hain, option D. Option A (64) square root bhool jaata hai; isse scores zaroorat se zyada chhote ho jaate hain. Option B d_k² hai. Option C (1/8) woh factor hai jisse multiply karte hain, divide karne wala number nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w10-q3",
+          "question": "Ek query ke do keys ke saath raw dot products q·k₁ = 2 aur q·k₂ = 0 hain, aur d_k = 4. Scaled dot-product attention mein key 1 ko kitna attention weight milega?",
+          "options": [
+            "0.731",
+            "0.881",
+            "1.000",
+            "0.500"
+          ],
+          "answer": 0,
+          "explanation": "Scaled scores = [2, 0]/√4 = [1, 0]. Softmax: e/(e + 1) = 0.731, option A. Option B (0.881) scaling bhool kar softmax([2, 0]) leta hai. Option C hard argmax hai; softmax kabhi exactly 1 nahi deta jab tak doosra score −∞ na ho. Option D maan leta hai ki weights barabar hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w10-q4",
+          "question": "Ek multi-head self-attention layer mein d_model = 512 aur 8 heads hain (har head d_k = d_v = 64). W_Q, W_K, W_V aur output projection W_O sab mein bias hai. Is layer ke total parameters kitne hain?",
+          "options": [
+            "1048576",
+            "8404992",
+            "1050624",
+            "262656"
+          ],
+          "answer": 2,
+          "explanation": "Saare heads milkar har projection ko 512 → 512 banate hain: har ek 512·512 + 512 = 262656, aur chaar projections: 4 × 262656 = 1050624, option C. Option A (1048576) biases chhod deta hai. Option B (8404992) har head ko poore 512 × 512 projections de deta hai, yaani 8 guna; ye sabse common trap hai. Option D sirf ek projection hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w10-q5",
+          "question": "Sinusoidal positional encoding: PE(pos, 2i) = sin(pos/10000^(2i/d)), PE(pos, 2i + 1) = cos(pos/10000^(2i/d)), d = 4. Position pos = 2 ke vector mein dimension index 2 (0 se ginti) ki value kya hai (4 decimal tak)?",
+          "options": [
+            "0.9093",
+            "0.9998",
+            "0.0002",
+            "0.0200"
+          ],
+          "answer": 3,
+          "explanation": "Index 2 even hai, to 2i = 2, i = 1, aur 10000^(2/4) = 100. Value = sin(2/100) = sin(0.02) = 0.0200, option D. Option A (sin 2) index 0 ki value hai. Option B cos(0.02) index 3 ki value hai. Option C (sin(2/10000)) exponent 2i/d ki jagah denominator poora 10000 le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w10-q6",
+          "question": "Ek query q = [1, 0] hai, aur teen tokens ke keys aur values same hain: k₁ = v₁ = [1, 0], k₂ = v₂ = [0, 1], k₃ = v₃ = [1, 1]; d_k = 2. Scaled dot-product attention ka output vector kya hai (3 decimal tak)?",
+          "options": [
+            "[0.845, 0.578]",
+            "[0.802, 0.599]",
+            "[0.667, 0.667]",
+            "[1.000, 0.000]"
+          ],
+          "answer": 1,
+          "explanation": "Scores q·k = [1, 0, 1], /√2 = [0.707, 0, 0.707]. Softmax: e^0.707 = 2.028, weights = [0.401, 0.198, 0.401]. Output = 0.401·[1, 0] + 0.198·[0, 1] + 0.401·[1, 1] = [0.802, 0.599], option B. Option A √2 se scaling bhool jaata hai (weights [0.422, 0.155, 0.422]). Option C barabar weights 1/3 maan leta hai. Option D sirf pehle token ko poora weight de deta hai, jabki k₃ ka score bhi utna hi hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Language Models II: Architectures, Fine-tuning and LoRA",
+      "summary": "Is week aap encoder-only, decoder-only aur encoder–decoder transformers ka fark, unke pretraining objectives, full fine-tuning ki cost, aur PEFT methods (khaaskar LoRA) ka maths aur parameter savings seekhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Encoder-only (BERT-like)**: bidirectional self-attention, har token dono taraf ka context dekhta hai. Pretraining: masked language modelling (kuch tokens ko mask karke predict karna). Classification, NER, semantic search embeddings jaise understanding tasks ke liye accha; free-form text generation ke liye natural nahi.",
+        "**Decoder-only (GPT-like)**: causal (masked) self-attention, token i sirf positions ≤ i dekhta hai. Pretraining: next-token prediction (causal LM). Generation autoregressive hoti hai: ek token predict karo, append karo, repeat. Bade decoder-only models prompt mein diye examples se naya task kar lete hain (in-context learning).",
+        "**Encoder–decoder (T5/BART-like)**: encoder input ko bidirectionally padhta hai; decoder causal self-attention ke saath output banata hai aur cross-attention mein Q apne se, K aur V encoder ke outputs se leta hai. Translation, summarisation jaise seq2seq tasks ke liye natural. Pretraining aksar denoising (corrupted spans ko reconstruct karna) hoti hai.",
+        "**Pretrain → adapt**: pehle bade unlabelled corpus par self-supervised pretraining, phir task data par adaptation: full fine-tuning, instruction tuning (instruction–response pairs par), aur human preferences se alignment (jaise RLHF ya preference-optimisation methods). Chhote task data par full fine-tuning se catastrophic forgetting (purani general abilities ka nuksaan) bhi ho sakta hai.",
+        "**Full fine-tuning ki cost**: har parameter ke gradient aur Adam ke do states (m, v) bhi memory mein rakhne padte hain. fp32 mein roughly 4 (weight) + 4 (grad) + 8 (Adam) = 16 bytes per parameter. Har task ke liye poore model ki alag copy bhi save karni padti hai.",
+        "**PEFT (parameter-efficient fine-tuning)**: base model freeze karke bahut chhote extra parameters train karo. Types: adapters (layers ke beech chhote bottleneck MLP), prefix/prompt tuning (trainable virtual tokens), aur LoRA. Fayde: kam memory, kam storage (har task ka sirf chhota delta), ek base model par kai tasks.",
+        "**LoRA**: frozen weight W (d × k) ke update ko low-rank maana jaata hai: W′ = W + (α/r)·BA, jahan B (d × r), A (r × k), r ≪ min(d, k). Trainable params = r(d + k) vs full d·k. B ko zero se initialise karte hain, isliye shuruaat mein ΔW = 0 aur model bilkul pretrained jaisa behave karta hai. Training ke baad BA ko W mein merge kar sakte hain, isliye inference par extra latency nahi. Aam taur par attention ke W_Q, W_V (ya saare projections) par lagate hain."
+      ],
+      "example": {
+        "problem": "Ek fictional 1.2 billion parameter decoder-only model: 20 layers, d_model = 2048. (a) fp32 + Adam se full fine-tuning ke liye weights, gradients aur optimizer states ki memory kitni? (b) LoRA r = 8 sirf W_Q aur W_V (har ek 2048 × 2048) par lagao: trainable params, unka fraction, aur unke gradient + Adam states ki memory nikaalo.",
+        "steps": [
+          "(a) 16 bytes/param × 1.2 × 10⁹ = 19.2 GB (activations alag se).",
+          "(b) Ek matrix par LoRA params = r(d + k) = 8 × (2048 + 2048) = 32768.",
+          "Har layer mein 2 matrices, 20 layers: 32768 × 2 × 20 = 1310720 trainable params.",
+          "Fraction = 1310720 / (1.2 × 10⁹) ≈ 0.11%.",
+          "In par gradient + Adam = 12 bytes/param: 1310720 × 12 ≈ 15.7 MB. Frozen base weights (fp32 mein 4.8 GB) phir bhi load karne padte hain, par unke gradients/optimizer states nahi.",
+          "**Answer: full FT ≈ 19.2 GB training state; LoRA ≈ 1.31 million params (≈ 0.11%) aur sirf ≈ 15.7 MB extra training state.**"
+        ],
+        "code": "params = 1.2e9\nprint(params * 16 / 1e9)                        # 19.2 (GB)\nlora = 8 * (2048 + 2048) * 2 * 20\nprint(lora, round(lora / params * 100, 2), round(lora * 12 / 1e6, 1))   # 1310720 0.11 15.7"
+      },
+      "mistakes": [
+        "LoRA params ko r·d·k samajhna. Do chhote matrices hain: B (d × r) aur A (r × k), isliye r(d + k).",
+        "Encoder-only model ko seedha open-ended text generation ke liye chuna. Uska objective bidirectional masked prediction hai; generation ke liye decoder-only ya encoder–decoder lo.",
+        "LoRA mein A aur B dono ko random init karna. Tab shuruaat mein hi ΔW ≠ 0 hota hai aur pretrained behaviour bigad jaata hai; standard practice mein B = 0 hota hai."
+      ],
+      "revision": [
+        "Encoder-only = bidirectional + MLM; decoder-only = causal + next token; enc–dec = seq2seq + cross-attention.",
+        "Cross-attention: Q decoder se, K, V encoder outputs se.",
+        "Causal mask: n tokens par n(n + 1)/2 allowed pairs.",
+        "LoRA: W′ = W + (α/r)BA, params r(d + k), B = 0 init.",
+        "Full FT (fp32 + Adam) ≈ 16 bytes/param."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w11-q1",
+          "question": "Next-token prediction se pretrain hone wale aur causal mask (sirf pichhle tokens dekhna) use karne wale transformer ko kya kehte hain?",
+          "options": [
+            "Encoder-only (BERT-like)",
+            "Sirf CNN-based language model",
+            "Decoder-only (GPT-like)",
+            "Koi transformer causal mask use nahi karta"
+          ],
+          "answer": 2,
+          "explanation": "Causal self-attention aur next-token objective decoder-only (GPT-like) models ki pehchaan hai, option C. Option A sabse tempting trap hai: encoder-only models bidirectional attention aur masked LM use karte hain; 'mask' wahan input tokens chhupaane ke liye hai, attention ko causal banane ke liye nahi. Option B transformer hai hi nahi. Option D galat hai: decoder (aur encoder–decoder ka decoder) causal mask use karte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w11-q2",
+          "question": "Ek frozen weight matrix 4096 × 4096 hai. Us par LoRA rank r = 8 lagaya jaata hai (B: 4096 × 8, A: 8 × 4096). LoRA ke trainable parameters kitne hain?",
+          "options": [
+            "65536",
+            "32768",
+            "16777216",
+            "8192"
+          ],
+          "answer": 0,
+          "explanation": "r(d + k) = 8 × (4096 + 4096) = 65536, option A, jo full matrix ke 16777216 ka sirf 0.39% hai. Option B (32768) sirf ek matrix (B ya A) ginta hai. Option C full fine-tuning ka count hai. Option D (d + k) rank r se multiply karna bhool jaata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w11-q3",
+          "question": "Ek decoder ke causal self-attention mein sequence length 5 hai. Har token khud ko aur apne pichhle tokens ko dekh sakta hai. Kul kitne (query, key) pairs ko non-zero attention allowed hai?",
+          "options": [
+            "25",
+            "10",
+            "5",
+            "15"
+          ],
+          "answer": 3,
+          "explanation": "Token i (1 se 5) i positions dekhta hai: 1 + 2 + 3 + 4 + 5 = 15 = n(n + 1)/2, option D. Option A (25) full bidirectional attention hai, mask ignore kiya. Option B (10) diagonal chhod deta hai, jabki token khud ko bhi dekhta hai. Option C sirf self-pairs hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w11-q4",
+          "question": "Ek model mein 24 transformer layers hain. Har layer ke W_Q aur W_V (dono 1024 × 1024) par LoRA r = 16 lagaya jaata hai; baaki sab frozen. Total trainable parameters kitne hain?",
+          "options": [
+            "786432",
+            "1572864",
+            "50331648",
+            "3145728"
+          ],
+          "answer": 1,
+          "explanation": "Ek matrix: 16 × (1024 + 1024) = 32768. Har layer 2 matrices, 24 layers: 32768 × 2 × 24 = 1572864, option B. Option A (786432) har layer mein sirf ek matrix ginta hai. Option C (2 × 24 × 1024²) full fine-tuning ka count hai. Option D chaaron projections (Q, K, V, O) par LoRA maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w11-q5",
+          "question": "Ek encoder–decoder translation model ke decoder mein cross-attention layer apne keys (K) aur values (V) kahan se leti hai?",
+          "options": [
+            "Decoder ke pichhle generated tokens se",
+            "Positional encoding table se",
+            "Encoder ke final hidden states (outputs) se",
+            "Vocabulary embedding matrix se seedha"
+          ],
+          "answer": 2,
+          "explanation": "Cross-attention mein queries decoder se aati hain, aur keys/values encoder outputs se, taaki har output token source sentence ke relevant hisson ko dekh sake, option C. Option A decoder ki masked self-attention ka description hai, ye sabse common confusion hai. Option B aur D attention ke K/V ke source nahi hain; woh sirf input representations banane mein kaam aate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w11-q6",
+          "question": "Ek tiny LoRA layer: frozen W = [[2, 1], [0, 1]], A = [1, 2] (1 × 2), B = [0.5, −1]ᵀ (2 × 1), rank r = 1, scaling α = 2. Input x = [1, 1]. Output h = Wx + (α/r)·B(Ax) kya hai?",
+          "options": [
+            "[4.5, −2]",
+            "[3.75, −0.5]",
+            "[3, 1]",
+            "[6, −5]"
+          ],
+          "answer": 3,
+          "explanation": "Wx = [2 + 1, 0 + 1] = [3, 1]. Ax = 1 + 2 = 3, B(Ax) = [1.5, −3], scale α/r = 2 se [3, −6]. h = [3 + 3, 1 − 6] = [6, −5], option D. Option A scaling factor bhool jaata hai. Option B α/r ki jagah r/α = 0.5 use karta hai. Option C maan leta hai ki LoRA ka contribution zero hai, jo sirf initialisation par (B = 0) sach hota hai, yahan B non-zero hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "LLMs in Practice: Prompting, Evaluation, Responsible Use",
+      "summary": "Is week aap zero-shot, few-shot aur chain-of-thought prompting, decoding settings (temperature, top-p), prompt tuning, LLM outputs ka evaluation, aur hallucination, prompt injection jaisi limitations ke saath responsible use seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Prompt ka structure**: achha prompt role/instruction, zaroori context, input (delimiters ke andar, jaise triple quotes), output format (jaise JSON keys) aur constraints saaf batata hai. Vague prompt = vague output. Prompt ko code ki tarah treat karo: version rakho aur ek fixed test set par measure karke hi badlo.",
+        "**Zero-shot vs few-shot**: zero-shot mein sirf instruction hoti hai; few-shot mein kuch solved input → output examples bhi prompt mein hote hain (in-context learning, weights update nahi hote). Examples ka choice, order aur label balance results badal sakta hai; examples test inputs jaise hone chahiye.",
+        "**Chain-of-thought (CoT) idea**: multi-step problems (arithmetic, logic) mein model ko pehle reasoning steps likhne dena aksar accuracy badhata hai. Self-consistency: kai reasoning paths sample karke final answers par majority vote. Par likha hua reasoning hamesha model ke asli computation ka faithful explanation nahi hota, aur ye tokens/cost badhata hai.",
+        "**Decoding settings**: greedy (temperature ≈ 0) har step sabse probable token leta hai: deterministic, extraction/classification ke liye accha. Temperature distribution ko sharp/flat karta hai. Top-k sirf k sabse probable tokens rakhta hai; top-p (nucleus) sabse chhota set rakhta hai jiski cumulative probability ≥ p ho, phir renormalise karke sample karta hai.",
+        "**Prompt tuning vs prompt engineering**: prompt engineering haath se text likhna hai. Prompt tuning (soft prompts) m trainable embedding vectors input ke aage jodta hai aur sirf unhe gradient se train karta hai, model frozen rehta hai: params = m × d_model. Prefix tuning aise vectors har layer mein jodta hai, isliye usme zyada params hote hain.",
+        "**Evaluation**: closed-form tasks par exact match/accuracy/F1; summarisation/translation par overlap metrics (ROUGE/BLEU) jo semantics poori tarah nahi pakadte; open-ended answers ke liye rubric ke saath human review ya LLM-as-judge (iske bhi bias hote hain: position, length). Held-out, contamination-free test set rakho aur cost, latency, safety bhi measure karo.",
+        "**Limitations aur responsible use**: hallucination (confident par galat facts), knowledge cutoff, prompt phrasing ke prati sensitivity, bias, context window aur KV-cache memory ki limits. Prompt injection: untrusted text (web page, email) mein chhupe instructions model ko bhatka sakte hain, isliye tool access limit karo. Mitigations: retrieval se grounding aur citations, 'pata nahi' kehne ki permission, sensitive data prompt mein na daalna, aur high-stakes decisions mein human review."
+      ],
+      "example": {
+        "problem": "Ek fictional legal-tech team ka model 8192-token context window rakhta hai. Prompt mein system instructions 500 tokens, 8 few-shot examples (har ek 600 tokens) hain, aur output ke liye 1000 tokens reserve hain. Analyse karne wala contract 2500 tokens ka hai. Kya fit hoga? Na ho to kitne examples rakh sakte hain?",
+        "steps": [
+          "Fixed parts: 500 + 8 × 600 + 1000 = 500 + 4800 + 1000 = 6300 tokens.",
+          "Document ke liye bacha: 8192 − 6300 = 1892 tokens, jo 2500 se kam hai, isliye fit nahi hoga.",
+          "Examples ke liye budget: 8192 − 500 − 1000 − 2500 = 4192 tokens.",
+          "Max examples = ⌊4192/600⌋ = 6 (6 × 600 = 3600 tokens).",
+          "Bachi jagah: 4192 − 3600 = 592 tokens, safety margin ke liye theek. Doosra option: lamba document chunks mein todna ya sirf relevant sections retrieve karna.",
+          "**Answer: 8 examples ke saath fit nahi hota (sirf 1892 tokens bachte hain); 6 examples tak ghataane par contract fit ho jaata hai.**"
+        ],
+        "code": "window, system, ex, out, doc = 8192, 500, 600, 1000, 2500\nprint(window - (system + 8 * ex + out))          # 1892\nprint((window - system - out - doc) // ex)       # 6"
+      },
+      "mistakes": [
+        "Extraction ya classification jaise deterministic tasks par high temperature use karna. Isse har run alag output aata hai; aise tasks mein low temperature/greedy rakho.",
+        "Kuch hand-picked examples dekh kar prompt ko 'kaam karta hai' maan lena. Ek fixed, labelled eval set banao aur har prompt change ko us par measure karo.",
+        "Model ke fluent answer ko verified fact maan lena, ya untrusted content ke instructions ko follow hone dena. Grounding, citations, human review aur limited tool permissions rakho."
+      ],
+      "revision": [
+        "Zero-shot = sirf instruction; few-shot = instruction + solved examples.",
+        "CoT: step-by-step reasoning; self-consistency = majority vote.",
+        "Top-p: smallest set with cumulative prob ≥ p, phir renormalise.",
+        "Prompt tuning params = soft tokens × d_model (model frozen).",
+        "KV cache = 2 × layers × tokens × d_model × bytes.",
+        "Hallucination, injection, bias → grounding, least privilege, human review."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w12-q1",
+          "question": "Ek prompt mein pehle task ki instruction hai, phir 3 solved examples (review → sentiment), aur ant mein naya review jiska sentiment chahiye. Model ke weights update nahi hote. Is technique ko kya kehte hain?",
+          "options": [
+            "Few-shot prompting",
+            "Zero-shot prompting",
+            "Fine-tuning",
+            "Prompt tuning (soft prompts)"
+          ],
+          "answer": 0,
+          "explanation": "Prompt ke andar solved examples dena aur weights na badalna few-shot (in-context) prompting hai, option A. Option B mein koi example nahi hota, sirf instruction. Option C weights update karta hai. Option D trainable embedding vectors seekhta hai, jo gradient training hai, text examples nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w12-q2",
+          "question": "Fictional e-commerce company 'ShopEase' ka LLM support bot return policy ke baare mein confident par galat answers deta hai. Inme se sabse effective mitigation kaunsa hai?",
+          "options": [
+            "Temperature badha do taaki answers zyada varied hon",
+            "System prompt mein likh do ki 'tum kabhi galat nahi hote'",
+            "Bot se lambe, detailed answers likhwao",
+            "Answers ko company ke official policy documents par ground karo (retrieval), sources cite karwao, aur info na milne par 'pata nahi' kehne do"
+          ],
+          "answer": 3,
+          "explanation": "Hallucination ka sabse practical ilaaj grounding hai: relevant official text retrieve karke prompt mein do, citations maango, aur abstain karne do, option D. Option A randomness badhata hai, galtiyaan kam nahi karta. Option B se model sirf aur confident lagta hai, sahi nahi hota. Option C lamba answer zyada unverified claims bhi la sakta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w12-q3",
+          "question": "Agle token ki probabilities (sorted) hain: 0.5, 0.2, 0.15, 0.1, 0.05. Top-p (nucleus) sampling p = 0.8 ke saath kitne tokens nucleus mein rehte hain, aur renormalise karne ke baad sabse probable token ki probability kya hoti hai?",
+          "options": [
+            "(2, 0.714)",
+            "(3, 0.588)",
+            "(3, 0.500)",
+            "(4, 0.526)"
+          ],
+          "answer": 1,
+          "explanation": "Cumulative: 0.5, 0.7 (< 0.8), 0.85 (≥ 0.8), isliye 3 tokens. Renormalise: 0.5/0.85 = 0.588, option B. Option A cumulative 0.8 se pehle hi ruk jaata hai (0.7 abhi p tak nahi pahuncha). Option C renormalise karna bhool jaata hai. Option D ek token zyada le leta hai (0.95), smallest set ka rule todta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w12-q4",
+          "question": "Ek frozen LLM (32 layers, embedding dimension 4096) par prompt tuning kiya jaata hai: input embeddings ke aage 20 trainable soft-prompt vectors jode jaate hain, aur sirf yahi train hote hain. Trainable parameters kitne hain?",
+          "options": [
+            "4096",
+            "20",
+            "81920",
+            "2621440"
+          ],
+          "answer": 2,
+          "explanation": "Har soft token ek 4096-dimensional vector hai: 20 × 4096 = 81920, option C. Option D (81920 × 32) prefix tuning jaisa har layer par vectors maan leta hai, jabki prompt tuning sirf input par hota hai. Option A ek hi vector hai, aur option B sirf tokens ki ginti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w12-q5",
+          "question": "Ek LLM-based toxicity filter (fictional eval set) ne 40 outputs ko toxic flag kiya; unme se 30 sach mein toxic the. Eval set mein kul 50 toxic outputs the. 'Toxic' class ka F1 score kya hai?",
+          "options": [
+            "0.667",
+            "0.750",
+            "0.600",
+            "0.675"
+          ],
+          "answer": 0,
+          "explanation": "Precision = 30/40 = 0.75, recall = 30/50 = 0.6. F1 = 2PR/(P + R) = 2(0.75)(0.6)/1.35 = 0.667, option A. Option B precision hai aur option C recall. Option D (0.675) P aur R ka arithmetic mean hai, jabki F1 harmonic mean hai jo chhote value ki taraf jhukta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w12-q6",
+          "question": "Ek decoder-only model: 32 layers, d_model = 4096, standard multi-head attention (K aur V dono har layer mein d_model size ke). Ek sequence ke 2048 tokens ka KV cache fp16 (2 bytes per number) mein rakha hai, batch size 1. KV cache kitni memory leta hai? (1 GiB = 2³⁰ bytes)",
+          "options": [
+            "0.5 GiB",
+            "1 GiB",
+            "2 GiB",
+            "32 MiB"
+          ],
+          "answer": 1,
+          "explanation": "Memory = 2 (K aur V) × 32 layers × 2048 tokens × 4096 × 2 bytes = 1073741824 bytes = 1 GiB, option B. Option A sirf K (ya sirf V) ginta hai. Option C fp32 (4 bytes) maan leta hai. Option D (32 MiB) sirf ek layer ka cache hai, layers se multiply karna bhool gaye.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1502 @@
+{
+  "subjectId": "syscmd",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "GNU/Linux, the Shell and Profiling Your Machine",
+      "summary": "Is week aap samjhoge ki GNU/Linux system kin parts se banta hai, command ki anatomy kya hoti hai, aur `uname`, `lscpu`, `free`, `df`, `du`, `uptime` jaise tools se kisi bhi machine ka hardware aur OS profile kaise banate hain.",
+      "readMinutes": 14,
+      "concepts": [
+        "**GNU/Linux = kernel + userland**: Linux sirf kernel hai jo CPU scheduling, memory, devices aur filesystems sambhalta hai. Shell (`bash`), `ls`, `cp`, `grep` jaise tools GNU project (coreutils, bash) se aate hain. Ek **distribution** (Debian, Ubuntu, Fedora, RHEL, Arch) kernel, tools, init system aur package manager ko ek saath pack karti hai.",
+        "**Command ki anatomy**: `command [options] [arguments]`. Short options ek dash ke saath combine ho sakte hain (`ls -l -a -h` = `ls -lah`), long options do dash ke saath (`--all`). `--` ke baad sab kuch argument maana jaata hai, isliye `rm -- -file` naam mein dash wali file hata deta hai.",
+        "**Help system**: `man ls` poora manual (sections: 1 user commands, 5 file formats, 8 admin commands; jaise `man 5 passwd`). `man -k keyword` (yaani `apropos`) naam na pata ho tab keyword se commands dhoondhta hai, `whatis cmd` ek line ka description deta hai. `type cd` batata hai ki `cd` shell **builtin** hai, jabki `type ls` disk pe rakhi binary (ya alias) dikhata hai.",
+        "**Kernel aur distro ki pehchaan**: `uname -s` kernel ka naam (Linux), `uname -r` kernel release (jaise `6.8.0-45-generic`), `uname -m` hardware architecture (`x86_64`, `aarch64`), `uname -n` hostname. Distro ka naam aur version `lsb_release -a` ya `/etc/os-release` file se milta hai, `uname` se nahi.",
+        "**CPU aur hardware**: `nproc` usable logical CPUs batata hai. `lscpu` mein logical CPUs = sockets × cores per socket × threads per core. Detail hardware report ke liye `lshw` (poori info root se), `hwinfo`, `lspci` (PCI devices), `lsusb`, `lsblk` (disks aur partitions) use hote hain; ye sab kernel ki `/proc` aur `/sys` virtual files padhte hain.",
+        "**Memory**: `free -h` mein `available` column sabse kaam ka hai: naye programs ko bina swap ke kitni RAM mil sakti hai. `buff/cache` wali memory kernel zarurat padne par chhod deta hai, isliye kam `free` dekh kar ghabraana galat hai. Raw numbers `/proc/meminfo` mein hote hain.",
+        "**Disk: df vs du**: `df -h` har mounted filesystem ka size, used, available aur mount point dikhata hai (filesystem ke apne hisaab se). `du -sh dir` directory tree ki files ka size jodta hai. `df -i` inode usage dikhata hai; inodes khatam ho jaayein to space hote hue bhi nayi file nahi banti.",
+        "**Load average**: `uptime` teen numbers deta hai: pichhle 1, 5 aur 15 minute ka average runnable (aur uninterruptible) tasks. Inhe `nproc` se compare karo: 8 CPUs pe load 4 matlab aadhi capacity, 12 matlab tasks queue mein wait kar rahe hain."
+      ],
+      "example": {
+        "problem": "Aapko ek fictional company ki naye cloud VM ka access mila hai. Neeche wali script ka output aaya. Is machine ka ek line ka profile likho aur batao ki kya RAM kam padne waali hai.",
+        "code": "$ uname -srm\nLinux 6.8.0-45-generic x86_64\n$ grep PRETTY_NAME /etc/os-release\nPRETTY_NAME=\"Ubuntu 24.04.1 LTS\"\n$ nproc\n4\n$ free -h | head -2\n               total        used        free      shared  buff/cache   available\nMem:            15Gi       3.1Gi       1.2Gi       210Mi        11Gi        12Gi\n$ df -h / | tail -1\n/dev/vda1        78G   51G   27G  66% /\n$ uptime\n 10:42:07 up 12 days,  3:10,  1 user,  load average: 0.85, 0.60, 0.52",
+        "steps": [
+          "`uname -srm` ke teen fields: kernel naam Linux, release `6.8.0-45-generic`, architecture `x86_64`.",
+          "Distro `uname` nahi batata; `/etc/os-release` se pata chala: Ubuntu 24.04.1 LTS.",
+          "`nproc` = 4 logical CPUs. Load average 0.85 / 0.60 / 0.52 in 4 CPUs ke saamne bahut kam hai, machine lagbhag idle hai.",
+          "RAM: `free` sirf 1.2Gi dikh raha hai, par 11Gi `buff/cache` hai jo zarurat par wapas milti hai. Asli headroom `available` = 12Gi hai.",
+          "Root filesystem 78G ka hai, 51G used, 27G free (66%).",
+          "Answer: **Ubuntu 24.04.1 LTS, kernel 6.8.0-45 (x86_64), 4 CPUs, 15Gi RAM (12Gi available), root disk 66% bhara; RAM ki koi kami nahi**."
+        ]
+      },
+      "mistakes": [
+        "`free` column ko khaali RAM samajh kar 'memory khatam' bol dena. Linux khaali RAM ko disk cache mein lagaata hai; decision `available` column se lo.",
+        "Distro version ke liye `uname -a` padhna. `uname` sirf kernel ki info deta hai; distro ke liye `/etc/os-release` ya `lsb_release -a` dekho.",
+        "`df` aur `du` ke numbers alag dekh kar maan lena ki ek command galat hai. Dono alag cheezein naapte hain (filesystem vs files ka tree); delete hui par kisi process ne khuli rakhi files `df` mein dikhti hain, `du` mein nahi."
+      ],
+      "revision": [
+        "Linux = kernel; bash, coreutils = GNU userland; distro = dono + package manager.",
+        "`uname -r` kernel release, `uname -m` architecture, distro `/etc/os-release` se.",
+        "`man -k word` keyword se command dhoondhta hai; `type cmd` builtin/binary batata hai.",
+        "Logical CPUs = sockets × cores × threads per core = `nproc`.",
+        "`free` mein `available` dekho; `df` filesystem, `du` directory tree.",
+        "Load average ko `nproc` se compare karo."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w1-q1",
+          "question": "Ek Ubuntu server pe `uname -r` chalaya. Ye kya print karega?",
+          "options": [
+            "Distribution ka naam aur version, jaise `Ubuntu 24.04 LTS`",
+            "Machine ki architecture, jaise `x86_64`",
+            "Kernel ka release string, jaise `6.8.0-45-generic`",
+            "Machine ka hostname, jaise `db-01`"
+          ],
+          "answer": 2,
+          "explanation": "`uname` kernel ke baare mein batata hai, aur `-r` kernel release deta hai, jaise `6.8.0-45-generic`. Option B `uname -m` ka output hai aur option D `uname -n` ka. Sabse common trap option A hai: distro ka naam `uname` nahi, `/etc/os-release` ya `lsb_release -a` deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w1-q2",
+          "question": "Aapko disk partitions ke saath kaam karne wali koi command chahiye par uska naam yaad nahi. Sirf keyword 'partition' pata hai. Installed manual pages mein keyword se dhoondhne ke liye kaunsi command sahi hai?",
+          "options": [
+            "`man -k partition`",
+            "`man partition`",
+            "`whatis partition`",
+            "`type partition`"
+          ],
+          "answer": 0,
+          "explanation": "`man -k partition` (jo `apropos partition` jaisa hai) saare man pages ke naam aur short descriptions mein keyword dhoondhta hai, jaise `fdisk`, `parted`. Option B 'partition' naam ka page kholne ki koshish karega, jo exist nahi karta. Option C ka trap: `whatis` sirf exact command naam ka one-line description deta hai, keyword search nahi karta. Option D batata hai ki ek naam builtin hai ya binary.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w1-q3",
+          "question": "Ek server pe `df -h /` batata hai ki root filesystem pe 40G used hai, par `sudo du -sh --one-file-system /` sirf 31G dikhata hai. Inmein se kaunsi baat is 9G ke fark ko sahi explain kar sakti hai?",
+          "options": [
+            "`du` hidden files (jinka naam `.` se shuru hota hai) ko nahi ginta",
+            "`df -h` 1000 se divide karta hai aur `du -sh` 1024 se, isliye units alag hain",
+            "`df` swap aur RAM ko bhi used space mein jodta hai",
+            "Kuch badi files delete ho chuki hain par koi chalta hua process unhe abhi bhi khol kar baitha hai"
+          ],
+          "answer": 3,
+          "explanation": "Jab tak koi process deleted file ka file descriptor khula rakhta hai, kernel uske blocks free nahi karta. `df` filesystem ka asli used space dikhata hai, jabki `du` sirf directory tree mein dikhne waali files jodta hai, isliye fark aata hai (jaise rotate hua par khula log). Option A galat hai: `du` hidden files bhi ginta hai. Option B ka trap: `-h` dono mein 1024 ki powers use karta hai. Option C: `df` sirf filesystems naapta hai, RAM ya swap nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w1-q4",
+          "question": "Ek machine pe `nproc` 8 print karta hai aur `uptime` ka output ye hai. Sabse sahi interpretation kya hai?",
+          "code": " 14:05:11 up 3 days,  2:41,  2 users,  load average: 12.40, 9.10, 6.05",
+          "options": [
+            "Load ghat raha hai; pichhle 15 minute mein machine overload thi par ab theek ho rahi hai",
+            "Load badh raha hai, aur pichhle 1 minute mein CPUs se zyada tasks run hone ke liye wait kar rahe the",
+            "CPU 12.40% busy hai, isliye machine lagbhag idle hai",
+            "Load hamesha 1.0 se kam hona chahiye, isliye teeno numbers overload dikhate hain chahe CPUs kitne bhi ho"
+          ],
+          "answer": 1,
+          "explanation": "Teen numbers kram se 1, 5 aur 15 minute ke averages hain: 6.05 → 9.10 → 12.40, yaani load badh raha hai. 8 CPUs ke saamne 12.40 ka matlab hai ki average mein lagbhag 4 tasks queue mein wait kar rahe the. Option A order ulta padhta hai (pehla number sabse recent hai). Option C ka trap: load average percentage nahi, tasks ki ginti hai. Option D 1.0 wala rule sirf single-CPU machine pe lagta hai; har machine pe `nproc` se compare karo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w1-q5",
+          "question": "`lscpu` ke output mein ye lines hain. Is machine pe `nproc` (bina kisi CPU restriction ke) kya print karega?",
+          "code": "Socket(s):             1\nCore(s) per socket:    4\nThread(s) per core:    2",
+          "options": [
+            "8",
+            "4",
+            "2",
+            "1"
+          ],
+          "answer": 0,
+          "explanation": "Logical CPUs = sockets × cores per socket × threads per core = 1 × 4 × 2 = 8. Hyper-threading ki wajah se har physical core do logical CPUs dikhata hai, aur `nproc` logical CPUs ginta hai. Option B ka trap: sirf physical cores ginna. Option C threads per core hai aur option D sockets.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w1-q6",
+          "question": "Ek Docker container ke andar `uname -r` print karta hai `6.8.0-45-generic`, jabki container ki `/etc/os-release` mein `Debian GNU/Linux 12` likha hai. Host machine Ubuntu hai. Iski sahi wajah kya hai?",
+          "options": [
+            "Container ke andar Debian ka apna kernel boot hua hai, aur `uname` galti se host ka naam dikha raha hai",
+            "`/etc/os-release` galat hai; container asal mein Ubuntu chala raha hai",
+            "Container host ka kernel share karta hai; sirf userland (files, libraries, tools) Debian image se aata hai",
+            "Debian 12 ka default kernel version bhi `6.8.0-45-generic` hai, isliye dono same hain"
+          ],
+          "answer": 2,
+          "explanation": "Container ek alag OS boot nahi karta; uske processes host ke kernel pe hi chalte hain (namespaces aur cgroups ke saath). Isliye `uname -r` host kernel ka release dikhata hai, jabki `/etc/os-release` image ki files se padha jaata hai, jo Debian ki hain. Option A ka trap container ko virtual machine samajhna hai; VM mein guest ka apna kernel hota, container mein nahi. Option B aur D dono cheezon ko ek hi source se maan lete hain.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Packages, File Types and the Permission Model",
+      "summary": "Is week aap `apt` aur `dpkg` se packages manage karna, `ls -l` ke file type characters padhna, aur permissions ko gehraai se samajhna seekhoge: directories pe r/w/x ka matlab, special bits (setuid, setgid, sticky) aur `umask` se default permissions.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Repositories aur apt**: Debian/Ubuntu packages `.deb` files hain jo repositories (URLs `/etc/apt/sources.list` aur `/etc/apt/sources.list.d/` mein) se aate hain. `apt update` index refresh karta hai, `apt install pkg` package aur uski dependencies laata hai, `apt show pkg` details, `apt-cache policy pkg` installed aur candidate version aur kaunsi repo se aayega. `dpkg -i file.deb` local file install karta hai, `dpkg -l` installed list, `dpkg -L pkg` package ki files.",
+        "**remove, purge, autoremove**: `apt remove pkg` binaries hataata hai par `/etc` mein config files chhod deta hai. `apt purge pkg` config bhi hataata hai. `apt autoremove` woh dependencies hataata hai jo kisi aur ke kaam ki nahi rahin. Production pe pehle `apt -s` (simulate) se dekh lo kya badlega.",
+        "**File types (`ls -l` ka pehla character)**: `-` regular file, `d` directory, `l` symbolic link, `c` character device (jaise `/dev/null`, terminals), `b` block device (jaise `/dev/sda`), `p` named pipe (FIFO), `s` socket. Linux mein extension se type tay nahi hota; `file data.bin` content dekh kar batata hai ki ye gzip hai, ELF binary hai ya text.",
+        "**Directory permissions ka asli matlab**: directory pe `r` = naam list karna, `x` = andar jaana aur files tak pahunchna, `w` = andar entries banana, hataana, rename karna (iske saath `x` bhi chahiye). File delete karna directory ka kaam hai, isliye file ki apni permission se farak nahi padta; directory pe `w` aur `x` chahiye.",
+        "**Special bits**: setuid (4, `u+s`): executable owner ke rights se chalta hai, jaise `/usr/bin/passwd`. setgid (2, `g+s`): directory pe lagao to andar bani nayi files directory ka group lengi (team folders ke liye). Sticky bit (1, `+t`): directory mein sirf file ka owner (ya directory owner, root) use delete kar sakta hai, jaise `/tmp` (`drwxrwxrwt`, mode 1777). `ls -l` mein lowercase `s`/`t` = bit + execute, uppercase `S`/`T` = bit bina execute ke.",
+        "**chmod ke advanced forms**: numeric mein chaar digits ho sakte hain: `chmod 2775 dir` (2 = setgid). Symbolic mein capital `X` sirf directories ko (ya jis file pe pehle se kisi ke liye x ho) execute deta hai, isliye `chmod -R go+rX proj` directories ko browsable banata hai bina har data file ko executable banaye. `chown user:group f` owner aur group badalta hai (root chahiye).",
+        "**umask**: naye file/directory ke default se bits hataata hai. Files ka base 666, directories ka 777, phir umask ki bits clear hoti hain. umask 022 → files 644, dirs 755. umask 027 → files 640 (`rw-r-----`), dirs 750. umask 007 → files 660, dirs 770 (team ke liye). `umask` bina argument current value dikhata hai; ye sirf current shell aur uske children pe lagta hai."
+      ],
+      "example": {
+        "problem": "Ek fictional analytics team (group `ds`) ke liye `/srv/ds-shared` banana hai jahan team ke sab log files bana aur edit kar sakein, har nayi file automatically group `ds` ki ho, aur bahar wale kuch na dekh sakein. Commands aur resulting permissions batao.",
+        "code": "sudo mkdir /srv/ds-shared\nsudo chgrp ds /srv/ds-shared\nsudo chmod 2770 /srv/ds-shared\nls -ld /srv/ds-shared\n# drwxrws--- 2 root ds 4096 ... /srv/ds-shared\numask 007   # har member apni ~/.bashrc mein",
+        "steps": [
+          "`chgrp ds` directory ka group `ds` karta hai, taaki group permissions team pe lagein.",
+          "`chmod 2770`: pehla digit 2 = setgid, phir 7 owner (rwx), 7 group (rwx), 0 others (kuch nahi).",
+          "`ls -ld` mein group ka execute position `s` dikhata hai: `drwxrws---`. Lowercase `s` matlab setgid aur execute dono lage hain.",
+          "Setgid ki wajah se koi bhi member file banaye, uska group `ds` hi hoga, user ka primary group nahi.",
+          "Members ka `umask 007` files ko 660 aur subdirectories ko 770 banata hai, yaani group bhi edit kar sakta hai.",
+          "Answer: **`chgrp ds` + `chmod 2770` (dikhega `drwxrws---`) + members ka umask 007**."
+        ]
+      },
+      "mistakes": [
+        "Sochna ki read-only file (`-r--r--r--`) delete nahi ho sakti. Delete directory ki `w` aur `x` permission pe depend karta hai; sticky bit na ho to directory pe write wala koi bhi use hata sakta hai.",
+        "umask ko digit-wise subtract kar dena. Sahi tareeka bits clear karna hai (base AND NOT umask). umask 027 pe dono tareeke 640 dete hain, par umask 003 pe subtraction 663 deta hai jabki sahi 664 hai (6 = 110, usme se 3 = 011 ki bits clear karo to 100 = 4).",
+        "`chmod -R 755 data/` se saari CSV files bhi executable bana dena. Directories ko browsable banana ho to `chmod -R a+rX data/` use karo."
+      ],
+      "revision": [
+        "`apt remove` config chhodta hai, `apt purge` config bhi hataata hai.",
+        "Type chars: `-` file, `d` dir, `l` link, `c` char dev, `b` block dev, `p` pipe, `s` socket.",
+        "File delete = parent directory pe `w` + `x`.",
+        "setuid 4, setgid 2, sticky 1; `/tmp` = 1777 = `drwxrwxrwt`.",
+        "Capital `X` = execute sirf directories (ya pehle se executable) ko.",
+        "umask: files 666, dirs 777 se bits clear; 027 → 640 / 750."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w2-q1",
+          "question": "Shell mein `umask 027` set hai. Ab `touch report.csv` se bani nayi file ki permission string kya hogi?",
+          "options": [
+            "`-rwxr-x---`",
+            "`-rw-r-----`",
+            "`-rw-r--r--`",
+            "`-r--r-x---`"
+          ],
+          "answer": 1,
+          "explanation": "Regular files ka base mode 666 hota hai (`touch` execute bit nahi maangta). umask 027 group se write (2) aur others se sab (7) hataata hai: 666 → 640 = `-rw-r-----`. Option A ka trap: directory ka base 777 use kar lena; 750 directory ke liye sahi hota, file ke liye nahi. Option C umask 022 ka result hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w2-q2",
+          "question": "`ls -l /dev/null` ka output `crw-rw-rw- 1 root root 1, 3 ...` se shuru hota hai. Pehla character `c` kya batata hai?",
+          "options": [
+            "File compressed hai",
+            "Ye ek socket hai jis par processes baat karte hain",
+            "Ye ek configuration file hai",
+            "Ye ek character device hai, jise kernel byte-stream ki tarah handle karta hai"
+          ],
+          "answer": 3,
+          "explanation": "`ls -l` ka pehla character file type hai, aur `c` matlab character device: data byte-by-byte stream hota hai (jaise `/dev/null`, terminals). `1, 3` device ke major aur minor numbers hain, size nahi. Option B ka trap: socket ka character `s` hota hai. Options A aur C type ko naam ya extension se jodte hain, jabki Linux mein aisa koi type character nahi hota.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w2-q3",
+          "question": "User `bob` ye command chalata hai: `rm /srv/shared/report.txt`. File `report.txt` ka owner bob hai aur uski permissions `-rw-rw-rw-` hain. Directory `/srv/shared` ki details `drwxr-xr-x alice alice` hain, aur bob group `alice` mein nahi hai. Kya hoga?",
+          "options": [
+            "`Permission denied`, kyunki file hataana directory mein badlaav hai aur bob ke paas directory pe `w` nahi hai",
+            "File hat jaayegi, kyunki bob file ka owner hai",
+            "File hat jaayegi, kyunki file sabke liye writable hai",
+            "File khaali (0 bytes) ho jaayegi par directory entry bachi rahegi"
+          ],
+          "answer": 0,
+          "explanation": "Delete karna directory ki entry hataana hai, isliye directory pe `w` aur `x` dono chahiye. Bob 'others' mein aata hai aur unke liye directory `r-x` hai, `w` nahi, isliye `rm` fail hota hai. Options B aur C ka trap file ki ownership ya file ki permission dekhna hai; ye file ka content badalne ke liye zaroori hain, entry hataane ke liye nahi. Option D jaisa koi aadha behaviour `rm` mein nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w2-q4",
+          "question": "Ek nayi directory `proj` ki permissions `drwxr-xr-x` hain. `chmod 2775 proj` ke baad `ls -ld proj` permission string kya dikhayega?",
+          "options": [
+            "`drwsrwxr-x`",
+            "`drwxrwxr-t`",
+            "`drwxrwsr-x`",
+            "`drwxr-sr-x`"
+          ],
+          "answer": 2,
+          "explanation": "Chaar-digit mode mein pehla digit special bits hai: 2 = setgid. Baaki 775 = `rwxrwxr-x`. setgid group ke execute slot mein dikhta hai, aur group ke paas x hai, isliye lowercase `s`: `drwxrwsr-x` (x na hota to uppercase `S` dikhta). Option A setuid (4) hota, option B sticky (1). Option D ka trap: purane mode 755 ke saath setgid jodna; `chmod 2775` poora mode set karta hai, isliye group ko `rwx` milta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w2-q5",
+          "question": "Aapne `sudo apt remove nginx` chalaya. Binaries hat gayi par `/etc/nginx/` mein config files abhi bhi padi hain. Package ko uski config files ke saath poori tarah hataane ke liye kaunsi command sahi hai?",
+          "options": [
+            "`sudo apt autoremove nginx`",
+            "`sudo apt clean`",
+            "`sudo apt update --remove nginx`",
+            "`sudo apt purge nginx`"
+          ],
+          "answer": 3,
+          "explanation": "`apt purge` package ke saath uski configuration files bhi hataata hai; pehle se `remove` hua package bhi purge ho sakta hai. Option A ka trap: `autoremove` un dependencies ko hataata hai jinki ab zarurat nahi, ek package ki config ko nahi. Option B sirf downloaded `.deb` cache (`/var/cache/apt/archives`) saaf karta hai. Option C koi valid apt operation nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w2-q6",
+          "question": "Directory `data` ki permissions `drwx------` hain aur uske andar `data/x.csv` ki `-rw-------`. `chmod -R go+rX data` ke baad dono ki permissions (kram se `data`, phir `x.csv`) kya hongi?",
+          "options": [
+            "`drwxr-xr-x` aur `-rwxr-xr-x`",
+            "`drwxr-xr-x` aur `-rw-r--r--`",
+            "`drwxr--r--` aur `-rw-r--r--`",
+            "`drwx------` aur `-rw-r--r--`"
+          ],
+          "answer": 1,
+          "explanation": "`r` dono ko group aur others ke liye milta hai. Capital `X` execute sirf tab deta hai jab target directory ho ya kisi ke paas pehle se execute ho. `data` directory hai, to use `go+x` milta hai: `drwxr-xr-x`. `x.csv` regular file hai jisme kisi ke paas x nahi, to sirf r jud jaata hai: `-rw-r--r--`. Option A ka trap: `X` ko lowercase `x` ki tarah maan lena. Option C mein directory ko x nahi mila, jisse andar jaana hi band rehta, aur yahi galti `X` theek karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "The Environment, Prompts, Links and Inodes",
+      "summary": "Is week aap shell variables aur environment variables ka fark, `PATH` se command lookup, startup files aur prompt strings (`PS1`, `PS2`) samjhoge, aur filesystem ke andar jhaank kar inodes, hard links aur symbolic links ka asli behaviour seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Shell variable vs environment variable**: `x=5` sirf current shell ka variable banata hai. `export x` use **environment** mein daalta hai, jo har child process ko copy ke roop mein milta hai. Child copy badle to parent pe asar nahi hota. `env` (ya `printenv`) environment dikhata hai, `set` saare shell variables aur functions.",
+        "**Ek command ke liye environment**: `LC_ALL=C sort data.txt` ya `TZ=Asia/Kolkata date` likhne se variable sirf us ek command ke environment mein jaata hai; current shell ki value nahi badalti. `env -i cmd` bilkul khaali environment ke saath chalata hai, jo scripts debug karne mein kaam aata hai.",
+        "**Important variables**: `$HOME` (home directory, `~` isi se expand hota hai), `$USER`, `$SHELL` (login shell), `$PWD` aur `$OLDPWD` (`cd -` isi ko use karta hai), `$PATH` (colon se alag directories), `$LANG`/`$LC_ALL` (locale, jo sort order aur number format badalta hai).",
+        "**PATH lookup**: command naam mein `/` na ho to shell pehle aliases, functions aur builtins dekhta hai, phir `$PATH` ki directories left se right; jo pehli mili wahi chalti hai. `type -a python3` saare matches dikhata hai. Current directory (`.`) PATH mein daalna khatarnaak hai, kyunki koi bhi `ls` naam ki script rakh kar aapse chalwa sakta hai; isliye apni script `./run.sh` se chalate hain.",
+        "**Startup files aur prompts**: login shell `~/.profile` (ya `~/.bash_profile`) padhta hai, interactive non-login bash `~/.bashrc`. Permanent `export PATH=\"$HOME/bin:$PATH\"` inhi files mein jaata hai, aur `source ~/.bashrc` turant lagu karta hai. `PS1` main prompt hai (`\\u` user, `\\h` host, `\\w` poora path, `\\W` sirf aakhri directory, `\\$` root ke liye `#`), `PS2` continuation prompt hai (default `> `) jo adhoori command (jaise khula quote) par dikhta hai.",
+        "**Inode**: har file ka metadata (type, permissions, owner, size, timestamps, data blocks ke pointers) ek inode mein hota hai, jiska ek number hota hai (`ls -i`, `stat`). File ka **naam inode mein nahi** hota; naam directory entry hai jo inode number ki taraf point karti hai.",
+        "**Hard link**: `ln a b` ek aur directory entry banata hai jo usi inode ko point karti hai, aur inode ka link count badhta hai. Dono naam barabar hain, koi 'original' nahi. `rm` sirf ek naam hataata hai; data tab free hota hai jab link count 0 ho aur koi process file khole na baitha ho. Hard links doosre filesystem pe nahi ban sakte, aur directories ke hard links user nahi bana sakta.",
+        "**Symbolic link**: `ln -s target name` ek chhoti si alag file (apna inode) banata hai jisme target ka **path** likha hota hai. Har access par path dobara resolve hota hai, isliye target hataane par link dangling ho jaata hai, aur usi naam se nayi file aane par link nayi file dikhata hai. Symlinks filesystems aur directories ke paar kaam karte hain; relative target link ki apni directory se resolve hota hai."
+      ],
+      "example": {
+        "problem": "Ek data pipeline har din nayi CSV `sales_2026-11-04.csv` jaisi file likhti hai. Downstream scripts hamesha `latest.csv` padhti hain. Naya din aane par `latest.csv` ko nayi file pe kaise point karoge, aur symlink ki jagah hard link kyun nahi?",
+        "code": "ln -s sales_2026-11-03.csv latest.csv      # kal\nls -l latest.csv\n# lrwxrwxrwx 1 asha asha 20 ... latest.csv -> sales_2026-11-03.csv\nln -sfn sales_2026-11-04.csv latest.csv    # aaj\nls -li sales_2026-11-04.csv latest.csv",
+        "steps": [
+          "`ln -s` ek symlink banata hai jisme sirf target ka naam likha hai; `ls -l` mein type `l` aur `->` ke baad target dikhta hai. Size 20 = target path ke characters.",
+          "Naye din `ln -sfn new latest.csv`: `-f` purana link hata kar naya banata hai, `-n` ensure karta hai ki `latest.csv` agar directory ka symlink ho to uske andar link na bane.",
+          "`ls -li` mein `latest.csv` aur data file ke inode numbers alag honge, kyunki symlink apni alag file hai.",
+          "Hard link problem: `ln sales_2026-11-04.csv latest.csv` purane naam ko update karne ke liye pehle `rm` chahiye, aur link kisi ek inode se chipak jaata hai; agar pipeline file ko delete karke dobara likhe to hard link purana data dikhata rahega.",
+          "Symlink naam se resolve hota hai, isliye `latest.csv` hamesha jo bhi us naam ki current file hai wahi dikhata hai.",
+          "Answer: **`ln -sfn sales_2026-11-04.csv latest.csv`; symlink naam follow karta hai, hard link purane inode pe atka rehta hai**."
+        ]
+      },
+      "mistakes": [
+        "`export` bhool kar sochna ki child script ko variable mil jaayega. Bina export variable sirf current shell mein hai; child ke liye `export VAR` ya `VAR=val ./script.sh` likho.",
+        "Symlink relative path se banana aur link ko doosri directory mein rakh dena: `ln -s data.csv /tmp/d` mein `/tmp/d` `/tmp/data.csv` dhoondhega. Relative target hamesha link ki location se resolve hota hai, ya absolute path do.",
+        "Sochna ki `rm` turant disk space free karta hai. Agar file ke aur hard links hain, ya koi process use khol kar baitha hai, to data tab tak rehta hai."
+      ],
+      "revision": [
+        "`export` = child processes ko copy milti hai; `VAR=x cmd` = sirf us command ke liye.",
+        "PATH left se right search hota hai; pehla match chalta hai; `type -a` sab dikhata hai.",
+        "`~/.bashrc` interactive shells, `~/.profile` login shells; `PS2` continuation prompt.",
+        "Inode mein metadata hai, naam nahi; naam = directory entry.",
+        "Hard link = same inode, link count +1; symlink = path wali alag file.",
+        "Data free tab hota hai jab link count 0 ho aur koi open file descriptor na ho."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w3-q1",
+          "question": "`PATH=/usr/local/bin:/usr/bin:/bin` hai, aur `python3` naam ki executable `/usr/local/bin` aur `/usr/bin` dono mein hai. Koi alias ya function nahi hai. `python3` type karne par kaunsi file chalegi?",
+          "options": [
+            "`/usr/bin/python3`, kyunki system wali directory ko priority milti hai",
+            "Shell error dega ki naam ambiguous hai",
+            "Jo file sabse nayi install hui ho, wahi",
+            "`/usr/local/bin/python3`, kyunki PATH mein woh directory pehle aati hai"
+          ],
+          "answer": 3,
+          "explanation": "Shell PATH ki directories left se right check karta hai aur pehla match chalata hai. `/usr/local/bin` list mein pehle hai, isliye wahan wala `python3` chalega; isi tarah locally install kiye tools system wale ko override karte hain. Option A ka trap: koi built-in 'system priority' nahi hoti, sirf PATH ka order. Option B galat hai: duplicate naam error nahi dete, aur option C: install date ka koi role nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w3-q2",
+          "question": "GNU/Linux (ext4) pe ek khaali directory mein ye commands chalaye. Aakhri command kya print karegi?",
+          "code": "echo hi > a\nln a b\nrm a\ncat b",
+          "options": [
+            "`cat: b: No such file or directory`",
+            "`hi`",
+            "Kuch nahi (file khaali hai)",
+            "`b -> a`"
+          ],
+          "answer": 1,
+          "explanation": "`ln a b` (bina `-s`) hard link hai: `a` aur `b` dono ek hi inode ke naam hain aur link count 2 ho jaata hai. `rm a` sirf ek naam hataata hai, count 1 bachta hai, data safe hai, isliye `cat b` `hi` dikhata hai. Option A ka trap: hard link ko symlink samajhna; symlink hota to target hatne par dangling ho jaata. Option D symlink ka `ls -l` format hai, `cat` ka output nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w3-q3",
+          "question": "GNU/Linux (ext4) pe ek khaali directory mein ye commands chalaye. `cat` kya print karega (pehle `cur`, phir `hard`)?",
+          "code": "echo v1 > data.csv\nln -s data.csv cur\nln data.csv hard\nrm data.csv\necho v2 > data.csv\ncat cur hard",
+          "options": [
+            "`v1` aur `v1`",
+            "`v2` aur `v2`",
+            "`v2` aur `v1`",
+            "`cur` ke liye error, phir `v1`"
+          ],
+          "answer": 2,
+          "explanation": "`hard` purane inode se juda hai jisme `v1` hai; `rm data.csv` ke baad bhi woh inode `hard` ke naam se zinda hai. `cur` symlink hai jisme sirf naam `data.csv` likha hai; naya `data.csv` (naya inode, content `v2`) ban gaya to `cur` usi ko resolve karta hai. Isliye `v2` phir `v1`. Option D ka trap: symlink beech mein dangling tha, par `cat` ke time naam phir se exist karta hai. Option A symlink ko hard link ki tarah treat karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w3-q4",
+          "question": "GNU/Linux ke ext4 filesystem pe ek khaali jagah `mkdir p` aur phir `mkdir p/a p/b` chalaya. `stat -c %h p` (directory `p` ka hard link count) kya print karega?",
+          "options": [
+            "4",
+            "2",
+            "3",
+            "1"
+          ],
+          "answer": 0,
+          "explanation": "Directory `p` ke inode tak chaar naam pahunchte hain: parent mein entry `p`, `p` ke andar khud ka `.`, aur `p/a` aur `p/b` dono ke andar `..`. Isliye count 4 hai (har nayi subdirectory count 1 badhaati hai). Option B ka trap: khaali directory ka count 2 hota hai, subdirectories ke `..` bhool jaana. Option C sirf ek subdirectory ginta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w3-q5",
+          "question": "Ek naye bash shell mein (jahan `X` pehle se set nahi hai) ye lines chalayi gayi. Output ki do lines kya hongi?",
+          "code": "X=1\nX=2 bash -c 'echo $X'\necho $X",
+          "options": [
+            "`1` aur `1`",
+            "`2` aur `1`",
+            "`2` aur `2`",
+            "Khaali line aur `1`"
+          ],
+          "answer": 1,
+          "explanation": "`X=2 bash -c ...` likhne se `X=2` sirf us ek child process ke environment mein jaata hai, isliye child `2` print karta hai. Current shell ka `X` abhi bhi `1` hai, to doosri line `1`. Option C ka trap: sochna ki prefix assignment current shell ki value bhi badal deta hai. Option D ka trap: sochna ki bina `export` child ko kuch nahi milega; par prefix assignment khud environment mein daalta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w3-q6",
+          "question": "GNU/Linux (ext4) pe ek khaali directory mein ye commands chalaye. Aakhri command kya print karegi?",
+          "code": "touch f\nln f g\nln g h\nrm f\nln -s h s\nln h f2\nmv g g2\nstat -c %h h",
+          "options": [
+            "4",
+            "2",
+            "5",
+            "3"
+          ],
+          "answer": 3,
+          "explanation": "Inode ke naam ginte jao: `touch f` → 1 (f); `ln f g` → 2; `ln g h` → 3 (g bhi usi inode ka naam hai); `rm f` → 2; `ln -s h s` symlink hai jiska apna inode hai, count nahi badhta; `ln h f2` → 3; `mv g g2` sirf naam badalta hai, count same. Answer 3 (h, g2, f2). Option A ka trap: symlink `s` ko bhi link count mein ginna. Option C `rm f` ka ghatna bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "The Filesystem Hierarchy, Processes and Remote Shells",
+      "summary": "Is week aap root filesystem ka naksha (FHS), shell ke time bachaane wale shortcuts, `head`/`tail`/`cut` se output ke tukde nikaalna, processes aur signals ko manage karna, aur `ssh` se remote machines pe kaam karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Filesystem Hierarchy (FHS)**: sab kuch ek tree `/` ke neeche hai. `/etc` system-wide config, `/var` badalne wala data (`/var/log` logs, `/var/lib` databases aur package state), `/usr/bin` aur `/usr/lib` packages ke programs aur libraries, `/usr/local` aur `/opt` manually install kiya software, `/home` users, `/root` root ka home, `/tmp` temporary, `/boot` kernel aur bootloader, `/dev` device files, `/srv` services ka data, `/run` boot ke baad ka runtime state.",
+        "**Virtual filesystems**: `/proc` aur `/sys` disk pe nahi hote; kernel unhe chalte-chalte banata hai. `/proc/<PID>/` mein har process ki info (cmdline, status, open files `fd/`), `/proc/cpuinfo`, `/proc/meminfo`; `/sys` mein devices aur drivers. Isliye `cat /proc/loadavg` file jaisa dikhta hai par kernel se live data aata hai.",
+        "**Shell shortcuts (bash/readline)**: `Ctrl+R` history mein reverse search, `Ctrl+A`/`Ctrl+E` line ki shuruaat/end, `Ctrl+U` cursor se pehle ka text kaatna, `Ctrl+K` cursor ke baad ka, `Ctrl+W` pichhla word, `Ctrl+L` screen saaf. `!!` pichhli poori command (jaise `sudo !!`), `!$` pichhli command ka aakhri argument, `Alt+.` usi argument ko paste karta hai. `Ctrl+C` foreground process ko SIGINT, `Ctrl+Z` SIGTSTP (pause), `Ctrl+D` input ka end (EOF).",
+        "**Output slicing**: `head -n 5` pehli 5 lines, `head -n -5` aakhri 5 chhod kar sab (GNU), `tail -n 5` aakhri 5, `tail -n +5` line 5 se end tak (CSV ka header skip karne ke liye `tail -n +2`). `tail -f app.log` file badhne par nayi lines dikhata rehta hai. `cut -d, -f2,4` delimiter se fields, `cut -f` ka default delimiter TAB hai, `cut -c1-10` characters, `cut -d: -f3-` field 3 se end tak.",
+        "**Processes**: har process ka PID aur parent ka PPID hota hai; `ps -ef` ya `ps aux` sab dikhata hai, `ps -o pid,ppid,stat,cmd`, `pgrep -f pattern` PID dhoondhta hai. STAT column: `R` running, `S` sleeping, `D` uninterruptible (aksar disk I/O), `T` stopped, `Z` zombie. `top`/`htop` live view; `nice -n 10 cmd` kam priority se chalata hai, `renice` baad mein badalta hai.",
+        "**Signals aur jobs**: `kill -l` list deta hai. Common: 1 SIGHUP (terminal band, ya daemon ko config reload), 2 SIGINT (Ctrl+C), 9 SIGKILL (pakda nahi ja sakta), 15 SIGTERM (default, saaf band hone ka mauka), 19 SIGSTOP, 18 SIGCONT. `cmd &` background job, `$!` uska PID, `wait` uske khatam hone ka intezaar. `nohup cmd &` terminal band hone par bhi chalta rehta hai (output `nohup.out` mein).",
+        "**Zombie aur orphan**: process khatam hone par uska exit status parent ke `wait()` tak table mein rehta hai; tab tak woh zombie (`Z`) hai. Zombie pehle se mara hua hai, isliye `kill -9` kuch nahi karta; parent ko theek karo ya parent khatam ho to `init`/`systemd` (PID 1) use adopt karke saaf kar deta hai. Orphan woh chalta hua process hai jiska parent mar gaya.",
+        "**ssh**: `ssh user@host` encrypted remote shell; `ssh user@host 'cmd'` sirf ek command remote pe chalata hai. Key-based login: `ssh-keygen -t ed25519` key pair banata hai, `ssh-copy-id user@host` public key remote ki `~/.ssh/authorized_keys` mein daalta hai; private key (`~/.ssh/id_ed25519`) kabhi share nahi karte aur uski permission 600 honi chahiye. `~/.ssh/config` mein `Host` alias, `scp`/`rsync` file copy, `ssh -L 8888:localhost:8888 host` port forwarding (jaise remote Jupyter)."
+      ],
+      "example": {
+        "problem": "Ek fictional ML server pe training script ghanton chalegi. Aapko ssh se login karke use aise chalana hai ki laptop ka connection toot jaaye tab bhi chalti rahe, phir baad mein uski progress aur PID check karni hai, aur galat config hone par use saaf tarah se rokna hai.",
+        "code": "ssh asha@ml-01\nnohup python3 train.py --epochs 50 > train.log 2>&1 &\necho $!            # jaise 48213\nexit\n# baad mein\nssh asha@ml-01 'tail -n 3 train.log; ps -o pid,stat,etime,cmd -p 48213'\nssh asha@ml-01 'kill 48213'",
+        "steps": [
+          "`nohup` SIGHUP ko ignore karwata hai, isliye ssh session band hone par bhi process nahi marta; `&` use background mein bhejta hai.",
+          "`> train.log 2>&1` stdout aur stderr dono log file mein bhejta hai, taaki baad mein progress padh sakein.",
+          "`$!` pichhle background job ka PID deta hai; use note karna zaroori hai (ya baad mein `pgrep -f train.py`).",
+          "Baad mein `ssh host 'cmd'` se bina interactive login ke remote pe `tail` aur `ps` chalte hain; `etime` batata hai process kitni der se chal raha hai.",
+          "Rokne ke liye pehle `kill PID` (SIGTERM), jisse script checkpoints save karke band ho sake. Sirf tab `kill -9` jab process jawab na de.",
+          "Answer: **`nohup ... &` se chalao, `$!` se PID lo, `ssh host 'tail ...; ps ...'` se check karo, `kill PID` (SIGTERM) se roko**."
+        ]
+      },
+      "mistakes": [
+        "Har baar seedha `kill -9` chalana. SIGKILL process ko cleanup (temp files, checkpoints, locks) ka mauka nahi deta; pehle SIGTERM bhejo.",
+        "`ssh host df -h | grep sda` likh kar sochna ki `grep` remote pe chala. Bina quotes ke pipe local shell parse karta hai, isliye `grep` aapki machine pe chalta hai; poori remote pipeline quotes mein likho.",
+        "`head -n -1` ko 'aakhri 1 line' samajhna. Negative count ka matlab hai aakhri N lines chhod do; aakhri line ke liye `tail -n 1` hai."
+      ],
+      "revision": [
+        "`/etc` config, `/var/log` logs, `/usr/bin` programs, `/opt` third-party, `/proc` live kernel data.",
+        "`!!` pichhli command, `!$` pichhla aakhri argument, `Ctrl+R` history search.",
+        "`tail -n +K` line K se aage; `head -n -K` aakhri K chhod kar.",
+        "SIGTERM 15 default, SIGKILL 9 pakda nahi jaata, SIGHUP 1, SIGINT 2.",
+        "Zombie ko parent `wait` karke saaf karta hai, `kill -9` se nahi.",
+        "`ssh host 'a | b'` = poori pipeline remote pe."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w4-q1",
+          "question": "Ubuntu server pe `apt` se install kiye web server ke log files aur uski main executable aam taur pe kahan milegi (FHS ke hisaab se)?",
+          "options": [
+            "Logs `/var/log` mein, executable `/usr/sbin` ya `/usr/bin` mein",
+            "Logs `/etc/log` mein, executable `/bin/local` mein",
+            "Logs `/tmp` mein, executable `/home/root/bin` mein",
+            "Logs `/proc/log` mein, executable `/opt/apt` mein"
+          ],
+          "answer": 0,
+          "explanation": "FHS mein `/var` badalne wale data ke liye hai aur logs `/var/log` mein jaate hain (jaise `/var/log/nginx/`). Package manager ke programs `/usr/bin` ya admin daemons `/usr/sbin` mein hote hain. Option B ka trap: `/etc` config ke liye hai, logs ke liye nahi. Option D: `/proc` kernel ka virtual filesystem hai jahan programs log nahi likhte, aur `/opt` apt packages ki jagah nahi, manually install kiye software ki hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w4-q2",
+          "question": "Interactive bash mein aapne `mkdir -p /srv/data/raw` chalaya. Agli command `cd !$` hai. Bash ise kis command mein badal kar chalayega?",
+          "options": [
+            "`cd -p`",
+            "`cd mkdir`",
+            "`cd /srv/data/raw`",
+            "`cd` home directory mein, kyunki `!$` ek khaali variable hai"
+          ],
+          "answer": 2,
+          "explanation": "`!$` history expansion hai jo pichhli command ka aakhri argument laata hai, yahan `/srv/data/raw`. Isliye command `cd /srv/data/raw` ban jaati hai (bash expanded line print bhi karta hai). Option A ka trap: pichhla option ya pehla argument utha lena. Option B `!!`/command naam se confuse karta hai. Option D ka trap: `!$` ko `$` wala variable samajhna; ye variable nahi, history ka reference hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w4-q3",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo 'asha:x:1001:1001:Asha Rao:/home/asha:/bin/bash' | cut -d: -f1,6-",
+          "options": [
+            "`asha /home/asha /bin/bash`",
+            "`asha:/home/asha:/bin/bash`",
+            "`asha:/home/asha`",
+            "`asha:Asha Rao:/home/asha:/bin/bash`"
+          ],
+          "answer": 1,
+          "explanation": "`-d:` delimiter colon hai. `-f1,6-` field 1 (`asha`) aur field 6 se end tak (`/home/asha`, `/bin/bash`) chunta hai. `cut` output mein wahi delimiter wapas lagata hai, isliye `asha:/home/asha:/bin/bash`. Option A ka trap: sochna ki fields space se judte hain. Option C `6-` ko sirf field 6 padhta hai. Option D field 5 bhi le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w4-q4",
+          "question": "`ps -o pid,ppid,stat,cmd` mein ek process `Z` (zombie) state mein dikh raha hai. `kill -9` uski PID pe chalane ke baad bhi woh list mein hai. Sabse sahi explanation aur fix kya hai?",
+          "options": [
+            "SIGKILL ko process ne pakad kar ignore kar diya; `kill -15` bhejo",
+            "Process disk I/O mein atka hai; disk free hone ka wait karo",
+            "Zombie ko sirf reboot se hataya ja sakta hai",
+            "Process pehle hi khatam ho chuka hai aur sirf uska exit status bacha hai; parent `wait` nahi kar raha, isliye parent ko theek karo ya band karo taaki PID 1 use reap kar le"
+          ],
+          "answer": 3,
+          "explanation": "Zombie ek mara hua process hai jiski entry tab tak rehti hai jab tak parent `wait()` se exit status na padh le. Mare hue process ko signal ka koi matlab nahi, isliye `kill -9` bekaar hai. Parent ko signal/fix karo; parent khatam ho to zombie PID 1 (init/systemd) ka child ban kar reap ho jaata hai. Option A ka trap: SIGKILL pakda ya ignore nahi kiya ja sakta. Option B `D` state ka description hai, `Z` ka nahi. Option C zaroorat se zyada hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w4-q5",
+          "question": "Laptop se ye do commands chalayi gayi. Dono mein `tail` kahan chalta hai?",
+          "code": "ssh asha@db-01 'df -h / | tail -n 1'\nssh asha@db-01 df -h / | tail -n 1",
+          "options": [
+            "Dono mein `db-01` pe",
+            "Dono mein laptop pe",
+            "Pehli mein `db-01` pe, doosri mein laptop pe",
+            "Pehli mein laptop pe, doosri mein `db-01` pe"
+          ],
+          "answer": 2,
+          "explanation": "Pehli command mein poori pipeline quotes mein ek argument ke roop mein ssh ko jaati hai, aur remote shell use chalata hai, isliye `tail` `db-01` pe chalta hai. Doosri mein `|` quotes ke bahar hai, to laptop ka shell pehle hi pipe bana deta hai: `ssh ... df -h /` ka output laptop ke `tail` mein aata hai. Is case mein dikhne wala output same ho sakta hai, isi wajah se ye trap pakad mein nahi aata. Option A ka trap: sochna ki ssh ke baad likha sab remote pe jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w4-q6",
+          "question": "GNU coreutils ke saath is pipeline ka output kya hoga? (`seq 20` 1 se 20 tak numbers alag lines mein deta hai.)",
+          "code": "seq 20 | tail -n +5 | head -n -10 | tail -n 3",
+          "options": [
+            "`8`, `9`, `10` (teen lines)",
+            "`18`, `19`, `20` (teen lines)",
+            "`12`, `13`, `14` (teen lines)",
+            "`5`, `6`, `7` (teen lines)"
+          ],
+          "answer": 0,
+          "explanation": "`tail -n +5` line 5 se shuru karta hai: 5 se 20, kul 16 lines. `head -n -10` aakhri 10 lines (11 se 20) chhod deta hai: 5 se 10 bachte hain. `tail -n 3` inme se aakhri teen: 8, 9, 10. Option B ka trap: `head -n -10` ko ignore karke seedha aakhri teen lena. Option C ka trap: `head -n -10` ko `head -n 10` (pehli 10 lines, 5 se 14) samajhna, jisse aakhri teen 12, 13, 14 aate. Option D bachi hui lines mein se pehli teen le leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Streams, Here-Documents and Regular Expressions",
+      "summary": "Is week aap file descriptors ke level pe redirection samjhoge (`&>`, `>|`, here-docs, here-strings, process substitution, `tee` se logging), aur `grep` ke saath BRE/ERE regular expressions ko data aur logs pe precisely use karna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**File descriptors**: har process ke paas numbered handles hote hain: 0 stdin, 1 stdout, 2 stderr. `n> file` descriptor n ko file pe bhejta hai, `n>&m` n ko wahan bhejta hai jahan m abhi ja raha hai. `&> file` (bash) stdout aur stderr dono ek file mein, `2> /dev/null` errors phenk deta hai. `{ cmd1; cmd2; } > out` poore group ka output ek saath redirect karta hai.",
+        "**Overwrite se bachao**: `set -o noclobber` ke baad `>` pehle se maujood file ko overwrite karne se mana karta hai (error: cannot overwrite existing file). Jaan-boojh kar overwrite karna ho to `>|` likho. `>>` append hamesha chalta hai.",
+        "**Here-document**: `cmd <<EOF ... EOF` beech ki lines ko stdin banata hai; unquoted `EOF` ke saath `$var` aur `$(cmd)` expand hote hain, `<<'EOF'` (quoted delimiter) sab kuch literally deta hai, jo SQL ya doosre scripts generate karne mein kaam aata hai. `<<-EOF` lines ke shuru ke TAB hata deta hai. **Here-string** `cmd <<< \"$text\"` ek string ko stdin bana deta hai.",
+        "**tee aur process substitution**: `cmd | tee out.txt` output screen pe bhi dikhata hai aur file mein bhi likhta hai; `tee -a` append karta hai. `cmd 2>&1 | tee -a run.log` script run ka poora log rakhta hai. `diff <(sort a.txt) <(sort b.txt)` mein `<(...)` command ke output ko ek temporary file ki tarah pass karta hai, bina temp file banaye.",
+        "**Pipelines ka exit status**: pipeline ka `$?` aakhri command ka hota hai. Bash ka `PIPESTATUS` array har stage ka status rakhta hai (jaise `${PIPESTATUS[0]}`), aur `set -o pipefail` kisi bhi stage ke fail hone par pipeline ko fail maanta hai.",
+        "**grep ke kaam ke options**: `-i` case ignore, `-v` ulta (match na karne wali lines), `-w` poora word, `-x` poori line, `-o` sirf matched hissa (har match alag line mein), `-c` matching **lines** ki ginti, `-n` line number, `-l` sirf file naam, `-r` recursive, `-A/-B/-C N` context lines, `-F` fixed string (regex nahi), `-E` extended regex. `-q` kuch print nahi karta, sirf exit status deta hai (0 mila, 1 nahi mila, 2 error).",
+        "**BRE vs ERE**: Basic regex (`grep`) mein `?`, `+`, `{}`, `|`, `()` literal hain; unka special matlab chahiye to `\\?`, `\\+`, `\\{2,3\\}`, `\\|`, `\\(\\)` (GNU). Extended regex (`grep -E`, purana `egrep`) mein ye bina backslash special hain. Dono mein `.` koi bhi character, `*` pichhla item 0 ya zyada baar, `^`/`$` line ki shuruaat/end, `[abc]`, `[^0-9]`, POSIX classes `[[:digit:]]`, `[[:space:]]`, `[[:alpha:]]`.",
+        "**Groups aur back-references**: `\\(...\\)` (BRE) ya `(...)` (ERE) ek group banata hai aur `\\1` usi text ko dobara match karta hai, jaise doubled words `\\b([a-z]+) \\1\\b` (GNU grep). `\\b` word boundary, `\\<`/`\\>` word ki shuruaat/end. Regex hamesha shell quoting (single quotes) mein likho, taaki shell `*`, `$`, `\\` ko pehle na kha jaaye."
+      ],
+      "example": {
+        "problem": "Ek fictional API ke `access.log` mein 5 requests hain. Aapko server errors (HTTP status 5xx) ginne hain aur un lines ko `errors.log` mein append karna hai, saath hi screen pe count dikhana hai. Naive `grep -c 5` kyun galat hai aur sahi pattern kya hai?",
+        "code": "$ cat access.log\n10.0.0.4 - - [04/Nov/2026:10:01:02] \"GET /api/v1/users HTTP/1.1\" 200 512\n10.0.0.9 - - [04/Nov/2026:10:01:05] \"POST /api/v1/predict HTTP/1.1\" 503 87\n10.0.0.4 - - [04/Nov/2026:10:01:09] \"GET /api/v1/items/5003 HTTP/1.1\" 404 64\n10.0.0.7 - - [04/Nov/2026:10:02:11] \"POST /api/v1/predict HTTP/1.1\" 500 91\n10.0.0.9 - - [04/Nov/2026:10:02:15] \"GET /health HTTP/1.1\" 200 2\n$ grep -c 5 access.log\n5\n$ grep -E '\" 5[0-9]{2} ' access.log | tee -a errors.log | wc -l\n2",
+        "steps": [
+          "`grep -c 5` har us line ko ginta hai jisme kahin bhi digit 5 ho: `512`, `5003`, `10:02:15` sab match karte hain, isliye 5 aata hai. Ye bekaar hai.",
+          "Status code request ke closing quote ke baad, space ke saath, teen digits ka field hai. Isliye pattern ko us context se baandho: `\" 5[0-9]{2} `.",
+          "`-E` chahiye kyunki `{2}` ERE mein interval hai; BRE mein `\\{2\\}` likhna padta.",
+          "Pattern single quotes mein hai, isliye andar ka double quote aur space shell ke liye literal hain.",
+          "`tee -a errors.log` matching lines ko file ke end mein jodta hai aur aage pipe mein bhi bhejta hai; `wc -l` unhe ginta hai.",
+          "Answer: **sirf 2 lines (status 503 aur 500) match karti hain; `errors.log` mein ye 2 lines jud jaati hain aur screen pe `2` dikhta hai**."
+        ]
+      },
+      "mistakes": [
+        "`grep -c` ko matches ki ginti samajhna. Ye matching **lines** ginta hai; ek line mein teen match ho to bhi 1. Har match ginna ho to `grep -o pattern | wc -l`.",
+        "Script mein `cmd > log.txt 2>&1` ki jagah `cmd 2>&1 > log.txt` likhna, ya `tee` ke bina log bana kar screen pe progress kho dena. Dono chahiye to `cmd 2>&1 | tee -a log.txt`.",
+        "Plain `grep` mein `+`, `?`, `|` likh kar ERE jaisa result expect karna. Basic grep mein ye literal characters hain; `grep -E` use karo."
+      ],
+      "revision": [
+        "0 stdin, 1 stdout, 2 stderr; `&>` dono; `>|` noclobber ke baad bhi overwrite.",
+        "`<<EOF` expand karta hai, `<<'EOF'` literal; `<<<` here-string.",
+        "`tee -a` append + aage pipe; `<(cmd)` output ko file jaisa deta hai.",
+        "`grep -c` lines ginta hai, `grep -o | wc -l` matches.",
+        "`-w` word, `-x` poori line, `-v` ulta, `-F` fixed string, `-q` sirf status.",
+        "ERE: `+ ? {} | ()` special; `\\1` back-reference, `\\b` word boundary."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w5-q1",
+          "question": "Is bash script ka output kya hoga (do lines)?",
+          "code": "name=asha\ncat <<EOF\nHi $name\nEOF\ncat <<'EOF'\nHi $name\nEOF",
+          "options": [
+            "`Hi asha` aur `Hi asha`",
+            "`Hi $name` aur `Hi $name`",
+            "`Hi asha` aur `Hi $name`",
+            "`Hi $name` aur `Hi asha`"
+          ],
+          "answer": 2,
+          "explanation": "Unquoted delimiter (`<<EOF`) wale here-doc mein parameter expansion hota hai, isliye pehli line `Hi asha`. Delimiter quote karne par (`<<'EOF'`) body bilkul literal rehti hai, isliye doosri line `Hi $name`. Option A ka trap: sochna ki here-doc mein quoting ka koi asar nahi. Option D ulta yaad rakhne se aata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w5-q2",
+          "question": "`l.txt` mein teen lines hain: `err err`, `ok`, `err`. Ye do commands kram se kya print karengi?",
+          "code": "grep -c err l.txt\ngrep -o err l.txt | wc -l",
+          "options": [
+            "`3` aur `3`",
+            "`2` aur `2`",
+            "`3` aur `2`",
+            "`2` aur `3`"
+          ],
+          "answer": 3,
+          "explanation": "`grep -c` matching lines ginta hai: `err err` aur `err` = 2 (pehli line mein do match hone se line do baar nahi ginti). `grep -o` har match ko alag line mein print karta hai: 2 + 1 = 3 lines, jinhe `wc -l` 3 ginta hai. Option A ka trap: `-c` ko matches ki ginti samajhna. Option C dono ka role ulta kar deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w5-q3",
+          "question": "Ek khaali directory mein ye commands chalaye. Dono files mein kya hoga?",
+          "code": "echo hello | tee a.txt | tr a-z A-Z > b.txt\ncat a.txt b.txt",
+          "options": [
+            "Dono files mein uppercase `HELLO`",
+            "`a.txt` mein `hello`, `b.txt` mein `HELLO`",
+            "Sirf `hello`, kyunki `tee` ke baad pipe mein kuch nahi bachta",
+            "Sirf `HELLO`, kyunki `a.txt` khaali hai"
+          ],
+          "answer": 1,
+          "explanation": "`tee a.txt` apna input jaisa ka taisa `a.txt` mein likhta hai aur wahi copy aage stdout pe bhejta hai. Aage `tr` use uppercase karta hai aur `b.txt` mein likha jaata hai. Isliye `a.txt` mein `hello`, `b.txt` mein `HELLO`. Option A ka trap: sochna ki `tee` pipeline ke aakhri result ko save karta hai; woh sirf apni jagah ka data save karta hai. Option C ka trap: sochna ki `tee` data ko file mein 'kha' jaata hai; woh copy banata hai. Option D ulta sochta hai ki `tee` ke baad pipe hone par file mein kuch nahi jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w5-q4",
+          "question": "`w.txt` mein paanch lines hain: `cat`, `concat`, `cat5`, `the cat sat`, `CAT`. `grep -wc cat w.txt` kya print karega?",
+          "options": [
+            "2",
+            "3",
+            "4",
+            "1"
+          ],
+          "answer": 0,
+          "explanation": "`-w` match ko poora word maangta hai: match ke dono taraf word-constituent character (letter, digit, underscore) nahi hona chahiye. `cat` aur `the cat sat` match karti hain. `concat` mein `cat` se pehle `n` hai aur `cat5` mein baad mein `5` (digit bhi word character hai), isliye nahi. `CAT` case-sensitive search mein match nahi karta. Answer 2. Option B ka trap: `cat5` ko word maan lena (ya `-i` maan lena). Option C bina `-w` ka count hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w5-q5",
+          "question": "Ek khaali directory mein ye bash commands chalaye. Aakhri `cat f` kya dikhayega, aur kya koi error aayega?",
+          "code": "set -o noclobber\necho a > f\necho b > f\necho c >| f\ncat f",
+          "options": [
+            "`c`; teesri line pe 'cannot overwrite existing file' error aata hai",
+            "`a`; chauthi line bhi fail hoti hai kyunki noclobber on hai",
+            "`b`; koi error nahi aata",
+            "`a`, `b`, `c` teen lines; noclobber `>` ko append bana deta hai"
+          ],
+          "answer": 0,
+          "explanation": "`echo a > f` nayi file banata hai, jo noclobber mein allowed hai. `echo b > f` existing file ko overwrite karne ki koshish hai, isliye bash error deta hai aur `f` mein `a` hi rehta hai. `>|` noclobber ko jaan-boojh kar override karta hai, isliye `f` mein `c` aa jaata hai. Option B ka trap: `>|` ko normal `>` jaisa samajhna. Option D ka trap: sochna ki noclobber `>` ko append bana deta hai; woh sirf overwrite rokta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w5-q6",
+          "question": "`d.txt` mein ye 5 lines hain. GNU grep ke saath command kya print karega?",
+          "code": "$ cat d.txt\nthe the cat\nthis is it\nis is\nabc abcd\ngo go!\n$ grep -cE '\\b([a-z]+) \\1\\b' d.txt",
+          "options": [
+            "5",
+            "4",
+            "2",
+            "3"
+          ],
+          "answer": 3,
+          "explanation": "Pattern ek poora word, space, phir wahi word maangta hai, dono taraf word boundary ke saath. `the the cat` (the the), `is is` aur `go go!` match karte hain; `!` word character nahi, isliye `go` ke baad boundary hai. `this is it` mein `is` `this` ke andar se shuru nahi ho sakta (pehle `\\b` chahiye) aur `is it` repeat nahi hai. `abc abcd` mein doosra `abc` ke baad `d` hai, to aakhri `\\b` fail. Answer 3. Option A ka trap: `\\b` ko ignore karna (tab paanchon match karti). Option B `abc abcd` ko gin leta hai, aur option C `go go!` ko punctuation ki wajah se chhod deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Searching the Filesystem with find, Editing with vi and nano",
+      "summary": "Is week aap `find` ko ek chhoti query language ki tarah use karna seekhoge (naam, type, size, time, permissions, operators, `-exec`, `-print0 | xargs -0`), aur terminal editors `vi`/`vim` aur `nano` mein tezi se edit karna.",
+      "readMinutes": 16,
+      "concepts": [
+        "**find ki structure**: `find [starting points] [expression]`. Expression tests (`-name`, `-type`, `-size`, `-mtime` ...) aur actions (`-print`, `-delete`, `-exec`) se banta hai, aur har file pe left se right evaluate hota hai. Koi action na likho to default `-print` hota hai. `-maxdepth 1` sirf pehle level tak dekhta hai (ise tests se pehle likho).",
+        "**Naam aur type**: `-name '*.csv'` sirf file ke naam (basename) pe glob match karta hai, `-iname` case ignore karta hai, `-path '*/raw/*'` poore path pe. Pattern hamesha quotes mein likho, warna shell `*.csv` ko current directory ki files mein expand kar dega. `-type f` file, `d` directory, `l` symlink. `-empty` khaali files/directories.",
+        "**Time tests**: `-mtime n` content modification time ko 24 ghante ke poore dinon mein naapta hai, fraction gira kar. `-mtime +2` matlab umar ke poore din 2 se zyada (yaani kam se kam 3 din), `-mtime -2` matlab 2 din se kam, `-mtime 2` matlab 2 se 3 din ke beech. `-mmin` minutes mein, `-newer ref` ref file se naya. `-atime` access, `-ctime` inode change (permission/owner badalna bhi).",
+        "**Size tests**: `-size +100M` 100 MiB se bada, `-size -10k` chhota. Units `c` bytes, `k` KiB, `M` MiB, `G` GiB. Dhyaan do, size pehle unit mein **upar ki taraf round** hota hai, isliye `-size -1M` sirf 0 byte wali files pakadta hai (500 KB bhi round hokar 1M ban jaata hai). Exact limit ke liye chhoti unit lo: `-size -1024k`.",
+        "**Operators**: tests ke beech default `-a` (AND) hota hai, `-o` OR, `!` NOT, aur grouping ke liye `\\( ... \\)` (shell se escape karke). AND ki precedence OR se zyada hai, isliye `find . -name '*.csv' -o -name '*.tsv' -print` sirf `.tsv` print karta hai; sahi hai `find . \\( -name '*.csv' -o -name '*.tsv' \\) -print`. `-prune` kisi directory (jaise `.git`) mein jaane se rokta hai.",
+        "**Actions**: `-exec cmd {} \\;` har file ke liye ek baar command chalata hai; `-exec cmd {} +` bahut saari files ek hi command mein bhejta hai (tez). `-ok` har baar poochta hai. `-delete` seedha hataata hai, isliye pehle wahi expression `-print` ke saath chala kar dekho. Naamon mein space/newline ho sakte hain, isliye pipeline mein `find ... -print0 | xargs -0 cmd`.",
+        "**vi/vim ke modes**: Normal mode (commands), Insert (`i`, `a`, `o` se; `Esc` se wapas), Command-line (`:`). Motions: `w`/`b` word aage/peeche, `0`/`$` line ki shuruaat/end, `gg`/`G` file ki shuruaat/end, `42G` line 42. Operators motion ke saath: `dw` word delete, `d$` line ke end tak, `cw` word badlo, `yy` line copy, `p`/`P` neeche/upar paste, `.` pichhla change dohraao, `u` undo, `Ctrl+R` redo. Count lagta hai: `3dd`, `5j`.",
+        "**vim ex commands aur nano**: `:w` save, `:q!` bina save nikalna, `:wq` ya `:x` save karke nikalna, `/word` search (`n` agla), `:set number`, `:%s/old/new/g` poori file mein har occurrence badlo (`%` = saari lines, `g` = line mein har match, `c` jodo to har baar poochta hai), `:g/^#/d` comment lines hatao. nano mein shortcuts neeche likhe hote hain: `Ctrl+O` save, `Ctrl+X` exit, `Ctrl+W` search, `Ctrl+K` line cut, `Ctrl+U` paste."
+      ],
+      "example": {
+        "problem": "Ek fictional service ke `logs/` mein compressed logs jama ho rahe hain, kuch ke naam mein space bhi hai. 30 din se purani `.gz` files ko dhoondh kar safely hataana hai. Pehle list karo, phir hataao, aur batao ki `xargs` ke saath `-print0` kyun zaroori hai.",
+        "code": "$ find logs -type f -name '*.gz' -mtime +30 -print\nlogs/app 2026-09.log.gz\nlogs/old/app-2026-09-30.log.gz\n$ find logs -type f -name '*.gz' -mtime +30 -print | xargs ls -1\nls: cannot access 'logs/app': No such file or directory\nls: cannot access '2026-09.log.gz': No such file or directory\nlogs/old/app-2026-09-30.log.gz\n$ find logs -type f -name '*.gz' -mtime +30 -print0 | xargs -0 rm --\n$ find logs -type f -name '*.gz' -mtime +30 -delete    # doosra tareeka",
+        "steps": [
+          "Pehle sirf `-print` ke saath expression chalao: `-type f` (sirf files), `-name '*.gz'` (quoted pattern), `-mtime +30` (umar 30 poore din se zyada). Do files mili, `readme.txt` aur 3 din purani `.gz` nahi.",
+          "Plain `xargs` input ko whitespace pe todta hai, isliye `logs/app 2026-09.log.gz` do galat arguments ban gaya aur `ls` fail hua.",
+          "`-print0` har naam ke baad NUL byte (`\\0`) lagata hai, jo filename mein ho hi nahi sakta; `xargs -0` usi pe todta hai, isliye space wale naam bhi sahi pahunchte hain.",
+          "`rm --` likhne se agar koi naam `-` se shuru ho to woh option nahi samjha jaata.",
+          "Single-step alternative `-delete` hai; ise hamesha expression ke end mein rakho, kyunki `-delete` pehle likha to har file pe chal jaayega.",
+          "Answer: **`find logs -type f -name '*.gz' -mtime +30 -print0 | xargs -0 rm --` (ya `-delete`); dono purani files hatengi, naye logs aur readme bachenge**."
+        ]
+      },
+      "mistakes": [
+        "`find . -name *.csv` bina quotes. Agar current directory mein CSV files hain to shell unhe expand kar deta hai aur `find` 'paths must precede expression' error deta hai, ya chupke se sirf ek naam dhoondhta hai. Hamesha `'*.csv'`.",
+        "`-o` ke saath brackets bhool jaana. `-a` ki precedence zyada hai, isliye action sirf aakhri test se judta hai; `\\( ... -o ... \\)` lagao.",
+        "`-size -1M` se '1 MB se chhoti files' dhoondhna. Rounding ki wajah se sirf khaali files milti hain; `-size -1024k` ya `-size -1048576c` likho."
+      ],
+      "revision": [
+        "Pattern quote karo: `-name '*.log'`; `-iname` case-insensitive.",
+        "`-mtime +N` = N poore din se zyada purani; `-mmin` minutes.",
+        "`-size` unit mein round up hota hai; `-1M` = sirf 0 bytes.",
+        "AND > OR precedence; `\\( \\)` se group karo.",
+        "`-exec {} \\;` har file, `{} +` batch; `-print0 | xargs -0` space-safe.",
+        "vim: `:%s/a/b/g` poori file, `.` repeat, `u` undo, `:wq` save+exit."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w6-q1",
+          "question": "Current directory mein `a.csv` aur `b.csv` hain. `find . -name *.csv` chalane par GNU find error deta hai: `paths must precede expression: b.csv`. Iski wajah aur fix kya hai?",
+          "options": [
+            "`find` glob patterns support nahi karta; `find . -regex '.*csv'` likhna padega",
+            "Shell ne `*.csv` ko `a.csv b.csv` mein expand kar diya, isliye `find` ko extra argument mila; pattern quote karo: `-name '*.csv'`",
+            "`-name` ke saath dot wala pattern nahi chalta; `-iname` use karo",
+            "Starting directory `.` likhna galat hai; `find -name *.csv` likho"
+          ],
+          "answer": 1,
+          "explanation": "Unquoted `*.csv` find tak pahunchne se pehle shell expand karta hai, to command `find . -name a.csv b.csv` ban jaati hai; `b.csv` ek stray argument hai, isliye error. Quote karne se pattern jaisa hai waisa find ko milta hai aur find khud har level pe match karta hai. Option A ka trap: `-name` glob hi leta hai, bas use quote karna hota hai. Option C aur D asli wajah (shell expansion) ko nahi chhoote.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w6-q2",
+          "question": "vim ke Normal mode mein aap `:%s/http:/https:/g` type karke Enter dabate ho. Ye kya karega?",
+          "options": [
+            "Poori file ki har line mein `http:` ki har occurrence ko `https:` se badal dega",
+            "Har line mein sirf pehla `http:` badlega",
+            "Sirf cursor wali line mein har `http:` badlega",
+            "Poori file mein sirf pehla `http:` badlega"
+          ],
+          "answer": 0,
+          "explanation": "`%` range ka matlab hai saari lines, aur aakhri `g` flag har line ke andar har match badalta hai. Isliye poori file mein har `http:` → `https:`. Option B ka trap: `g` flag bhool jaana; bina `g` ke har line ka sirf pehla match badalta. Option C bina `%` wala `:s/.../g` hai jo sirf current line pe lagta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w6-q3",
+          "question": "Ek directory mein chaar files hain jinka last modification abhi se 1.5, 2.5, 3.5 aur 10 din pehle hua. GNU `find . -type f -mtime +2` kitni files print karega?",
+          "options": [
+            "3",
+            "4",
+            "2",
+            "1"
+          ],
+          "answer": 2,
+          "explanation": "`-mtime` umar ko 24-ghante ke poore dinon mein ginta hai aur fraction gira deta hai: 1.5 → 1, 2.5 → 2, 3.5 → 3, 10 → 10. `+2` matlab 2 se zyada, yaani 3 aur 10 wali: kul 2 files. Option A ka trap: 2.5 din ko '2 din se zyada' maan lena; truncate hone ke baad woh exactly 2 hai, jo `-mtime 2` se match hota hai, `+2` se nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w6-q4",
+          "question": "Ek directory mein teen files `x.log`, `y.log`, `z.log` hain (aur kuch nahi). Ye do commands kram se kitni output lines denge?",
+          "code": "find . -name '*.log' -exec echo X {} \\; | wc -l\nfind . -name '*.log' -exec echo X {} + | wc -l",
+          "options": [
+            "1 aur 3",
+            "3 aur 3",
+            "1 aur 1",
+            "3 aur 1"
+          ],
+          "answer": 3,
+          "explanation": "`{} \\;` har file ke liye `echo` ek baar chalata hai, to 3 lines. `{} +` saari files ko ek hi `echo X ./x.log ./y.log ./z.log` mein jod deta hai, to 1 line. Isi wajah se `+` bahut files pe tez hota hai. Option B ka trap: sochna ki dono forms sirf syntax ka fark hain. Option A dono ka role ulta kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w6-q5",
+          "question": "Ek directory mein `a.csv`, `b.tsv` aur `c.txt` hain. GNU find ke saath ye command kya print karega?",
+          "code": "find . -name '*.csv' -o -name '*.tsv' -print",
+          "options": [
+            "`./a.csv` aur `./b.tsv`",
+            "Sirf `./b.tsv`",
+            "Sirf `./a.csv`",
+            "`.`, `./a.csv`, `./b.tsv` aur `./c.txt`"
+          ],
+          "answer": 1,
+          "explanation": "Jab expression mein ek bhi action (`-print`) likha ho, default print nahi lagta. Implicit `-a` ki precedence `-o` se zyada hai, isliye ye `-name '*.csv' -o ( -name '*.tsv' -a -print )` padha jaata hai. `a.csv` pehle hisse se true hota hai par uske saath koi action nahi, isliye print nahi hota; sirf `b.tsv` print hota hai. Option A ka trap: sochna ki `-print` poore OR pe lagta hai; uske liye `\\( ... \\)` chahiye. Option D sochta hai ki tests kuch filter hi nahi karte.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w6-q6",
+          "question": "Ek directory mein teen files hain: `empty.txt` (0 bytes), `small.csv` (500 KiB) aur `big.csv` (3 MiB). GNU `find . -type f -size -1M` kya print karega?",
+          "options": [
+            "`./empty.txt` aur `./small.csv`",
+            "Sirf `./small.csv`",
+            "Sirf `./empty.txt`",
+            "Kuch nahi"
+          ],
+          "answer": 2,
+          "explanation": "`-size` comparison se pehle file ka size us unit mein upar round hota hai. MiB unit mein: `empty.txt` → 0, `small.csv` (500 KiB) → 1, `big.csv` → 3. `-1M` matlab 1 se kam, yaani sirf 0: isliye sirf `./empty.txt`. Option A ka trap: 500 KiB ko seedha '1 MiB se chhota' maan lena; rounding ke baad woh 1 ban jaata hai aur `-1M` fail hota hai. 1 MiB se chhoti files ke liye `-size -1024k` likho.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Bash Scripting I: Execution, Arguments, Exit Status and Tests",
+      "summary": "Is week aap samjhoge ki script kaise chalti hai (shebang, subshell, `source`), positional parameters aur `\"$@\"` ka sahi use, exit status ka contract, aur `test`/`[ ]`, `[[ ]]` aur `(( ))` se conditions likhna.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Script kaise chalti hai**: pehli line `#!/usr/bin/env bash` (shebang) kernel ko batati hai ki kaunsa interpreter chalana hai. `./job.sh` ke liye execute permission chahiye aur ye ek **naye child process** mein chalti hai; `bash job.sh` bina x permission ke bhi chalti hai. Child mein `cd`, variables ya `export` parent shell ko nahi badalte. `source job.sh` (ya `. job.sh`) script ko current shell mein hi chalata hai, isliye config/env files aise load ki jaati hain.",
+        "**Positional parameters**: `$0` script ka naam, `$1`...`$9`, phir `${10}`, `$#` arguments ki ginti. `\"$@\"` har argument ko alag word rakhta hai (spaces ke saath bhi), `\"$*\"` sabko ek string mein jod deta hai (IFS ke pehle character, default space, se), aur unquoted `$@`/`$*` spaces pe phir se toot jaate hain. Doosre command ko arguments aage dene ka sahi tareeka hamesha `\"$@\"` hai. `shift` sabko ek jagah left khiskata hai aur `$#` ek kam karta hai.",
+        "**Defaults aur zaroori arguments**: `${2:-10}` second argument na ho (ya khaali ho) to 10. `${1:?usage: job.sh FILE}` argument na ho to message stderr pe print karke script ko fail kar deta hai. `$$` current shell ka PID, `$!` last background job ka PID.",
+        "**Exit status**: har command 0 (success) ya 1–255 (failure) return karti hai; `$?` pichhli command ka status hai. `exit n` script ka status set karta hai, `return n` function ka. `!` status ulat deta hai (non-zero → 0, 0 → 1). `cmd1 && cmd2` tab chalta hai jab cmd1 safal ho, `cmd1 || cmd2` jab fail ho. Convention: 0 OK, 1 general error, 2 galat usage; doosre tools (cron, CI, `make`) isi status se faisla karte hain.",
+        "**test / [ ]**: `[` ek command hai, isliye har cheez space se alag likho: `[ \"$a\" = \"$b\" ]`. String: `=`, `!=`, `-z` (khaali), `-n` (non-empty). Numbers: `-eq -ne -lt -le -gt -ge`. Files: `-e` exists, `-f` regular file, `-d` directory, `-r/-w/-x`, `-s` size > 0, `f1 -nt f2` newer. Variables hamesha quote karo: `x` khaali ho to `[ -n $x ]` ban jaata hai `[ -n ]`, jo ek-argument test hai aur hamesha true deta hai.",
+        "**[[ ]] (bash keyword)**: andar word splitting aur glob expansion nahi hota, isliye quoting ki galtiyaan kam hoti hain. `&&`, `||` andar hi chalte hain. `[[ $f == *.csv ]]` right side ko glob pattern ki tarah match karta hai, `[[ $s =~ ^[0-9]+$ ]]` ERE regex se, aur captured groups `BASH_REMATCH` array mein aate hain (`${BASH_REMATCH[0]}` poora match, `[1]` pehla group). Regex ko variable mein rakh kar bina quotes likho: `[[ $s =~ $re ]]`.",
+        "**(( )) aur if**: `(( expr ))` integer arithmetic condition hai; result non-zero ho to status 0 (true). Andar `$` ki zarurat nahi: `(( n % 2 ))`, `(( rows >= min ))`. `if cmd; then ...; elif cmd; then ...; else ...; fi` kisi bhi command ke exit status pe chalta hai, sirf `[ ]` pe nahi: `if grep -q ERROR app.log; then ...`. Agar koi branch nahi chali to poore `if` ka status 0 hota hai."
+      ],
+      "example": {
+        "problem": "Ek fictional data team ko script chahiye jo check kare ki CSV file mein header ke alawa kam se kam N data rows hain, aur cron/CI ke liye sahi exit codes de: 0 OK, 1 file nahi mili, 2 galat usage, 3 rows kam. `orders.csv` mein header aur 3 rows hain. Chaar runs ka output aur status kya hoga?",
+        "code": "#!/usr/bin/env bash\n# usage: rows.sh FILE [MIN_ROWS]\nif [[ $# -lt 1 || $# -gt 2 ]]; then\n    echo \"usage: $0 FILE [MIN_ROWS]\" >&2\n    exit 2\nfi\nfile=$1\nmin=${2:-1}\nif [[ ! -f $file ]]; then\n    echo \"error: $file not found\" >&2\n    exit 1\nfi\nrows=$(( $(wc -l < \"$file\") - 1 ))\nif (( rows >= min )); then\n    echo \"OK: $file has $rows data rows\"\nelse\n    echo \"FAIL: $file has $rows data rows (need $min)\" >&2\n    exit 3\nfi",
+        "steps": [
+          "`./rows.sh orders.csv`: ek argument hai, `min` default 1 leta hai. `wc -l < \"$file\"` 4 deta hai (stdin se padhne par naam print nahi hota), header ghata kar 3. 3 ≥ 1, isliye `OK: orders.csv has 3 data rows`, status 0.",
+          "`./rows.sh orders.csv 5`: 3 ≥ 5 false hai, to FAIL message stderr pe jaata hai aur `exit 3`.",
+          "`./rows.sh nope.csv`: `[[ ! -f $file ]]` true hai, isliye `error: nope.csv not found` aur status 1.",
+          "`./rows.sh` (koi argument nahi): `$# -lt 1` true, usage message stderr pe, status 2.",
+          "Messages stderr (`>&2`) pe bhejne se script ka stdout saaf rehta hai, taaki doosre tools sirf data padhein.",
+          "Answer: **status kram se 0, 3, 1, 2; sirf pehla run stdout pe OK line print karta hai**."
+        ]
+      },
+      "mistakes": [
+        "`[ $x = yes ]` bina quotes. `x` khaali ho to `[ = yes ]` ban kar 'unary operator expected' error aata hai, aur space wali value pe 'too many arguments'. Hamesha `[ \"$x\" = yes ]` ya `[[ $x == yes ]]`.",
+        "Numbers ko `<`/`>` se `[ ]` mein compare karna. `[ 10 > 9 ]` asal mein `9` naam ki file mein output redirect karta hai; numbers ke liye `-gt` ya `(( 10 > 9 ))`.",
+        "Script mein `cd` ya `export` likh kar `./env.sh` chalana aur expect karna ki terminal ka shell badal jaayega. Child process ka badlaav parent tak nahi aata; `source env.sh` karo."
+      ],
+      "revision": [
+        "`./s.sh` = child process; `source s.sh` = current shell.",
+        "`\"$@\"` har argument alag; `\"$*\"` ek string; `$#` ginti; `shift`.",
+        "`${2:-default}`, `${1:?message}`.",
+        "0 = success; `!` ulta karta hai; `&&` success pe, `||` failure pe.",
+        "`[ ]` mein variables quote karo; numbers ke liye `-lt`, `-gt`.",
+        "`[[ == glob ]]`, `[[ =~ regex ]]` + `BASH_REMATCH`; `(( ))` arithmetic."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w7-q1",
+          "question": "`go.sh` (executable) mein sirf ek line hai: `cd /var/log`. Aap `/home/asha` mein ho aur ye chalate ho. `pwd` kya print karega?",
+          "code": "./go.sh\npwd",
+          "options": [
+            "`/var/log`",
+            "`/var`",
+            "Error, kyunki script ke andar `cd` allowed nahi hai",
+            "`/home/asha`"
+          ],
+          "answer": 3,
+          "explanation": "`./go.sh` ek alag child process (naya bash) mein chalti hai; `cd` usi child ki working directory badalta hai, aur script khatam hote hi woh process khatam. Aapke interactive shell ki directory `/home/asha` hi rehti hai. Option A ka trap: script ko current shell ka hissa samajhna; aisa `source go.sh` se hota. Option C galat hai: script mein `cd` bilkul valid hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w7-q2",
+          "question": "Is bash code ka output kya hoga?",
+          "code": "n=7\nif (( n % 2 )); then\n    echo odd\nelse\n    echo even\nfi",
+          "options": [
+            "`even`",
+            "Syntax error, kyunki `n` se pehle `$` nahi hai",
+            "`odd`",
+            "`1`"
+          ],
+          "answer": 2,
+          "explanation": "`(( n % 2 ))` arithmetic evaluate karta hai: 7 % 2 = 1. Result non-zero ho to `(( ))` ka exit status 0 (true) hota hai, isliye `then` branch chalti hai aur `odd` print hota hai. Option A ka trap: sochna ki status 1 ka matlab failure hai to result 1 bhi false hoga; `(( ))` mein non-zero value = true. Option B: `(( ))` ke andar variables bina `$` ke likh sakte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w7-q3",
+          "question": "Is bash code ka output kya hoga (do lines)?",
+          "code": "x=\"\"\n[ -n $x ] && echo yes || echo no\n[ -n \"$x\" ] && echo yes || echo no",
+          "options": [
+            "`yes` aur `no`",
+            "`no` aur `no`",
+            "`no` aur `yes`",
+            "Pehli line pe 'unary operator expected' error, phir `no`"
+          ],
+          "answer": 0,
+          "explanation": "Unquoted `$x` khaali hone par gayab ho jaata hai, to pehla test `[ -n ]` ban jaata hai. Ek argument wala test sirf ye dekhta hai ki woh string (`-n`) khaali nahi hai, isliye true: `yes`. Quoted version `[ -n \"\" ]` sahi se khaali string check karta hai: false, `no`. Option B ka trap: sochna ki `-n` dono baar same kaam karega. Option D ka trap: woh error `[ $x = val ]` jaise do-operand tests mein aata hai, yahan nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w7-q4",
+          "question": "Is bash code ka output kya hoga? (`set --` positional parameters set karta hai.)",
+          "code": "set -- \"a b\" c\ni=0; for v in \"$@\"; do i=$((i+1)); done\nj=0; for v in \"$*\"; do j=$((j+1)); done\nk=0; for v in $@;   do k=$((k+1)); done\necho $i $j $k",
+          "options": [
+            "`2 2 2`",
+            "`2 1 3`",
+            "`3 1 3`",
+            "`2 1 2`"
+          ],
+          "answer": 1,
+          "explanation": "Do arguments hain: `a b` aur `c`. `\"$@\"` har argument ko alag word rakhta hai: 2 iterations. `\"$*\"` sabko ek string `a b c` bana deta hai: 1 iteration. Unquoted `$@` ke words phir se spaces pe toot jaate hain: `a`, `b`, `c` = 3. Option D ka trap: unquoted `$@` ko bhi `\"$@\"` jaisa maan lena. Option A sochta hai ki teeno forms ek jaise hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w7-q5",
+          "question": "Is bash code ka output kya hoga?",
+          "code": "d=2026-11-04\nif [[ $d =~ ^([0-9]{4})-([0-9]{2}) ]]; then\n    echo \"${BASH_REMATCH[2]}\"\nfi",
+          "options": [
+            "`2026`",
+            "`2026-11`",
+            "`04`",
+            "`11`"
+          ],
+          "answer": 3,
+          "explanation": "`=~` ERE regex match karta hai aur groups `BASH_REMATCH` mein jaate hain: index 0 poora match (`2026-11`), index 1 pehla group (`2026`), index 2 doosra group (`11`). Isliye `11`. Option A ka trap: indices mix karna; `2026` index 1 pe hai, 2 pe nahi. Option B index 0 hai. Option C ka trap: regex mein din ka koi group hai hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w7-q6",
+          "question": "Is bash code ka output kya hoga?",
+          "code": "f() { return 3; }\nf;                  a=$?\n! f;                b=$?\nf || true;          c=$?\nif f; then :; fi;   d=$?\necho $a $b $c $d",
+          "options": [
+            "`3 0 0 0`",
+            "`3 1 0 3`",
+            "`3 0 0 3`",
+            "`3 1 3 0`"
+          ],
+          "answer": 0,
+          "explanation": "`a`: `f` 3 return karta hai. `b`: `!` non-zero ko 0 bana deta hai (0 ko 1). `c`: `f` fail hua to `true` chala, aur list ka status aakhri chali command ka hai: 0. `d`: `if` ki condition fail hui aur koi `else` nahi, aur jab koi branch nahi chalti to poore `if` ka status 0 hota hai. Isliye `3 0 0 0`. Option B ka trap: `!` ko 'status mein 1 jodna/ulta 1' samajhna aur `if` ko condition ka status lauta dena. Option C sirf `if` wali galti karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Bash Scripting II: Loops, Functions, Arrays and Scheduling",
+      "summary": "Is week aap files aur data pe loops chalana (`for`, `while read`), local variables wale functions, indexed aur associative arrays, aur scripts ko `cron`, `at` aur systemd timers se schedule karna seekhoge, un galtiyon ke saath jo production mein sabse zyada hoti hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**for loops**: `for f in data/*.csv; do ...; done` glob se files leta hai (alphabetical order mein). Koi file match na kare to loop literal pattern `data/*.csv` pe ek baar chal jaata hai; `shopt -s nullglob` se aisa nahi hota. C-style `for (( i=0; i<5; i++ ))` counting ke liye, `for i in {1..5}` brace expansion. `break` loop se bahar, `continue` agli iteration.",
+        "**while read**: file line by line padhne ka sahi tareeka `while IFS= read -r line; do ...; done < file.txt` hai: `-r` backslash ko escape nahi maanta, `IFS=` shuru/end ke spaces bachaata hai. CSV ke liye `while IFS=, read -r id name amt; do ...; done < data.csv`; aakhri variable mein line ka bacha hua hissa aata hai.",
+        "**Pipe aur subshell**: `cmd | while read ...; do count=...; done` mein bash pipeline ke har hisse ko subshell mein chalata hai, isliye loop ke andar badle variables loop ke baad gayab ho jaate hain. Fix: `while ...; done < file`, ya process substitution `done < <(cmd)`, ya `shopt -s lastpipe` (non-interactive script mein).",
+        "**Functions**: `name() { ...; }`. Andar `$1`, `$#`, `\"$@\"` function ke apne arguments hain. Variables default global hote hain; `local x` unhe function tak seemit karta hai. `return n` sirf status (0–255) deta hai; data lautaana ho to `echo` karo aur `result=$(name args)` se pakdo (command substitution subshell mein chalta hai, isliye wahan kiye side effects bahar nahi aate).",
+        "**Indexed arrays**: `a=(10 20 30)`, index 0 se. `${a[1]}` = 20, `${a[@]}` saare elements, `${#a[@]}` ginti, `${a[-1]}` aakhri, `a+=(40)` append, `${a[@]:1:2}` slice (index 1 se 2 elements), `${!a[@]}` indices. Loop hamesha `for x in \"${a[@]}\"` se, taaki spaces wale elements na tootein. `mapfile -t lines < file` file ko array mein padhta hai.",
+        "**Associative arrays**: `declare -A count` (pehle declare zaroori). `count[$key]=$(( ${count[$key]:-0} + 1 ))` group-by jaisa kaam karta hai, `${!count[@]}` keys, `${#count[@]}` keys ki ginti. Keys ka order guaranteed nahi hota, isliye report ke liye output ko `sort` karo.",
+        "**cron**: `crontab -e` mein line: minute hour day-of-month month day-of-week command. `*/10` har 10, `1-5` range, `1,15` list, `@daily`, `@reboot` shortcuts. Agar day-of-month aur day-of-week **dono** restricted hon to job tab chalti hai jab **koi bhi ek** match kare (OR). cron ka environment chhota hota hai (minimal `PATH`, koi `.bashrc` nahi), isliye absolute paths do aur output redirect karo: `>> /var/log/job.log 2>&1`. Crontab mein `%` newline ban jaata hai, use `\\%` likho (jaise `date +\\%F`).",
+        "**at aur systemd timers**: ek baar ka kaam `echo './report.sh' | at 09:00 tomorrow` (`atq` list, `atrm` hatao). systemd timer ek `.service` + `.timer` jodi hai: `OnCalendar=*-*-* 02:30:00` schedule, `Persistent=true` machine band hone se chhooti run ko boot ke baad chala deta hai; logs `journalctl -u name.service` mein milte hain. `systemctl list-timers` agli runs dikhata hai."
+      ],
+      "example": {
+        "problem": "Ek fictional team ke `in/` folder mein mahine ki CSV files (`jan.csv`, `feb.csv`, `mar.csv`) aati hain; har ek mein header hota hai. Script ko har file ki data rows print karni hain, khaali files ko array mein jama karke end mein report karna hai, aur koi file khaali ho to non-zero status dena hai. Phir ise roz raat 02:30 pe cron se chalana hai. `feb.csv` mein sirf header hai, `jan.csv` mein 2 rows, `mar.csv` mein 1.",
+        "code": "#!/usr/bin/env bash\nrows() { local n; n=$(wc -l < \"$1\"); echo $(( n - 1 )); }\nempty=()\nfor f in in/*.csv; do\n    r=$(rows \"$f\")\n    if (( r == 0 )); then\n        empty+=(\"$(basename \"$f\")\")\n        continue\n    fi\n    echo \"$(basename \"$f\"): $r rows\"\ndone\necho \"empty files: ${#empty[@]} (${empty[*]})\"\n(( ${#empty[@]} == 0 ))\n\n# crontab -e\n30 2 * * * cd /srv/etl && /srv/etl/check_all.sh >> /var/log/check_all.log 2>&1",
+        "steps": [
+          "Glob `in/*.csv` alphabetical order mein files deta hai: `feb.csv`, `jan.csv`, `mar.csv`.",
+          "`rows` function `local n` use karta hai taaki global namespace gandaa na ho, aur result `echo` karta hai jise `r=$(rows \"$f\")` pakadta hai.",
+          "`feb.csv` ke 0 rows hain: naam `empty` array mein judta hai aur `continue` print ko skip karta hai.",
+          "`jan.csv: 2 rows` aur `mar.csv: 1 rows` print hote hain. Phir `empty files: 1 (feb.csv)`.",
+          "Aakhri line `(( ${#empty[@]} == 0 ))` false hai, to script ka exit status 1 hota hai, jise monitoring pakad sakti hai.",
+          "cron line mein `cd` aur absolute path diye hain kyunki cron ka PATH aur working directory alag hote hain; `>> log 2>&1` dono streams save karta hai.",
+          "Answer: **output `jan.csv: 2 rows`, `mar.csv: 1 rows`, `empty files: 1 (feb.csv)`, status 1; cron entry `30 2 * * *`**."
+        ]
+      },
+      "mistakes": [
+        "`cat file | while read line; do total=...; done; echo $total` likh kar total khaali paana. Pipe ka loop subshell mein chala; `done < file` use karo.",
+        "Function se `return $sum` karke bada number lautaana. `return` sirf 0–255 ka status deta hai (300 ka status 44 ban jaata hai); value ke liye `echo` aur `$( )`.",
+        "Terminal mein chalne wali script ko seedha cron mein daal dena aur 'command not found' ya relative path errors paana. cron mein absolute paths, zaroori `PATH`, aur output ka redirect do."
+      ],
+      "revision": [
+        "`while IFS= read -r line; do ...; done < file` = sahi line reading.",
+        "Pipe ke andar wala loop subshell hai; variables bahar nahi aate.",
+        "`local` function scope; data `echo` + `$( )` se, status `return` se.",
+        "`${#a[@]}` ginti, `${a[@]}` sab, `a+=(x)`, index 0 se.",
+        "`declare -A m`; `${!m[@]}` keys; order fixed nahi.",
+        "cron: min hour dom mon dow; dom aur dow dono set = OR; `\\%` escape."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w8-q1",
+          "question": "Is bash code ka output kya hoga?",
+          "code": "a=(10 20 30)\na+=(40)\necho ${#a[@]} ${a[1]}",
+          "options": [
+            "`4 20`",
+            "`4 10`",
+            "`3 20`",
+            "`4 30`"
+          ],
+          "answer": 0,
+          "explanation": "`a+=(40)` array ke end mein ek element jodta hai, to ab 4 elements hain aur `${#a[@]}` 4 deta hai. Bash arrays 0 se index hote hain, isliye `${a[1]}` doosra element 20 hai. Option B ka trap: index 1 ko pehla element maan lena. Option C ka trap: `+=` ko ignore karna ya use string append samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w8-q2",
+          "question": "Aapko ek report script `/srv/report.sh` sirf **ek baar**, kal subah 09:00 baje chalani hai, phir kabhi nahi. Sabse sahi tareeka kaunsa hai?",
+          "options": [
+            "Crontab mein `0 9 * * * /srv/report.sh` jodna",
+            "`echo /srv/report.sh | at 09:00 tomorrow`",
+            "Terminal mein `sleep 86400; /srv/report.sh` chala dena",
+            "Crontab mein `@reboot /srv/report.sh` jodna"
+          ],
+          "answer": 1,
+          "explanation": "`at` ek-baar ke jobs ke liye bana hai: job queue mein jaata hai (`atq` se dikhta hai), diye time pe ek baar chalta hai aur terminal band hone se fark nahi padta. Option A ka trap: ye cron line roz 09:00 pe chalegi, ek baar nahi. Option C time ka andaaza hai aur session band hote hi mar jaata hai. Option D har boot pe chalta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w8-q3",
+          "question": "Ek bash script mein (bina `lastpipe` ke) ye code hai. Aakhri `echo` kya print karega?",
+          "code": "count=0\nprintf 'a\\nb\\nc\\n' | while read -r line; do\n    count=$((count + 1))\ndone\necho $count",
+          "options": [
+            "`3`",
+            "`1`",
+            "Khaali line",
+            "`0`"
+          ],
+          "answer": 3,
+          "explanation": "Pipeline ka har hissa, `while` loop bhi, subshell mein chalta hai. Loop ke andar `count` subshell ki copy mein 3 tak badhta hai, par woh copy loop ke saath khatam ho jaati hai; parent shell ka `count` 0 hi rehta hai. Option A ka trap: loop ko current shell mein chalta samajhna; `done < <(printf ...)` ya file se redirect karne par 3 aata. Option C ka trap: `count` pehle se 0 set hai, khaali nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w8-q4",
+          "question": "Is bash code ka output kya hoga?",
+          "code": "x=1\nf() {\n    local x=5\n    echo $((x * 2))\n    x=9\n}\ny=$(f)\necho \"$x $y\"",
+          "options": [
+            "`9 10`",
+            "`1 2`",
+            "`1 10`",
+            "`5 10`"
+          ],
+          "answer": 2,
+          "explanation": "`local x=5` function ke andar ek alag `x` banata hai, isliye `echo` 5 × 2 = 10 print karta hai, jo `y` mein pakda jaata hai. `x=9` bhi usi local `x` ko badalta hai, global ko nahi (aur `$(f)` waise bhi subshell mein chala). Global `x` 1 hi rehta hai: `1 10`. Option A ka trap: `x=9` ko global maan lena. Option B ka trap: sochna ki function ke andar global `x` (1) use hoga.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w8-q5",
+          "question": "Crontab ki ye line script kab chalayegi?",
+          "code": "0 9 1 * 1 /srv/etl/monthly.sh",
+          "options": [
+            "Sirf us mahine ki 1 tareekh ko jab woh Monday ho, 09:00 pe",
+            "Har mahine ki 1 tareekh ko 09:01 pe",
+            "Har mahine ki 1 tareekh ko 09:00 pe, aur har Monday ko bhi 09:00 pe",
+            "Sirf January ke har Monday ko 09:00 pe"
+          ],
+          "answer": 2,
+          "explanation": "Fields hain minute 0, hour 9, day-of-month 1, month `*`, day-of-week 1 (Monday). Jab day-of-month aur day-of-week dono restricted hon (koi `*` nahi), cron unhe OR karta hai: 1 tareekh ko bhi chalegi aur har Monday ko bhi. Option A ka trap: dono ko AND samajhna, jo intuitive lagta hai par cron aisa nahi karta. Option B fields ka order ulta padhta hai, aur option D month field (`*`) ko 1 maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w8-q6",
+          "question": "Is bash script ka output kya hoga?",
+          "code": "declare -A n\nwhile IFS=, read -r city amt; do\n    n[$city]=$(( ${n[$city]:-0} + amt ))\ndone <<'EOF'\npune,10\ndelhi,5\npune,7\ngoa,3\ndelhi,1\nEOF\necho \"${#n[@]} ${n[pune]} ${n[delhi]}\"",
+          "options": [
+            "`5 17 6`",
+            "`3 17 6`",
+            "`3 7 1`",
+            "`3 10 5`"
+          ],
+          "answer": 1,
+          "explanation": "`IFS=,` har line ko city aur amount mein todta hai. Loop here-doc se redirect hai, subshell nahi, isliye array bachta hai. Har city ke liye purani value (pehli baar `:-0` se 0) mein amount judta hai: pune 10 + 7 = 17, delhi 5 + 1 = 6, goa 3. Distinct keys 3 hain, isliye `${#n[@]}` = 3. Output `3 17 6`. Option A ka trap: `${#n[@]}` ko lines ki ginti samajhna. Option C ka trap: sochna ki har assignment purani value overwrite karta hai (yahan expression purani value jodta hai). Option D sirf pehli entry rakhta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "awk for Data: Patterns, Aggregates and Statistics",
+      "summary": "Is week aap `awk` ko ek chhote data-analysis language ki tarah use karna seekhoge: pattern-action model, `BEGIN`/`END`, associative arrays se group-by, mean aur standard deviation, do files ka join (`NR==FNR`), string functions, aur awk ke number-vs-string comparison ke traps.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Pattern { action }**: awk har input record (default ek line) pe har rule check karta hai; pattern true ho to action chalta hai. Pattern na ho to har line pe, action na ho to `{ print }`. `BEGIN { }` input padhne se pehle (headers, `FS`/`OFS` set karna), `END { }` sab padhne ke baad (totals, reports). `-v lim=80` shell se variable bhejta hai: `awk -v lim=80 '$3 > lim'`.",
+        "**Fields aur built-in variables**: `$1`...`$NF` fields, `$0` poori line, `NF` fields ki ginti, `NR` ab tak ke total records, `FNR` current file mein record number, `FILENAME`. `-F,` ya `BEGIN { FS=\",\" }` separator; default FS whitespace ke runs pe todta hai aur shuru/end ke spaces ignore karta hai. Kisi field ko assign karne par (ya `$1=$1`) `$0` `OFS` (default space) se dobara banta hai, jo separator badalne ki trick hai: `awk 'BEGIN{FS=\",\"; OFS=\"\\t\"} {$1=$1; print}'`.",
+        "**Patterns**: comparison (`$3 > 50`), regex (`/ERROR/` poori line pe, `$2 ~ /^ml/` ek field pe, `!~` ulta), ranges (`/START/,/END/`), aur logic `&&`, `||`, `!`. `NR > 1` CSV header skip karta hai. `!seen[$0]++` duplicate lines hataata hai (pehli baar `seen` 0 hai, `!0` true, phir badh jaata hai) aur order bhi bachata hai, jo `sort -u` nahi karta.",
+        "**Associative arrays aur group-by**: `sum[$2] += $3; n[$2]++` har group ka total aur count rakhta hai; `END { for (k in sum) print k, sum[k]/n[k] }` mean deta hai. `for (k in arr)` ka order unspecified hai, isliye output ko `sort` mein pipe karo. `if (k in arr)` membership check karta hai bina nayi key banaye. `delete arr[k]` hataata hai.",
+        "**Statistics ek pass mein**: `s += $1; ss += $1*$1` jama karo, END mein mean `m = s/NR`, population variance `ss/NR − m²`, standard deviation `sqrt(...)`. Sample variance ke liye `(ss − NR·m²)/(NR − 1)`. Min/max ke liye pehli value se initialise karo (`NR==1 {min=max=$1}`), 0 se nahi, warna saari values negative hone par galat jawab aata hai. Header ho to divisor `NR − 1` lo, `NR` nahi.",
+        "**printf aur string functions**: `printf \"%-10s %6.2f\\n\", $1, $2` aligned report deta hai (`print` ke ulta, newline khud likhna padta hai). `length(s)`, `substr(s, start, len)` (index 1 se), `index(s, t)`, `split(s, arr, sep)` (pieces ki ginti return), `tolower`/`toupper`, `sub(/re/, rep)` pehla match, `gsub(/re/, rep, target)` saare matches badal kar ginti return karta hai, `sprintf` string banata hai. Numbers ke liye default output format `OFMT` = `%.6g`.",
+        "**Number ya string?**: input fields jo number jaise dikhte hain unhe awk numeric compare karta hai, warna string comparison hota hai. Uninitialised variable `\"\"` aur 0 dono hai. Isliye header line (`salary`) bina skip kiye max dhoondhne mein ghus jaaye to max string ban jaata hai aur baaki numbers us se string ki tarah compare hote hain. Pakka numeric chahiye to `$3+0` likho, pakka string chahiye to `$3 \"\"`.",
+        "**Do files ka join**: `awk -F, 'NR==FNR { name[$1]=$2; next } { print $0, name[$2] }' lookup.csv data.csv`. Pehli file padhte waqt `NR==FNR` true hota hai, to lookup table banta hai aur `next` baaki rules skip karta hai; doosri file mein FNR phir 1 se shuru hota hai par NR nahi, isliye doosra rule chalta hai. Ye SQL ke lookup join jaisa hai, bina database ke."
+      ],
+      "example": {
+        "problem": "Ek fictional company ki `emp.csv` (header ke saath) mein employees ke dept aur salary (thousands mein) hain, aur `depts.csv` mein dept code se poora naam. Har dept ka naam, headcount aur average salary nikaalo, average ke ghatte kram mein, saaf columns mein.",
+        "code": "$ cat emp.csv\nid,dept,salary\n1,ds,50\n2,ml,80\n3,ds,70\n4,ops,40\n5,ml,100\n$ cat depts.csv\nds,DataSci\nml,MLOps\nops,Infra\n$ awk -F, 'NR==FNR { name[$1]=$2; next }\n         FNR > 1  { t[$2] += $3; c[$2]++ }\n         END { for (d in t) printf \"%-8s %3d %6.1f\\n\", name[d], c[d], t[d]/c[d] }' \\\n      depts.csv emp.csv | sort -k3,3nr\nMLOps      2   90.0\nDataSci    2   60.0\nInfra      1   40.0",
+        "steps": [
+          "Pehli file `depts.csv` padhte waqt `NR==FNR` true hai: `name[\"ds\"]=\"DataSci\"` waghera bante hain, `next` aage ke rules skip karta hai.",
+          "Doosri file mein FNR 1 se dobara shuru hota hai; `FNR > 1` uska header skip karta hai (yahan `NR > 1` likhna galat hota, kyunki NR pehli file ke 3 records ke baad 4 se chal raha hai).",
+          "`t[$2] += $3; c[$2]++`: ds → 50 + 70 = 120 aur 2 log; ml → 80 + 100 = 180 aur 2; ops → 40 aur 1.",
+          "END mein average: ds 60.0, ml 90.0, ops 40.0. `printf` `%-8s` naam ko 8 characters mein left-align karta hai, `%3d` count, `%6.1f` ek decimal.",
+          "`for (d in t)` ka order fixed nahi, isliye `sort -k3,3nr` teesre column pe numeric reverse sort karta hai.",
+          "Answer: **MLOps 2 90.0, DataSci 2 60.0, Infra 1 40.0**."
+        ]
+      },
+      "mistakes": [
+        "Header wali CSV pe `END { print s/NR }`. NR mein header bhi gina gaya hai; mean ke liye `NR > 1` se header skip karo aur `s/(NR-1)` lo.",
+        "`for (k in arr)` ka output order maan kar report bana dena. Order implementation pe depend karta hai; `| sort` lagao ya keys ko khud sort karo.",
+        "Min/max ko 0 se shuru karna, ya header ko comparison mein aane dena. Pehle record se initialise karo aur numeric field ko `$3+0` se force karo."
+      ],
+      "revision": [
+        "`BEGIN` pehle, `END` baad mein; `-v var=val` shell se value.",
+        "`NR` total, `FNR` per file; `NR==FNR { ...; next }` = lookup join.",
+        "`!seen[$0]++` order bachaate hue dedup.",
+        "`sum[k]+=x; n[k]++` group-by; `for (k in a)` unordered.",
+        "SD = `sqrt(ss/NR − m*m)`; header ho to `NR − 1`.",
+        "Numeric force `$3+0`, string force `$3 \"\"`."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w9-q1",
+          "question": "Is pipeline ka output kya hoga? (Output ki lines yahan space se dikhayi gayi hain.)",
+          "code": "printf 'a\\nb\\na\\nc\\nb\\na\\n' | awk '!seen[$0]++'",
+          "options": [
+            "`a a a b b c`",
+            "`a b`",
+            "`a b c`",
+            "`c`"
+          ],
+          "answer": 2,
+          "explanation": "`seen[$0]++` post-increment hai: pehli baar line aane par purani value 0 hai, `!0` true, isliye line print hoti hai; baad mein value 1, 2... hai aur `!` false deta hai. Isliye har line pehli baar, original order mein: `a b c`. Option A sort jaisa result hai, awk sort nahi karta. Option D ka trap: sochna ki ye sirf woh lines deta hai jo ek hi baar aayi; aisa `uniq -u` jaisa kaam alag logic se hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w9-q2",
+          "question": "`emp.csv` ye hai. Command kya print karegi?",
+          "code": "$ cat emp.csv\nid,dept,salary\n1,ds,50\n2,ml,80\n3,ds,70\n4,ops,40\n5,ml,100\n$ awk -F, 'NR > 1 { s += $3 } END { print s/(NR-1) }' emp.csv",
+          "options": [
+            "`68`",
+            "`56.6667`",
+            "`340`",
+            "`85`"
+          ],
+          "answer": 0,
+          "explanation": "`NR > 1` header skip karta hai, to s = 50 + 80 + 70 + 40 + 100 = 340. END mein NR total records hai, header samet 6, isliye divisor 6 − 1 = 5 aur mean 340 / 5 = 68. Option B ka trap: `s/NR` likhna, jo header ko bhi ginta hai (340/6). Option C sirf total hai, aur option D 4 se divide karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w9-q3",
+          "question": "Usi `emp.csv` (header `id,dept,salary`, rows: `1,ds,50`, `2,ml,80`, `3,ds,70`, `4,ops,40`, `5,ml,100`) pe ye pipeline kya print karegi?",
+          "code": "awk -F, 'NR > 1 { sum[$2] += $3; n[$2]++ }\n         END { for (d in sum) print d, sum[d]/n[d] }' emp.csv | sort",
+          "options": [
+            "`ds 120`, `ml 180`, `ops 40`",
+            "`ds 60`, `ml 90`, `ops 40`",
+            "`ds 70`, `ml 100`, `ops 40`",
+            "`ml 90`, `ds 60`, `ops 40`"
+          ],
+          "answer": 1,
+          "explanation": "Har dept ka total aur count: ds 50 + 70 = 120 / 2 = 60, ml 80 + 100 = 180 / 2 = 90, ops 40 / 1 = 40. `for (d in sum)` kisi bhi order mein de sakta hai, par `sort` lines ko alphabetical kar deta hai: ds, ml, ops. Option A ka trap: count se divide karna bhool jaana. Option C har group ki aakhri value hai (jaise `=` likha ho `+=` ki jagah). Option D ka trap: `sort` ke baad bhi average ke hisaab se order maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w9-q4",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo \"Data-Science 2026\" | awk '{ print toupper(substr($1, 1, 4)), length($1), $2 + 1 }'",
+          "options": [
+            "`DATA 17 2027`",
+            "`ATA- 12 2027`",
+            "`DATA 12 20261`",
+            "`DATA 12 2027`"
+          ],
+          "answer": 3,
+          "explanation": "Default FS whitespace hai, to `$1` = `Data-Science` (hyphen field ko nahi todta) aur `$2` = `2026`. `substr($1, 1, 4)` position 1 se 4 characters: `Data`, `toupper` se `DATA`. `length($1)` = 12. `$2 + 1` numeric addition hai: 2027. Option A ka trap: poori line ki length (17) le lena. Option B ka trap: substr ko 0 se index maanna. Option C ka trap: `+` ko string jodna samajhna; awk mein string concatenation ke liye koi operator nahi, values bas paas likhi jaati hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w9-q5",
+          "question": "Ek file mein ye 8 numbers hain, har line mein ek: 2, 4, 4, 4, 5, 5, 7, 9. Is awk program ka output kya hoga?",
+          "code": "awk '{ s += $1; ss += $1 * $1 }\n     END { m = s / NR; print m, sqrt(ss / NR - m * m) }' nums.txt",
+          "options": [
+            "`5 2`",
+            "`5 4`",
+            "`5 2.13809`",
+            "`40 2`"
+          ],
+          "answer": 0,
+          "explanation": "s = 40, to mean m = 40 / 8 = 5. ss = 4 + 16 + 16 + 16 + 25 + 25 + 49 + 81 = 232, ss/NR = 29, variance = 29 − 25 = 4, aur `sqrt` se population standard deviation 2. Output `5 2`. Option B ka trap: `sqrt` bhool kar variance padh lena. Option C sample SD hai (n − 1 = 7 se divide), jo ye program nahi karta. Option D mean ki jagah sum hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w9-q6",
+          "question": "Usi `emp.csv` (header `id,dept,salary` aur rows `1,ds,50`, `2,ml,80`, `3,ds,70`, `4,ops,40`, `5,ml,100`) pe GNU awk ye command chalata hai. Output kya hoga?",
+          "code": "awk -F, '$3 > max { max = $3; who = $1 } END { print who, max }' emp.csv",
+          "options": [
+            "`5 100`",
+            "`2 80`",
+            "`1 50`",
+            "`id salary`"
+          ],
+          "answer": 3,
+          "explanation": "Header skip nahi hua. Pehli line pe `$3` = `salary`, jo number jaisa nahi dikhta, isliye uninitialised `max` ke saath string comparison hota hai: `salary` > `\"\"` true, to `max = salary`, `who = id`. Ab har salary (jaise `50`) ki comparison string `salary` se string ki tarah hoti hai, aur digits letters se pehle aate hain, isliye koi bhi bada nahi nikalta. Output `id salary`. Option A ka trap: header ka asar bhool jaana (`NR > 1` ke saath yahi aata). Option B tab aata jab sab comparisons string mein hote (`80` > `100` lexically).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "sed: Addresses, Substitutions and In-Place Data Cleaning",
+      "summary": "Is week aap `sed` ko ek stream editor ki tarah gehraai se samjhoge: pattern space ka cycle, line aur regex addresses, ranges, `s` command ke flags, `&` aur back-references, greedy matching, `-n` ke saath `p`, safe in-place edits, aur sed + awk pipelines se data saaf karna.",
+      "readMinutes": 17,
+      "concepts": [
+        "**sed ka cycle**: sed ek line padh kar **pattern space** mein rakhta hai, us par script ki saari commands kram se chalata hai, phir pattern space print karta hai (agar `-n` na ho) aur agli line pe jaata hai. Har command pichhli command ke badle hue pattern space ko dekhti hai, original line ko nahi. Input file khud nahi badalti jab tak `-i` na ho.",
+        "**Addresses**: command se pehle address batata hai kin lines pe chalana hai: `3d` (line 3), `$d` (aakhri line), `/^#/d` (regex), `2,5s/a/b/` (range), `/BEGIN/,/END/d` (regex range), `5,$` (5 se end), `0~3` (GNU: har teesri line), `/re/!d` (`!` = jo match na kare). Regex range ka end-pattern start wali line ke **agli** line se check hona shuru hota hai, isliye start line khud range band nahi karti.",
+        "**-n aur p**: `-n` automatic printing band karta hai; tab sirf `p` command ya `s///p` flag se print hota hai. `sed -n '10,20p'` lines 10–20, `sed -n '/ERROR/p'` grep jaisa, `sed -n '$='` lines ginta hai. Bina `-n` ke `p` lagane par line do baar dikhti hai. `q` (jaise `sed 5q`) itni lines ke baad ruk jaata hai, jo badi files pe tez hai.",
+        "**s command**: `s/regex/replacement/flags`. Flags: `g` saare matches, `N` (jaise `2`) sirf N-th match, `Ng` (GNU) N-th se aage saare, `p` print, `I` case-insensitive (GNU). Delimiter koi bhi character ho sakta hai, paths ke liye `s|/usr/local|/opt|` padhne mein aasaan hai. Replacement mein `&` poora match hai: `s/[0-9]+/<&>/` (ERE ke saath).",
+        "**Groups aur back-references**: `-E` (ERE) ke saath `(...)` group, replacement mein `\\1`...`\\9`. Date `DD/MM/YYYY` ko ISO banana: `sed -E 's#([0-9]{2})/([0-9]{2})/([0-9]{4})#\\3-\\2-\\1#'`. GNU sed replacement mein `\\U` (uppercase), `\\L` (lowercase), `\\E` (band) bhi deta hai. Bina `-E` ke groups `\\(...\\)` likhne padte hain.",
+        "**Greedy matching**: `.*` hamesha sabse lambi possible match leta hai, isliye `s/<.*>//` `<b>bold</b> text` mein pehle `<` se aakhri `>` tak sab kha jaata hai. Sed mein non-greedy `.*?` nahi hota; uski jagah negated class likho: `s/<[^>]*>//g` har tag alag se hataata hai.",
+        "**In-place aur doosri commands**: `sed -i 's/a/b/' f` file ko seedha badalta hai; `-i.bak` pehle backup `f.bak` banata hai, production data pe yahi use karo (GNU mein `-i` ke baad suffix bina space ke). Pehle bina `-i` ke chala kar output dekho. `-e` se kai commands, ya `;` se. Aur commands: `d` delete, `y/abc/xyz/` character mapping, `a text` line ke baad jodo, `i text` pehle, `c text` line badlo, `=` line number.",
+        "**sed vs awk**: sed line-oriented text transformations (replace, delete, reformat) ke liye best hai; awk fields, conditions aur arithmetic (sum, group-by) ke liye. Data cleaning ka common pattern hai: `sed` se saaf karo (comments hatao, whitespace, date format), phir `awk` se aggregate karo, phir `sort`."
+      ],
+      "example": {
+        "problem": "Ek fictional POS system ka export `sales.csv` gandaa hai: upar ek comment line, kuch lines ke end mein extra spaces, aur dates `DD/MM/YYYY` mein. File ko backup ke saath in-place saaf karo (comment hatao, trailing spaces hatao, date ISO `YYYY-MM-DD` mein), phir har din ki total sale nikaalo.",
+        "code": "$ cat -A sales.csv          # $ = line ka end\n# export from fictional POS$\ndate,store,amount  $\n04/11/2026,pune,1200$\n04/11/2026,goa,800  $\n05/11/2026,pune,450$\n$ sed -i.bak -E '/^#/d; s/[[:space:]]+$//; s#^([0-9]{2})/([0-9]{2})/([0-9]{4})#\\3-\\2-\\1#' sales.csv\n$ cat sales.csv\ndate,store,amount\n2026-11-04,pune,1200\n2026-11-04,goa,800\n2026-11-05,pune,450\n$ awk -F, 'NR > 1 { t[$1] += $3 } END { for (d in t) print d, t[d] }' sales.csv | sort\n2026-11-04 2000\n2026-11-05 450",
+        "steps": [
+          "`cat -A` invisible characters dikhata hai: `$` line ka end hai, isliye `amount  $` mein do trailing spaces dikhte hain. Ye spaces awk ke numeric fields ko to nahi todte, par `amount  ` jaise header naam aur joins kharab karte hain.",
+          "`/^#/d` comment line ko delete karta hai; `d` ke baad us line pe baaki commands nahi chalti.",
+          "`s/[[:space:]]+$//` line ke end ke saare whitespace hataata hai (`+` ke liye `-E`).",
+          "Date wale `s` mein delimiter `#` hai kyunki pattern mein `/` hai. Teen groups day, month, year pakadte hain aur `\\3-\\2-\\1` unhe ISO order mein jodta hai; `^` ensure karta hai ki sirf pehle column ki date badle.",
+          "`-i.bak` original ko `sales.csv.bak` mein bacha leta hai, phir `sales.csv` ko badal deta hai.",
+          "awk header skip karke date-wise sum karta hai: 2026-11-04 → 1200 + 800 = 2000, 2026-11-05 → 450; `sort` order fix karta hai.",
+          "Answer: **saaf file ISO dates ke saath, backup `sales.csv.bak`, aur totals `2026-11-04 2000`, `2026-11-05 450`**."
+        ]
+      },
+      "mistakes": [
+        "Bina backup ke `sed -i` chalana aur galat regex se poori file kharab kar dena. Pehle bina `-i` ke output dekho, phir `-i.bak` use karo.",
+        "`-n` ke bina `p` lagana aur har line do baar paana, ya `-n` laga kar `p` bhool jaana aur kuch na paana.",
+        "HTML/XML tags ya quoted fields pe `.*` lagana. Greedy match zaroorat se zyada kha jaata hai; `[^>]*` jaisi negated class use karo."
+      ],
+      "revision": [
+        "Har command badle hue pattern space pe chalti hai, original line pe nahi.",
+        "Addresses: `N`, `$`, `/re/`, `a,b`, `/x/,/y/`, `0~3`, `!`.",
+        "`-n` + `p` = sirf chuni lines; `5q` jaldi rukna.",
+        "`s///g` saare, `s///2` doosra, `s///2g` doosre se aage; `&` = poora match.",
+        "`-E` ke saath `(...)` aur `\\1`; `.*` greedy hai.",
+        "`-i.bak` backup ke saath in-place; cleaning sed se, aggregates awk se."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w10-q1",
+          "question": "GNU sed ke saath is pipeline ka output kya hoga? (Output ki lines yahan space se dikhayi gayi hain.)",
+          "code": "seq 10 | sed -n '0~3p'",
+          "options": [
+            "`1 4 7 10`",
+            "`3 6 9`",
+            "`0 3 6 9`",
+            "Saari 10 lines, aur 3, 6, 9 do-do baar"
+          ],
+          "answer": 1,
+          "explanation": "`first~step` (GNU) address line `first` se shuru karke har `step`-th line chunta hai; `0~3` matlab 3, 6, 9 (line 0 hoti nahi). `-n` automatic print band karta hai, isliye sirf `p` wali lines aati hain. Option A ka trap: `1~3` jaisa padhna. Option D ka trap: `-n` ko bhool jaana; bina `-n` ke yahi hota.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w10-q2",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo 'id 42' | sed -E 's/[0-9]+/<&>/'",
+          "options": [
+            "`id <&>`",
+            "`<id 42>`",
+            "`id <4><2>`",
+            "`id <42>`"
+          ],
+          "answer": 3,
+          "explanation": "Replacement mein `&` poore matched text ko represent karta hai. `[0-9]+` `42` ko ek saath match karta hai, isliye `id <42>`. Option A ka trap: `&` ko literal character samajhna (literal ke liye `\\&` likhte hain). Option C ka trap: sochna ki `+` har digit ko alag match karega. Option B poori line ko match maan leta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w10-q3",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo '<b>bold</b> text' | sed 's/<.*>//'",
+          "options": [
+            "`bold text`",
+            "`bold</b> text`",
+            "` text` (shuru mein ek space ke saath)",
+            "Khaali line"
+          ],
+          "answer": 2,
+          "explanation": "`.*` greedy hai: `<` pehle `<` pe match shuru karta hai aur `.*` jitna ho sake utna lekar aakhri `>` (jo `</b>` ka hai) tak jaata hai. Ye poora `<b>bold</b>` hat jaata hai aur ` text` bachta hai. Option A ka trap: non-greedy behaviour expect karna; `bold text` ke liye `s/<[^>]*>//g` chahiye. Option B sirf pehla tag hatne ka result hai, jo `<[^>]*>` bina `g` deta. Option D ka trap: sochna ki match line ke end tak jaata hai, par `>` ke baad text bachta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w10-q4",
+          "question": "GNU sed ke saath is command ka output kya hoga?",
+          "code": "echo 'a,b,c,d' | sed 's/,/;/2g'",
+          "options": [
+            "`a,b;c;d`",
+            "`a;b;c;d`",
+            "`a,b;c,d`",
+            "`a;b,c,d`"
+          ],
+          "answer": 0,
+          "explanation": "Flag `2g` (GNU) ka matlab hai doosre match se shuru karke aage ke saare matches badlo. Pehla comma (a aur b ke beech) bachta hai, doosra aur teesra `;` ban jaate hain: `a,b;c;d`. Option C sirf `2` flag ka result hai (sirf doosra match). Option B ka trap: `2g` ko simple `g` samajhna. Option D sirf pehla match badalta hai, jo bina flag ke hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w10-q5",
+          "question": "`app.ini` mein ye 6 lines hain. Is sed command ke output mein kaunsi line(s) badlengi?",
+          "code": "$ cat app.ini\n[db]\nhost=localhost\nport=5432\n[cache]\nhost=redis\nport=6379\n$ sed '/^\\[cache\\]/,/^\\[/ s/^port=.*/port=6380/' app.ini",
+          "options": [
+            "Dono `port=` lines `port=6380` ban jaayengi",
+            "Sirf `port=5432` wali line badlegi",
+            "Koi line nahi badlegi, kyunki `[cache]` khud `/^\\[/` se match karke range turant band kar deta hai",
+            "Sirf `port=6379` wali line `port=6380` banegi"
+          ],
+          "answer": 3,
+          "explanation": "Range `[cache]` line se shuru hoti hai. End pattern `/^\\[/` start line pe check nahi hota, balki agli line se; aage koi `[` se shuru hone wali line nahi hai, to range file ke end tak chalti hai. Is range mein sirf `port=6379` hai, jo `port=6380` ban jaati hai; `[db]` section ka `port=5432` range ke bahar hai. Option C sabse bada trap hai: start line khud range ko band nahi karti. Option A address ko ignore kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w10-q6",
+          "question": "Is pipeline ka output kya hoga? (Output ki lines yahan space se dikhayi gayi hain.)",
+          "code": "printf 'a1\\nb2\\nc3\\n' | sed -n 's/[0-9]/X/p; /b/p'",
+          "options": [
+            "`aX bX cX`",
+            "`aX b2 bX cX`",
+            "`aX bX bX cX`",
+            "`b2`"
+          ],
+          "answer": 2,
+          "explanation": "`-n` auto-print band karta hai. Har line pe pehle `s/[0-9]/X/p` chalta hai: substitution hua to badla hua pattern space print hota hai, to `aX`, `bX`, `cX` teeno print hote hain. Doosri command `/b/p` badle hue pattern space (`bX`) ko dekhti hai, usme `b` hai, to `bX` dobara print hota hai. Kul 4 lines: `aX bX bX cX`. Option A ka trap: sochna ki ek line ek hi baar print hogi. Option B ka trap: sochna ki `/b/` original line `b2` dekhta hai; sed har command ko current pattern space deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "make, Archives and Compression, Networking and Log Analysis",
+      "summary": "Is week aap `make` se data pipelines ko dependency-aware banana, `tar`/`gzip`/`bzip2`/`xz`/`zip` se archive aur compress karna, networking ki basics (IP, localhost, ports, DNS, `ss`, `curl`) aur shell pipelines se logs analyse karna seekhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**make ka model**: Makefile mein rules hote hain: `target: prerequisites` aur neeche recipe lines jo **TAB** se shuru hoti hain (spaces se 'missing separator' error). make target tab dobara banata hai jab woh exist na kare ya koi prerequisite usse **naya** (modification time) ho, aur ye check recursively neeche tak jaata hai. Bina argument ke `make` pehla target (default goal) banata hai. Isse data pipeline mein sirf badle hue steps dobara chalte hain.",
+        "**Variables aur automatic variables**: `PY = python3`, use `$(PY)`. `$@` target ka naam, `$<` pehla prerequisite, `$^` saare prerequisites (duplicates hata kar). Pattern rule `out/%.csv: raw/%.csv` ek hi recipe se bahut files banata hai. Recipe ki har line alag shell mein chalti hai, isliye ek line ka `cd` agli line pe nahi rehta; shell ka `$` likhna ho (jaise awk mein) to `$$` likho.",
+        "**Phony targets aur options**: `clean`, `all`, `test` jaise targets files nahi hain; `.PHONY: clean all` likho, warna `clean` naam ki file ban jaane par `make clean` kuch nahi karega. make har recipe line chalane se pehle print karta hai; line ke aage `@` lagane se print nahi hoti, `-` lagane se error pe bhi aage badhta hai. `make -n` dry-run (sirf dikhata hai), `make -j4` parallel, `make -B` sab dobara.",
+        "**tar**: archive banata hai (compress khud nahi). `tar -czf backup.tar.gz dir/` create + gzip, `-cjf` bzip2, `-cJf` xz; `tar -tzf f.tar.gz` list, `tar -xzf f.tar.gz -C /dest` extract. Permissions aur directory structure bachta hai, aur absolute paths se leading `/` hata diya jaata hai taaki extract karte waqt system files overwrite na hon.",
+        "**Compressors**: `gzip f` file ko `f.gz` se **replace** karta hai (original hat jaata hai; `-k` rakhta hai), `gunzip`/`gzip -d` wapas, `zcat` bina extract padhta hai. Aam taur pe gzip sabse tez par kam compression, bzip2 beech mein, xz sabse dheema par sabse chhoti file deta hai (logs aur text pe), aur `-1`...`-9` levels speed vs size ka trade-off hain. `zip -r out.zip dir/` originals rakhta hai aur Windows users ke liye convenient hai. Pehle se compressed data (JPEG, parquet, `.gz`) dobara compress karne se khaas fayda nahi.",
+        "**IP aur ports**: IPv4 address 4 octets hai; private ranges 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. `127.0.0.1` (`localhost`) loopback hai: us pe chal raha service sirf usi machine se pahuncha ja sakta hai. `0.0.0.0` pe listen karna matlab saare interfaces. Ek service port pe listen karti hai: 22 ssh, 53 DNS, 80 HTTP, 443 HTTPS, 5432 PostgreSQL, 8888 Jupyter (common default). `ss -tlnp` listening TCP sockets, address aur process dikhata hai; `ip addr` interfaces, `ip route` default gateway.",
+        "**DNS aur tools**: naam se IP banana resolution hai; Linux pehle `/etc/nsswitch.conf` ke hisaab se aam taur pe `/etc/hosts`, phir DNS server (jo `/etc/resolv.conf` mein) dekhta hai. `ping` aur `curl` system resolver use karte hain, jabki `dig`/`nslookup` seedha DNS server se poochte hain aur `/etc/hosts` nahi dekhte. `getent hosts name` system resolver ka jawab deta hai. `curl -I url` sirf headers, `curl -o f url` save, `-L` redirects follow, `-s` silent, `curl -sS -o /dev/null -w '%{http_code}' url` sirf status code.",
+        "**Log analysis pipelines**: classic top-N: `cut -d' ' -f1 access.log | sort | uniq -c | sort -rn | head`. `uniq` sirf **lagataar** duplicate lines ko merge karta hai, isliye pehle `sort` zaroori hai. `awk '$9 >= 500'` status code filter, `grep -c`, `awk '{print $4}' | cut -c2-15` time buckets. Aisi pipeline ko script bana kar cron ya make target se roz chalaya jaata hai."
+      ],
+      "example": {
+        "problem": "Ek fictional analytics repo mein data pipeline ka Makefile hai. Fresh checkout pe pehli baar `make`, turant doosri baar `make`, aur phir `clean.sed` edit karke teesri baar `make` chalane par kya hoga?",
+        "code": "DATA = data/raw.csv\n.PHONY: all clean\n\nall: out/summary.txt\n\nout/clean.csv: $(DATA) clean.sed\n\tmkdir -p out\n\tsed -E -f clean.sed $< > $@\n\nout/summary.txt: out/clean.csv\n\tawk -F, 'NR > 1 { s += $$3 } END { print \"total\", s }' $< > $@\n\nclean:\n\trm -rf out",
+        "steps": [
+          "Pehla `make`: default goal `all` hai, jo `out/summary.txt` maangta hai, jo `out/clean.csv` maangta hai. Dono exist nahi karte, isliye pehle `out/clean.csv` ki recipe (mkdir aur sed), phir `out/summary.txt` ki (awk) chalti hai.",
+          "`$<` yahan pehla prerequisite hai: clean.csv ke rule mein `data/raw.csv`, summary ke rule mein `out/clean.csv`. `$@` target ka path hai. `$$3` make ke baad shell ko `$3` ke roop mein milta hai.",
+          "Doosra `make`: har target apne prerequisites se naya hai, to koi recipe nahi chalti; GNU make batata hai `Nothing to be done for 'all'`.",
+          "`clean.sed` edit hua to woh `out/clean.csv` se naya ho gaya: clean.csv dobara banta hai, aur ab woh summary.txt se naya hai, to summary bhi dobara banta hai. `data/raw.csv` ko koi chhoota nahi.",
+          "`all` aur `clean` `.PHONY` hain, isliye inke naam ki file ban bhi jaaye to make inhe hamesha 'kaam' maanega.",
+          "Answer: **pehli baar dono steps, doosri baar kuch nahi, `clean.sed` badalne par dono steps phir se (chain ki wajah se)**."
+        ]
+      },
+      "mistakes": [
+        "Makefile mein recipe ko spaces se indent karna. GNU make `missing separator` error deta hai; recipe line TAB se shuru honi chahiye.",
+        "`gzip big.csv` ke baad original dhoondhna. gzip file ko replace karta hai; original rakhna ho to `gzip -k` ya `gzip -c big.csv > big.csv.gz`.",
+        "Jupyter/API ko `127.0.0.1` pe chala kar doosre laptop se connect karna aur 'connection refused' paana. Loopback bahar se reachable nahi; `0.0.0.0` pe bind karo (firewall dekh kar) ya behtar `ssh -L` tunnel use karo."
+      ],
+      "revision": [
+        "make: target missing ya prerequisite naya ho to rebuild; recipe TAB se.",
+        "`$@` target, `$<` pehla prerequisite, `$^` sab; `.PHONY` non-file targets; `@` echo band.",
+        "`tar -czf`/`-xzf`/`-tzf`; `z` gzip, `j` bzip2, `J` xz.",
+        "`gzip` original hataata hai (`-k` rakhta hai); xz chhoti par dheemi.",
+        "`127.0.0.1` sirf local; `ss -tlnp` listening ports; `dig` `/etc/hosts` nahi dekhta.",
+        "`sort | uniq -c | sort -rn | head`; `uniq` sirf adjacent duplicates merge karta hai."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w11-q1",
+          "question": "Ek directory mein sirf `data.csv` hai. `gzip data.csv` ke baad `ls` kya dikhayega?",
+          "options": [
+            "`data.csv` aur `data.csv.gz` dono",
+            "Sirf `data.csv` (gzip output stdout pe deta hai)",
+            "Sirf `data.zip`",
+            "Sirf `data.csv.gz`"
+          ],
+          "answer": 3,
+          "explanation": "`gzip file` compressed `file.gz` banata hai aur safal hone par original ko hata deta hai. Isliye sirf `data.csv.gz` bachta hai. Option A ka trap: `zip` ya `gzip -k` jaisa behaviour expect karna, jo original rakhte hain. Option B `gzip -c` ka behaviour hai. Option C ka trap: gzip ko zip format samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w11-q2",
+          "question": "Ek server pe Jupyter chalaya. `ss -tlnp` mein ye line dikhti hai. Kya aapke laptop ka browser seedha `http://<server-ip>:8888` se ise khol payega?",
+          "code": "State   Recv-Q  Send-Q  Local Address:Port  Peer Address:Port  Process\nLISTEN  0       128         127.0.0.1:8888       0.0.0.0:*      users:((\"jupyter-lab\",pid=4121,fd=6))",
+          "options": [
+            "Nahi; service sirf loopback `127.0.0.1` pe listen kar rahi hai, isliye bahar se connection nahi aayega (ssh tunnel ya `0.0.0.0` bind chahiye)",
+            "Haan, kyunki Peer Address `0.0.0.0:*` hai, yaani koi bhi connect kar sakta hai",
+            "Haan, kyunki port 8888 1024 se bada hai aur aise ports sab ke liye khule hote hain",
+            "Nahi, kyunki state `LISTEN` ka matlab hai service abhi band hai"
+          ],
+          "answer": 0,
+          "explanation": "Local Address `127.0.0.1:8888` batata hai ki socket sirf loopback interface pe bound hai; doosri machine ka packet server ke network IP pe aata hai, jahan 8888 pe koi nahi sun raha. Laptop se `ssh -L 8888:localhost:8888 server` tunnel ya `0.0.0.0` pe bind karna padega. Option B ka trap: Peer column ko allowed clients samajhna; listening socket ke liye woh sirf wildcard placeholder hai. Option C: port number se reachability tay nahi hoti. Option D: `LISTEN` matlab service connections ka intezaar kar rahi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w11-q3",
+          "question": "Ye Makefile hai aur `make` pehle chal chuka hai, sab files up to date hain (har target apne prerequisites se naya hai). Ab aap `touch report.py` karke GNU `make` chalate ho. Kaunsi recipe(s) chalengi?",
+          "code": "report.html: clean.csv report.py\n\tpython3 report.py clean.csv > report.html\n\nclean.csv: raw.csv clean.sh\n\t./clean.sh raw.csv > clean.csv",
+          "options": [
+            "Dono recipes, pehle `clean.csv` wali phir `report.html` wali",
+            "Koi nahi, kyunki `report.html` pehle se exist karti hai",
+            "Sirf `report.html` wali recipe",
+            "Sirf `clean.csv` wali recipe"
+          ],
+          "answer": 2,
+          "explanation": "Default goal pehla target `report.html` hai. make pehle uske prerequisite `clean.csv` ko check karta hai: `raw.csv` aur `clean.sh` usse purane hain, to woh up to date hai. Phir `report.html`: prerequisite `report.py` ab usse naya hai, to sirf yahi recipe chalti hai. Option A ka trap: sochna ki make sab kuch dobara chalata hai; woh sirf purane targets banata hai. Option B ka trap: sirf existence dekhna, timestamps nahi. Option D ulti dependency maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w11-q4",
+          "question": "Directory mein `a.csv`, `b.csv` aur ye Makefile hai; `all.csv` abhi exist nahi karti. GNU `make` terminal pe kya print karega?",
+          "code": "SRC = a.csv b.csv\n\nall.csv: $(SRC)\n\tcat $^ > $@\n\t@echo built $@ from $<",
+          "options": [
+            "`cat $^ > $@` aur `built $@ from $<`",
+            "`cat a.csv b.csv > all.csv` aur `built all.csv from a.csv`",
+            "`cat a.csv b.csv > all.csv`, `echo built all.csv from a.csv` aur `built all.csv from a.csv`",
+            "`cat a.csv b.csv > all.csv` aur `built all.csv from a.csv b.csv`"
+          ],
+          "answer": 1,
+          "explanation": "make har recipe line ko variables expand karke, chalane se pehle print karta hai: `$^` = `a.csv b.csv`, `$@` = `all.csv`, to pehli line `cat a.csv b.csv > all.csv` dikhti hai. Doosri line ke aage `@` hai, to command khud print nahi hoti, sirf uska output `built all.csv from a.csv` aata hai, kyunki `$<` sirf pehla prerequisite hai. Option C ka trap: `@` ko ignore karna. Option D ka trap: `$<` ko `$^` samajhna. Option A sochta hai make automatic variables expand nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w11-q5",
+          "question": "Ek Linux laptop ki `/etc/hosts` mein line hai `10.0.0.5  db.internal`, aur company ke DNS server mein `db.internal` ka koi record nahi hai. `ping -c1 db.internal` 10.0.0.5 ko ping karta hai, par `dig db.internal` koi answer nahi deta. Kyun?",
+          "options": [
+            "`dig` sirf IPv6 addresses dhoondhta hai",
+            "`dig` seedha DNS server se poochta hai aur `/etc/hosts` nahi padhta; `ping` system resolver use karta hai jo pehle `/etc/hosts` dekhta hai",
+            "`/etc/hosts` sirf root ke liye kaam karti hai, aur `ping` setuid root hai",
+            "`ping` ICMP use karta hai jise naam ki zarurat nahi, isliye woh kisi bhi naam pe chal jaata hai"
+          ],
+          "answer": 1,
+          "explanation": "`ping`, `curl`, `ssh` jaise programs C library ke resolver se naam resolve karte hain, jo `/etc/nsswitch.conf` ke hisaab se aam taur pe pehle `/etc/hosts` dekhta hai. `dig` ek DNS debugging tool hai jo seedha DNS server ko query bhejta hai, isliye hosts file ki entry use nahi dikhti. System ka asli jawab `getent hosts db.internal` deta hai. Option C ka trap: hosts file sab users ke liye padhi jaati hai. Option D: ICMP packet bhejne se pehle naam ko IP mein badalna hi padta hai. Option A galat hai: `dig` default A (IPv4) record maangta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w11-q6",
+          "question": "`access.log` ki 9 lines ke pehle field (client IP) kram se ye hain: `.4 .4 .4 .9 .9 .4 .7 .9 .4` (sab `10.0.0.x`). Kisi ne `sort` bhool kar ye pipeline chalayi. Output kya hoga (uniq ki leading spaces chhod kar)?",
+          "code": "cut -d' ' -f1 access.log | uniq -c | sort -rn | head -n 2",
+          "options": [
+            "`3 10.0.0.4` aur `2 10.0.0.9`",
+            "`5 10.0.0.4` aur `3 10.0.0.9`",
+            "`5 10.0.0.4` aur `1 10.0.0.7`",
+            "`1 10.0.0.4` aur `1 10.0.0.7`"
+          ],
+          "answer": 0,
+          "explanation": "`uniq -c` sirf lagataar duplicate lines ko jodta hai. Groups bante hain: .4 ×3, .9 ×2, .4 ×1, .7 ×1, .9 ×1, .4 ×1. `sort -rn` counts ko bade se chhota karta hai aur `head -n 2` pehli do deta hai: `3 10.0.0.4`, `2 10.0.0.9`. Option B sahi totals hain (.4 = 5, .9 = 3), jo tabhi aate jab `uniq` se pehle `sort` hota; ye sabse bada trap hai, kyunki galat pipeline bhi bharosemand dikhta hai. Option C aur D grouping ko galat padhte hain.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Team Git Workflows and Storage Reliability with RAID",
+      "summary": "Is week aap git ko team mein use karna seekhoge: branches aur HEAD ka model, merge vs rebase, conflicts padhna, fetch/pull/push, pull requests aur access tokens; aur RAID levels (0, 1, 5, 6, 10) ki capacity aur failure tolerance calculate karna, saath mein ye ki RAID backup kyun nahi hai.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Branch = pointer**: commit ek snapshot hai jiska ID (SHA) uske content aur parent(s) se banta hai. Branch sirf ek movable pointer hai jo kisi commit pe hai, aur `HEAD` batata hai ki aap kis branch pe ho. `git switch -c feat/clean-data` nayi branch bana kar us pe jaata hai; naye commits current branch ko aage badhaate hain. `git log --oneline --graph --all` poora tree dikhata hai.",
+        "**Merge**: agar `main` feat ki shuruaat ke baad aage nahi badha, to `git merge feat` **fast-forward** karta hai (pointer aage khisak jaata hai, koi naya commit nahi). Agar dono branches mein naye commits hain, to git ek **merge commit** banata hai jiske do parents hote hain. `--no-ff` fast-forward possible hone par bhi merge commit banata hai.",
+        "**Conflicts**: jab dono branches ne file ke overlapping hisse alag tarah badle hon, git wahan markers likhta hai: `<<<<<<< HEAD` ke neeche current branch (jahan aap merge kar rahe ho) ka version, `=======`, phir doosri branch ka version aur `>>>>>>> feat`. Baaki non-overlapping badlaav automatically merge ho jaate hain. Resolve karke markers hatao, `git add f`, phir `git commit` (ya `git merge --abort` se wapas).",
+        "**Rebase**: `git rebase main` (feat branch pe) aapke commits ko `main` ke latest commit ke upar dobara likhta hai, jisse history seedhi line ban jaati hai, par commits ke SHA badal jaate hain. Isliye sirf apni, abhi share na hui (ya sirf aapki) branch rebase karo. Rebase ke baad remote feature branch update karne ke liye `git push --force-with-lease`, jo kisi aur ka naya kaam overwrite hone se rokta hai.",
+        "**Remotes**: `origin` clone ka default remote hai. `git fetch` remote ke naye commits laata hai aur `origin/main` jaise remote-tracking branches update karta hai, par aapki local branch aur files nahi chhoota. `git pull` = fetch + merge (ya `--rebase`). `git push -u origin feat/x` branch upload karke upstream set karta hai. Shared branch pe galti undo karni ho to `git revert <sha>` (naya ulta commit), `reset --hard` + force push nahi.",
+        "**Pull requests aur tokens**: team workflow: `main` protected, har kaam ek feature branch pe, push karke PR kholo, CI tests aur code review, phir merge (aksar squash) aur branch delete. GitHub jaise hosts HTTPS pe account password accept nahi karte; **personal access token** (fine-grained, sirf zaroori repos/permissions, expiry ke saath) ya SSH key use hoti hai. Token ko credential helper/manager mein rakho; kabhi code, `.env` jo commit ho, ya remote URL mein mat likho. Leak ho jaaye to turant revoke karo, kyunki history se commit hata dena kaafi nahi.",
+        "**RAID levels**: n disks of size S. RAID 0 (striping): capacity n·S, speed zyada, redundancy zero; ek disk gayi to poora data gaya. RAID 1 (mirroring): capacity ek disk jitni (do disks pe S), ek ke bachne tak data safe. RAID 5 (striping + distributed parity, n ≥ 3): capacity (n−1)·S, koi bhi 1 disk fail ho sakti hai. RAID 6 (double parity, n ≥ 4): (n−2)·S, koi bhi 2. RAID 10 (mirrored pairs ko stripe, even n ≥ 4): (n/2)·S, har mirror pair se ek disk ja sakti hai, isliye guaranteed sirf 1.",
+        "**RAID backup nahi hai**: RAID hardware failure pe uptime bachata hai, par galti se `rm`, ransomware, corrupt write ya file overwrite turant saari disks pe ho jaata hai. Rebuild ke dauraan (badi disks pe ghanton) doosri disk fail hona RAID 5 ka bada risk hai, isliye badi arrays mein RAID 6 pasand kiya jaata hai. Backups alag rakho (3-2-1 rule: 3 copies, 2 media, 1 offsite) aur restore test karo."
+      ],
+      "example": {
+        "problem": "Ek fictional data team ke repo mein `main` protected hai. Aapko `clean.sed` theek karna hai. Branch banane se PR merge hone tak ka saaf workflow likho, jab aapke kaam ke beech teammate ka PR `main` mein merge ho jaata hai.",
+        "code": "git switch main && git pull                 # latest main\ngit switch -c fix/date-format\n# ... clean.sed edit karo, test chalao ...\ngit add clean.sed\ngit commit -m \"Normalise dates to ISO in clean.sed\"\ngit push -u origin fix/date-format          # token credential manager se\n# PR kholo; is beech main aage badh gaya\ngit fetch origin\ngit rebase origin/main                       # conflicts ho to resolve, git add, git rebase --continue\ngit push --force-with-lease                  # sirf apni feature branch\n# review + CI pass -> squash merge; phir\ngit switch main && git pull && git branch -d fix/date-format",
+        "steps": [
+          "Kaam hamesha updated `main` se nayi branch pe shuru karo, taaki PR mein sirf aapka badlaav dikhe.",
+          "`git push -u origin fix/date-format` branch ko remote pe bhejta hai aur upstream set karta hai; HTTPS auth token se hota hai, jo credential manager mein saved hai, URL mein nahi.",
+          "Teammate ka PR merge hone par `main` aage badh gaya. `git fetch origin` naye commits laata hai bina aapki files chhede.",
+          "`git rebase origin/main` aapka commit naye main ke upar dobara likhta hai (naya SHA). Conflict aaye to markers theek karo, `git add`, `git rebase --continue`.",
+          "Branch ki history badal gayi, isliye normal push reject hoga; `--force-with-lease` sirf tab overwrite karta hai jab remote branch wahi ho jo aapne aakhri baar dekhi thi.",
+          "CI aur review ke baad squash merge `main` pe ek saaf commit banata hai; local `main` pull karke feature branch delete kar do.",
+          "Answer: **switch -c → commit → push -u → PR → fetch + rebase origin/main → push --force-with-lease → review/CI → squash merge → branch delete**."
+        ]
+      },
+      "mistakes": [
+        "Shared `main` pe `git reset --hard` karke `git push --force` karna. Isse teammates ki history toot jaati hai; shared branch pe `git revert` use karo.",
+        "Token ko `https://user:TOKEN@github.com/...` remote URL mein ya script mein likh dena. Ye `.git/config`, shell history aur logs mein leak hota hai; credential manager ya SSH key use karo aur leak hone par token revoke karo.",
+        "RAID 1 ya RAID 5 hone ko backup samajhna. Delete ya corruption saari disks pe turant copy hota hai; alag, versioned backup rakho."
+      ],
+      "revision": [
+        "Branch = commit pe pointer; `HEAD` = current branch.",
+        "Diverged branches → merge commit (2 parents); warna fast-forward.",
+        "Conflict: `<<<<<<< HEAD` ke neeche current branch, `=======` ke baad doosri.",
+        "`fetch` sirf laata hai; `pull` = fetch + merge; shared branch pe `revert`.",
+        "PAT: minimal scope, expiry, credential manager; leak = revoke.",
+        "Capacity: RAID 0 n·S, 1 = S, 5 (n−1)·S, 6 (n−2)·S, 10 (n/2)·S; RAID backup nahi."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w12-q1",
+          "question": "Ek server mein 4 disks hain, har ek 4 TB ki, aur unhe RAID 5 mein lagaya gaya hai. Usable capacity kitni hogi aur array kitni disks ke fail hone tak data bacha sakti hai?",
+          "options": [
+            "12 TB; koi bhi 1 disk fail ho sakti hai",
+            "16 TB; ek bhi disk fail hui to data gaya",
+            "8 TB; koi bhi 2 disks fail ho sakti hain",
+            "12 TB; koi bhi 2 disks fail ho sakti hain"
+          ],
+          "answer": 0,
+          "explanation": "RAID 5 ek disk ke barabar jagah parity ke liye use karta hai: (n − 1) × S = (4 − 1) × 4 = 12 TB. Parity se koi bhi ek disk ka data dobara banaya ja sakta hai, par doosri disk bhi gayi to array fail. Option B RAID 0 hai. Option C RAID 6 ki capacity aur tolerance hai. Option D ka trap: RAID 5 ki capacity sahi lena par usse RAID 6 jitni safety maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w12-q2",
+          "question": "Teammate ne `main` pe naye commits push kiye hain. Aap apni local `main` branch pe ho. `git fetch origin` chalane ke baad kya sach hai?",
+          "options": [
+            "Aapki local `main` aur working directory ki files naye commits ke saath update ho chuki hain",
+            "Naye commits aapki local `main` mein merge ho gaye, par files abhi purani hain",
+            "Naye commits download hokar `origin/main` update ho gaya, par aapki local `main` aur files nahi badle",
+            "Kuch download nahi hua; `fetch` sirf batata hai ki remote pe naye commits hain"
+          ],
+          "answer": 2,
+          "explanation": "`git fetch` remote ke objects download karke remote-tracking branch `origin/main` ko aage badhata hai. Aapki local branch aur working tree tab tak nahi badalte jab tak aap `git merge origin/main` ya `git rebase` na karo; `git pull` dono kaam ek saath karta hai. Option A ka trap: fetch ko pull samajhna. Option D ka trap: fetch ko sirf 'check' maan lena, jabki woh commits sach mein download karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w12-q3",
+          "question": "6 disks hain, har ek 2 TB. Inhe RAID 6 mein lagaane aur RAID 10 mein lagaane ki tulna karo: usable capacity, aur koi bhi disks fail hon to kitni failures **guaranteed** jhel sakte hain.",
+          "options": [
+            "RAID 6: 10 TB, koi bhi 1; RAID 10: 6 TB, koi bhi 3",
+            "RAID 6: 8 TB, koi bhi 2; RAID 10: 12 TB, koi bhi 1",
+            "RAID 6: 6 TB, koi bhi 3; RAID 10: 6 TB, koi bhi 3",
+            "RAID 6: 8 TB, koi bhi 2; RAID 10: 6 TB, guaranteed sirf 1"
+          ],
+          "answer": 3,
+          "explanation": "RAID 6 do disks ke barabar double parity rakhta hai: (6 − 2) × 2 = 8 TB, aur koi bhi 2 disks fail ho sakti hain. RAID 10 teen mirrored pairs ko stripe karta hai: (6 / 2) × 2 = 6 TB. Agar fail hone wali disks alag-alag pairs mein hon to 3 tak bach sakti hain, par ek hi pair ki dono disks gayi to data gaya, isliye guaranteed sirf 1. Option A ka trap: RAID 10 ki best case ko guarantee maan lena. Option B RAID 10 ko RAID 0 jaisi capacity de deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w12-q4",
+          "question": "Ek nayi repo mein ye commands chalaye gaye (har commit successful). Aakhri command kya print karegi?",
+          "code": "git init -q -b main repo && cd repo\ngit commit --allow-empty -qm c1\ngit switch -qc feat\ngit commit --allow-empty -qm f1\ngit commit --allow-empty -qm f2\ngit switch -q main\ngit commit --allow-empty -qm m1\ngit merge -q -m merge feat\ngit log --oneline main | wc -l",
+          "options": [
+            "4",
+            "5",
+            "3",
+            "6"
+          ],
+          "answer": 1,
+          "explanation": "`main` pe `m1` aane se dono branches diverge ho gayi (main: c1 → m1, feat: c1 → f1 → f2), isliye fast-forward possible nahi aur git do parents wala merge commit banata hai. `git log` dono parents ki history dikhata hai: c1, m1, f1, f2 aur merge = 5. Option A ka trap: merge commit ko na ginna (ya fast-forward maan lena). Option C sirf main ki apni line (c1, m1, merge) ginta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w12-q5",
+          "question": "Ek naye laptop se GitHub repo pe HTTPS se push karte waqt git username aur password maangta hai, aur account password dene par authentication fail hota hai. Sabse sahi aur safe tareeka kya hai?",
+          "options": [
+            "Token banao aur use repo ki `.env` file mein likh kar commit kar do taaki team ke sab log use kar sakein",
+            "Token banao aur remote URL ko `https://user:TOKEN@github.com/org/repo.git` kar do",
+            "Sirf zaroori repo aur permissions wala, expiry ke saath ek personal access token banao, aur password ki jagah use karke credential manager mein save hone do",
+            "Repo ko public kar do taaki push ke liye authentication na chahiye"
+          ],
+          "answer": 2,
+          "explanation": "GitHub HTTPS git operations pe account password nahi leta; token (ya SSH key) chahiye. Least privilege (sirf zaroori repo/permissions) aur expiry se leak ka nuksaan seemit rehta hai, aur credential manager (jaise Git Credential Manager ya OS keychain) use secure store mein rakhta hai. Option B ka trap: ye chal to jaata hai, par token `.git/config` aur shell history mein plain text mein reh jaata hai. Option A token ko repo history mein daal deta hai. Option D galat hai: public repo pe bhi push ke liye auth chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w12-q6",
+          "question": "File `f` ke base version mein 5 lines hain: `a b c d e`. `feat` branch pe line 1 `F1` aur line 3 `X` ki gayi; `main` pe line 3 `Y` aur line 5 `M5` ki gayi. `main` pe `git merge feat` conflict deta hai. Us waqt `f` mein kya hoga?",
+          "options": [
+            "Poori file ek conflict block mein: HEAD side `a b Y d M5`, feat side `F1 b X d e`",
+            "`F1`, `b`, phir conflict block (HEAD side `Y`, feat side `X`), phir `d`, `M5`",
+            "`a`, `b`, phir conflict block (HEAD side `Y`, feat side `X`), phir `d`, `e`",
+            "`F1`, `b`, phir conflict block (HEAD side `X`, feat side `Y`), phir `d`, `M5`"
+          ],
+          "answer": 1,
+          "explanation": "Git line-level three-way merge karta hai. Line 1 sirf feat ne badli aur line 5 sirf main ne, aur ye line 3 se door hain, isliye dono automatically lag jaati hain: `F1` aur `M5`. Sirf line 3 dono taraf alag badli, wahi conflict block banti hai. `<<<<<<< HEAD` ke neeche current branch (main) ka `Y`, `=======` ke baad feat ka `X`. Option C ka trap: sochna ki conflict hone par baaki changes bhi ruk jaate hain. Option D ka trap: HEAD ko merge ho rahi branch samajhna. Option A sochta hai ki conflict poori file ka hota hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,725 @@
+{
+  "subjectId": "mad2",
+  "questions": {
+    "mad2-w1-q1": {
+      "question": "What does this code print?",
+      "options": [
+        "7 3",
+        "52 3",
+        "52 NaN",
+        "7 52"
+      ],
+      "explanation": "With `+`, one operand is a string, so 2 is turned into a string too and \"5\" + \"2\" = \"52\" (concatenation). `-` has no string version, so \"5\" becomes the number 5 and 5 − 2 = 3. Option A is the trap of treating both as arithmetic, and option C is the trap of thinking that subtracting from a string always gives NaN (you get NaN only when the string cannot become a number, such as \"abc\")."
+    },
+    "mad2-w1-q2": {
+      "question": "What does this code print?",
+      "options": [
+        "null array function number",
+        "object object object NaN",
+        "null object function NaN",
+        "object object function number"
+      ],
+      "explanation": "`typeof null` gives \"object\" because of a historical quirk. An array is also an object, so `typeof []` is \"object\" (use `Array.isArray` to detect arrays). For functions `typeof` gives the special result \"function\". And `NaN`, despite the name \"Not a Number\", is a value of type number. Option A is the trap of expecting \"null\" and \"array\" from `typeof`, and option B is the trap of treating NaN as its own type."
+    },
+    "mad2-w1-q3": {
+      "question": "What happens when this code runs?",
+      "options": [
+        "`undefined` is printed, then a ReferenceError on the `y` line",
+        "`undefined` and `undefined` are printed",
+        "A ReferenceError for `x` on the very first line",
+        "1 and 2 are printed"
+      ],
+      "explanation": "`var x` is hoisted and initialised to `undefined` as soon as the function starts, so the first `console.log` prints `undefined`. `let y` is hoisted too but not initialised; until its declaration line it is in the TDZ, so `console.log(y)` throws a ReferenceError. Option B is the trap of treating `let` like `var`, and option C is the trap of thinking `var` is not hoisted at all."
+    },
+    "mad2-w1-q4": {
+      "question": "What does this code print?",
+      "options": [
+        "TypeError: Assignment to constant variable",
+        "2 2",
+        "3 3",
+        "3 2"
+      ],
+      "explanation": "`const` only locks the variable binding: `cfg` and `list` will always point to the same objects. Changing a property of the object and calling `push` on the array do not change the binding, so both are allowed: `cfg.retries` is 3 and `list.length` is 3. A TypeError would come only from a reassignment like `cfg = {}`, so option A is the trap of treating `const` as an immutable value."
+    },
+    "mad2-w1-q5": {
+      "question": "What does this code print?",
+      "options": [
+        "true true true false",
+        "false false true false",
+        "true false false false",
+        "true false true false"
+      ],
+      "explanation": "`null == undefined` is a special rule of loose equality: true. But under loose equality `null` equals only `undefined` (and itself); it is not converted to a number, so `null == 0` is false. In `\"\" == 0` the empty string becomes the number 0, so it is true. `NaN` equals nothing, not even itself: false. Option A is the trap of thinking null also becomes 0 (as it does in `null + 1`), and option C is the trap of not converting the empty string to a number."
+    },
+    "mad2-w1-q6": {
+      "question": "What does this code print?",
+      "options": [
+        "1 2",
+        "2 2",
+        "1 1",
+        "2 1"
+      ],
+      "explanation": "Spread `{ ...a }` creates a new object and copies the top-level properties. `n` is a number (a primitive), so `b.n = 2` changes only `b` and `a.n` stays 1. But `tags` is an array: only its reference was copied, so both objects share the same array, and after the `push` `a.tags.length` is also 2. Option C is the trap of treating spread as a deep copy, and option B is the trap of thinking `b` and `a` are the same object."
+    },
+    "mad2-w2-q1": {
+      "question": "What does this code print?",
+      "options": [
+        "1 1",
+        "3 3",
+        "3 1",
+        "2 0"
+      ],
+      "explanation": "Each `makeCounter()` call creates a new scope, so `c1` and `c2` have separate `count` variables. `c1` is running for the third time, so its count is 3; `c2` is running for the first time, so 1. `++count` increments first and then returns the new value. Option B is the trap of thinking both counters share one `count`, and option D assumes the old value is returned, as with post-increment (`count++`)."
+    },
+    "mad2-w2-q2": {
+      "question": "What does this code print?",
+      "options": [
+        "1,10,100,9",
+        "1,9,10,100",
+        "100,10,9,1",
+        "10,9,1,100"
+      ],
+      "explanation": "Without a comparator, `sort` turns every element into a string and compares in dictionary order: \"1\" < \"10\" < \"100\" < \"9\", because the first character \"1\" is smaller than \"9\". Option B is the trap of expecting numbers to be sorted numerically on their own; for that you must write `sort((a, b) => a - b)`."
+    },
+    "mad2-w2-q3": {
+      "question": "What does this code print?",
+      "options": [
+        "0,1,2 0,1,2",
+        "3,3,3 3,3,3",
+        "0,1,2 3,3,3",
+        "3,3,3 0,1,2"
+      ],
+      "explanation": "`var i` is a single variable for the whole loop (in fact the whole scope). All three arrow functions close over that same `i`, and when they run later the loop has finished and `i` is 3: \"3,3,3\". `let j` creates a new binding for each iteration, so each function remembers its own value 0, 1, 2. Option A is the trap of thinking a closure copies the value; a closure captures the variable, not the value."
+    },
+    "mad2-w2-q4": {
+      "question": "What does this code print?",
+      "options": [
+        "1 ok",
+        "1 TypeError",
+        "2 ok",
+        "NaN ok"
+      ],
+      "explanation": "`const inc = c.inc` extracts only the function, not its link to the object. The plain call `inc()` sets no `this`, and a class body always runs in strict mode, so `this` is `undefined` and reading `this.n` throws a TypeError. `c.n` is still 0, so `c.inc()` gives 1. Option C is the trap of thinking the extracted method stays bound to `c`, and option A assumes non-strict behaviour where `this` is the global object."
+    },
+    "mad2-w2-q5": {
+      "question": "What does this code print?",
+      "options": [
+        "7 viewer name,team",
+        "7 undefined name,team",
+        "7 viewer name,role,team",
+        "7 undefined name,role,team"
+      ],
+      "explanation": "A destructuring default applies when the property value is `undefined`, and here `role` is explicitly `undefined`, so `role` = \"viewer\". `...rest` gets only the properties not already taken: `id` and `role` were taken, so rest = `{ name, team }`. Option B is the trap of thinking the default does not apply when the property exists (a default does not apply to `null`, but it does apply to `undefined`), and option C is the trap of counting `role` in rest as well."
+    },
+    "mad2-w2-q6": {
+      "question": "What does this code print?",
+      "options": [
+        "I say ... true",
+        "I say woof false",
+        "I say woof true",
+        "TypeError: this.speak is not a function"
+      ],
+      "explanation": "`d.intro()`: `intro` is not on Dog, so it is found up the chain on `Animal.prototype`. The call is `d.intro()`, so `this` = `d`, and the `this.speak()` lookup starts again from `d`, where `Dog.prototype.speak` is found first: \"woof\". The chain is `d` → `Dog.prototype` → `Animal.prototype`, so two `getPrototypeOf` calls give `Animal.prototype`: true. Option A is the trap of thinking a parent method will call the parent's own `speak`, and option B is the trap of thinking the direct prototype of `d` is `Animal.prototype`."
+    },
+    "mad2-w3-q1": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "A → B → C → D",
+        "A → D → C → B",
+        "A → D → B → C",
+        "A → C → D → B"
+      ],
+      "explanation": "All synchronous code runs first: \"A\" and \"D\". Then the microtask queue is emptied: the promise callback \"C\". Only after that does the next task run, the timer callback \"B\". Option C is the trap of thinking `setTimeout(..., 0)` runs first because it was registered first; 0 ms means \"in the next task\", not \"now\", and microtasks always come before it. Option D is the trap of treating `then` as synchronous."
+    },
+    "mad2-w3-q2": {
+      "question": "For `/api/users/99` the server sends a 404 status with a JSON error body. What does this code print?",
+      "options": [
+        "catch Not Found",
+        "catch 404",
+        "then 404 true",
+        "then 404 false"
+      ],
+      "explanation": "The `fetch` promise fulfils as soon as any HTTP response arrives from the server, even with status 404. So `then` runs, `res.status` is 404 and `res.ok` (true only for 200–299) is false. Options A and B are the trap of thinking `fetch` rejects on an HTTP error; it rejects only on a network failure. Option C is the trap of reading `ok` as \"a response arrived\"."
+    },
+    "mad2-w3-q3": {
+      "question": "The page has `<div id=\"card\"><button id=\"buy\">Buy</button></div>` (inside body), with these listeners attached. The user clicks the button. In what order does the console print?",
+      "options": [
+        "card → button → body",
+        "button → card → body",
+        "body → card → button",
+        "button → body → card"
+      ],
+      "explanation": "The click event first travels down from window towards the button in the capture phase. On the way, `card` has a listener with `capture: true`, so it runs first. Then the target (button) listener runs, then the body listener as the event bubbles back up. Option B is the trap of treating every listener as a bubble-phase listener and ignoring `capture: true`."
+    },
+    "mad2-w3-q4": {
+      "question": "What does this promise chain print?",
+      "options": [
+        "bad 2 → after undefined",
+        "skipped undefined → bad 2 → after 10",
+        "bad 2 → after 10",
+        "bad 2"
+      ],
+      "explanation": "Starting from 1, the first `then` gives 2 and the second `then` throws with \"bad 2\". The rejection skips the next `then` (\"skipped\") and reaches `catch`, which prints \"bad 2\" and returns 10. After `catch` the chain is fulfilled again, so the last `then` receives 10: \"after 10\". Option D is the trap of thinking the chain stops after `catch`, and option A is the trap of ignoring the return value of `catch`."
+    },
+    "mad2-w3-q5": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "1 → 2 → 3 → 4",
+        "3 → 1 → 2 → 4",
+        "3 → 4 → 1 → 2",
+        "3 → 1 → 4 → 2"
+      ],
+      "explanation": "First \"3\". Then `job()` is called and its code runs synchronously up to `await`: \"1\". At `await` the function pauses and the rest becomes a microtask, so control returns to the caller: \"4\". When the synchronous code is done, the microtask runs: \"2\". Option B is the trap of treating `await null` as not pausing (await always leaves at least one microtask gap), and option C is the trap of thinking no part of an async function runs immediately."
+    },
+    "mad2-w3-q6": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "S → T1 → P1 → P2 → T2",
+        "S → P1 → P2 → T1 → T2",
+        "S → P1 → T1 → P2 → T2",
+        "S → P1 → T1 → T2 → P2"
+      ],
+      "explanation": "Sync code: \"S\". Now the microtask queue holds the P1 callback: \"P1\" is printed, T2 joins the task queue behind T1, and P2 becomes a new microtask. The microtask queue keeps draining while it has anything in it, so P2 also runs right away, before any timer. Then the tasks run in order: T1, then T2. Option C is the trap of thinking a microtask created inside a microtask waits for a later round; option A is the trap of running T1 before the microtasks because it was registered first."
+    },
+    "mad2-w4-q1": {
+      "question": "In Vue 3, `open` is false. What happens in the DOM with `<div v-show=\"open\">` and with `<div v-if=\"open\">`?",
+      "options": [
+        "Both remove the element from the DOM",
+        "`v-show` keeps the element in the DOM and applies `display: none`; `v-if` removes the element (and the components inside it) from the DOM",
+        "`v-if` hides the element with `display: none`; `v-show` removes it from the DOM",
+        "Both only apply CSS `visibility: hidden`"
+      ],
+      "explanation": "`v-show` always renders and only toggles the inline style `display: none`, so toggling is cheap. `v-if` is conditional rendering: when false, the element and its child components are destroyed, and when true they are created again. Option C is the trap of remembering the two the wrong way round; option A is the trap of thinking they are the same with different names."
+    },
+    "mad2-w4-q2": {
+      "question": "In a Vue 3 `<script setup>` component, a button click should increase the count by 1. What is correct inside `inc`?",
+      "options": [
+        "`count++`",
+        "`this.count++`",
+        "`count.set(count.get() + 1)`",
+        "`count.value++`"
+      ],
+      "explanation": "`ref()` returns a wrapper object; in script the real value lives on `.value`, so you write `count.value++`. Writing `{{ count }}` in the template is fine because a top-level ref is unwrapped there automatically. Option A is the trap of using template syntax in script (`count` is a const and an object, not a number). Option B is an Options API habit; in `<script setup>` `this` is not the component."
+    },
+    "mad2-w4-q3": {
+      "question": "A Vue 3 todo list is rendered with `v-for=\"(todo, i) in todos\" :key=\"i\"`. Each row has `{{ todo.text }}` and an `<input>` with no `v-model`; the user types notes into each input. After deleting the first todo, the notes appear next to the wrong todos. Why, and what is the fix?",
+      "options": [
+        "With an index key Vue matches rows by position; after the delete the remaining rows get different keys, so DOM nodes (and the text typed in their inputs) are reused and shown with the wrong todo. Fix: a stable key such as `:key=\"todo.id\"`",
+        "The key has no effect here; this is a Vue bug that only a page reload fixes",
+        "Adding `v-if` on the same element makes Vue rebuild every row and fixes the problem",
+        "The index key is fine; the problem is that `todos` is kept in a `ref` instead of `reactive`"
+      ],
+      "explanation": "The key tells Vue which DOM node belongs to which item. With index keys, the keys after the delete are still 0, 1, 2 ..., so Vue thinks the first rows are the same, patches their text and removes the last node. The text typed in an input is the DOM node's own state, so it stays at its position and ends up beside the wrong todo. With a stable `todo.id` key the right node is removed. Option B is the trap of calling it a random bug, and option D is the trap of blaming `ref` vs `reactive` for an identity problem."
+    },
+    "mad2-w4-q4": {
+      "question": "A Vue 3 child component contains this code. The parent renders `<TitleEditor title=\"Draft\" />`. In a development build, what happens when `rename()` runs?",
+      "options": [
+        "The parent state also becomes \"Final\", because props are two-way bound",
+        "The title becomes \"Final\" in the child but stays \"Draft\" in the parent, with no warning",
+        "Props are readonly: Vue warns and the value does not change; the right way is to emit an event and let the parent change it",
+        "It is a compile error and the app will not build"
+      ],
+      "explanation": "In Vue 3 the `props` object is readonly (one-way data flow). The development build gives setup a readonly version of props, so an attempt to write gives a warning and the assignment is not applied (the production build drops this check, so there the mistake can turn into a silent bug). If the child wants the title changed, it should send an event such as `emit(\"update:title\", \"Final\")` and let the parent change its own state. Option A is the trap of treating props as two-way like `v-model`, and option B is the trap of thinking a prop is a local copy the child can quietly change."
+    },
+    "mad2-w4-q5": {
+      "question": "The Vue 3 component is shown below. The user clicks the button 3 times. What does the button show?",
+      "options": [
+        "3",
+        "0",
+        "1",
+        "Error: count is read-only"
+      ],
+      "explanation": "`let { count } = state` copies the value at that moment, 0, into a separate local variable; it keeps no link to the `state` Proxy. `count++` increments only the local variable, `state.count` stays 0 and the template gets no signal to re-render. Option A is the trap of treating destructuring as a reactive reference. Fix: write `state.count++`, or destructure with `toRefs(state)`."
+    },
+    "mad2-w4-q6": {
+      "question": "In this Vue 3 component, what is printed to the console on the first button click?",
+      "options": [
+        "1 1",
+        "0 0",
+        "0 1",
+        "1 2"
+      ],
+      "explanation": "After `count.value++` the state is 1 immediately, but Vue buffers the DOM update until the next tick. So when `before` is read, the `<p>` still holds the old text \"0\". `await nextTick()` resolves once Vue has applied the pending DOM update, so `after` is \"1\". Option A is the trap of thinking the DOM changes synchronously as soon as the ref changes; option B is the trap of thinking the DOM never updates inside a click handler."
+    },
+    "mad2-w5-q1": {
+      "question": "A Vue 3 component uses a chart library that needs the DOM element of `<canvas ref=\"canvas\">`. In which Composition API hook should the chart be created?",
+      "options": [
+        "`onBeforeMount`",
+        "`onMounted`",
+        "Directly at the top level of `<script setup>`",
+        "`onUnmounted`"
+      ],
+      "explanation": "`onMounted` runs after the component's DOM has been created and inserted into the page, so by then `canvas.value` is the real element. Option A is the trap of assuming from the name that the DOM is ready \"before mount\"; it has not been rendered yet. In option C, setup runs before mounting, so the template ref is still `null`."
+    },
+    "mad2-w5-q2": {
+      "question": "A Vue 3 template has `<form @submit.prevent=\"save\">`. What does the `.prevent` modifier do?",
+      "options": [
+        "It calls `preventDefault()` on the submit event, so the browser does not reload or navigate and only `save` runs",
+        "It stops `save` from running more than once (double-submit protection)",
+        "It stops the event from bubbling up to parent elements",
+        "It turns off the browser's built-in form validation"
+      ],
+      "explanation": "`.prevent` adds `event.preventDefault()` to the handler. The default action of a form submit is to send the page to the action URL (a reload); in an SPA we do not want that, the data goes through `fetch`. Option C is what `.stop` does (`stopPropagation`), and option B is the trap of thinking a modifier prevents double submits; for that you disable the button while saving."
+    },
+    "mad2-w5-q3": {
+      "question": "This `load` function is in a Vue 3 component (`loading`, `error` and `items` are refs). For `/api/items` the server sends status 500 with the body `{\"error\": \"db down\"}`. After `load()` finishes, what are the three refs?",
+      "options": [
+        "`items` unchanged, `error` = \"db down\", `loading` = false",
+        "`items` unchanged, `error` = \"HTTP 500\", `loading` = false",
+        "`items` = `{ error: \"db down\" }`, `error` = null, `loading` = false",
+        "`items` = `{ error: \"db down\" }`, `error` = null, `loading` = true"
+      ],
+      "explanation": "`fetch` does not reject on a 500, and `res.json()` happily parses the error body too. So no exception is thrown: the error object goes into `items`, `catch` never runs (`error` stays null), and `finally` sets `loading` to false. Options A and B are the trap of thinking an HTTP error reaches `catch` on its own; that needs `if (!res.ok) throw ...`. Option D is the trap of forgetting `finally`."
+    },
+    "mad2-w5-q4": {
+      "question": "On a Vue 3 search page, every query change runs `results.value = await search(q)`. The user types \"vu\" and, 50 ms later, \"vue\". The \"vu\" response takes 900 ms and the \"vue\" response 200 ms. After both responses arrive, what is on screen, and what is the right fix?",
+      "options": [
+        "The \"vue\" results, because that query was typed later; no fix is needed",
+        "The results of both queries combined, because both assignments add to the same array",
+        "An error, because a ref cannot have two pending requests at once",
+        "The (stale) \"vu\" results, because its slow response arrived last and overwrote the other; fix: abort the old request or apply only the latest query's response"
+      ],
+      "explanation": "Timeline: the \"vue\" response arrives at about 250 ms and sets the results; the \"vu\" response arrives at 900 ms and overwrites them. Whichever response arrives last wins, even if its query is older. Fix: cancel the previous request with `AbortController`, or keep an id per request and apply a response only if it carries the latest id. Option A is the trap of assuming responses arrive in the order the requests were sent."
+    },
+    "mad2-w5-q5": {
+      "question": "In Vue 3, `Parent.vue` renders `<Child />` in its template. Both `<script setup>` blocks contain these lines. When the app loads, in what order does the console print?",
+      "options": [
+        "P setup → P mounted → C setup → C mounted",
+        "P setup → C setup → P mounted → C mounted",
+        "C setup → C mounted → P setup → P mounted",
+        "P setup → C setup → C mounted → P mounted"
+      ],
+      "explanation": "The parent's setup runs first (the child is only discovered during render). While the parent renders, the child is created, so the child's setup and then the child's mount happen. The parent counts as \"mounted\" only once all its synchronous children are mounted, so `P mounted` comes last. Option B is the trap of thinking the parent finishes mounting before the child; option A is the trap of thinking the child is created only after the parent has mounted."
+    },
+    "mad2-w5-q6": {
+      "question": "A Vue 3 component does `onMounted(() => { setInterval(poll, 5000); })` and has nothing in `onUnmounted`. The user keeps navigating to and away from the page: the component has mounted 4 times and unmounted 3 times in total, and is on screen now. How many intervals are running?",
+      "options": [
+        "1, because Vue stops all of a component's timers automatically on unmount",
+        "4, because each mount started a new interval and none was ever cleared",
+        "0, because the interval callback is garbage collected on unmount",
+        "1, because a new `setInterval` replaces the old interval"
+      ],
+      "explanation": "`setInterval` is a browser timer; Vue does not track it, and the interval callback stays reachable as long as the timer is alive, so it is not garbage collected. Each mount added a new interval: 4 intervals, so `poll` runs 4 times every 5 s. Fix: `const id = setInterval(...)` and `onUnmounted(() => clearInterval(id))`. Option A is the trap of thinking Vue does all cleanup itself (it only cleans up its own effects and template listeners); option D is the trap of treating `setInterval` as a single global setting."
+    },
+    "mad2-w6-q1": {
+      "question": "A Vue 3 template uses `{{ total }}` in three places and `{{ totalFn() }}` in three places. `total` is a computed and `totalFn` is a method, and both do the same calculation. In one render (no dependency changed), how many times do the computed getter and the method run?",
+      "options": [
+        "Computed 1 time, method 3 times",
+        "Both 3 times",
+        "Both only 1 time",
+        "Computed 3 times, method 1 time"
+      ],
+      "explanation": "A computed result is cached: the getter runs on the first read, and the other two places get the same cached value as long as the dependencies do not change. A method is a plain function and runs again on every `{{ totalFn() }}`: 3 times. Option B is the trap of treating computed as just another syntax for a method, and option C is the trap of thinking Vue caches methods too."
+    },
+    "mad2-w6-q2": {
+      "question": "In Vue 3, the parent writes `<SearchBox v-model=\"query\" />`. To update the parent's `query` when the input inside `SearchBox` changes, which event should the child emit?",
+      "options": [
+        "`input`",
+        "`update:modelValue`",
+        "`change`",
+        "`update:value`"
+      ],
+      "explanation": "In Vue 3, `v-model` on a component means the prop `modelValue` and the event `update:modelValue`. The child calls `emit(\"update:modelValue\", newValue)` and the parent's listener sets `query`. Option A was the old Vue 2 convention (`value` prop + `input` event), so it is the most common mistake when migrating."
+    },
+    "mad2-w6-q3": {
+      "question": "A Vue 3 SPA with `createWebHistory()` is deployed on a static file server. Opening `/orders/42` through a link inside the app works, but refreshing that page makes the server return 404. What is the most accurate cause and fix?",
+      "options": [
+        "The route `/orders/:id` is written wrongly; change it to `/orders/*`",
+        "The browser cache is broken; tell users to do a hard refresh",
+        "On refresh the browser asks the server for a `/orders/42` file that does not exist; add a server fallback that returns `index.html` for unknown paths (or use hash history)",
+        "Vue Router does not work on refresh; every page needs its own HTML file"
+      ],
+      "explanation": "Navigation inside the app is done by JavaScript (the History API), so no request reaches the server. On a refresh or a direct link, the browser asks the server for the full URL, and the static server has no file called `/orders/42`. With a fallback the server returns `index.html`, the app loads, and the router reads the URL and shows the right page. In hash mode the part after `#` never reaches the server. Option A is the trap of blaming the client-side route, even though the route works from inside the app."
+    },
+    "mad2-w6-q4": {
+      "question": "A Vue 3 component loads while `query` is \"vue\", and later the user changes the query once to \"pinia\". How many times is `fetchResults` called: (i) with the code below, and (ii) if `watch` is given `{ immediate: true }` as a third argument?",
+      "options": [
+        "(i) 1, (ii) 2",
+        "(i) 2, (ii) 2",
+        "(i) 0, (ii) 1",
+        "(i) 1, (ii) 1"
+      ],
+      "explanation": "`watch` is lazy by default: the callback does not run for the initial value \"vue\", only on the change (\"pinia\"): 1 call. With `{ immediate: true }` the callback runs once with \"vue\" as soon as the watcher is created, then again on the change: 2 calls. Option B is the trap of thinking `watch` also runs at the start (that is how `watchEffect` behaves), and option C is the trap of thinking nothing happens without `immediate` even when the value changes."
+    },
+    "mad2-w6-q5": {
+      "question": "In Vue Router 4 there is a route `{ path: \"/users/:id\", component: UserProfile }`. `UserProfile` loads data only in `onMounted(() => load(route.params.id))`. The user is on `/users/1` and clicks `<RouterLink to=\"/users/2\">`. The URL changes, but the screen still shows user 1. Why?",
+      "options": [
+        "`route.params.id` is a number and `load` expects a string",
+        "RouterLink only works between different routes, not within the same route",
+        "The browser cached the `/users/2` response",
+        "Both URLs match the same route, so the router reuses the same component instance and `onMounted` does not run again; `route.params.id` should be watched"
+      ],
+      "explanation": "When only the params change, Vue Router does not destroy and recreate the component (that is efficient). So the mount hooks do not run again, and the data was loaded only the first time. Fix: `watch(() => route.params.id, load, { immediate: true })`, or the `onBeforeRouteUpdate` guard. Option A has it backwards: params are always strings. Option B is the trap of thinking no navigation happened, while both the URL and `route.params` have changed."
+    },
+    "mad2-w6-q6": {
+      "question": "This is a Vue Router 4 config. A logged-out user (`auth.isLoggedIn` is false) opens `/admin/users?page=2` directly. What happens?",
+      "options": [
+        "`AdminUsers` opens, because the child route has no `meta`",
+        "Redirect to `/login`, and `route.query.next` is \"/admin/users?page=2\"",
+        "An infinite redirect loop, because the guard also runs for `/login`",
+        "Redirect to `/login`, and `route.query.next` is \"/admin/users\""
+      ],
+      "explanation": "`/admin/users` matches two routes: the parent `/admin` and the child `users`. `to.meta` merges the meta of all matched routes from parent to child, so `requiresAuth` is true and the guard redirects. `to.fullPath` contains the query as well as the path, so `next` = \"/admin/users?page=2\" and the user can come back there after logging in. There is no loop because the `/login` route has no `requiresAuth`. Option A is the trap of thinking meta applies only to the route where it is written; option D is the trap of confusing `fullPath` with `path`."
+    },
+    "mad2-w7-q1": {
+      "question": "In a Vuex 4 app, what is the right way to fetch orders from an API and put them in the store state?",
+      "options": [
+        "The component dispatches an action with `dispatch`; the action calls the API and commits a mutation with `commit` that changes the state",
+        "Do `await fetch(...)` inside a mutation, because changing state is the job of mutations",
+        "Call the API inside a getter so that the result is cached",
+        "The component assigns `store.state.orders = data` directly"
+      ],
+      "explanation": "In Vuex only mutations change state, and mutations must be synchronous so that devtools can record every change in the right order. Async work belongs in actions: the action awaits the API, then calls `commit(\"setOrders\", data)`. Option B is the trap of remembering only half of \"state changes in mutations\" and putting the async work there too; option D bypasses the store's rules (strict mode throws an error)."
+    },
+    "mad2-w7-q2": {
+      "question": "A Pinia cart store must show the cart total (price × qty over all items), which must stay correct whenever the items change. What is the best place for it?",
+      "options": [
+        "Keep a `total` field in state and update it by hand in every add/remove action",
+        "A getter: `total: (state) => state.items.reduce((s, i) => s + i.price * i.qty, 0)`",
+        "An action that returns the total, which the template calls on every render",
+        "A local `ref` holding the total in every component"
+      ],
+      "explanation": "The total is derived state: it comes from the items. A getter works like a computed, recomputes automatically when the items change and stays cached in between. Option A is the trap of copying a derived value into separate state; if one action forgets to update it, the total and the items will tell different stories. Option C has no caching, and the job of actions is to change state, not to derive values."
+    },
+    "mad2-w7-q3": {
+      "question": "A Pinia store has `count` state that starts at 0, and the action `addItem()` increases it by 1. A component has this code and then `addItem()` is called. What do `{{ count }}` and `{{ c2 }}` show in the template?",
+      "options": [
+        "1 and 1",
+        "0 and 0",
+        "0 and 1",
+        "1 and 0"
+      ],
+      "explanation": "The store is a reactive object; destructuring it directly makes `count` a plain copy of the value at that moment, 0, so it stays 0. `storeToRefs` gives a ref for each state property that stays linked to the store, so `c2` shows 1. Destructuring `addItem` is safe because Pinia binds actions to the store, so the state really does increase. Option A is the trap of treating direct destructuring as reactive; option B is the trap of thinking a destructured action cannot change the store."
+    },
+    "mad2-w7-q4": {
+      "question": "In a Vue 3 app, which of these is the best fit for a centralised store (Pinia)?",
+      "options": [
+        "The open/closed flag of a modal used only inside that component",
+        "The draft text of a search input that lives only inside that form",
+        "The current index of a `v-for` loop",
+        "The logged-in user's profile and roles, read by the navbar, the route guards and the settings page"
+      ],
+      "explanation": "A store is for things that many, distant components need and that must have a single truth. The user profile and roles are read by the navbar, the guards and settings, and must change everywhere at once on login/logout. Options A and B are local UI state: putting them in a store turns each component's private state into a global. Option C is not state at all, just the template's loop variable."
+    },
+    "mad2-w7-q5": {
+      "question": "In a Vue 3 app, `Header.vue` and `ProductPage.vue` both write `const cart = useCartStore()`. ProductPage calls `cart.addItem(p)`. What happens to `{{ cart.count }}` in Header?",
+      "options": [
+        "It updates immediately, because inside the app `useCartStore()` always returns the same store instance",
+        "It does not update, because each component gets its own copy of the store",
+        "It updates only when the Header page reloads",
+        "It updates only when ProductPage emits an event that Header listens to"
+      ],
+      "explanation": "A Pinia store is created on the first `useCartStore()` call, and every later call inside that app returns the same instance. The state is reactive, so the change from ProductPage makes Header's template re-render automatically. Option B is the trap of treating `useCartStore()` as a constructor (a new object every time); option D is exactly the chain-of-events approach the store exists to remove."
+    },
+    "mad2-w7-q6": {
+      "question": "This Pinia action does an optimistic delete. While deleting item 2, `api.remove` fails (the catch runs). After the action finishes, which ids are in `items`?",
+      "options": [
+        "1,2,3",
+        "1,3",
+        "None (an empty array)",
+        "Only 2"
+      ],
+      "explanation": "`const backup = this.items` does not make a copy; `backup` and `this.items` point to the same array. `splice` removes item 2 from that array, so backup also becomes `[1, 3]`. In the catch, `this.items = backup` puts the same modified array back, so the rollback silently fails. Fix: `const backup = [...this.items]` (a shallow copy is enough because the item objects themselves were not changed). Option A is the trap of assuming that storing it in a variable takes a snapshot."
+    },
+    "mad2-w8-q1": {
+      "question": "A logged-in user (valid token) with the role \"viewer\" calls `DELETE /api/v1/projects/7`, which is allowed only for \"admin\". Which status code should the server send?",
+      "options": [
+        "401 Unauthorized",
+        "403 Forbidden",
+        "400 Bad Request",
+        "500 Internal Server Error"
+      ],
+      "explanation": "The user has been identified (the token is valid); their role simply lacks permission for this action. That is an authorisation failure: 403 Forbidden. Option A is a trap of naming: 401 \"Unauthorized\" is really for authentication failures, when the token is missing or invalid and the user must log in again. Option C is wrong because the request itself is well formed."
+    },
+    "mad2-w8-q2": {
+      "question": "Which statement about the payload of a JWT signed (not encrypted) with HS256 is correct?",
+      "options": [
+        "The payload is encrypted, so nobody can read it without the secret",
+        "The payload lives in the server database; the token holds only a random id",
+        "The signature hides the payload, so it is safe to put a password in it",
+        "The payload is only base64url-encoded; whoever holds the token can read it, so it should not contain secrets"
+      ],
+      "explanation": "The middle part of a JWT is a base64url encoding of JSON; anyone can decode it without the secret. The signature only lets you check that the header and payload were not changed (integrity); it does not hide them (no confidentiality). Options A and C are the trap of confusing encoding or signing with encryption; option B describes a session id, not a JWT."
+    },
+    "mad2-w8-q3": {
+      "question": "JavaScript running on the page `https://app.example.com/dashboard` calls `fetch` on these URLs. Which request is cross-origin (needing CORS headers on the response)?",
+      "options": [
+        "`https://app.example.com/api/v2/users`",
+        "`https://app.example.com:443/login`",
+        "`https://api.example.com/users`",
+        "`https://app.example.com/static/app.js?v=3`"
+      ],
+      "explanation": "Origin = scheme + host + port. `api.example.com` and `app.example.com` are different hosts (sharing a parent domain does not make them the same origin), so option C is cross-origin. Option B is the trap of being thrown by the explicit port: 443 is the default HTTPS port, so the origin is the same. Options A and D differ only in path or query, which are not part of the origin."
+    },
+    "mad2-w8-q4": {
+      "question": "An attacker changes `role` in the payload of their HS256 JWT from \"editor\" to \"admin\", base64url-encodes the new payload, and keeps the header and the old signature as they were. The server verifies the signature on every request. What happens?",
+      "options": [
+        "The server rejects the token (401), because the signature is an HMAC of the header and payload; the HMAC of the new payload will not match the old signature, and a new signature cannot be made without the secret",
+        "The request runs as admin, because the payload is valid JSON and `exp` is still in the future",
+        "The server rejects it because the changed payload will not base64url-decode",
+        "The request works, but only as long as the user's old session cookie is also sent"
+      ],
+      "explanation": "The server recomputes `HMAC-SHA256(header + \".\" + payload, secret)` and compares it with the token's signature. Changing even one character of the payload changes the HMAC completely, and without the secret the attacker cannot produce a valid signature, so verification fails with 401. Option B is the trap of thinking the server just reads the payload and trusts it. Option C is wrong because the new payload is properly encoded too; what fails is the signature check, not decoding."
+    },
+    "mad2-w8-q5": {
+      "question": "An app keeps a JWT access token with a 60-minute expiry in `localStorage`, and the server verifies the token only by signature and `exp` (no denylist). 10 minutes after logging in, the user logs out and the frontend deletes the token. But an XSS script had already stolen the token. Until when can the attacker use the API with it?",
+      "options": [
+        "Access stops as soon as the user logs out",
+        "For roughly 50 more minutes, until the token expires",
+        "Forever, because a JWT never expires",
+        "Only while the user's browser tab is open"
+      ],
+      "explanation": "With stateless verification the server has nowhere to remember \"this token was logged out\"; the signature and `exp` are both valid, so the token works for 60 − 10 = 50 more minutes. Logging out only deleted the copy in the user's browser. Defences: short-lived access tokens + refresh tokens that can be revoked, a server-side denylist or token version, and keeping the token in an `HttpOnly` cookie so XSS cannot read it. Option A is the trap of confusing client-side logout with server-side revocation."
+    },
+    "mad2-w8-q6": {
+      "question": "The frontend at `https://app.example.com` calls `fetch(\"https://api.example.com/me\", { credentials: \"include\" })` (a simple GET). For CORS, the API response has only the header `Access-Control-Allow-Origin: *`. What happens?",
+      "options": [
+        "Everything works, because `*` allows every origin",
+        "The server rejects the request and sends 403",
+        "The request may reach the server, but the browser does not give the response to JavaScript (CORS error); with credentials the server must send the exact origin and `Access-Control-Allow-Credentials: true`",
+        "The browser automatically resends the request without cookies and returns that response"
+      ],
+      "explanation": "CORS rules are stricter for credentialed requests (with cookies): the wildcard `*` is not allowed, and the server must send both `Access-Control-Allow-Origin: https://app.example.com` and `Access-Control-Allow-Credentials: true`. A simple GET has no preflight, so the request can reach the server and be processed, but the browser hides the response from the page's JavaScript. Option A is the trap of reading `*` as \"everything allowed\"; option B is the trap of thinking CORS is applied by the server, when the browser enforces it."
+    },
+    "mad2-w9-q1": {
+      "question": "A Flask endpoint builds a report that takes about 2 minutes. What is the best design for production?",
+      "options": [
+        "Build the report inside the request and send the file with 200",
+        "Put the job on a task queue and immediately return 202 Accepted with a job id; the client polls a status endpoint",
+        "Raise the client and load-balancer timeouts to 5 minutes",
+        "Start a new thread inside the request and return 200 without a job id"
+      ],
+      "explanation": "202 Accepted means \"request received, the work will be completed later\". With the job id the client can ask for status and result, and the work is done by workers that can be scaled separately. Option C is the trap of hiding the problem by raising timeouts: each long request would hold a server worker for 2 minutes. With option D there is no status, no retry, and the work is lost if the server restarts."
+    },
+    "mad2-w9-q2": {
+      "question": "In a Celery-style background job system, what is the job of the broker (such as Redis or RabbitMQ)?",
+      "options": [
+        "Storing the state and return value of each task",
+        "Executing the task code",
+        "Distributing incoming web requests across servers",
+        "Holding task messages from the producer in a queue until a worker picks them up"
+      ],
+      "explanation": "The broker is a message queue: the web app puts task messages in and workers take them out, so the two run independently without waiting for each other. Option A is the job of the result backend (the same Redis can do both, which is why this confusion is common). Option B is done by workers, and option C is the load balancer's job."
+    },
+    "mad2-w9-q3": {
+      "question": "A failing task is retried with exponential backoff: a 3 s wait before the first retry, and the wait doubles for each further retry. There are at most 5 retries. If every attempt fails, how much total waiting happens between the first failure and the start of the last attempt?",
+      "options": [
+        "48 s",
+        "93 s",
+        "96 s",
+        "45 s"
+      ],
+      "explanation": "The waits for 5 retries are 3, 6, 12, 24, 48 s. Total = 3 + 6 + 12 + 24 + 48 = 93 s (that is, 3 × (2⁵ − 1)). Option A is the trap of taking only the last wait; option C is the trap of computing 3 × 2⁵ = 96 (one doubling too many); option D adds only 4 retries (3 + 6 + 12 + 24 = 45)."
+    },
+    "mad2-w9-q4": {
+      "question": "A Flask view has `send_invoice.delay(order)`, where `order` is a SQLAlchemy model object and Celery uses its default JSON serializer. What is the problem and the fix?",
+      "options": [
+        "The model object will not serialize to JSON (an error), and even if another serializer sends it, the worker gets a stale snapshot from enqueue time; send `order.id` and let the worker read a fresh row from the DB",
+        "There is no problem; Celery passes the object to the worker just like a function call",
+        "The worker refreshes the object from the DB on its own, so it is just a little slower",
+        "It fails only with a Redis broker; it will work on RabbitMQ"
+      ],
+      "explanation": "The task message travels through the broker to another process (often another machine), so the arguments must be serialized; JSON does not understand a SQLAlchemy object. Even with a serializer like pickle, the worker would get a copy that is detached from any DB session and may be stale. Sending the id keeps the message small, and the worker always reads current data. Option B is the trap of treating `.delay()` as a normal function call; option D is the trap of blaming the broker for a serialization problem."
+    },
+    "mad2-w9-q5": {
+      "question": "The task `charge_wallet(order_id)` deducts ₹500 from a user's wallet. The queue gives at-least-once delivery, so sometimes the same task runs twice. Which implementation is idempotent (only ₹500 is deducted even if it runs twice)?",
+      "options": [
+        "`UPDATE wallets SET balance = balance - 500 WHERE user_id = ?`",
+        "Read the balance first, then write `balance - 500` back",
+        "In one transaction, insert a row into `payments` with `order_id` (UNIQUE), and deduct the balance only if the insert is new; do nothing on a duplicate",
+        "`sleep` for 1 second at the start of the task so that duplicate messages expire"
+      ],
+      "explanation": "The insert on a UNIQUE `order_id` detects the duplicate run: the second insert fails and the balance is not reduced again. Doing it in the same transaction also avoids a half state like \"row inserted but money not deducted\". Option A deducts 500 on every run: two runs = ₹1000. Option B also has a race condition and would deduct again on a duplicate. Option D is the trap of thinking duplicates are stopped by timing; a redelivery can happen at any time."
+    },
+    "mad2-w9-q6": {
+      "question": "In a Celery beat schedule, a task is set to `crontab(minute=\"*/15\", hour=\"9-17\")` (a single beat instance, correct timezone). How many times a day is the task enqueued?",
+      "options": [
+        "33",
+        "32",
+        "36",
+        "9"
+      ],
+      "explanation": "`hour=\"9-17\"` includes both 9 and 17: 9 hours (9, 10, ..., 17). In each hour `*/15` means minutes 0, 15, 30, 45, so 4 runs. Total 9 × 4 = 36, the first at 09:00 and the last at 17:45. Option B is the trap of counting 17 − 9 = 8 hours (8 × 4 = 32); option A is the trap of thinking the schedule stops at 17:00 (32 + 1 = 33)."
+    },
+    "mad2-w10-q1": {
+      "question": "3 different services (email, analytics, inventory) subscribe to the topic `order.created`. A separate work queue has 3 identical worker processes. One event is published to the topic and one job is put on the queue. How many times are the event and the job processed?",
+      "options": [
+        "Event 3 times, job 1 time",
+        "Event 1 time, job 3 times",
+        "Event 3 times, job 3 times",
+        "Event 1 time, job 1 time"
+      ],
+      "explanation": "In pub/sub every subscriber gets its own copy of the event, so all three services process it: 3 times. Workers on a work queue are competing consumers: a message goes to only one worker, so the work is shared and not duplicated: 1 time. Option B is the trap of remembering the two models the wrong way round; option C is the trap of thinking a queue also gives every worker a copy."
+    },
+    "mad2-w10-q2": {
+      "question": "A payment provider's webhook arrives. For each event you must build an invoice PDF and send an email, which takes ~30 s. The provider retries if it gets no answer within 10 s. What should the handler do?",
+      "options": [
+        "Do the whole 30 s of work, then return 200",
+        "Return 500 first so that the provider resends later when the server is free",
+        "Ignore the webhook and poll the provider's API every minute",
+        "Verify the signature, store the event and enqueue a background job, and return 2xx immediately"
+      ],
+      "explanation": "The provider only needs to know that the event was received. Verify + store + enqueue takes milliseconds, and a worker builds the PDF and sends the email later. Option A is the trap of thinking it is \"correct\" to return 200 only once the work is done: after the 10 s timeout the provider retries and you get duplicate events. Option B deliberately creates retries and delay."
+    },
+    "mad2-w10-q3": {
+      "question": "An Express webhook receiver already has a JSON body parser, and the code computes HMAC-SHA256 over `const body = JSON.stringify(req.body)` and compares it with the signature in the header. The secret is definitely right, yet most requests show a signature mismatch. What is the most likely cause?",
+      "options": [
+        "SHA-256 gives a different output each time for the same input",
+        "The secret had to be base64-encoded first",
+        "The sender computed the HMAC over the raw bytes; parsing and re-stringifying can change whitespace, key order or number format, so the hash differs. Compute the HMAC over the raw body",
+        "HMAC signatures work only on GET requests"
+      ],
+      "explanation": "HMAC works on exact bytes: even one space of difference changes the whole digest. The body the sender sent (such as `\"id\": \"evt_101\"` with spaces) becomes `\"id\":\"evt_101\"` after `JSON.stringify`, so the receiver is hashing a different string. Verify over the raw body (for example with `express.raw()` or the parser's `verify` hook). Option A is the trap of treating hashing as random; SHA-256 is deterministic."
+    },
+    "mad2-w10-q4": {
+      "question": "The consumer of an at-least-once queue is shown below. Because of network issues, some events were delivered again. What is the output?",
+      "options": [
+        "350 5",
+        "175 3",
+        "350 3",
+        "175 5"
+      ],
+      "explanation": "The handler dedupes by event id: e1 (100) and e2 (50) were added the first time, the repeated e1 and e2 returned at `seen.has`, and e3 (25) was new. Total = 100 + 50 + 25 = 175, and the set holds 3 unique ids. Option A is the trap of treating every delivery as a new event (without dedupe it would be 350). Option D is the trap of thinking a `Set` also counts duplicate ids."
+    },
+    "mad2-w10-q5": {
+      "question": "Despite HTTPS, an attacker somehow captures a valid signed webhook request (body + signature header) and resends it unchanged an hour later. The signature is an HMAC over the body only. What is the right way to prevent this replay attack?",
+      "options": [
+        "Nothing can be done; if the signature is valid the request must be accepted",
+        "Include a timestamp in the signed content and have the receiver reject it when it is older than a tolerance window (such as 5 minutes); also dedupe by event id",
+        "HTTPS stops replay attacks by itself, so no other step is needed",
+        "Change the shared secret after every request"
+      ],
+      "explanation": "An HMAC over the body alone says nothing about when the request was made, so an old request still looks valid. If the timestamp is part of the signed content the attacker cannot change it (changing it breaks the signature), and the receiver rejects an hour-old request. Replays inside the window are caught by event-id dedupe. Option C is the trap of treating HTTPS (transport encryption) as replay protection; option D is not practical."
+    },
+    "mad2-w10-q6": {
+      "question": "The order service consumes events that carry a version number. Because of retries, the events arrived in this order. What is the output?",
+      "options": [
+        "paid 2 4",
+        "packed 3 3",
+        "shipped 4 2",
+        "shipped 4 3"
+      ],
+      "explanation": "The version starts at 1. \"paid v2\": 2 > 1, applied (applied = 1). \"shipped v4\": 4 > 2, applied (applied = 2). \"packed v3\": 3 ≤ 4, an old event, ignored; this is what stops the state going back from \"shipped\" to \"packed\". The second \"paid v2\": a duplicate, ignored. Final: shipped, version 4, applied 2. Option D is the trap of counting the late \"packed\" as applied too; option A is like applying the last arrival with no guard."
+    },
+    "mad2-w11-q1": {
+      "question": "In SQLAlchemy the `author` relationship uses the default lazy loading, and each of the 50 posts has a different author. How many queries does this code send to the database?",
+      "options": [
+        "1",
+        "2",
+        "50",
+        "51"
+      ],
+      "explanation": "The first query fetches 50 posts. In the loop, the first access to `p.author` runs a separate query for each post (the authors are all different, so no cache helps): 50 more. Total 1 + 50 = 51, which is the N+1 problem. Option A is what you get with `joinedload` (one query with a JOIN), option B with `selectinload` (posts + one `IN` query). Option C is the trap of forgetting to count the first query for the list."
+    },
+    "mad2-w11-q2": {
+      "question": "An online banking account statement page is very sensitive; neither the browser nor any shared cache should store a copy of it at all. Which header is right?",
+      "options": [
+        "`Cache-Control: no-cache`",
+        "`Cache-Control: max-age=0`",
+        "`Cache-Control: no-store`",
+        "`Cache-Control: public, max-age=31536000`"
+      ],
+      "explanation": "`no-store` means the response must not be saved in any cache. Option A is a trap of naming: `no-cache` allows storing and only forces revalidation with the server before each reuse, so a copy can stay on disk. Option B also treats the response as immediately stale and forces revalidation, but does not stop storing. Option D is a year of public caching, the exact opposite of what sensitive data needs."
+    },
+    "mad2-w11-q3": {
+      "question": "An API endpoint has 10 response times (ms): 120, 95, 110, 105, 900, 100, 115, 98, 102, 1200. Use the nearest-rank method (position ⌈p/100 × n⌉ in the sorted list). What are p50, p90 and the mean?",
+      "options": [
+        "p50 = 105, p90 = 900, mean = 294.5",
+        "p50 = 110, p90 = 1200, mean = 294.5",
+        "p50 = 294.5, p90 = 900, mean = 105",
+        "p50 = 105, p90 = 1200, mean = 110"
+      ],
+      "explanation": "Sorted: 95, 98, 100, 102, 105, 110, 115, 120, 900, 1200 (n = 10). p50: position ⌈0.5 × 10⌉ = 5, value 105. p90: position ⌈0.9 × 10⌉ = 9, value 900. Mean = 2945 / 10 = 294.5. Two slow requests pushed the mean to about 3 times the median, which is why latency is read in percentiles. Option B is the trap of counting one position too far (6th and 10th), and option C swaps the mean and the median."
+    },
+    "mad2-w11-q4": {
+      "question": "In steady state a service handles 200 requests/second with an average latency of 150 ms. By Little's law, how many requests are inside the system (in flight) at a time on average?",
+      "options": [
+        "1333",
+        "30",
+        "3",
+        "300"
+      ],
+      "explanation": "L = λ × W = 200 req/s × 0.150 s = 30. Match the units: ms must be converted to seconds. Option A is the trap of computing 200 / 0.150 (dividing), and option D is the trap of taking 150 ms as 1.5 s. This means you need at least ~30 concurrent workers/connections, or requests will wait in a queue and push latency up further."
+    },
+    "mad2-w11-q5": {
+      "question": "With the cache-aside pattern, a product price was cached at t = 0 s (value ₹999, TTL 300 s). At t = 120 s an admin changes the price in the DB to ₹899, but the cache key is not deleted. What do reads at t = 200 s and t = 310 s return?",
+      "options": [
+        "₹899, ₹899",
+        "₹999, ₹999",
+        "₹999, ₹899",
+        "₹899, ₹999"
+      ],
+      "explanation": "At t = 200 the cache entry is still valid (it expires at 300), so it is a cache hit: the old ₹999 (stale). At t = 310 the entry has expired, so it is a miss, the new ₹899 comes from the DB and is cached again. Option A is the trap of thinking a DB update reaches the cache by itself; without invalidation the stale window can be as long as the TTL. That is why you do `DEL key` on write."
+    },
+    "mad2-w11-q6": {
+      "question": "A feed API returns posts newest-first with `ORDER BY created_at DESC LIMIT 20 OFFSET ?`. The user has seen page 1 (OFFSET 0) and page 2 (OFFSET 20). Now 5 new posts are created, and then the user opens page 3 (OFFSET 40). How many posts on page 3 were already shown on page 2?",
+      "options": [
+        "0",
+        "5",
+        "15",
+        "20"
+      ],
+      "explanation": "The 5 new posts go on top, so every old post moves 5 positions down. Page 2 was positions 21–40; now OFFSET 40 gives positions 41–60, which hold the old 36–55. The old 36–40 were already shown on page 2: 5 repeats (and in the other direction an item can be missed when rows are deleted). Keyset pagination (`WHERE created_at < :last_seen`) continues after the last item seen, so 0 repeats. Option A is the trap of assuming OFFSET is stable."
+    },
+    "mad2-w12-q1": {
+      "question": "In a Vue + Flask app, only admins may delete projects. Where must this rule really be enforced?",
+      "options": [
+        "Only in the frontend: hide the delete button for non-admins",
+        "Only in the Vue Router `beforeEach` guard",
+        "On the server in the DELETE endpoint (role check); hiding the button in the frontend is only for UX",
+        "In the `isAdmin` flag of the Pinia store"
+      ],
+      "explanation": "All code running in the browser is under the user's control: they can change the store in DevTools, skip the guard, or call the API directly with `curl`. So authorisation happens on the server, where the role (and ownership) is checked as the request arrives. Options A, B and D are the trap of treating UX checks as security; they are good, but they only spare the user from seeing the wrong button."
+    },
+    "mad2-w12-q2": {
+      "question": "What does this code print?",
+      "options": [
+        "12",
+        "10",
+        "6",
+        "[6, 4]"
+      ],
+      "explanation": "`map` doubles each element: [6, 2, 4]. `filter` keeps only values greater than 2: [6, 4] (2 > 2 is false). `reduce` adds them from 0: 6 + 4 = 10. Option A is the trap of skipping the filter (6 + 2 + 4 = 12); option D is the trap of forgetting `reduce` and writing the filter result."
+    },
+    "mad2-w12-q3": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "a1 → b → s → a2 → p → t",
+        "a1 → b → a2 → s → p → t",
+        "a1 → s → b → p → a2 → t",
+        "a1 → b → s → t → a2 → p"
+      ],
+      "explanation": "`placeOrder()` prints \"a1\" synchronously and calls `save()` right away: \"b\". At `await` the function pauses and the \"a2\" part goes into the microtask queue. Then `Promise.resolve().then` queues \"p\" behind that microtask, and \"s\" is printed synchronously. Microtasks run in FIFO order: \"a2\", then \"p\". Finally the timer task \"t\". Option B is the trap of thinking `await` does not pause because `save()` is synchronous; option D is the trap of running the timer before the microtasks."
+    },
+    "mad2-w12-q4": {
+      "question": "Users upload videos of up to 2 GB that must be transcoded into several resolutions (several minutes per video). With the tools from this course, what is the best design?",
+      "options": [
+        "Transcode inside the upload request and return 200 when done",
+        "Transcode in the browser with JavaScript and upload all the files",
+        "Keep the upload request open and have the frontend poll every second to see whether it has finished",
+        "Save the file to object storage, enqueue a Celery task and return 202 + job id; a worker transcodes and updates the status, and the frontend polls or gets a notification"
+      ],
+      "explanation": "Several minutes of CPU-heavy work does not fit in the request-response cycle: timeouts and tied-up web workers. After the upload the file goes to storage, and only the file key goes in the task arguments, not the big data in the broker. The worker transcodes at its own pace, retries are possible, and workers scale separately. Option A is the trap of calling the synchronous design \"simple\"; option C keeps the same timeout problem with an open request."
+    },
+    "mad2-w12-q5": {
+      "question": "The Settings page changes the name with `PUT /api/v1/me`; the server returns 200 with the updated user JSON, and the Settings component keeps it in its own local `ref`. The navbar shows the name from `user.name` in the Pinia `auth` store. Why does the navbar show the old name until the page is reloaded?",
+      "options": [
+        "The browser cached the PUT response",
+        "Data in a Pinia store is not reactive",
+        "The response went only into the Settings local `ref`; the store's `user` was never updated. Do the update through an auth store action that sets `this.user` from the response",
+        "The JWT expired as soon as the name changed"
+      ],
+      "explanation": "The navbar reads the store, and no new data ever reached the store: Settings kept the result to itself, so the shared state now has two separate \"truths\". On reload the store fetches a fresh user from the server, which is why it looks right then. Fix: change shared data through a store action, so every component that reads it updates automatically. Option B has it backwards: the store is reactive, the problem is that it was never changed. Option A is wrong because browsers do not cache PUT responses."
+    },
+    "mad2-w12-q6": {
+      "question": "At peak, 200 report jobs arrive per minute and each job occupies one worker process for 4 s (one process handles one job at a time). At least how many worker processes are needed to stop the queue from growing without bound?",
+      "options": [
+        "14",
+        "13",
+        "50",
+        "800"
+      ],
+      "explanation": "Arrival rate = 200 / 60 ≈ 3.33 jobs/s. By Little's law the jobs running at once ≈ 3.33 × 4 ≈ 13.33. There is no such thing as a fraction of a worker, and 13 workers can finish only 13 / 4 = 3.25 jobs/s, which is below 3.33, so round up to 14. Option B is the trap of rounding down; option C computes 200 / 4 (mixing per minute with seconds); option D computes 200 × 4."
+    }
+  }
+}

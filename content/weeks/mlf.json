@@ -1,0 +1,1439 @@
+{
+  "subjectId": "mlf",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Learning from data: tasks, losses and generalisation",
+      "summary": "Is week aap ML problems ko supervised/unsupervised aur regression/classification me classify karna, loss function se model ki galti naapna, aur training vs test error se overfitting pehchanna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Machine learning ka setup**: data D = {(x₁, y₁), …, (xₙ, yₙ)}, jahan xᵢ ∈ ℝᵈ ek feature vector hai aur yᵢ label. Hum ek function family (model class) choose karte hain, jaise f(x) = wᵀx + b, aur data se aise parameters dhoondhte hain jo naye, unseen x par bhi achha predict karein. Asli goal training data yaad karna nahi, **generalise** karna hai.",
+        "**Supervised vs unsupervised**: supervised learning me har x ke saath label y diya hota hai (house price, spam/not-spam). Unsupervised me sirf x hote hain aur hum structure dhoondhte hain: clustering (customer segments), dimensionality reduction (PCA), density estimation. Label hai ya nahi, yahi pehla sawaal hai.",
+        "**Regression vs classification**: label continuous real number ho (price, temperature, delivery time) to regression; label ek finite set se ho ({spam, not spam}, {0, 1, …, 9}) to classification. Output ka type decide karta hai, input ka type nahi.",
+        "**Loss function** ℓ(ŷ, y) batata hai ki ek prediction kitni galat hai. Regression me squared loss (ŷ − y)² aur absolute loss |ŷ − y| common hain; classification me 0-1 loss (galat = 1, sahi = 0) aur probabilistic models ke liye cross-entropy −[y ln p + (1 − y) ln(1 − p)]. Training ka matlab hai **empirical risk** (1/n) Σ ℓ(f(xᵢ), yᵢ) ko minimise karna.",
+        "**Squared vs absolute loss**: squared loss bade errors ko zyada punish karta hai, isliye outliers ka asar bada hota hai. Ek constant predictor c ke liye Σ(yᵢ − c)² ka minimiser **mean** hai aur Σ|yᵢ − c| ka minimiser **median**. Isliye absolute loss outliers ke against zyada robust hai.",
+        "**Training, validation aur test split**: model ko training set par fit karo, hyperparameters (polynomial degree, regularisation strength) validation set par choose karo, aur test set ko sirf end me ek baar final estimate ke liye use karo. Test set par model choose kiya to wo estimate optimistic (biased) ho jaata hai.",
+        "**Overfitting aur underfitting**: bahut simple model training aur test dono par high error deta hai (underfitting, high bias). Bahut flexible model training error ko lagbhag zero kar deta hai par test error badh jaata hai (overfitting, high variance), kyunki wo noise bhi yaad kar leta hai. Model complexity badhane par training error ghatta hai, test error pehle ghatkar phir badhta hai (U-shape).",
+        "**Interpolation ka trap**: n points jinke x alag-alag hain, unhe degree n − 1 polynomial exactly pass kar sakta hai, yaani training error 0. Ye achha model hone ka saboot nahi hai; zero training error ke saath aksar test error sabse kharab hota hai."
+      ],
+      "example": {
+        "problem": "Ek fictional delivery startup 4 orders ka delivery time (minutes) predict karta hai. Actual y = (30, 42, 25, 50), model ke predictions ŷ = (28, 45, 25, 44). Mean squared error (MSE) aur mean absolute error (MAE) nikalo, aur batao kaunsa error outlier jaisi badi galti ko zyada weight deta hai.",
+        "steps": [
+          "Errors y − ŷ: 30 − 28 = 2, 42 − 45 = −3, 25 − 25 = 0, 50 − 44 = 6.",
+          "Squared errors: 4, 9, 0, 36. Sum = 49.",
+          "MSE = 49 / 4 = 12.25 (minutes²). RMSE = √12.25 = 3.5 minutes.",
+          "Absolute errors: 2, 3, 0, 6. Sum = 11, MAE = 11 / 4 = 2.75 minutes.",
+          "Sabse badi galti 6 ka MSE me contribution 36/49 ≈ 73% hai, jabki MAE me sirf 6/11 ≈ 55%.",
+          "Answer: **MSE = 12.25, MAE = 2.75**; squared loss badi galtiyon ko zyada weight deta hai."
+        ]
+      },
+      "mistakes": [
+        "Test set par baar-baar models compare karke best choose karna. Tab test error ek honest estimate nahi rehta. Model selection ke liye alag validation set (ya cross-validation) rakho.",
+        "Zero training error ko best model maan lena. Flexible model noise ko bhi fit kar leta hai; hamesha validation/test error dekho.",
+        "Problem ko input ke type se regression/classification bolna. Decide output (label) ka type karta hai: numeric continuous label = regression, category = classification."
+      ],
+      "revision": [
+        "Supervised: (x, y) pairs; unsupervised: sirf x.",
+        "Regression: continuous label; classification: discrete label.",
+        "Empirical risk = (1/n) Σ ℓ(f(xᵢ), yᵢ).",
+        "Squared loss ka best constant = mean; absolute loss ka = median.",
+        "Overfitting: training error low, test error high.",
+        "Validation se model choose karo, test sirf final report ke liye."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w1-q1",
+          "question": "Ek fictional online store ke paas customers ki purchase history hai, par koi label nahi. Wo customers ko similar buying behaviour wale groups me baantna chahta hai. Ye kis type ka ML problem hai?",
+          "options": [
+            "Supervised regression",
+            "Supervised classification",
+            "Unsupervised clustering",
+            "Supervised ranking"
+          ],
+          "answer": 2,
+          "explanation": "Data me koi label y nahi hai aur goal groups (structure) dhoondhna hai, isliye ye unsupervised clustering hai. Option B tempting hai kyunki output 'group' ek category lagti hai, par classification ke liye training me har customer ka sahi group pehle se pata hona chahiye, jo yahan nahi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w1-q2",
+          "question": "Ek regression model ke liye actual values y = (3, 5, 2, 8) aur predictions ŷ = (2.5, 5, 4, 7) hain. Mean squared error (MSE) kya hai?",
+          "options": [
+            "1.3125",
+            "0.875",
+            "5.25",
+            "1.1456"
+          ],
+          "answer": 0,
+          "explanation": "Errors: 0.5, 0, −2, 1. Squares: 0.25, 0, 4, 1, sum = 5.25. MSE = 5.25 / 4 = 1.3125. Option B (0.875) MAE hai (absolute errors ka mean), option C (5.25) sum of squared errors hai jisme n se divide karna bhool gaye, aur option D RMSE = √1.3125 hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w1-q3",
+          "question": "Teen polynomial regression models ke errors (MSE) ye hain. Degree 1: train 4.1, validation 4.3. Degree 3: train 1.2, validation 1.5. Degree 9: train 0.05, validation 6.8. Kaunsa statement sahi hai?",
+          "options": [
+            "Degree 9 best hai kyunki uska training error sabse kam hai",
+            "Degree 3 choose karna chahiye; degree 9 overfit kar raha hai",
+            "Degree 1 overfit kar raha hai kyunki uske dono errors close hain",
+            "Final model choose karne ke liye test set par teeno ka error compare karna chahiye"
+          ],
+          "answer": 1,
+          "explanation": "Model selection validation error se hota hai: degree 3 ka validation error (1.5) sabse kam hai. Degree 9 ka training error 0.05 par validation 6.8 hai, jo overfitting ka classic sign hai, isliye option A ka trap training error par bharosa karna hai. Degree 1 underfit (high bias) hai, overfit nahi. Option D galat hai kyunki test set par choose karne se final estimate biased ho jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w1-q4",
+          "question": "Ek binary classifier do examples par probability p = P(y = 1) deta hai: pehle example ka y = 1 aur p = 0.8, doosre ka y = 0 aur p = 0.3. Natural log use karke average cross-entropy loss kya hai?",
+          "options": [
+            "0.5798",
+            "0.7136",
+            "0.1259",
+            "0.2899"
+          ],
+          "answer": 3,
+          "explanation": "Loss = −[y ln p + (1 − y) ln(1 − p)]. Pehla: −ln 0.8 = 0.2231. Doosra (y = 0): −ln(1 − 0.3) = −ln 0.7 = 0.3567. Average = (0.2231 + 0.3567)/2 = 0.2899. Option B me doosre example ke liye −ln 0.3 le liya (y = 0 hone par 1 − p lena tha), option A sum hai average nahi, aur option C me log base 10 use ho gaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w1-q5",
+          "question": "Training data me 6 points hain jinke x values sab alag hain. Kis minimum degree ka polynomial in sab points se exactly guzar sakta hai (training MSE = 0, chahe y kuch bhi ho)?",
+          "options": [
+            "6",
+            "4",
+            "3",
+            "5"
+          ],
+          "answer": 3,
+          "explanation": "Degree k polynomial me k + 1 coefficients hote hain. 6 alag x par 6 equations hain, to 6 unknowns chahiye: k + 1 = 6, k = 5 (Vandermonde system invertible hai jab x alag hon). Option A ka trap points ki count ko hi degree maan lena hai. Ye bhi yaad rakho: aisa zero training error aksar overfitting hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w1-q6",
+          "question": "Data {1, 2, 3, 10} ke liye ek constant predictor ŷ = c choose karna hai. Squared loss Σ(yᵢ − c)² aur absolute loss Σ|yᵢ − c| ko minimise karne wale c kya hain?",
+          "options": [
+            "Squared: c = 4; absolute: [2, 3] me koi bhi c",
+            "Squared: c = 2.5; absolute: c = 4",
+            "Dono ke liye c = 4",
+            "Squared: c = 4; absolute: sirf c = 2.5"
+          ],
+          "answer": 0,
+          "explanation": "Squared loss ka minimiser mean hai: (1 + 2 + 3 + 10)/4 = 4 (derivative −2Σ(yᵢ − c) = 0). Absolute loss ka minimiser median hai; even count me 2 aur 3 ke beech har c same loss 10 deta hai (c = 2, 2.5, 3 sab par sum = 10, jabki c = 4 par 12). Option D tempting hai kyunki median ko 2.5 padhaya jaata hai, par absolute loss ke liye poora interval [2, 3] optimal hai. Option B mean/median ulte kar deta hai; outlier 10 mean ko kheenchta hai, median ko nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Calculus toolkit: gradients, chain rule and Taylor approximations",
+      "summary": "Is week aap partial derivatives aur gradient nikalna, loss function par chain rule lagana, aur first/second-order Taylor approximation se function ko locally approximate karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Derivative as local slope**: f′(a) = lim (f(a + h) − f(a))/h jab h → 0. ML me iska practical matlab: parameter ko thoda sa h badhao to loss lagbhag f′(a)·h badhega. Isi sensitivity se training chalti hai.",
+        "**Partial derivative**: f(x, y) me ∂f/∂x nikalte waqt y ko constant maano. Jaise f = x²y + 3y² ke liye ∂f/∂x = 2xy aur ∂f/∂y = x² + 6y. Har parameter ki apni sensitivity hoti hai.",
+        "**Gradient** ∇f = (∂f/∂x₁, …, ∂f/∂x_d) ek vector hai jo steepest increase ki direction batata hai. Unit vector u ki direction me rate of change (directional derivative) = ∇f · u, jo maximum |∇f| hota hai jab u gradient ke parallel ho. Isliye gradient descent −∇f ki direction me chalta hai.",
+        "**Chain rule**: agar L = g(h(w)), to dL/dw = g′(h(w)) · h′(w). Squared loss L = (wx − y)² ke liye dL/dw = 2(wx − y) · x. Multivariable case me ∂L/∂wⱼ = Σₖ (∂L/∂zₖ)(∂zₖ/∂wⱼ); neural networks ka backpropagation isi ka systematic use hai.",
+        "**Linear (first-order) approximation**: f(a + Δ) ≈ f(a) + ∇f(a) · Δ. Ye point a par tangent plane hai. Δ chhota ho to error Δ ke square jitna chhota hota hai.",
+        "**Second-order Taylor approximation**: f(a + Δ) ≈ f(a) + ∇f(a) · Δ + ½ Δᵀ H Δ, jahan H Hessian matrix hai (Hᵢⱼ = ∂²f/∂xᵢ∂xⱼ). Curvature ki ye information Newton's method aur minima/maxima ki pehchaan (week 7) me kaam aati hai.",
+        "**Useful derivatives**: d/dx eˣ = eˣ, d/dx ln x = 1/x, sigmoid σ(z) = 1/(1 + e⁻ᶻ) ke liye σ′(z) = σ(z)(1 − σ(z)). Vector form me ∇(aᵀx) = a aur ∇(xᵀAx) = (A + Aᵀ)x, jo A symmetric ho to 2Ax ban jaata hai."
+      ],
+      "example": {
+        "problem": "Ek single-feature model ŷ = wx + b aur ek training example (x = 2, y = 7) ke liye squared loss L(w, b) = (wx + b − y)² hai. w = 1, b = 1 par gradient ∇L = (∂L/∂w, ∂L/∂b) nikalo aur batao ki loss kam karne ke liye w ko badhana chahiye ya ghatana.",
+        "steps": [
+          "Residual r = wx + b − y = 1·2 + 1 − 7 = −4.",
+          "Chain rule: ∂L/∂w = 2r · ∂(wx + b)/∂w = 2r · x.",
+          "Isi tarah ∂L/∂b = 2r · 1 = 2r.",
+          "Values: ∂L/∂w = 2(−4)(2) = −16, ∂L/∂b = 2(−4) = −8.",
+          "Gradient negative hai, matlab w badhane par L ghatega; gradient descent w ← w − η(−16) w ko badhata hai.",
+          "Answer: **∇L = (−16, −8)**; w aur b dono ko badhana chahiye."
+        ],
+        "code": "x, y = 2, 7\nw, b = 1.0, 1.0\nr = w * x + b - y\ngrad_w = 2 * r * x\ngrad_b = 2 * r\nprint(grad_w, grad_b)   # -16.0 -8.0"
+      },
+      "mistakes": [
+        "Chain rule me inner derivative bhool jaana: (wx − y)² ka w-derivative 2(wx − y) nahi, 2(wx − y)·x hai.",
+        "Second-order Taylor me ½ factor chhod dena, ya cross term ∂²f/∂x∂y ko sirf ek baar ginna. ΔᵀHΔ me cross term 2·Hₓᵧ·Δx·Δy aata hai.",
+        "Gradient ko descent direction samajhna. ∇f increase ki direction hai; minimise karne ke liye −∇f lo."
+      ],
+      "revision": [
+        "∇f = vector of partial derivatives; ∇f · u = directional derivative.",
+        "Chain rule: d/dw g(h(w)) = g′(h(w))·h′(w).",
+        "Linear approx: f(a + Δ) ≈ f(a) + ∇f(a)·Δ.",
+        "Quadratic approx: + ½ ΔᵀHΔ.",
+        "σ′(z) = σ(z)(1 − σ(z)); ∇(xᵀAx) = 2Ax for symmetric A."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w2-q1",
+          "question": "f(x) = x³ − 4x ke liye f′(2) kya hai?",
+          "options": [
+            "0",
+            "8",
+            "12",
+            "4"
+          ],
+          "answer": 1,
+          "explanation": "f′(x) = 3x² − 4, to f′(2) = 12 − 4 = 8. Option C (12) me sirf 3x² ka part liya, −4 bhool gaye. Option A (0) f(2) = 8 − 8 hai, derivative nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w2-q2",
+          "question": "f(x, y) = x²y + 3y² ka gradient point (1, 2) par kya hai?",
+          "options": [
+            "(2, 13)",
+            "(4, 7)",
+            "(4, 12)",
+            "(4, 13)"
+          ],
+          "answer": 3,
+          "explanation": "∂f/∂x = 2xy = 2·1·2 = 4. ∂f/∂y = x² + 6y = 1 + 12 = 13. Gradient (4, 13). Option B me 3y² ka derivative 3y le liya (power rule me 2 ka factor chhoot gaya), option C me x² wala term bhool gaye, aur option A me ∂f/∂x ke liye y ki jagah 1 rakh diya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w2-q3",
+          "question": "Ek example (x = 2, y = 3) par loss L(w) = (wx − y)² hai. w = 1 par dL/dw kya hai?",
+          "options": [
+            "−4",
+            "−2",
+            "4",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "Chain rule: dL/dw = 2(wx − y)·x = 2(2 − 3)·2 = −4. Option B (−2) me inner derivative x = 2 bhool gaye. Option C sign ulta hai, jo tab hota hai jab residual ko (y − wx) likhkar inner derivative ka minus chhod dete ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w2-q4",
+          "question": "f(x, y) = x²y ka point (2, 1) par linear approximation use karke f(2.1, 0.95) ka estimate kya hai?",
+          "options": [
+            "4.6",
+            "4.1895",
+            "4.2",
+            "4.4"
+          ],
+          "answer": 2,
+          "explanation": "f(2, 1) = 4, ∇f = (2xy, x²) = (4, 4). Δ = (0.1, −0.05). Estimate = 4 + 4(0.1) + 4(−0.05) = 4 + 0.4 − 0.2 = 4.2. Option B (4.1895) exact value hai, linear approximation nahi. Option A me Δy ka sign + le liya, aur option D me y-direction ka change ignore kar diya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w2-q5",
+          "question": "f(x, y) = x² + 2y² ka point (1, 1) par unit vector u = (0.6, 0.8) ki direction me directional derivative kya hai?",
+          "options": [
+            "2.2",
+            "√20",
+            "4.4",
+            "6"
+          ],
+          "answer": 2,
+          "explanation": "∇f = (2x, 4y) = (2, 4). Directional derivative = ∇f · u = 2(0.6) + 4(0.8) = 1.2 + 3.2 = 4.4. Option B (√20) |∇f| hai, yaani maximum possible rate, jo sirf gradient ki direction me milta hai. Option A me gradient ki jagah f ke coefficients (1, 2) use hue: 0.6 + 1.6 = 2.2. Option D gradient components ka sum hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w2-q6",
+          "question": "f(x, y) = x³ + xy² ka point (1, 1) par second-order Taylor approximation use karke f(1.1, 0.9) ka estimate kya hai?",
+          "options": [
+            "2.2",
+            "2.22",
+            "2.24",
+            "2.26"
+          ],
+          "answer": 1,
+          "explanation": "f(1, 1) = 2. ∇f = (3x² + y², 2xy) = (4, 2). Hessian H = [[6x, 2y], [2y, 2x]] = [[6, 2], [2, 2]]. Δ = (0.1, −0.1). Linear part: 2 + 0.4 − 0.2 = 2.2. ΔᵀHΔ = 6(0.01) + 2·2(0.1)(−0.1) + 2(0.01) = 0.06 − 0.04 + 0.02 = 0.04, aur ½ · 0.04 = 0.02. Estimate 2.22 (exact value 2.222). Option A sirf linear approximation hai, option C me ½ bhool gaye, aur option D me cross term ka sign + le liya.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Least squares as projection onto the column space",
+      "summary": "Is week aap linear regression ko Ax ≈ b ke roop me likhna, normal equations AᵀAx̂ = Aᵀb se best fit nikalna, aur use column space par orthogonal projection ki tarah samajhna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Regression as a linear system**: n examples aur d features ho to design matrix A (n × d) banao, har row ek example, aur agar intercept chahiye to pehla column saare 1 ka. Model ŷ = Ax. Usually n > d hota hai (zyada equations, kam unknowns), isliye Ax = b ka exact solution aam taur par exist nahi karta.",
+        "**Column space** C(A) = {Ax : x ∈ ℝᵈ}, yaani A ke columns ke saare linear combinations. Ax = b solvable hai tabhi jab b ∈ C(A). Jab b bahar ho, hum C(A) ka wo point p = Ax̂ dhoondhte hain jo b ke sabse kareeb ho.",
+        "**Least squares objective**: x̂ = argmin ‖Ax − b‖² = argmin Σ (aᵢᵀx − bᵢ)². Gradient 2Aᵀ(Ax − b) ko zero rakhne par **normal equations** milte hain: AᵀA x̂ = Aᵀb. Agar A ke columns linearly independent hain to AᵀA invertible hai aur x̂ = (AᵀA)⁻¹Aᵀb unique hai.",
+        "**Geometry: orthogonal projection**: best fit p = Ax̂ wo point hai jahan error e = b − p column space ke har vector se perpendicular ho: Aᵀe = 0. Normal equations isi condition ka algebraic roop hain. Projection matrix P = A(AᵀA)⁻¹Aᵀ, aur P² = P, Pᵀ = P.",
+        "**Projection onto a single line**: vector a ki direction me b ka projection p = (aᵀb / aᵀa) · a. Denominator aᵀa = ‖a‖² hai, ‖a‖ nahi. Ye d = 1 wala special case hai.",
+        "**Intercept ka asar**: column of ones hone se Aᵀe = 0 ki pehli equation kehti hai Σeᵢ = 0, yaani residuals ka sum zero, aur fitted line (x̄, ȳ) se guzarti hai. Bina intercept ke (line origin se forced) ye guarantee nahi milti.",
+        "**Rank deficiency**: agar ek feature doosre ka multiple hai (jaise height cm me aur inches me dono), to A ke columns dependent hain, AᵀA singular hai, aur x̂ unique nahi. Projection p phir bhi unique hota hai; sirf coefficients ka split ambiguous hai. Practice me duplicate feature hatao ya regularisation (ridge) use karo."
+      ],
+      "example": {
+        "problem": "Ek fictional shop ka ad spend x (lakh ₹) aur sales y (lakh ₹): (1, 2), (2, 3), (3, 5), (4, 6). Line ŷ = c + mx ko least squares se fit karo aur check karo ki residuals column space ke orthogonal hain.",
+        "steps": [
+          "A ki rows (1, xᵢ): A = [[1, 1], [1, 2], [1, 3], [1, 4]], b = (2, 3, 5, 6).",
+          "AᵀA = [[4, 10], [10, 30]], Aᵀb = (Σy, Σxy) = (16, 47).",
+          "Normal equations: 4c + 10m = 16, 10c + 30m = 47. Determinant 4·30 − 10·10 = 20.",
+          "c = (30·16 − 10·47)/20 = 10/20 = 0.5; m = (4·47 − 10·16)/20 = 28/20 = 1.4.",
+          "Fitted values 1.9, 3.3, 4.7, 6.1; residuals e = (0.1, −0.3, 0.3, −0.1).",
+          "Check: Σe = 0 aur Σxᵢeᵢ = 0.1 − 0.6 + 0.9 − 0.4 = 0, yaani Aᵀe = 0 ✓. SSE = 0.01 + 0.09 + 0.09 + 0.01 = 0.2.",
+          "Answer: **ŷ = 0.5 + 1.4x**, minimum SSE = 0.2."
+        ],
+        "code": "def lstsq_line(xs, ys):\n    n = len(xs)\n    sx, sy = sum(xs), sum(ys)\n    sxx = sum(x * x for x in xs)\n    sxy = sum(x * y for x, y in zip(xs, ys))\n    d = n * sxx - sx * sx\n    c = (sxx * sy - sx * sxy) / d\n    m = (n * sxy - sx * sy) / d\n    return c, m\n\nprint(lstsq_line([1, 2, 3, 4], [2, 3, 5, 6]))   # (0.5, 1.4)"
+      },
+      "mistakes": [
+        "AᵀA x̂ = Aᵀb ki jagah Ax̂ = b ko kisi bhi tarah solve karne ki koshish, jaise sirf pehli d rows le kar. Wo baaki equations ko ignore karta hai aur error minimise nahi karta.",
+        "Line par projection me aᵀb ko ‖a‖ se divide karna. Sahi formula p = (aᵀb / ‖a‖²)·a hai; unit vector u ho tabhi p = (uᵀb)u.",
+        "Intercept column bhool jaana. Bina column of ones ke fit origin se guzarne ko majboor hota hai aur residuals ka sum zero nahi rehta."
+      ],
+      "revision": [
+        "Ax = b solvable ⇔ b ∈ C(A).",
+        "Normal equations: AᵀA x̂ = Aᵀb.",
+        "Error e = b − Ax̂ satisfies Aᵀe = 0.",
+        "P = A(AᵀA)⁻¹Aᵀ, P² = P.",
+        "Line par projection: (aᵀb / aᵀa)·a.",
+        "Dependent columns ⇒ AᵀA singular, x̂ unique nahi."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w3-q1",
+          "question": "A = [[1, 0], [0, 1], [1, 1]] (3 × 2). Kis b ke liye Ax = b ka exact solution exist karta hai?",
+          "options": [
+            "b = (1, 2, 4)",
+            "b = (2, 1, 3)",
+            "b = (1, 1, 1)",
+            "b = (3, 1, 2)"
+          ],
+          "answer": 1,
+          "explanation": "Ax = (x₁, x₂, x₁ + x₂), to column space me har vector ka teesra component pehle do ka sum hai. (2, 1, 3) me 2 + 1 = 3 ✓, x = (2, 1). Option A me 1 + 2 = 3 ≠ 4. Option D tempting hai kyunki usme bhi koi do components milkar teesra banate hain (1 + 2 = 3), par condition specifically b₃ = b₁ + b₂ hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w3-q2",
+          "question": "A (n × d, n > d, independent columns) ke liye ‖Ax − b‖² ko minimise karne wala x̂ kis equation ko satisfy karta hai?",
+          "options": [
+            "AᵀA x̂ = Aᵀb",
+            "AAᵀ x̂ = b",
+            "A x̂ = Aᵀb",
+            "AᵀA x̂ = b"
+          ],
+          "answer": 0,
+          "explanation": "Gradient 2Aᵀ(Ax − b) = 0 se AᵀA x̂ = Aᵀb milta hai. Option D me dimensions hi match nahi karte: AᵀA x̂ d-dimensional hai jabki b n-dimensional. Option B me AAᵀ (n × n) aata hai jo x̂ (d entries) par lag hi nahi sakta. Har option ka shape check karna sabse tez filter hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w3-q3",
+          "question": "Points (0, 1), (1, 3), (2, 6), (3, 5) par line ŷ = c + mx ka least squares fit kya hai?",
+          "options": [
+            "ŷ = 1 + 1.33x",
+            "ŷ = 2.14x",
+            "ŷ = 1.5 + 1.5x",
+            "ŷ = 3.75"
+          ],
+          "answer": 2,
+          "explanation": "Σx = 6, Σx² = 14, Σy = 15, Σxy = 0 + 3 + 12 + 15 = 30. Normal equations: 4c + 6m = 15, 6c + 14m = 30 ⇒ m = 1.5, c = 1.5. Option A pehle aur aakhri point ko jodne wali line hai (slope 4/3), jo baaki points ko ignore karti hai. Option B intercept ke bina fit hai (m = 30/14), aur option D sirf mean ȳ hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w3-q4",
+          "question": "b = (3, 0, 3) ka vector a = (1, 2, 2) ki line par orthogonal projection kya hai?",
+          "options": [
+            "(3, 6, 6)",
+            "(9, 18, 18)",
+            "(2, −2, 1)",
+            "(1, 2, 2)"
+          ],
+          "answer": 3,
+          "explanation": "aᵀb = 3 + 0 + 6 = 9, aᵀa = 1 + 4 + 4 = 9, to p = (9/9)·a = (1, 2, 2). Option A me ‖a‖ = 3 se divide kiya (‖a‖² se karna tha), option B me divide hi nahi kiya. Option C error vector e = b − p hai; check: aᵀe = 2 − 4 + 2 = 0.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w3-q5",
+          "question": "Ek fictional housing dataset me 'area in m²' aur 'area in ft²' dono features hain (ft² = 10.764 × m²), saath me intercept column. Least squares ke baare me kya sahi hai?",
+          "options": [
+            "AᵀA singular hai; fitted values Ax̂ unique hain par coefficients x̂ unique nahi",
+            "AᵀA invertible hai kyunki dono columns ke numbers alag hain",
+            "Koi least squares solution exist hi nahi karta",
+            "Fitted values bhi unique nahi hain, isliye predictions bharose layak nahi"
+          ],
+          "answer": 0,
+          "explanation": "Ek column doosre ka exact multiple hai, to columns linearly dependent hain, rank(A) < d, aur AᵀA singular hai. Phir bhi b ka C(A) par projection p unique hai; sirf do dependent features ke beech weight ka split ambiguous hai (infinitely many x̂). Option B ka trap ye sochna hai ki alag numbers ka matlab independence hai. Option D galat hai kyunki projection hamesha unique hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w3-q6",
+          "question": "A = [[1, 0], [1, 1], [1, 2]] aur b = (1, 5, 3). Least squares solution x̂ aur minimum squared error ‖b − Ax̂‖² kya hain?",
+          "options": [
+            "x̂ = (3, 0), ‖e‖² = 8",
+            "x̂ = (1, 4), ‖e‖² = 36",
+            "x̂ = (2, 1), ‖e‖² = 6",
+            "x̂ = (1, 2), ‖e‖² = 8"
+          ],
+          "answer": 2,
+          "explanation": "AᵀA = [[3, 3], [3, 5]], Aᵀb = (9, 11). 3x₁ + 3x₂ = 9 aur 3x₁ + 5x₂ = 11 ⇒ x₂ = 1, x₁ = 2. p = Ax̂ = (2, 3, 4), e = (−1, 2, −1), ‖e‖² = 6, aur Aᵀe = (0, 0) ✓. Option B pehli do equations ko exactly solve karta hai (x₁ = 1, x₁ + x₂ = 5), jisse teesri row ka error 36 ho jaata hai. Option A sirf mean (slope 0) fit hai, aur option D me intercept aur slope swap ho gaye.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Eigenvalues, eigenvectors and diagonalisation",
+      "summary": "Is week aap characteristic polynomial se eigenvalues nikalna, eigenvectors dhoondhna, matrix ko diagonalise karna, aur Aᵏ jaisi powers ko eigenvalues ki powers se jaldi compute karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Eigenvector aur eigenvalue**: non-zero v jiske liye Av = λv. Matlab A is direction ko ghumata nahi, sirf λ se scale karta hai (λ negative ho to direction ulti). v = 0 kabhi eigenvector nahi hota, par λ = 0 allowed hai (tab A singular hai).",
+        "**Characteristic polynomial**: Av = λv ⇔ (A − λI)v = 0 ka non-zero solution ⇔ det(A − λI) = 0. 2 × 2 ke liye ye λ² − (trace)λ + det = 0 ban jaata hai. Har eigenvalue ke liye null space of (A − λI) me eigenvectors milte hain.",
+        "**Trace aur determinant**: n × n matrix ke eigenvalues (multiplicity ke saath) ka sum = trace(A) aur product = det(A). Triangular matrix ke eigenvalues seedhe diagonal entries hain. Quick check: 2 × 2 me paaye gaye λ₁, λ₂ ka sum aur product trace aur det se match hone chahiye.",
+        "**Eigenvalues of related matrices**: agar Av = λv, to Aᵏv = λᵏv, A⁻¹v = (1/λ)v (λ ≠ 0), (A + cI)v = (λ + c)v, aur (cA)v = cλv. Isliye det(cA) = cⁿ det(A) for n × n, sirf c·det(A) nahi.",
+        "**Diagonalisation**: agar A ke n linearly independent eigenvectors hain to A = VΛV⁻¹, jahan V ke columns eigenvectors aur Λ = diag(λᵢ). Distinct eigenvalues hon to eigenvectors guaranteed independent hote hain. Repeated eigenvalue par ho bhi sakta hai (jaise 3I) aur nahi bhi (jaise [[3, 1], [0, 3]], jiska sirf ek eigenvector direction hai: **defective** matrix).",
+        "**Powers via eigen-decomposition**: Aᵏ = VΛᵏV⁻¹. Practical tareeka: x ko eigenvectors me likho, x = c₁v₁ + c₂v₂, phir Aᵏx = c₁λ₁ᵏv₁ + c₂λ₂ᵏv₂. Bade k par sabse bada |λ| dominate karta hai; yahi idea power iteration, Markov chains aur PageRank ke peeche hai."
+      ],
+      "example": {
+        "problem": "Ek fictional app ke users do plans A aur B me hain. Har mahine A ke 90% A me rehte hain aur 10% B me jaate hain; B ke 80% B me rehte hain aur 20% A me jaate hain. Matrix M = [[0.9, 0.2], [0.1, 0.8]], shuru me x₀ = (500, 400). Eigen-decomposition se 2 mahine baad ke users aur long-run split nikalo.",
+        "steps": [
+          "Trace = 1.7, det = 0.72 − 0.02 = 0.70. λ² − 1.7λ + 0.7 = 0 ⇒ λ = 1 aur λ = 0.7.",
+          "λ = 1: (M − I) = [[−0.1, 0.2], [0.1, −0.2]] ⇒ v₁ = (2, 1). λ = 0.7: [[0.2, 0.2], [0.1, 0.1]] ⇒ v₂ = (1, −1).",
+          "x₀ = c₁(2, 1) + c₂(1, −1): 2c₁ + c₂ = 500, c₁ − c₂ = 400 ⇒ c₁ = 300, c₂ = −100.",
+          "Mᵏx₀ = 300·1ᵏ·(2, 1) − 100·(0.7)ᵏ·(1, −1) = (600 − 100·0.7ᵏ, 300 + 100·0.7ᵏ).",
+          "k = 2: 0.7² = 0.49 ⇒ (600 − 49, 300 + 49) = (551, 349). Direct check: Mx₀ = (530, 370), M(530, 370) = (551, 349) ✓.",
+          "k → ∞ par 0.7ᵏ → 0, to split (600, 300) ki taraf jaata hai.",
+          "Answer: **2 mahine baad (551, 349); long run me (600, 300)**, yaani λ = 1 wala eigenvector steady state hai."
+        ]
+      },
+      "mistakes": [
+        "Har matrix ke eigenvalues diagonal entries maan lena. Ye sirf triangular (ya diagonal) matrix ke liye sach hai; baaki ke liye det(A − λI) = 0 solve karo.",
+        "Repeated eigenvalue dekhte hi 'diagonalisable nahi' bol dena. 3I diagonalisable hai; asli test hai ki independent eigenvectors kitne hain.",
+        "det(cA) = c·det(A) likhna. n × n matrix ke liye har row c se scale hoti hai, to det(cA) = cⁿ det(A)."
+      ],
+      "revision": [
+        "Av = λv, v ≠ 0; det(A − λI) = 0.",
+        "Σλᵢ = trace, Πλᵢ = det.",
+        "Triangular ⇒ eigenvalues = diagonal entries.",
+        "A = VΛV⁻¹ ⇒ Aᵏ = VΛᵏV⁻¹.",
+        "Aᵏx = Σ cᵢλᵢᵏvᵢ; bada |λ| dominate karta hai.",
+        "Distinct eigenvalues ⇒ diagonalisable."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w4-q1",
+          "question": "A = [[2, 5], [0, 3]] ke eigenvalues kya hain?",
+          "options": [
+            "5 aur 6",
+            "2 aur 5",
+            "0 aur 5",
+            "2 aur 3"
+          ],
+          "answer": 3,
+          "explanation": "Upper triangular matrix ke eigenvalues diagonal entries hain: det(A − λI) = (2 − λ)(3 − λ) ⇒ 2 aur 3. Option A me trace (5) aur det (6) ko hi eigenvalues likh diya; asal me eigenvalues ka sum 5 aur product 6 hai. Off-diagonal 5 ka eigenvalues par koi asar nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w4-q2",
+          "question": "A = [[4, 1], [2, 3]] aur v = (1, 1). v ke liye kya sahi hai?",
+          "options": [
+            "v eigenvector hai, eigenvalue 5",
+            "v eigenvector hai, eigenvalue 2",
+            "v eigenvector hai, eigenvalue 7",
+            "v eigenvector nahi hai"
+          ],
+          "answer": 0,
+          "explanation": "Av = (4 + 1, 2 + 3) = (5, 5) = 5·(1, 1), to v eigenvector hai aur λ = 5. Option B tempting hai kyunki 2 bhi A ka eigenvalue hai (trace 7 − 5 = 2), par uska eigenvector (1, −2) hai, (1, 1) nahi. Option C trace hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w4-q3",
+          "question": "A = [[4, −2], [1, 1]] ke eigenvalues kya hain?",
+          "options": [
+            "4 aur 1",
+            "−2 aur −3",
+            "2 aur 3",
+            "6 aur −1"
+          ],
+          "answer": 2,
+          "explanation": "Trace = 5, det = 4·1 − (−2)(1) = 6. λ² − 5λ + 6 = 0 ⇒ (λ − 2)(λ − 3) = 0 ⇒ 2, 3. Check: 2 + 3 = 5 ✓, 2·3 = 6 ✓. Option A diagonal entries hain, jo sirf triangular matrix me eigenvalues hote. Option B me trace ka sign ulta liya (λ² + 5λ + 6), aur option D me det ka sign ulta (λ² − 5λ − 6).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w4-q4",
+          "question": "Ek 3 × 3 matrix A ke eigenvalues 1, 2 aur 4 hain. det(2A) kya hai?",
+          "options": [
+            "16",
+            "14",
+            "64",
+            "8"
+          ],
+          "answer": 2,
+          "explanation": "2A ke eigenvalues 2, 4, 8 hain, product 64. Equivalently det(2A) = 2³·det(A) = 8·8 = 64. Option A (16) ka trap det(2A) = 2·det(A) likhna hai. Option B 2·trace = 2·7 hai, aur option D sirf det(A) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w4-q5",
+          "question": "Inme se kaunsi matrix diagonalisable NAHI hai?",
+          "options": [
+            "[[3, 0], [0, 3]]",
+            "[[3, 1], [0, 3]]",
+            "[[1, 2], [2, 1]]",
+            "[[2, 1], [0, 3]]"
+          ],
+          "answer": 1,
+          "explanation": "[[3, 1], [0, 3]] ka eigenvalue 3 do baar aata hai, par A − 3I = [[0, 1], [0, 0]] ka null space sirf (1, 0) ki line hai: ek hi independent eigenvector, to defective. Option A tempting hai kyunki usme bhi 3 repeated hai, par 3I already diagonal hai aur har vector eigenvector hai. Option D ke eigenvalues 2, 3 distinct hain, aur option C symmetric hai, dono diagonalisable.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w4-q6",
+          "question": "A = [[4, −2], [1, 1]] ke eigenpairs hain: λ = 2 with v = (1, 1), aur λ = 3 with v = (2, 1). x = (3, 2) ke liye A⁵x kya hai?",
+          "options": [
+            "(518, 275)",
+            "(307, 275)",
+            "(96, 64)",
+            "(40, 25)"
+          ],
+          "answer": 0,
+          "explanation": "x = (3, 2) = 1·(1, 1) + 1·(2, 1). To A⁵x = 2⁵(1, 1) + 3⁵(2, 1) = (32, 32) + (486, 243) = (518, 275). Option B me eigenvalues ko galat eigenvectors ke saath jod diya: 3⁵(1, 1) + 2⁵(2, 1). Option C me poore x par sirf 2⁵ lagaya, aur option D me power ki jagah 5 se multiply kiya (λ·5).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Symmetric matrices, quadratic forms and positive definiteness",
+      "summary": "Is week aap symmetric matrices ke special properties (real eigenvalues, orthogonal eigenvectors), spectral theorem A = QΛQᵀ, quadratic forms xᵀAx, aur positive definiteness ke tests seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Symmetric matrix**: A = Aᵀ. ML me ye har jagah milti hai: covariance matrix, Gram matrix XᵀX, Hessian of a smooth function, kernel matrix. Isliye inke properties optimisation aur PCA dono ki neev hain.",
+        "**Real eigenvalues, orthogonal eigenvectors**: real symmetric matrix ke saare eigenvalues real hote hain, aur alag eigenvalues ke eigenvectors automatically orthogonal hote hain. Repeated eigenvalue ke eigenspace me bhi orthonormal basis choose kiya ja sakta hai.",
+        "**Spectral theorem**: har real symmetric A ko A = QΛQᵀ likh sakte hain, jahan Q orthogonal (QᵀQ = I, columns orthonormal eigenvectors qᵢ) aur Λ diagonal. Equivalent form: A = Σ λᵢ qᵢqᵢᵀ, yaani rank-1 projections ka weighted sum. Q⁻¹ = Qᵀ hone se inverse nikalna bhi free hai.",
+        "**Quadratic form**: q(x) = xᵀAx = Σᵢ Σⱼ aᵢⱼxᵢxⱼ. 2 × 2 me xᵀAx = a₁₁x₁² + 2a₁₂x₁x₂ + a₂₂x₂²; cross term par factor 2 aata hai. Ulta, 5x₁² + 4x₁x₂ + 2x₂² ki matrix [[5, 2], [2, 2]] hai (4 ko aadha karke dono off-diagonal me).",
+        "**Positive definite (PD)**: xᵀAx > 0 har x ≠ 0 ke liye. Equivalent tests (symmetric A ke liye): saare eigenvalues > 0; saare leading principal minors > 0 (Sylvester); A = RᵀR with R invertible. **Positive semidefinite (PSD)**: ≥ 0, eigenvalues ≥ 0. Covariance matrix aur XᵀX hamesha PSD hote hain, kyunki xᵀ(XᵀX)x = ‖Xx‖² ≥ 0.",
+        "**Indefinite**: kuch directions me xᵀAx > 0, kuch me < 0 (eigenvalues ke sign mixed). 2 × 2 me det < 0 ho to matrix pakka indefinite hai. Hessian indefinite ho to critical point saddle hota hai (week 7).",
+        "**Rayleigh quotient**: unit vectors ‖x‖ = 1 par xᵀAx ki maximum value λ_max aur minimum λ_min hai, jo top/bottom eigenvectors par milti hai. PCA me yahi result variance maximise karne wali direction deta hai."
+      ],
+      "example": {
+        "problem": "Quadratic form q(x) = 5x₁² + 4x₁x₂ + 2x₂² ko orthogonally diagonalise karo, batao PD hai ya nahi, aur unit circle ‖x‖ = 1 par q ki maximum value aur direction nikalo.",
+        "steps": [
+          "Matrix: A = [[5, 2], [2, 2]] (cross coefficient 4 ko aadha karke 2).",
+          "Trace 7, det 10 − 4 = 6 ⇒ λ² − 7λ + 6 = 0 ⇒ λ = 6, 1.",
+          "λ = 6: A − 6I = [[−1, 2], [2, −4]] ⇒ q₁ = (2, 1)/√5. λ = 1: A − I = [[4, 2], [2, 1]] ⇒ q₂ = (1, −2)/√5. Check q₁ · q₂ = (2 − 2)/5 = 0 ✓.",
+          "z = Qᵀx lene par q = 6z₁² + 1·z₂², dono coefficients positive ⇒ PD. Sylvester check: 5 > 0 aur det 6 > 0 ✓.",
+          "Unit circle par max = λ_max = 6, direction q₁ = (2, 1)/√5; min = 1, direction q₂.",
+          "Answer: **A = QΛQᵀ with Λ = diag(6, 1); PD; max value 6 at x = (2, 1)/√5**."
+        ]
+      },
+      "mistakes": [
+        "Quadratic form me cross term ka 2 bhool jaana: xᵀAx = a₁₁x₁² + 2a₁₂x₁x₂ + a₂₂x₂², sirf a₁₂x₁x₂ nahi.",
+        "Sirf diagonal entries positive dekh kar PD bol dena. [[1, 2], [2, 1]] ki diagonal positive hai par eigenvalues 3 aur −1 hain, to indefinite.",
+        "PD aur PSD ko mix karna: det = 0 wali matrix (jaise [[1, 2], [2, 4]]) PSD hai par PD nahi, kyunki kisi non-zero x par xᵀAx = 0 hota hai."
+      ],
+      "revision": [
+        "Symmetric ⇒ real eigenvalues, orthogonal eigenvectors.",
+        "Spectral theorem: A = QΛQᵀ = Σ λᵢqᵢqᵢᵀ.",
+        "xᵀAx (2 × 2) = a₁₁x₁² + 2a₁₂x₁x₂ + a₂₂x₂².",
+        "PD ⇔ all λ > 0 ⇔ all leading minors > 0.",
+        "XᵀX aur covariance matrix hamesha PSD.",
+        "max over ‖x‖ = 1 of xᵀAx = λ_max."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w5-q1",
+          "question": "Real symmetric matrix A ke baare me kaunsa statement HAMESHA sahi hai?",
+          "options": [
+            "A hamesha invertible hota hai",
+            "A ke saare eigenvalues positive hote hain",
+            "Alag eigenvalues ke eigenvectors orthogonal hote hain",
+            "A ke eigenvalues uski diagonal entries hote hain"
+          ],
+          "answer": 2,
+          "explanation": "Spectral theorem ka hissa: real symmetric matrix ke distinct eigenvalues ke eigenvectors orthogonal hote hain (aur saare eigenvalues real hote hain). Option B ka trap 'real' ko 'positive' samajhna hai; [[1, 2], [2, 1]] ka eigenvalue −1 hai. Option A galat: [[1, 1], [1, 1]] symmetric hai par singular. Option D sirf triangular/diagonal matrix ke liye sach hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w5-q2",
+          "question": "A = [[2, 1], [1, 2]] ke eigenvalues aur ek orthonormal eigenvector set kya hai?",
+          "options": [
+            "2 aur 2; eigenvectors (1, 0) aur (0, 1)",
+            "3 aur 1; eigenvectors (1, 1)/√2 aur (1, −1)/√2",
+            "3 aur 1; eigenvectors (1, 1) aur (1, 0)",
+            "4 aur 3; eigenvectors (1, 1)/√2 aur (1, −1)/√2"
+          ],
+          "answer": 1,
+          "explanation": "Trace 4, det 3 ⇒ λ² − 4λ + 3 = 0 ⇒ 3, 1. A(1, 1) = (3, 3) aur A(1, −1) = (1, −1); dono ko √2 se normalise karo, aur ye orthogonal hain. Option A diagonal entries ko eigenvalues maan leta hai. Option C ke vectors orthogonal nahi aur (1, 0) eigenvector bhi nahi (A(1, 0) = (2, 1)). Option D me trace aur det ko eigenvalues likh diya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w5-q3",
+          "question": "Inme se kaunsi matrix positive definite hai?",
+          "options": [
+            "[[1, 2], [2, 1]]",
+            "[[1, 2], [2, 4]]",
+            "[[−1, 0], [0, 2]]",
+            "[[2, −1], [−1, 2]]"
+          ],
+          "answer": 3,
+          "explanation": "Sylvester test: [[2, −1], [−1, 2]] ke liye 2 > 0 aur det = 4 − 1 = 3 > 0, eigenvalues 3 aur 1 ⇒ PD. Option A ki diagonal positive hai par det = 1 − 4 = −3 < 0 ⇒ indefinite (yahi sabse bada trap hai). Option B ka det 0 hai ⇒ sirf PSD (x = (2, −1) par xᵀAx = 0). Option C ka ek eigenvalue −1 hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w5-q4",
+          "question": "A = [[3, 1], [1, 2]] aur x = (1, −2). Quadratic form xᵀAx ki value kya hai?",
+          "options": [
+            "7",
+            "9",
+            "11",
+            "15"
+          ],
+          "answer": 0,
+          "explanation": "xᵀAx = 3x₁² + 2·1·x₁x₂ + 2x₂² = 3(1) + 2(1)(−2) + 2(4) = 3 − 4 + 8 = 7. Ya Ax = (3 − 2, 1 − 4) = (1, −3), phir x · Ax = 1 + 6 = 7. Option B me cross term ka factor 2 bhool gaye (3 − 2 + 8). Option C me cross term poora chhod diya (3 + 8), aur option D me uska sign + le liya (3 + 4 + 8).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w5-q5",
+          "question": "Ek symmetric 2 × 2 matrix ke eigenpairs hain: λ₁ = 4 with q₁ = (1, 1)/√2, aur λ₂ = 2 with q₂ = (1, −1)/√2. A = λ₁q₁q₁ᵀ + λ₂q₂q₂ᵀ kya hai?",
+          "options": [
+            "[[4, 0], [0, 2]]",
+            "[[3, 1], [1, 3]]",
+            "[[3, −1], [−1, 3]]",
+            "[[6, 2], [2, 6]]"
+          ],
+          "answer": 1,
+          "explanation": "q₁q₁ᵀ = ½[[1, 1], [1, 1]], q₂q₂ᵀ = ½[[1, −1], [−1, 1]]. A = 2[[1, 1], [1, 1]] + [[1, −1], [−1, 1]] = [[3, 1], [1, 3]]. Check: trace 6 = 4 + 2, det 8 = 4·2 ✓. Option A sirf Λ hai (Q ko ignore kiya). Option D me ½ factor (normalisation √2 ka square) bhool gaye, aur option C me eigenvalues eigenvectors ke saath swap ho gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w5-q6",
+          "question": "A = [[2, 1, 0], [1, 2, 1], [0, 1, k]]. k ki kis range ke liye A positive definite hai?",
+          "options": [
+            "k > 0",
+            "k > 1/2",
+            "k > 2/3",
+            "k ≥ 2/3"
+          ],
+          "answer": 2,
+          "explanation": "Leading principal minors: 2 > 0; det [[2, 1], [1, 2]] = 3 > 0; det A = 2(2k − 1) − 1(k − 0) + 0 = 3k − 2. PD ke liye 3k − 2 > 0 ⇒ k > 2/3. Option B me cofactor expansion ka doosra term −1·(k) chhoot gaya (sirf 2(2k − 1) > 0). Option A ka trap sirf diagonal entry positive dekhna hai. Option D me k = 2/3 par det = 0, matrix sirf PSD hoti hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Singular value decomposition and principal component analysis",
+      "summary": "Is week aap kisi bhi matrix ka SVD A = UΣVᵀ samajhna, singular values ko AᵀA ke eigenvalues se nikalna, best low-rank approximation banana, aur PCA se data ke variance ko kam dimensions me pakadna seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**SVD**: har m × n real matrix A = UΣVᵀ likhi ja sakti hai, jahan U (m × m) aur V (n × n) orthogonal hain aur Σ diagonal hai with σ₁ ≥ σ₂ ≥ … ≥ 0. Eigen-decomposition ke ulat, SVD rectangular aur non-symmetric matrices ke liye bhi hamesha exist karta hai.",
+        "**Singular values kahan se aate hain**: AᵀA = VΣᵀΣVᵀ, to V ke columns AᵀA ke eigenvectors hain aur σᵢ = √(AᵀA ke eigenvalues). Isi tarah U ke columns AAᵀ ke eigenvectors hain, aur uᵢ = Avᵢ / σᵢ. Singular values kabhi negative nahi hote; rank(A) = non-zero σ ki count.",
+        "**Outer-product form**: A = Σᵢ σᵢuᵢvᵢᵀ. Har term ek rank-1 matrix hai, aur σᵢ batata hai ki wo term kitna important hai.",
+        "**Best low-rank approximation (Eckart–Young)**: pehle k terms Aₖ = Σᵢ≤ₖ σᵢuᵢvᵢᵀ rank-k matrices me A ke sabse kareeb hain. Error: ‖A − Aₖ‖_F² = σ²ₖ₊₁ + … + σ²ᵣ aur spectral norm ‖A − Aₖ‖₂ = σₖ₊₁.",
+        "**Image compression idea**: m × n grayscale image ko rank k par rakhne ke liye k(m + n + 1) numbers chahiye (k vectors uᵢ, k vectors vᵢ, k singular values) jabki full image me mn. Jab singular values tezi se girte hain, chhota k bhi achhi quality deta hai.",
+        "**PCA**: data X (n × d) ko pehle center karo (har column ka mean ghatao). Covariance C = (1/n) XᵀX symmetric PSD hai. Uske eigenvectors principal directions hain aur eigenvalue λᵢ us direction me variance hai. Pehla PC wo unit direction hai jo projected variance maximise karta hai (Rayleigh quotient).",
+        "**Variance explained**: k components ka ratio = (λ₁ + … + λₖ) / (λ₁ + … + λ_d). Ye ratio 1/n ya 1/(n − 1) normalisation par depend nahi karta, kyunki dono sab eigenvalues ko same factor se scale karte hain.",
+        "**PCA via SVD**: centered X = UΣVᵀ ho to principal directions V ke columns hain aur covariance eigenvalues λᵢ = σᵢ²/n. Practice me libraries PCA isi tarah SVD se compute karti hain, kyunki XᵀX banana numerically kam stable hai."
+      ],
+      "example": {
+        "problem": "A = [[2, 0], [0, 1], [2, 0]] (3 × 2) ka SVD nikalo aur best rank-1 approximation ka Frobenius error batao.",
+        "steps": [
+          "AᵀA = [[8, 0], [0, 1]]; eigenvalues 8 aur 1 ⇒ σ₁ = √8 = 2√2, σ₂ = 1.",
+          "V ke columns: v₁ = (1, 0), v₂ = (0, 1) (AᵀA already diagonal hai).",
+          "u₁ = Av₁/σ₁ = (2, 0, 2)/(2√2) = (1, 0, 1)/√2; u₂ = Av₂/σ₂ = (0, 1, 0). Teesra u₃ = (1, 0, −1)/√2 sirf U ko complete karta hai.",
+          "Rank-1 approx: A₁ = σ₁u₁v₁ᵀ = 2√2 · (1, 0, 1)/√2 · (1, 0) = [[2, 0], [0, 0], [2, 0]].",
+          "A − A₁ = [[0, 0], [0, 1], [0, 0]], Frobenius norm = 1 = σ₂ ✓ (Eckart–Young).",
+          "Answer: **σ = (2√2, 1); best rank-1 error = 1**."
+        ]
+      },
+      "mistakes": [
+        "Singular values ko A ke eigenvalues samajhna. [[2, 0], [0, −3]] ke eigenvalues 2, −3 hain par singular values 3, 2 hain (hamesha non-negative, decreasing order).",
+        "PCA se pehle data center na karna. Bina centering ke pehla component aksar mean ki taraf point karta hai, variance ki taraf nahi.",
+        "Compression storage me sirf k(m + n) ginna aur k singular values bhool jaana, ya ulta poori U aur V (m² + n²) gin lena."
+      ],
+      "revision": [
+        "A = UΣVᵀ = Σ σᵢuᵢvᵢᵀ, σᵢ ≥ 0.",
+        "σᵢ² = eigenvalues of AᵀA; uᵢ = Avᵢ/σᵢ.",
+        "‖A − Aₖ‖_F² = σ²ₖ₊₁ + … + σ²ᵣ.",
+        "Rank-k storage: k(m + n + 1).",
+        "PCA: centered covariance ke eigenvectors; λᵢ = variance along PCᵢ.",
+        "Explained ratio = Σ top-k λ / Σ all λ."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w6-q1",
+          "question": "Ek matrix A ke liye AᵀA ke eigenvalues 9 aur 4 hain. A ke singular values kya hain?",
+          "options": [
+            "9 aur 4",
+            "81 aur 16",
+            "4.5 aur 2",
+            "3 aur 2"
+          ],
+          "answer": 3,
+          "explanation": "σᵢ = √(AᵀA ke eigenvalues) = √9, √4 = 3, 2. Option A ka trap AᵀA ke eigenvalues ko hi singular values maan lena hai; wo σ² hain. Option B me square kar diya jabki square root lena tha.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w6-q2",
+          "question": "3 features wale centered data ki covariance matrix ke eigenvalues 6, 3 aur 1 hain. Pehle do principal components kitna variance explain karte hain?",
+          "options": [
+            "60%",
+            "90%",
+            "66.7%",
+            "100%"
+          ],
+          "answer": 1,
+          "explanation": "Total variance = 6 + 3 + 1 = 10. Pehle do: (6 + 3)/10 = 90%. Option A sirf pehle PC ka hissa (6/10) hai. Option C me 6/9 liya, yaani denominator me sirf pehle do eigenvalues rakhe; ratio hamesha total variance se banta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w6-q3",
+          "question": "A = [[2, 0], [0, −3]] ke singular values (decreasing order me) kya hain?",
+          "options": [
+            "3 aur 2",
+            "2 aur −3",
+            "9 aur 4",
+            "−3 aur 2"
+          ],
+          "answer": 0,
+          "explanation": "AᵀA = [[4, 0], [0, 9]], eigenvalues 9, 4 ⇒ σ = 3, 2. Sign U ke ek column me chala jaata hai (v₁ = e₂, u₁ = −e₂, kyunki Ae₂ = 3·(−e₂)), singular values hamesha ≥ 0 hote hain. Option B aur D A ke eigenvalues hain, jo symmetric matrix me bhi negative ho sakte hain; option C σ² hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w6-q4",
+          "question": "Ek matrix ke singular values 5, 3 aur 1 hain. Best rank-1 approximation A₁ ke liye squared Frobenius error ‖A − A₁‖_F² kya hai?",
+          "options": [
+            "9",
+            "1",
+            "10",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "Eckart–Young: ‖A − A₁‖_F² = σ₂² + σ₃² = 9 + 1 = 10. Option A sirf σ₂² hai, jo spectral-norm error (σ₂ = 3) ka square hai, Frobenius ka nahi. Option D me singular values ko square kiye bina jod diya (3 + 1).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w6-q5",
+          "question": "Ek 100 × 80 grayscale image ko SVD se rank 10 par store karna hai (10 left vectors, 10 right vectors, 10 singular values). Kitne numbers store karne padenge?",
+          "options": [
+            "1810",
+            "1800",
+            "8000",
+            "800"
+          ],
+          "answer": 0,
+          "explanation": "Rank k ke liye k(m + n + 1) = 10(100 + 80 + 1) = 1810, jo full image ke 8000 numbers ka lagbhag 23% hai. Option B me 10 singular values bhool gaye. Option C original image ka size hai, aur option D sirf right vectors (10 × 80) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w6-q6",
+          "question": "Chaar centered data points hain: (2, 1), (−2, −1), (1, 2), (−1, −2). Pehla principal component kis direction me hai aur wo kitna variance explain karta hai?",
+          "options": [
+            "(1, −1)/√2, 90%",
+            "(1, 1)/√2, 90%",
+            "(1, 1)/√2, 50%",
+            "(2, 1)/√5, 90%"
+          ],
+          "answer": 1,
+          "explanation": "C = (1/4)XᵀX = [[2.5, 2], [2, 2.5]]. Eigenvalues 2.5 ± 2 = 4.5 aur 0.5; λ = 4.5 ka eigenvector (1, 1)/√2. Ratio 4.5/5 = 90% (1/(n − 1) lene par eigenvalues 6 aur 2/3 aate hain, ratio phir bhi 90%). Option A chhote eigenvalue ka eigenvector hai. Option C me ek original axis ka variance 2.5/5 le liya. Option D sirf pehle data point ki direction hai, variance-maximising direction nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Unconstrained optimisation: gradient descent and Newton's method",
+      "summary": "Is week aap critical points ko Hessian se classify karna, gradient descent ka update aur step size ka asar samajhna, aur Newton's method ke curvature-based step ko compare karna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Training = optimisation**: ML model fit karne ka matlab hai loss L(w) ko w par minimise karna. Unconstrained problem me w pe koi restriction nahi; x* local minimum hai agar uske aas-paas koi point usse chhota value nahi deta, aur global agar poore domain me koi nahi.",
+        "**First-order condition**: differentiable f ke interior local minimum par ∇f(x*) = 0 (stationary/critical point). Ye necessary hai, sufficient nahi: maxima aur saddle points par bhi gradient zero hota hai.",
+        "**Second-order conditions**: critical point par Hessian H dekho. H positive definite ⇒ strict local minimum; negative definite ⇒ local maximum; indefinite (mixed-sign eigenvalues) ⇒ saddle point; semidefinite (koi eigenvalue 0) ⇒ test inconclusive. 2 × 2 shortcut: det H < 0 ⇒ saddle; det H > 0 aur H₁₁ > 0 ⇒ minimum.",
+        "**Gradient descent**: xₖ₊₁ = xₖ − η∇f(xₖ). −∇f local steepest descent direction hai aur η (learning rate) step ki length control karta hai. Large datasets par gradient ko mini-batch se estimate karna stochastic gradient descent (SGD) hai.",
+        "**Step size aur convergence**: quadratic f(x) = ½xᵀHx ke liye GD har eigen-direction ko factor (1 − ηλᵢ) se multiply karta hai. Convergence ke liye |1 − ηλᵢ| < 1 sab i ke liye, yaani 0 < η < 2/λ_max. Bahut chhota η: slow; 1/λ_max aur 2/λ_max ke beech: oscillate karke converge; 2/λ_max se bada: diverge. λ_max/λ_min (condition number) bada ho to GD zig-zag karta hai.",
+        "**Newton's method**: second-order Taylor model ko minimise karo: xₖ₊₁ = xₖ − H⁻¹∇f(xₖ). Ye curvature ke hisaab se har direction ko alag scale karta hai, isliye quadratic function ka minimum ek hi step me mil jaata hai aur minimum ke paas convergence quadratic (bahut tez) hoti hai. Cost: Hessian banana aur solve karna O(d³), isliye bade models me quasi-Newton ya first-order methods use hote hain.",
+        "**Practical checks**: loss har iteration me ghat raha hai ya nahi plot karo; badh raha ho to η kam karo. Features ko standardise karne se Hessian ka condition number sudharta hai aur GD tez chalta hai."
+      ],
+      "example": {
+        "problem": "f(x, y) = x² + 4y², start (4, 1). Gradient descent with η = 0.1 ke do steps lo, sabse bada stable η batao, aur Newton ka ek step compare karo.",
+        "steps": [
+          "∇f = (2x, 8y), Hessian H = diag(2, 8).",
+          "GD update: x ← x − 0.1·2x = 0.8x, y ← y − 0.1·8y = 0.2y.",
+          "Step 1: (3.2, 0.2). Step 2: (2.56, 0.04). y-direction (curvature 8) tez shrink hoti hai, x-direction (curvature 2) dheere.",
+          "Stability: |1 − 2η| < 1 aur |1 − 8η| < 1 ⇒ η < 2/8 = 0.25. Isse bade η par y-component har step badhega.",
+          "Newton: H⁻¹∇f = (2x/2, 8y/8) = (x, y), to (4, 1) − (4, 1) = (0, 0), exact minimum ek step me.",
+          "Answer: **GD after 2 steps: (2.56, 0.04); η < 0.25 required; Newton reaches (0, 0) in one step**."
+        ],
+        "code": "x, y, eta = 4.0, 1.0, 0.1\nfor step in range(2):\n    gx, gy = 2 * x, 8 * y\n    x, y = x - eta * gx, y - eta * gy\n    print(step + 1, round(x, 4), round(y, 4))\n# 1 3.2 0.2\n# 2 2.56 0.04"
+      },
+      "mistakes": [
+        "∇f = 0 milte hi minimum maan lena. Hessian se check karo; f = x² − y² ka origin saddle hai.",
+        "Update me sign galat lagana: x − η∇f sahi hai, x + η∇f gradient ascent hai jo loss badhata hai.",
+        "Learning rate 'jitna bada utna tez' samajhna. η > 2/λ_max par iterations diverge karti hain; loss curve ko monitor karo."
+      ],
+      "revision": [
+        "Necessary: ∇f(x*) = 0.",
+        "H PD ⇒ min, ND ⇒ max, indefinite ⇒ saddle.",
+        "GD: xₖ₊₁ = xₖ − η∇f(xₖ).",
+        "Quadratic par stable iff 0 < η < 2/λ_max.",
+        "Newton: xₖ₊₁ = xₖ − H⁻¹∇f(xₖ); quadratic ka min ek step me."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w7-q1",
+          "question": "f(x) = x² − 4x par gradient descent x₀ = 0 aur learning rate η = 0.25 se chalaya. x₁ kya hai?",
+          "options": [
+            "−1",
+            "2",
+            "1",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "f′(x) = 2x − 4, f′(0) = −4. x₁ = 0 − 0.25(−4) = 1. Option A me update x + η f′ (galat sign) laga diya. Option B asli minimum (x = 2) hai, jo ek step me nahi milta jab η = 0.25; η = 0.5 hota tab milta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w7-q2",
+          "question": "f(x) = x³ − 3x ke critical points ka classification kya hai?",
+          "options": [
+            "x = 1 local minimum, x = −1 local maximum",
+            "x = 1 local maximum, x = −1 local minimum",
+            "x = 1 global minimum, x = −1 global maximum",
+            "Dono saddle points hain"
+          ],
+          "answer": 0,
+          "explanation": "f′(x) = 3x² − 3 = 0 ⇒ x = ±1. f″(x) = 6x: f″(1) = 6 > 0 ⇒ local minimum, f″(−1) = −6 < 0 ⇒ local maximum. Option C ka trap local ko global maan lena hai: x → −∞ par f → −∞, to koi global minimum hai hi nahi. Option B me second-derivative test ulta padha gaya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w7-q3",
+          "question": "f(x, y) = x² + 3xy + y² ka origin ek critical point hai. Wahan kya hai?",
+          "options": [
+            "Strict local minimum, kyunki Hessian ke diagonal entries positive hain",
+            "Local maximum",
+            "Test inconclusive, kyunki Hessian singular hai",
+            "Saddle point"
+          ],
+          "answer": 3,
+          "explanation": "H = [[2, 3], [3, 2]], det = 4 − 9 = −5 < 0, eigenvalues 5 aur −1 (mixed signs) ⇒ indefinite ⇒ saddle. Line y = −x par f = x² − 3x² + x² = −x² < 0, jabki y = x par f = 5x² > 0. Option A ka trap sirf diagonal dekhna hai. Option C galat: det ≠ 0, to H singular nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w7-q4",
+          "question": "f(x) = 5x² par gradient descent kisi non-zero x₀ se chalaya. Inme se kis learning rate par iterations DIVERGE karengi?",
+          "options": [
+            "η = 0.05",
+            "η = 0.1",
+            "η = 0.15",
+            "η = 0.25"
+          ],
+          "answer": 3,
+          "explanation": "f′(x) = 10x, update xₖ₊₁ = (1 − 10η)xₖ. Factor: η = 0.05 ⇒ 0.5; η = 0.1 ⇒ 0 (ek step me minimum); η = 0.15 ⇒ −0.5 (oscillate karta hai par |−0.5| < 1, to converge); η = 0.25 ⇒ −1.5, |−1.5| > 1 ⇒ diverge. Limit η < 2/10 = 0.2. Option C tempting hai kyunki wahan sign flip hota hai, par oscillation divergence nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w7-q5",
+          "question": "f(x, y) = x² + 2y² par point (2, 1) se gradient descent ka ek step η = 0.1 ke saath lo. Naya point kya hai?",
+          "options": [
+            "(2.4, 1.4)",
+            "(1.6, 0.6)",
+            "(1.6, 0.8)",
+            "(1.8, 0.8)"
+          ],
+          "answer": 1,
+          "explanation": "∇f = (2x, 4y) = (4, 4). Naya point = (2, 1) − 0.1(4, 4) = (1.6, 0.6); f 6 se 3.28 ho gaya. Option A me gradient add kar diya (ascent). Option C me ∂f/∂y = 2y le liya (2y² ka derivative 4y hai). Option D me gradient (2, 2) maan liya, yaani power rule ka factor 2 dono jagah bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w7-q6",
+          "question": "f(x, y) = x² + xy + y² − 3x par Newton's method ka ek step (0, 0) se lo. Naya point kya hai?",
+          "options": [
+            "(2, −1)",
+            "(3, 0)",
+            "(1.5, 0)",
+            "(−2, 1)"
+          ],
+          "answer": 0,
+          "explanation": "∇f = (2x + y − 3, x + 2y) = (−3, 0) at origin. H = [[2, 1], [1, 2]], H⁻¹ = (1/3)[[2, −1], [−1, 2]]. Step = −H⁻¹∇f = −(1/3)(−6, 3) = (2, −1). f quadratic hai, to ye exact minimum hai (∇f(2, −1) = (0, 0), f = −3). Option C me sirf diagonal curvature se divide kiya (cross term xy ignore), option B gradient descent with η = 1 hai, aur option D me sign ulta (x + H⁻¹∇f).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Convex sets, convex functions and convex problems",
+      "summary": "Is week aap convex sets aur convex functions pehchanna, Hessian aur composition rules se convexity check karna, aur ye samajhna seekhoge ki convex optimisation problem me har local minimum global kyun hota hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Convex set**: C convex hai agar C ke kisi bhi do points x, y ke beech ka poora segment θx + (1 − θ)y (0 ≤ θ ≤ 1) bhi C me ho. Examples: line, half-space {x : aᵀx ≤ b}, ball ‖x‖ ≤ r, polyhedron (half-spaces ka intersection). Non-examples: annulus 1 ≤ ‖x‖ ≤ 2, do alag intervals ka union, circle ‖x‖ = 1.",
+        "**Operations jo convexity bachate hain**: convex sets ka intersection hamesha convex hai (union nahi). Isliye linear inequality constraints ka koi bhi set convex feasible region deta hai.",
+        "**Convex function**: f(θx + (1 − θ)y) ≤ θf(x) + (1 − θ)f(y), yaani graph ke do points ko jodne wali chord graph ke upar ya us par rehti hai. Ulta inequality concave. Linear/affine functions dono hain. Strict inequality (x ≠ y, 0 < θ < 1) ho to strictly convex.",
+        "**Calculus tests**: differentiable f convex hai ⇔ f(y) ≥ f(x) + ∇f(x)ᵀ(y − x) (tangent hamesha graph ke neeche). Twice differentiable f ke liye: convex ⇔ Hessian har jagah PSD. Hessian har jagah PD ⇒ strictly convex. Jaise least squares ‖Xw − y‖² ka Hessian 2XᵀX PSD hai, isliye ye hamesha convex hai.",
+        "**Composition rules**: non-negative weighted sum Σ aᵢfᵢ (aᵢ ≥ 0) convex hai; pointwise max of convex functions convex hai (jaise hinge loss max(0, 1 − yz)); convex f ka affine composition f(Ax + b) convex hai. Do convex functions ka product ya difference zaroori nahi convex ho: x aur x² dono convex hain par x·x² = x³ nahi.",
+        "**Convex optimisation problem**: minimise convex f(x) subject to gᵢ(x) ≤ 0 (gᵢ convex) aur hⱼ(x) = 0 (hⱼ affine). Sabse important property: har local minimum global minimum hai, aur minimisers ka set convex hai. Strictly convex objective ka minimiser (agar exist kare) unique hota hai.",
+        "**Kya convex nahi hai**: convex function ko maximise karna, ya nonlinear equality constraint jaise x² + y² = 1 (circle convex set nahi). Neural network ka loss bhi parameters me non-convex hai, isliye wahan local minima aur saddle points ki baat hoti hai; linear regression, ridge, logistic regression aur SVM convex hain."
+      ],
+      "example": {
+        "problem": "f(x, y) = 2x² + 2xy + y² − 4x. Dikhao ki f strictly convex hai, aur uska global minimum nikalo.",
+        "steps": [
+          "Hessian H = [[4, 2], [2, 2]] (constant, x par depend nahi karta).",
+          "Leading minors: 4 > 0 aur det = 8 − 4 = 4 > 0 ⇒ H positive definite har jagah ⇒ f strictly convex.",
+          "Stationary point: ∂f/∂x = 4x + 2y − 4 = 0, ∂f/∂y = 2x + 2y = 0 ⇒ y = −x.",
+          "4x − 2x = 4 ⇒ x = 2, y = −2.",
+          "f(2, −2) = 8 − 8 + 4 − 8 = −4.",
+          "Strictly convex hone se ye stationary point unique global minimum hai, alag se second-order check ya doosre local minima dhoondhne ki zaroorat nahi.",
+          "Answer: **global minimum −4 at (2, −2)**."
+        ]
+      },
+      "mistakes": [
+        "Convex set aur convex function ko mix karna: 'convex set' ek region ki property hai, 'convex function' ek graph ki. Ek convex function ka sublevel set {x : f(x) ≤ c} convex set hota hai, par superlevel set {f(x) ≥ c} nahi.",
+        "Do convex functions ka product ya difference convex maan lena. Sirf non-negative weighted sum aur max guaranteed hain.",
+        "Hessian PSD (koi eigenvalue 0) hone par 'convex nahi' bol dena. PSD convex ke liye kaafi hai; bas minimiser unique na ho, ye possible hai."
+      ],
+      "revision": [
+        "Convex set: segment set ke andar.",
+        "Convex f: chord graph ke upar; Hessian PSD.",
+        "Intersection convex; union nahi.",
+        "Sum (a ≥ 0), max, affine composition convex rakhte hain.",
+        "Convex problem: local min = global min.",
+        "Equality constraints affine hone chahiye."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w8-q1",
+          "question": "ℝ² ke inme se kaunsa set convex hai?",
+          "options": [
+            "{(x, y) : x² + y² ≥ 1}",
+            "{(x, y) : 1 ≤ x² + y² ≤ 4}",
+            "{(x, y) : 2x + 3y ≤ 6}",
+            "{(x, y) : x ∈ [0, 1] ∪ [2, 3]}"
+          ],
+          "answer": 2,
+          "explanation": "2x + 3y ≤ 6 ek half-plane hai; do points ke beech ka segment bhi linear inequality satisfy karta hai, to convex. Option B (annulus) tempting hai kyunki ye 'ring' smooth dikhti hai, par (−1.5, 0) aur (1.5, 0) ke beech origin hole me padta hai. Option A disc ka bahar wala hissa hai aur option D do strips ka union, dono me segments bahar nikalte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w8-q2",
+          "question": "ℝ par (ya diye gaye domain par) inme se kaunsa function convex hai?",
+          "options": [
+            "f(x) = x³",
+            "f(x) = √x, x > 0",
+            "f(x) = sin x",
+            "f(x) = max(x, 2x − 1)"
+          ],
+          "answer": 3,
+          "explanation": "Do affine functions ka pointwise max convex hota hai, to max(x, 2x − 1) convex hai (ek 'kink' wala V-type graph). Option A sirf x ≥ 0 par convex hai (f″ = 6x negative hota hai x < 0 par), poore ℝ par nahi. Option B concave hai (f″ = −1/(4x√x) < 0), aur sin x curvature ka sign badalta rehta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w8-q3",
+          "question": "f(x, y) = x² + kxy + 4y². Inme se kis k ke liye f convex NAHI hai?",
+          "options": [
+            "k = −4",
+            "k = 0",
+            "k = 5",
+            "k = 3"
+          ],
+          "answer": 2,
+          "explanation": "Hessian [[2, k], [k, 8]] PSD chahiye: 2 ≥ 0 aur det = 16 − k² ≥ 0 ⇒ |k| ≤ 4. k = 5 par det = −9 < 0 ⇒ indefinite ⇒ convex nahi. Option A tempting hai kyunki boundary par det = 0 hai, par PSD (eigenvalues 10 aur 0) convexity ke liye kaafi hai; f = (x − 2y)² ban jaata hai, jo convex hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w8-q4",
+          "question": "f: ℝ → ℝ convex hai, f(0) = 1 aur f(4) = 9. f(1) ke baare me kya guaranteed hai?",
+          "options": [
+            "f(1) ≤ 3",
+            "f(1) ≥ 3",
+            "f(1) ≤ 7",
+            "f(1) = 3"
+          ],
+          "answer": 0,
+          "explanation": "1 = 0.75·0 + 0.25·4, to convexity se f(1) ≤ 0.75·f(0) + 0.25·f(4) = 0.75 + 2.25 = 3. Option C me weights ulte lag gaye (0.25·1 + 0.75·9 = 7); jo endpoint paas hai (0) usko zyada weight milta hai. Option D sirf linear f ke liye sach hai; f = x²/2 + 1 jaisa convex function f(1) = 1.5 deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w8-q5",
+          "question": "f aur g dono ℝ par convex functions hain. Inme se kaunsa function zaroori nahi ki convex ho?",
+          "options": [
+            "f + g",
+            "max(f, g)",
+            "3f + 2",
+            "f · g"
+          ],
+          "answer": 3,
+          "explanation": "Product ke liye koi general rule nahi: f(x) = x aur g(x) = x² dono convex hain, par f·g = x³ convex nahi. Sum, pointwise max aur positive scaling plus constant (3f + 2) convexity bachate hain. Option B ko log galti se 'non-smooth hai to convex nahi' samajhte hain, par max of convex functions hamesha convex hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w8-q6",
+          "question": "f(x, y) = (x − y)² + 2 ke baare me kaunsa statement sahi hai?",
+          "options": [
+            "f strictly convex hai aur unique minimum (0, 0) par hai",
+            "f convex hai; line x = y ka har point global minimiser hai, minimum value 2",
+            "f convex nahi hai kyunki Hessian ka ek eigenvalue 0 hai",
+            "Origin ek saddle point hai"
+          ],
+          "answer": 1,
+          "explanation": "Hessian [[2, −2], [−2, 2]] ke eigenvalues 4 aur 0 ⇒ PSD ⇒ convex, par strictly convex nahi. (x − y)² ≥ 0, aur x = y par 0, to line x = y ke saare points par f = 2 (global minimum, minimisers ka set convex line hai). Option A ka trap origin ko unique maan lena hai; (1, 1) par bhi f = 2. Option C me PSD ko 'convex nahi' padh liya, aur saddle ke liye negative eigenvalue chahiye jo yahan nahi hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Constrained optimisation, Lagrange multipliers and logistic regression",
+      "summary": "Is week aap equality constraints ke saath Lagrange multipliers lagana, inequality constraints ke liye KKT conditions ka intuition, aur logistic regression ko ek convex optimisation problem ki tarah likhna aur uska gradient nikalna seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Equality-constrained problem**: minimise f(x) subject to h(x) = 0. Optimum par f ke level set aur constraint surface ek doosre ko touch karte hain, isliye gradients parallel hote hain: ∇f(x*) = λ∇h(x*). Lagrangian L(x, λ) = f(x) − λh(x) banao aur ∇ₓL = 0 ke saath h(x) = 0 solve karo (sign convention ±λ se answer nahi badalta, sirf λ ka sign).",
+        "**Multiplier ka matlab**: λ batata hai ki constraint ko thoda dheela karne par optimal value kitni badlegi: agar constraint h(x) = c hai to d(f*)/dc = λ. Economics me ise shadow price kehte hain; ML me ye batata hai ki constraint kitna 'tight' hai.",
+        "**Inequality constraints aur KKT**: minimise f(x) subject to g(x) ≤ 0. Lagrangian L = f + μg with μ ≥ 0. KKT conditions: (1) stationarity ∇f + μ∇g = 0, (2) primal feasibility g(x) ≤ 0, (3) dual feasibility μ ≥ 0, (4) complementary slackness μ·g(x) = 0. Matlab: ya to constraint inactive hai (g < 0, μ = 0, unconstrained minimum hi feasible hai), ya active hai (g = 0, μ ≥ 0 jo f ko boundary ke andar 'dhakelta' hai). Convex problem me KKT points hi global optima hain (mild conditions ke saath).",
+        "**Regularisation as a constraint**: minimise loss subject to ‖w‖² ≤ t ka Lagrangian loss + μ‖w‖² hai, yahi ridge/L2 penalty hai. Har t ke liye ek matching μ hota hai; chhota t ⇔ bada μ.",
+        "**Logistic regression model**: P(y = 1 | x) = σ(wᵀx + b), σ(z) = 1/(1 + e⁻ᶻ). Decision boundary wᵀx + b = 0 ek hyperplane hai, aur z ko log-odds ln(p/(1 − p)) bhi kehte hain. Threshold 0.5 par prediction 1 tab hai jab z > 0.",
+        "**Training objective**: likelihood maximise karna = negative log-likelihood (binary cross-entropy) minimise karna: J(w) = −Σ [yᵢ ln pᵢ + (1 − yᵢ) ln(1 − pᵢ)], pᵢ = σ(wᵀxᵢ + b). Chain rule aur σ′ = σ(1 − σ) se gradient bahut saaf aata hai: ∇J = Σ (pᵢ − yᵢ)xᵢ.",
+        "**Convexity aur solvers**: Hessian XᵀSX hai jahan S = diag(pᵢ(1 − pᵢ)) ≥ 0, to J convex hai; local minimum = global. Closed form nahi hai, isliye gradient descent ya Newton (IRLS) use hota hai. Agar data linearly separable ho to ‖w‖ → ∞ tak J ghatta rehta hai; L2 penalty ise finite rakhti hai."
+      ],
+      "example": {
+        "problem": "Minimise f(x, y) = 2x² + y² subject to x + y = 3. Optimum, multiplier λ, aur λ ka matlab (constraint x + y = 3.1 hone par optimum value kitni badlegi) nikalo.",
+        "steps": [
+          "L = 2x² + y² − λ(x + y − 3).",
+          "∂L/∂x = 4x − λ = 0, ∂L/∂y = 2y − λ = 0 ⇒ 4x = 2y ⇒ y = 2x.",
+          "Constraint: x + 2x = 3 ⇒ x = 1, y = 2, λ = 4x = 4.",
+          "Optimum value f* = 2(1) + 4 = 6.",
+          "Sensitivity: x + y = c ke liye f*(c) = 2c²/3, aur d f*/dc = 4c/3 = 4 at c = 3, jo λ ke barabar hai. c = 3.1 par f* ≈ 6 + 4(0.1) = 6.4 (exact 6.4067).",
+          "Answer: **(x, y) = (1, 2), f* = 6, λ = 4**; constraint ko 0.1 dheela karne par optimum lagbhag 0.4 badhega."
+        ]
+      },
+      "mistakes": [
+        "Lagrange me sirf ∇L = 0 solve karke constraint equation bhool jaana. Unknowns (x, y, λ) teen hain, to teeno equations chahiye.",
+        "KKT me μ ka sign ignore karna. Minimisation with g(x) ≤ 0 me μ ≥ 0 hona chahiye; negative μ milne ka matlab hai constraint actually inactive hai ya setup galat hai.",
+        "Logistic gradient me (y − p) aur (p − y) mix karna. NLL minimise karte waqt gradient Σ(pᵢ − yᵢ)xᵢ hai; (yᵢ − pᵢ)xᵢ log-likelihood (maximise) ka gradient hai."
+      ],
+      "revision": [
+        "Equality: ∇f = λ∇h, plus h(x) = 0.",
+        "λ = d f*/dc (shadow price).",
+        "KKT: stationarity, feasibility, μ ≥ 0, μg(x) = 0.",
+        "L2 penalty ⇔ norm-ball constraint.",
+        "Logistic: p = σ(wᵀx + b); NLL gradient Σ(pᵢ − yᵢ)xᵢ.",
+        "Logistic NLL convex, closed form nahi."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w9-q1",
+          "question": "x + y = 10 constraint ke saath f(x, y) = xy ki maximum value kya hai?",
+          "options": [
+            "100",
+            "50",
+            "25",
+            "20"
+          ],
+          "answer": 2,
+          "explanation": "∇f = (y, x) = λ(1, 1) ⇒ x = y, aur x + y = 10 ⇒ x = y = 5, f = 25. Option A (100) constraint ko x·y ki jagah (x + y)² samajhne se aata hai. Option B (50) tab aata hai jab x = 10, y = 5 jaisa infeasible point le lo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w9-q2",
+          "question": "Ek logistic regression model ke parameters w = (1, −2), b = 1 hain. Input x = (3, 2) ke liye P(y = 1 | x) kya hai?",
+          "options": [
+            "0.5",
+            "0",
+            "1",
+            "0.731"
+          ],
+          "answer": 0,
+          "explanation": "z = wᵀx + b = 3 − 4 + 1 = 0, aur σ(0) = 1/(1 + 1) = 0.5, yaani x bilkul decision boundary par hai. Option B ka trap z = 0 ko probability 0 samajhna hai; probability σ(z) hai, z nahi. Option D σ(1) hai, jo b ko hi z maan lene par aata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w9-q3",
+          "question": "Line x + 2y = 5 par f(x, y) = x² + y² ka minimum kya hai aur kis point par?",
+          "options": [
+            "√5, at (1, 2)",
+            "5, at (2, 1)",
+            "50/9, at (5/3, 5/3)",
+            "5, at (1, 2)"
+          ],
+          "answer": 3,
+          "explanation": "∇f = (2x, 2y) = λ(1, 2) ⇒ y = 2x. x + 4x = 5 ⇒ x = 1, y = 2, λ = 2, f = 1 + 4 = 5. Option A √5 origin se line ki distance hai, jabki f distance ka square hai. Option B me coordinates swap ho gaye: (2, 1) par x + 2y = 4, to wo feasible hi nahi. Option C me x = y maan liya, jo feasible hai par optimal nahi (50/9 ≈ 5.56 > 5).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w9-q4",
+          "question": "Logistic regression ke ek example par NLL loss ℓ = −[y ln p + (1 − y) ln(1 − p)], p = σ(wᵀx) hai. x = (1, 2), y = 1 aur current p = 0.8 ho to ∇_w ℓ kya hai?",
+          "options": [
+            "(0.2, 0.4)",
+            "(−0.2, −0.4)",
+            "(−0.8, −1.6)",
+            "(−0.064, −0.128)"
+          ],
+          "answer": 1,
+          "explanation": "∇_w ℓ = (p − y)x = (0.8 − 1)(1, 2) = (−0.2, −0.4). Negative gradient ka matlab GD w ko x ki direction me badhayega, jisse p 1 ki taraf jaayega, jo y = 1 ke liye sahi hai. Option A (y − p)x hai, yaani log-likelihood ka gradient (sign ulta). Option C me −p·x likh diya, aur option D squared loss (p − y)² ka gradient 2(p − y)p(1 − p)x hai; cross-entropy me σ′ = p(1 − p) wala factor cancel ho jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w9-q5",
+          "question": "Ek logistic model do training examples par probabilities deta hai: example 1 (y = 1) par p = 0.9, example 2 (y = 0) par p = 0.2 (p = P(y = 1)). Natural log ke saath total negative log-likelihood (dono ka sum) kya hai?",
+          "options": [
+            "1.7148",
+            "0.1643",
+            "0.3285",
+            "0.1427"
+          ],
+          "answer": 2,
+          "explanation": "−ln 0.9 − ln(1 − 0.2) = 0.1054 + 0.2231 = 0.3285. Option A me y = 0 wale example ke liye −ln 0.2 le liya (1 − p lena tha). Option B average hai, sum nahi. Option D log base 10 se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w9-q6",
+          "question": "Minimise f(x) = (x − 3)² subject to x ≤ 1. Lagrangian L = (x − 3)² + μ(x − 1) ke saath KKT conditions ka solution kya hai?",
+          "options": [
+            "x* = 3, μ = 0",
+            "x* = 1, μ = 0",
+            "x* = 1, μ = −4",
+            "x* = 1, μ = 4"
+          ],
+          "answer": 3,
+          "explanation": "Unconstrained minimum x = 3 infeasible hai (3 > 1), to constraint active: x* = 1. Stationarity: 2(x − 3) + μ = 0 ⇒ 2(−2) + μ = 0 ⇒ μ = 4 ≥ 0 ✓, aur μ(x* − 1) = 0 ✓. Option A feasibility tod deta hai. Option B me active constraint ke saath μ = 0 rakha, jisse stationarity fail hoti hai (−4 ≠ 0). Option C me sign galat hai; minimisation with g ≤ 0 me μ ≥ 0 chahiye.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Probabilistic models: likelihood and generative classifiers",
+      "summary": "Is week aap data ko Bernoulli aur Gaussian jaise probability models se describe karna, likelihood aur log-likelihood likhkar parameters fit karna, aur Bayes rule se generative (naive Bayes, Gaussian) classifier banana seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Probabilistic view of ML**: maan lo data kisi distribution p(x; θ) se independently aaya hai (i.i.d. assumption). Learning ka matlab hai θ ko aise choose karna ki observed data sabse 'plausible' lage. Isse loss functions ka origin samajh aata hai: Gaussian noise ⇒ squared loss, Bernoulli labels ⇒ cross-entropy.",
+        "**Likelihood**: L(θ) = Πᵢ p(xᵢ; θ), yaani θ ko variable maan kar data ki joint probability/density. Ye θ par probability distribution nahi hai (θ ke upar integrate karke 1 nahi aata). **Log-likelihood** ℓ(θ) = Σᵢ ln p(xᵢ; θ): ln monotone hai to argmax same rehta hai, product sum ban jaata hai, aur bahut chhote numbers ka underflow nahi hota.",
+        "**Bernoulli model**: x ∈ {0, 1}, p(x; θ) = θˣ(1 − θ)¹⁻ˣ. n samples me k ones ho to ℓ(θ) = k ln θ + (n − k) ln(1 − θ), aur dℓ/dθ = 0 se θ̂ = k/n (sample proportion).",
+        "**Gaussian model**: p(x; μ, σ²) = (1/√(2πσ²)) exp(−(x − μ)²/(2σ²)). MLE: μ̂ = sample mean, σ̂² = (1/n) Σ(xᵢ − μ̂)² (n se divide, n − 1 se nahi). Fixed σ par ℓ maximise karna = Σ(xᵢ − μ)² minimise karna, isliye least squares Gaussian noise ke under MLE hai.",
+        "**Generative vs discriminative**: discriminative model seedha p(y | x) seekhta hai (logistic regression). Generative model p(y) aur p(x | y) seekhta hai, phir Bayes rule lagata hai: p(y | x) ∝ p(x | y)p(y). Generative model se naya data bhi sample kar sakte ho aur missing features handle karna aasaan hai.",
+        "**Naive Bayes**: assumption: class diye hone par features conditionally independent hain, p(x | y) = Πⱼ p(xⱼ | y). Isse d features ke liye bas d one-dimensional distributions estimate karne padte hain. Assumption aksar galat hota hai, phir bhi classification (argmax) kaafi achha chalta hai, khaaskar text/spam me.",
+        "**Gaussian class-conditionals**: 1-D me do classes with means μ₀, μ₁, same variance σ² aur priors π₀, π₁ ke liye log-ratio x me linear hai, aur decision boundary x* = (μ₀ + μ₁)/2 + σ² ln(π₀/π₁)/(μ₁ − μ₀). Equal priors par boundary bilkul midpoint hai; jis class ka prior bada hai boundary doosri class ki taraf khisakti hai."
+      ],
+      "example": {
+        "problem": "Ek fictional API ke 4 response times (ms): 12, 15, 9, 14. Inhe Gaussian maan kar μ aur σ² ka MLE nikalo, aur unbiased variance se compare karo.",
+        "steps": [
+          "ℓ(μ, σ²) = −(n/2) ln(2πσ²) − Σ(xᵢ − μ)²/(2σ²).",
+          "∂ℓ/∂μ = Σ(xᵢ − μ)/σ² = 0 ⇒ μ̂ = (12 + 15 + 9 + 14)/4 = 50/4 = 12.5.",
+          "Deviations: −0.5, 2.5, −3.5, 1.5; squares 0.25, 6.25, 12.25, 2.25; sum = 21.",
+          "∂ℓ/∂σ² = 0 ⇒ σ̂² = (1/n)Σ(xᵢ − μ̂)² = 21/4 = 5.25.",
+          "Unbiased sample variance 21/3 = 7 hota; MLE n se divide karta hai, isliye thoda chhota (biased) hai. Week 12 me ye bias detail me aayega.",
+          "Answer: **μ̂ = 12.5 ms, σ̂² = 5.25 ms²** (unbiased estimate 7)."
+        ],
+        "code": "xs = [12, 15, 9, 14]\nn = len(xs)\nmu = sum(xs) / n\nvar_mle = sum((x - mu) ** 2 for x in xs) / n\nvar_unbiased = sum((x - mu) ** 2 for x in xs) / (n - 1)\nprint(mu, var_mle, var_unbiased)   # 12.5 5.25 7.0"
+      },
+      "mistakes": [
+        "Likelihood ko θ ki probability samajhna. L(θ) data ki probability hai given θ; θ par distribution ke liye prior chahiye (week 12, MAP).",
+        "Gaussian MLE me variance ko n − 1 se divide karna. Wo unbiased estimator hai, MLE n se divide karta hai.",
+        "Naive Bayes me observed feature value ki jagah galat probability use karna: x₂ = 0 observe hua ho to P(x₂ = 0 | y) = 1 − P(x₂ = 1 | y) lena hai."
+      ],
+      "revision": [
+        "L(θ) = Π p(xᵢ; θ); ℓ(θ) = Σ ln p(xᵢ; θ).",
+        "Bernoulli MLE: θ̂ = k/n.",
+        "Gaussian MLE: μ̂ = x̄, σ̂² = (1/n)Σ(xᵢ − x̄)².",
+        "Generative: p(y | x) ∝ p(x | y)p(y).",
+        "Naive Bayes: p(x | y) = Π p(xⱼ | y).",
+        "Equal variance, equal priors ⇒ boundary at (μ₀ + μ₁)/2."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w10-q1",
+          "question": "Ek fictional A/B test me 10 users me se 7 ne button click kiya. Har user ko Bernoulli(θ) maan kar θ ka MLE kya hai?",
+          "options": [
+            "0.5",
+            "0.3",
+            "7",
+            "0.7"
+          ],
+          "answer": 3,
+          "explanation": "ℓ(θ) = 7 ln θ + 3 ln(1 − θ); derivative 7/θ − 3/(1 − θ) = 0 ⇒ θ̂ = 7/10 = 0.7. Option B non-clicks ka proportion hai (1 − θ̂). Option A 'fair coin' wala prior guess hai jo data ko ignore karta hai, aur option C count hai, probability nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w10-q2",
+          "question": "i.i.d. Bernoulli(θ = 0.6) model ke under observed sequence 1, 1, 0 ka likelihood kya hai?",
+          "options": [
+            "0.216",
+            "0.144",
+            "0.096",
+            "0.4"
+          ],
+          "answer": 1,
+          "explanation": "L = θ·θ·(1 − θ) = 0.6 × 0.6 × 0.4 = 0.144. Option A me 0 wale observation ke liye bhi θ laga diya (0.6³). Option C me ones aur zeros ki probabilities ulti lag gayi (0.6 × 0.4 × 0.4). Option D sirf aakhri observation ki probability hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w10-q3",
+          "question": "Data 2, 4, 4, 6 ko N(μ, σ²) maan kar (μ, σ²) ka maximum likelihood estimate kya hai?",
+          "options": [
+            "μ̂ = 4, σ̂² = 8/3",
+            "μ̂ = 4, σ̂² = √2",
+            "μ̂ = 4, σ̂² = 2",
+            "μ̂ = 4, σ̂² = 8"
+          ],
+          "answer": 2,
+          "explanation": "μ̂ = 16/4 = 4. Squared deviations 4, 0, 0, 4, sum 8. MLE σ̂² = 8/n = 8/4 = 2. Option A (8/3) unbiased sample variance hai (n − 1 se divide), jo MLE nahi. Option B standard deviation hai, variance nahi, aur option D sum of squares hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w10-q4",
+          "question": "Practice me likelihood L(θ) ki jagah log-likelihood ln L(θ) ko maximise kyun kiya jaata hai?",
+          "options": [
+            "ln monotone increasing hai, to maximiser same rehta hai; product sum ban jaata hai aur underflow nahi hota",
+            "Log lene se model ka bias kam ho jaata hai",
+            "Log-likelihood hamesha convex hota hai, likelihood nahi",
+            "Log lene se maximiser θ̂ badal kar zyada accurate ho jaata hai"
+          ],
+          "answer": 0,
+          "explanation": "ln strictly increasing hai, to argmax L = argmax ln L. Fayde: Π → Σ (derivative lena aasaan), aur hazaaron chhoti probabilities ka product floating point me 0 (underflow) ho jaata, sum nahi. Option D ulta hai: θ̂ badalta hi nahi. Option C galat hai: concavity model par depend karti hai (jaise mixture models me log-likelihood non-concave hai), aur option B ka bias se koi lena dena nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w10-q5",
+          "question": "1-D generative classifier: class 0 ~ N(1, 1), class 1 ~ N(5, 1), priors P(y = 0) = 0.8, P(y = 1) = 0.2. Kis x ke upar model class 1 predict karega (decision boundary)?",
+          "options": [
+            "x ≈ 3.35",
+            "x = 3",
+            "x ≈ 2.65",
+            "x ≈ 4.39"
+          ],
+          "answer": 0,
+          "explanation": "x* = (μ₀ + μ₁)/2 + σ² ln(π₀/π₁)/(μ₁ − μ₀) = 3 + ln 4 / 4 = 3 + 0.347 ≈ 3.35. Class 0 ka prior bada hai, isliye boundary class 1 ki taraf khisakti hai. Option B priors ko ignore karta hai (equal priors wala midpoint). Option C me shift ka sign ulta, aur option D me (μ₁ − μ₀) = 4 se divide karna bhool gaye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w10-q6",
+          "question": "Ek naive Bayes spam filter (fictional) me P(spam) = 0.4. Binary features x₁ ('offer' word), x₂ ('meeting' word): P(x₁ = 1 | spam) = 0.8, P(x₂ = 1 | spam) = 0.5, P(x₁ = 1 | ham) = 0.3, P(x₂ = 1 | ham) = 0.6. Email me x₁ = 1 aur x₂ = 0 hai. P(spam | x) kya hai?",
+          "options": [
+            "0.597",
+            "0.769",
+            "0.690",
+            "0.160"
+          ],
+          "answer": 2,
+          "explanation": "Spam score = 0.4 × 0.8 × (1 − 0.5) = 0.16. Ham score = 0.6 × 0.3 × (1 − 0.6) = 0.072. Posterior = 0.16/(0.16 + 0.072) ≈ 0.690. Option A me x₂ = 0 ke liye bhi P(x₂ = 1 | y) use kar liya (ham score 0.108 ban gaya). Option B priors ignore karta hai, aur option D unnormalised spam score hai, probability nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "The exponential family of distributions",
+      "summary": "Is week aap Bernoulli, Poisson, Gaussian jaise distributions ko ek common exponential-family form me likhna, natural parameter, sufficient statistic aur log-partition function pehchanna, aur A′(η) = E[T(X)] se MLE ko moment matching ki tarah dekhna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Canonical form**: p(x | η) = h(x) · exp(ηᵀT(x) − A(η)). Yahan η **natural parameter**, T(x) **sufficient statistic**, h(x) base measure (η se independent), aur A(η) **log-partition function** jo distribution ko normalise karta hai: A(η) = ln ∫ h(x) exp(ηᵀT(x)) dx.",
+        "**Bernoulli**: θˣ(1 − θ)¹⁻ˣ = exp(x ln(θ/(1 − θ)) + ln(1 − θ)). To T(x) = x, η = ln(θ/(1 − θ)) (log-odds/logit), aur A(η) = ln(1 + e^η). Ulta θ = σ(η), yaani sigmoid Bernoulli ke natural parameter ka inverse hai; logistic regression isi ko η = wᵀx set karta hai.",
+        "**Poisson**: λˣe^(−λ)/x! ko (1/x!) exp(x ln λ − λ) likh sakte hain: T(x) = x, η = ln λ, A(η) = e^η, h(x) = 1/x!. **Gaussian (μ, σ² dono unknown)**: T(x) = (x, x²), η = (μ/σ², −1/(2σ²)). **Exponential** λe^(−λx): T(x) = x, η = −λ, A(η) = −ln(−η).",
+        "**Log-partition ke derivatives**: A′(η) = E[T(X)] aur A″(η) = Var[T(X)] ≥ 0. Isliye A convex hai, aur log-likelihood ηᵀΣT(xᵢ) − nA(η) η me concave hai: MLE ek well-behaved convex problem ban jaata hai.",
+        "**MLE = moment matching**: ∇ log-likelihood = ΣT(xᵢ) − nA′(η) = 0 ⇒ A′(η̂) = (1/n)ΣT(xᵢ). Matlab model ka expected sufficient statistic data ke average se match karo. Bernoulli me θ̂ = x̄, Poisson me λ̂ = x̄, Gaussian me mean aur second moment match.",
+        "**Sufficient statistic**: n i.i.d. samples ki saari information (θ ke baare me) Σ T(xᵢ) me hai. Gaussian ke liye (Σxᵢ, Σxᵢ²) rakh lo, raw data phenk sakte ho; streaming/large-scale data me ye bahut kaam ka hai.",
+        "**Kaun member nahi hai**: jis distribution ka support parameter par depend karta hai, jaise Uniform(0, θ), wo is form me nahi aata (h(x) η-free hona chahiye). Mixtures of Gaussians aur Student-t bhi member nahi hain. **GLMs** (linear, logistic, Poisson regression) exponential family + η = wᵀx ka general framework hain."
+      ],
+      "example": {
+        "problem": "Ek fictional support desk par har ghante aane wale tickets: 2, 3, 1, 4, 5. Poisson ko exponential-family form me likho, A′ aur A″ nikalo, aur moment matching se η̂ aur λ̂ nikalo.",
+        "steps": [
+          "p(x | λ) = λˣ e^(−λ) / x! = (1/x!) · exp(x ln λ − λ).",
+          "Compare: h(x) = 1/x!, T(x) = x, η = ln λ, aur λ = e^η ⇒ A(η) = e^η.",
+          "A′(η) = e^η = λ = E[X], aur A″(η) = e^η = λ = Var[X] (Poisson me mean = variance).",
+          "Moment matching: A′(η̂) = x̄ = (2 + 3 + 1 + 4 + 5)/5 = 3.",
+          "e^η̂ = 3 ⇒ η̂ = ln 3 ≈ 1.099, λ̂ = 3.",
+          "Answer: **λ̂ = 3, η̂ = ln 3 ≈ 1.099**; sufficient statistic Σxᵢ = 15 se hi ye nikal gaya."
+        ]
+      },
+      "mistakes": [
+        "Natural parameter ko original parameter samajh lena. Bernoulli me η = ln(θ/(1 − θ)) hai, θ nahi; Exponential me η = −λ (negative), λ nahi.",
+        "A′(η) ko mean of X maan lena jab T(x) ≠ x ho. A′(η) = E[T(X)]; Gaussian (dono unknown) me ye (E[X], E[X²]) hai.",
+        "Uniform(0, θ) ko member maan lena kyunki density '1/θ' simple dikhti hai. Support θ par depend karta hai, isliye wo canonical form me nahi aata."
+      ],
+      "revision": [
+        "p(x | η) = h(x) exp(ηᵀT(x) − A(η)).",
+        "Bernoulli: η = logit θ, A = ln(1 + e^η), θ = σ(η).",
+        "Poisson: η = ln λ, A = e^η.",
+        "A′(η) = E[T(X)], A″(η) = Var[T(X)].",
+        "MLE: A′(η̂) = average of T(xᵢ).",
+        "Parameter-dependent support ⇒ not exponential family."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w11-q1",
+          "question": "Bernoulli(θ = 0.8) ko exponential-family form me likhne par natural parameter η kya hai?",
+          "options": [
+            "0.8",
+            "ln 4 ≈ 1.386",
+            "4",
+            "ln 0.8 ≈ −0.223"
+          ],
+          "answer": 1,
+          "explanation": "η = ln(θ/(1 − θ)) = ln(0.8/0.2) = ln 4 ≈ 1.386 (log-odds). Option A original mean parameter θ hai, natural parameter nahi. Option C odds hai jisme log lena bhool gaye, aur option D me 1 − θ se divide nahi kiya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w11-q2",
+          "question": "Inme se kaunsi family (diye gaye unknown parameter ke saath) exponential family ki member NAHI hai?",
+          "options": [
+            "Poisson(λ)",
+            "Exponential(λ)",
+            "Uniform(0, θ)",
+            "N(μ, 1), μ unknown"
+          ],
+          "answer": 2,
+          "explanation": "Uniform(0, θ) ki density 1/θ sirf 0 ≤ x ≤ θ par non-zero hai; support θ par depend karta hai, jo h(x)·exp(ηT(x) − A(η)) form me possible nahi. Option D tempting ho sakta hai kyunki variance fixed hai, par N(μ, 1) me T(x) = x aur η = μ ke saath poora fit hota hai. Poisson aur Exponential standard members hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w11-q3",
+          "question": "Poisson pmf ko (1/x!)·exp(ηx − A(η)) form me likhne par, natural parameter η ke terms me log-partition function A(η) kya hai?",
+          "options": [
+            "e^η",
+            "ln η",
+            "η",
+            "ln(1 + e^η)"
+          ],
+          "answer": 0,
+          "explanation": "λˣe^(−λ)/x! = (1/x!)exp(x ln λ − λ). To η = ln λ aur A = λ = e^η. Option C ka trap A ko λ likh kar ruk jaana hai; A ko η ke terms me likhna hai, aur λ = e^η. Option D Bernoulli ka log-partition hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w11-q4",
+          "question": "Bernoulli ke liye A(η) = ln(1 + e^η). Agar natural parameter η = ln 3 ho, to A′(η) ke through E[X] kya hai?",
+          "options": [
+            "ln 3 ≈ 1.099",
+            "3",
+            "0.25",
+            "0.75"
+          ],
+          "answer": 3,
+          "explanation": "A′(η) = e^η/(1 + e^η) = σ(η) = E[X]. e^η = 3 ⇒ E[X] = 3/4 = 0.75. Option A η khud hai, mean nahi. Option B odds e^η hai, aur option C 1 − σ(η) = P(X = 0) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w11-q5",
+          "question": "N(μ, σ²) se n i.i.d. samples hain aur μ aur σ² dono unknown hain. (μ, σ²) ke liye sufficient statistic kya hai?",
+          "options": [
+            "Sirf Σxᵢ",
+            "(Σxᵢ, Σxᵢ²)",
+            "Sirf Σxᵢ²",
+            "(max xᵢ, min xᵢ)"
+          ],
+          "answer": 1,
+          "explanation": "Gaussian ka T(x) = (x, x²), to n samples ke liye ΣT(xᵢ) = (Σxᵢ, Σxᵢ²). Inse x̄ aur σ̂² dono nikal jaate hain. Option A tab sahi hota jab σ² known ho; dono unknown hon to second moment bhi chahiye. Option D range hai, jo Uniform jaisi families me kaam aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w11-q6",
+          "question": "Exponential distribution λe^(−λx), x ≥ 0, ko exp(ηx − A(η)) form me likha jaata hai, jahan η = −λ aur A(η) = −ln(−η). Data ka sample mean 0.5 hai. Moment matching (MLE) se η̂ kya hai?",
+          "options": [
+            "η̂ = 2",
+            "η̂ = −0.5",
+            "η̂ = 0.5",
+            "η̂ = −2"
+          ],
+          "answer": 3,
+          "explanation": "A′(η) = −1/η = E[X]. MLE condition: −1/η̂ = 0.5 ⇒ η̂ = −2, yaani λ̂ = 2 (aur mean 1/λ̂ = 0.5 ✓). Option A λ̂ hai, natural parameter nahi (η = −λ negative hota hai). Option B me mean ko hi seedha η maan kar sign laga diya, aur option C sample mean hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Parameter estimation: MLE, MAP, bias–variance and EM",
+      "summary": "Is week aap estimators ko bias, variance aur MSE se judge karna, prior jod kar MAP estimate nikalna aur use regularisation se jodna, aur Gaussian mixture models ke liye Expectation–Maximization (EM) ke E-step aur M-step chalana seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Estimator ki quality**: estimator θ̂ data ka function hai, isliye khud ek random variable hai. Bias = E[θ̂] − θ, variance = E[(θ̂ − E[θ̂])²], aur **MSE = E[(θ̂ − θ)²] = bias² + variance**. Thoda bias accept karke variance bahut kam ho jaaye to MSE kam ho sakta hai; yahi bias–variance trade-off hai.",
+        "**Standard results**: sample mean x̄ unbiased hai aur Var(x̄) = σ²/n. Gaussian variance ka MLE σ̂² = (1/n)Σ(xᵢ − x̄)² biased hai: E[σ̂²] = ((n − 1)/n)σ². n − 1 se divide karne par unbiased estimate milta hai. n → ∞ par dono σ² ki taraf jaate hain (**consistent**).",
+        "**MAP estimation**: θ ko random maan kar prior p(θ) do. Posterior p(θ | D) ∝ p(D | θ)p(θ), aur θ̂_MAP = argmax [ln p(D | θ) + ln p(θ)]. Log-prior ek penalty term ki tarah kaam karta hai; data badhne par likelihood dominate karti hai aur MAP → MLE.",
+        "**Beta–Bernoulli**: prior Beta(a, b) aur n trials me k successes ke baad posterior Beta(k + a, n − k + b). MAP (posterior mode) = (k + a − 1)/(n + a + b − 2), posterior mean = (k + a)/(n + a + b). Prior ko a − 1 'fake successes' aur b − 1 'fake failures' ki tarah socho; chhote data par ye extreme estimates (0 ya 1) ko rokta hai.",
+        "**MAP = regularisation**: linear regression me Gaussian noise aur w par zero-mean Gaussian prior N(0, τ²I) lene se MAP objective ‖Xw − y‖² + λ‖w‖² ban jaata hai (ridge, λ = σ²/τ²). Laplace prior se L1 penalty (lasso) aata hai. Strong prior (chhota τ) ⇔ bada λ.",
+        "**Mixture models**: p(x) = Σₖ πₖ N(x; μₖ, σₖ²), πₖ ≥ 0, Σπₖ = 1. Har point ka ek hidden component label zᵢ hai. Log-likelihood Σᵢ ln Σₖ πₖN(xᵢ; μₖ, σₖ²) me log ke andar sum hai, isliye closed-form MLE nahi milta.",
+        "**EM algorithm**: E-step: current parameters se responsibilities rᵢₖ = πₖN(xᵢ; μₖ, σₖ²) / Σⱼ πⱼN(xᵢ; μⱼ, σⱼ²) (point i ka component k ka soft share). M-step: Nₖ = Σᵢ rᵢₖ, μₖ = Σᵢ rᵢₖxᵢ / Nₖ, πₖ = Nₖ/n, σₖ² = Σᵢ rᵢₖ(xᵢ − μₖ)² / Nₖ. Har iteration log-likelihood ko kam nahi hone deta, par sirf local optimum ki guarantee hai, isliye initialisation matter karta hai. Hard 0/1 assignments ke saath ye k-means jaisa ban jaata hai."
+      ],
+      "example": {
+        "problem": "Ek fictional landing page par 3 visitors aaye aur teeno ne sign up kiya (k = 3, n = 3). Sign-up rate θ ka MLE, Beta(2, 2) prior ke saath MAP, aur posterior mean nikalo. Batao kaunsa estimate zyada sensible hai.",
+        "steps": [
+          "MLE: θ̂ = k/n = 3/3 = 1, yaani model kehta hai har future visitor pakka sign up karega: chhote data par overconfident.",
+          "Posterior: Beta(k + a, n − k + b) = Beta(3 + 2, 0 + 2) = Beta(5, 2).",
+          "MAP (mode) = (5 − 1)/(5 + 2 − 2) = 4/5 = 0.8. Formula se bhi: (3 + 2 − 1)/(3 + 2 + 2 − 2) = 4/5.",
+          "Posterior mean = 5/(5 + 2) = 5/7 ≈ 0.714.",
+          "Beta(2, 2) prior ek fake success aur ek fake failure jodne jaisa hai, isliye estimate 1 se neeche khinchta hai. n badhne par prior ka asar ghatta jaayega.",
+          "Answer: **MLE = 1, MAP = 0.8, posterior mean ≈ 0.714**; itne kam data par MAP/posterior mean zyada sensible hain."
+        ]
+      },
+      "mistakes": [
+        "Beta prior ke MAP me −1 aur −2 bhool jaana aur posterior mean (k + a)/(n + a + b) ko MAP likh dena. Mode aur mean alag hain.",
+        "MSE = bias + variance likhna. Sahi decomposition bias² + variance hai; bias ka square hota hai.",
+        "EM ke M-step me weighted mean ko n se divide karna. Component k ka mean Σrᵢₖxᵢ ko Nₖ = Σrᵢₖ se divide karke milta hai; n se sirf mixing weight πₖ = Nₖ/n banta hai."
+      ],
+      "revision": [
+        "MSE = bias² + variance.",
+        "E[σ̂²_MLE] = ((n − 1)/n)σ².",
+        "MAP = argmax [log-likelihood + log-prior].",
+        "Beta(a, b) MAP = (k + a − 1)/(n + a + b − 2).",
+        "Gaussian prior ⇔ L2 (ridge); Laplace ⇔ L1.",
+        "EM: E-step responsibilities, M-step weighted MLE."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w12-q1",
+          "question": "Linear regression me Gaussian noise ke saath weights w par zero-mean Gaussian prior lagakar MAP estimate nikalna kis method ke barabar hai?",
+          "options": [
+            "Lasso (L1-regularised least squares)",
+            "Ordinary least squares, bina regularisation",
+            "Ridge regression (L2-regularised least squares)",
+            "Logistic regression"
+          ],
+          "answer": 2,
+          "explanation": "−ln N(w; 0, τ²I) = ‖w‖²/(2τ²) + const, to MAP objective = squared error + λ‖w‖², jo ridge hai. Option A ka trap prior ko mix karna hai: L1 penalty Laplace prior se aata hai, Gaussian se nahi. Option B tab hota jab prior flat (uniform) ho, yaani MLE.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w12-q2",
+          "question": "Ek estimator ka bias 2 aur variance 5 hai. Uska mean squared error (MSE) kya hai?",
+          "options": [
+            "7",
+            "9",
+            "5",
+            "49"
+          ],
+          "answer": 1,
+          "explanation": "MSE = bias² + variance = 2² + 5 = 9. Option A ka trap bias ko square kiye bina jodna hai (2 + 5). Option C sirf variance hai, jo tab hota jab estimator unbiased hota, aur option D (2 + 5)² hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w12-q3",
+          "question": "Ek coin 10 baar uchhala, 7 heads aaye. Heads probability θ par Beta(3, 3) prior hai. θ ka MAP estimate kya hai?",
+          "options": [
+            "0.7",
+            "10/16 = 0.625",
+            "0.5",
+            "9/14 ≈ 0.643"
+          ],
+          "answer": 3,
+          "explanation": "Posterior Beta(7 + 3, 3 + 3) = Beta(10, 6). MAP (mode) = (10 − 1)/(10 + 6 − 2) = 9/14 ≈ 0.643. Prior ise MLE (0.7) se 0.5 ki taraf kheenchta hai. Option B posterior mean (10/16) hai, mode nahi; ye sabse tempting trap hai. Option A MLE hai jo prior ignore karta hai, aur option C sirf prior ka mode hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w12-q4",
+          "question": "N(μ, σ²) se n = 5 i.i.d. samples hain, σ² = 10. Variance ka MLE σ̂² = (1/n)Σ(xᵢ − x̄)² use kiya. E[σ̂²] aur bias kya hain?",
+          "options": [
+            "E[σ̂²] = 8, bias = −2",
+            "E[σ̂²] = 10, bias = 0",
+            "E[σ̂²] = 12.5, bias = 2.5",
+            "E[σ̂²] = 2, bias = −8"
+          ],
+          "answer": 0,
+          "explanation": "E[σ̂²] = ((n − 1)/n)σ² = (4/5)(10) = 8, to bias = 8 − 10 = −2 (MLE variance ko underestimate karta hai, kyunki x̄ data ke sabse kareeb hota hai). Option B (n − 1) se divide karne wale unbiased estimator ke liye sahi hota. Option C me factor ulta n/(n − 1) laga diya. Option D σ²/n = Var(x̄) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w12-q5",
+          "question": "Do-component 1-D Gaussian mixture: π₁ = π₂ = 0.5, component 1 = N(0, 1), component 2 = N(2, 1). EM ke E-step me point x = 2 ki component 2 ke liye responsibility r₂ kya hai?",
+          "options": [
+            "0.881",
+            "0.5",
+            "0.119",
+            "0.982"
+          ],
+          "answer": 0,
+          "explanation": "Same variance aur same π, to normalising constants cancel: r₂ = e⁰ / (e^(−(2 − 0)²/2) + e⁰) = 1/(e^(−2) + 1) ≈ 0.881. Option D me exponent ka ½ bhool gaye (e^(−4) use kiya). Option C component 1 ki responsibility hai. Option B ka trap ye sochna hai ki equal π ka matlab equal responsibility; x = 2 component 2 ke mean par baitha hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w12-q6",
+          "question": "EM ke ek E-step ke baad points x = 1, 2, 6 ki component 1 ke liye responsibilities 0.9, 0.8, 0.1 hain. M-step me component 1 ka naya mean μ₁ aur mixing weight π₁ kya honge?",
+          "options": [
+            "μ₁ = 3, π₁ = 0.6",
+            "μ₁ ≈ 1.72, π₁ = 0.6",
+            "μ₁ ≈ 1.03, π₁ = 0.6",
+            "μ₁ ≈ 1.72, π₁ = 1.8"
+          ],
+          "answer": 1,
+          "explanation": "N₁ = 0.9 + 0.8 + 0.1 = 1.8. μ₁ = (0.9·1 + 0.8·2 + 0.1·6)/1.8 = 3.1/1.8 ≈ 1.72. π₁ = N₁/n = 1.8/3 = 0.6. Option C me weighted sum ko N₁ ki jagah n = 3 se divide kiya (3.1/3). Option A unweighted mean hai jo responsibilities ignore karta hai. Option D me N₁ ko n se divide karna bhool gaye, jabki π₁ ek probability hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

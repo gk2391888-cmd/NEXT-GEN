@@ -1,0 +1,1475 @@
+{
+  "subjectId": "tds",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Your Development Environment: Shell, Editors and Reproducible Setups",
+      "summary": "Is week aap terminal aur shell ko ek data engineer ki tarah use karna, `PATH` aur environment variables samajhna, virtual environments aur package managers se dependencies isolate karna, aur aisa setup banana seekhoge jo kisi doosre machine par bhi same result de.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Shell aur terminal**: terminal sirf ek window hai; uske andar chalne wala program (bash, zsh, PowerShell) shell hai jo aapki command padhta hai, programs dhoondhta hai aur chalata hai. Data work mein shell isliye zaroori hai kyunki files move karna, scripts chalana, logs dekhna aur servers par kaam karna sab yahin se scriptable aur repeatable hota hai, GUI clicks se nahi.",
+        "**PATH lookup**: jab aap `python` likhte ho, shell `PATH` variable ki directories ko left se right check karta hai aur jo pehla executable milta hai wahi chalata hai. `which python` (ya Windows par `where python`) batata hai ki asal mein kaunsa chal raha hai. 'Galat Python chal raha hai' wali zyaadatar problems isi order se aati hain.",
+        "**Exit status**: har command khatam hokar ek number deti hai, `0` matlab success, non-zero matlab failure. `$?` last command ka status deta hai. `a && b` mein b tabhi chalta hai jab a succeed kare, `a || b` mein b tabhi jab a fail kare. Scripts aur CI pipelines isi status se decide karte hain ki aage badhna hai ya rukna hai.",
+        "**Environment variables aur export**: `X=5` sirf current shell ka variable banata hai; child process (jaise `python script.py`) use tabhi dekhta hai jab `export X=5` kiya ho. `X=5 cmd` sirf us ek command ke environment mein X daalta hai. Config (API URL, debug flag) isi raaste program tak pahunchta hai.",
+        "**Virtual environment**: `python -m venv .venv` project ke liye alag folder banata hai jismein apna `python` aur apni `site-packages` hoti hai. Activate karne se koi magic nahi hota: bas `.venv/bin` (Windows par `.venv\\Scripts`) `PATH` ke shuru mein aa jaata hai, isliye `python` aur `pip` venv wale chalte hain. Isse do projects ke conflicting versions (ek ko library v1 chahiye, doosre ko v2) saath reh sakte hain.",
+        "**Package managers aur version specifiers**: `pip install -r requirements.txt` file mein likhe packages install karta hai. `==2.1.0` exact pin hai, `>=2.1,<3` range hai, aur `~=2.1.3` compatible release hai, matlab `>=2.1.3` aur `2.1.*` ke andar. Lock file (ya `pip freeze` ka output) har transitive dependency ka exact version record karta hai taaki kal ka install aaj jaisa ho.",
+        "**Reproducibility**: same code + same data + same environment + same random seed = same result. Iske liye dependencies pin karo, raw data ko read-only rakho, random seed set karo, paths ko project root ke relative rakho (hard-coded `C:\\Users\\...` nahi), aur README mein setup ke exact steps likho. Jo analysis sirf aapke laptop par chalta hai woh asal mein reproducible nahi hai.",
+        "**Editor aur tooling**: achha editor (koi bhi modern code editor) syntax highlighting, integrated terminal, debugger aur extensions deta hai. Formatter (code ko ek consistent style mein badalta hai) aur linter (bugs jaise unused variable ya undefined name pakadta hai) team mein style ki behas khatam karte hain. Inhe save par ya commit se pehle automatically chalana achhi aadat hai."
+      ],
+      "example": {
+        "problem": "Ek naye project mein aapko isolated environment banana hai, ek fixed version ki library daalni hai, aur aisa record rakhna hai ki teammate same setup bana sake. Steps aur har command ka kaam batao.",
+        "code": "python -m venv .venv\nsource .venv/bin/activate        # Windows: .venv\\Scripts\\activate\nwhich python                     # .../project/.venv/bin/python\npip install \"requests==2.31.0\"\npip freeze > requirements.txt\ndeactivate\n# teammate ki machine par:\npython -m venv .venv && source .venv/bin/activate\npip install -r requirements.txt",
+        "steps": [
+          "`python -m venv .venv` project folder ke andar `.venv` banata hai jismein alag interpreter aur khaali site-packages hai.",
+          "`activate` `.venv/bin` ko `PATH` ke aage jodta hai; isliye `which python` ab venv ka path dikhata hai.",
+          "`pip install \"requests==2.31.0\"` library aur uski dependencies sirf venv mein install karta hai, system Python ko chhua bhi nahi.",
+          "`pip freeze > requirements.txt` har installed package ka exact `name==version` file mein likhta hai, transitive dependencies samet.",
+          "`.venv` folder ko git mein commit nahi karte (woh bada aur machine-specific hai); sirf `requirements.txt` commit hota hai.",
+          "Answer: teammate **naya venv banakar `pip install -r requirements.txt` chalata hai** aur use bilkul wahi versions milte hain."
+        ]
+      },
+      "mistakes": [
+        "Venv activate kiye bina `pip install` chala dena. Package global Python mein chala jaata hai aur script venv mein 'ModuleNotFoundError' deti hai. Fix: pehle `which python`/`which pip` se check karo, ya `python -m pip install ...` use karo taaki pip usi interpreter ka ho.",
+        "`.venv` ya `__pycache__` ko git mein commit kar dena. Ye machine-specific hain aur repo ko bhaari banaate hain. Fix: inhe `.gitignore` mein daalo aur sirf `requirements.txt` (ya lock file) share karo.",
+        "Script mein relative path likh kar sochna ki woh script ki location se resolve hoga. Relative path current working directory se resolve hota hai. Fix: project root se chalao, ya Python mein `Path(__file__).parent` se path banao."
+      ],
+      "revision": [
+        "`PATH` left se right search hota hai; pehla match jeetta hai.",
+        "Exit status 0 = success; `&&` success par, `||` failure par chalta hai.",
+        "`export` ke bina variable child process tak nahi pahunchta.",
+        "Venv activate = venv ki bin directory `PATH` ke aage.",
+        "`~=2.1.3` ka matlab `>=2.1.3` aur `2.1.*`.",
+        "Reproducible = pinned deps + fixed seed + relative paths + documented steps."
+      ],
+      "questions": [
+        {
+          "id": "tds-w1-q1",
+          "question": "`source .venv/bin/activate` chalane par asal mein kya badalta hai?",
+          "options": [
+            "`.venv/bin` directory `PATH` ke shuru mein jud jaati hai, isliye `python` aur `pip` venv wale resolve hote hain",
+            "System Python ke saare packages `.venv` mein copy ho jaate hain",
+            "Ek naya container start hota hai jismein project chalta hai",
+            "Global `site-packages` permanently venv ki taraf point karne lagti hai"
+          ],
+          "answer": 0,
+          "explanation": "Activation script mainly `PATH` ko badalti hai (aur prompt mein naam dikhati hai). Isliye `python`/`pip` likhne par venv ke executables pehle milte hain, aur woh apni alag site-packages use karte hain. Option B galat hai: venv khaali shuru hota hai, kuch copy nahi hota. Option D ka trap ye sochna hai ki activation global setting badalta hai; woh sirf current shell session tak seemit hai, `deactivate` ya naya terminal kholte hi khatam.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w1-q2",
+          "question": "`PATH` ki value `/opt/tools/bin:/usr/local/bin:/usr/bin` hai. `python` naam ka executable `/usr/local/bin` aur `/usr/bin` dono mein hai, `/opt/tools/bin` mein nahi. Terminal mein `python` likhne par kaunsa chalega?",
+          "options": [
+            "`/usr/bin/python`, kyunki system directories ko priority milti hai",
+            "Shell error dega kyunki do jagah same naam hai",
+            "`/usr/local/bin/python`, kyunki `PATH` mein woh pehle aata hai",
+            "Jo version number mein naya ho, wahi"
+          ],
+          "answer": 2,
+          "explanation": "Shell `PATH` ki directories left se right check karta hai aur pehla match chala deta hai. `/opt/tools/bin` mein `python` nahi hai, agla `/usr/local/bin` hai jahan mil gaya, to search wahin ruk jaata hai. Option A ka trap ye maanna hai ki `/usr/bin` 'system' hone se jeetegi; shell ke liye sirf order matter karta hai. Option D galat hai kyunki shell versions compare hi nahi karta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w1-q3",
+          "question": "Ek directory mein `missing.txt` naam ki koi file nahi hai. Ye bash line kya print karegi?",
+          "code": "test -f missing.txt && echo found || echo absent; echo $?",
+          "options": [
+            "absent / 1 (do lines)",
+            "found / 0 (do lines)",
+            "absent / 0 (do lines)",
+            "sirf 1"
+          ],
+          "answer": 2,
+          "explanation": "`test -f missing.txt` fail hota hai (status 1), isliye `&& echo found` skip hota hai aur `|| echo absent` chalta hai, jo 'absent' print karta hai. `$?` hamesha SABSE AAKHRI command ka status hai, aur woh `echo absent` thi jo successful rahi, to 0 print hota hai. Option A ka trap ye sochna hai ki `$?` abhi bhi `test` ka 1 yaad rakhega.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w1-q4",
+          "question": "`requirements.txt` mein `pandas~=1.5.2` likha hai (PEP 440 compatible-release operator). Inmein se kaunsa version is specifier ko satisfy karta hai?",
+          "options": [
+            "1.5.1",
+            "1.6.0",
+            "2.0.0",
+            "1.5.3"
+          ],
+          "answer": 3,
+          "explanation": "`~=1.5.2` ka matlab hai `>=1.5.2` aur `==1.5.*`, yaani last component badh sakta hai par `1.5` series se bahar nahi ja sakte. 1.5.3 dono shartein poori karta hai. 1.5.1 lower bound se neeche hai (option A). Option B ka trap `~=` ko sirf 'major version same rahe' samajhna hai; woh rule `~=1.5` (do components) ka hota, `~=1.5.2` ka nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w1-q5",
+          "question": "Project layout: `/home/u/proj/data/raw.csv` aur `/home/u/proj/src/load.py`. `load.py` mein `open(\"data/raw.csv\")` likha hai. Aap `cd /home/u/proj/src` karke `python load.py` chalate ho. Kya hoga?",
+          "options": [
+            "File khul jaayegi, kyunki path script ki location se resolve hota hai",
+            "`FileNotFoundError`, kyunki Python `/home/u/proj/src/data/raw.csv` dhoondhega",
+            "Python khud parent directories mein `data/` dhoondh lega",
+            "`PermissionError`, kyunki `src` se bahar ki file nahi padh sakte"
+          ],
+          "answer": 1,
+          "explanation": "Relative path current working directory (jahan se command chalayi) ke against resolve hota hai, script ki location ke against nahi. CWD `/home/u/proj/src` hai, isliye Python `src/data/raw.csv` dhoondhta hai jo exist nahi karti. Option A sabse common galatfehmi hai. Fix: project root se `python src/load.py` chalao, ya `Path(__file__).resolve().parent.parent / \"data\" / \"raw.csv\"` jaisa path banao. Option C galat hai: Python apne aap parent folders search nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w1-q6",
+          "question": "Ek nayi bash shell mein (jahan A, B, C pehle se set nahi hain) ye lines chalayi gayi. Output kya hoga?",
+          "code": "A=1\nexport B=2\nC=3 bash -c 'echo \"A=$A B=$B C=$C\"'\necho \"C=$C\"",
+          "options": [
+            "A=1 B=2 C=3 / C=3",
+            "A= B=2 C=3 / C=",
+            "A= B=2 C= / C=",
+            "A=1 B=2 C=3 / C="
+          ],
+          "answer": 1,
+          "explanation": "`bash -c` ek child process hai; usse sirf exported variables milte hain. A export nahi hua, isliye child mein khaali; B export hua, isliye 2. `C=3 cmd` C ko sirf us ek command ke environment mein daalta hai, isliye child ko C=3 milta hai par parent shell mein C kabhi set hi nahi hua, to aakhri line `C=` deti hai. Option D ka trap ye maanna hai ki har shell variable child tak pahunchta hai; option A ka trap ye ki `C=3 cmd` parent mein bhi C set kar deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Version Control with Git and Team Workflows",
+      "summary": "Is week aap git ka internal model (working tree, staging area, commits, branches) samjhoge, merge aur conflicts handle karna, `.gitignore` likhna, mistakes ko safely undo karna aur pull request wala team workflow seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Teen areas**: working tree (disk par aapki files), staging area ya index (agle commit ka draft) aur repository (saved commits). `git add` file ka us waqt ka content index mein daalta hai, `git commit` index ka snapshot save karta hai. Isliye `add` ke baad file badli to woh naya badlaav commit mein nahi jaata jab tak dobara `add` na karo.",
+        "**Commit aur hash**: har commit poore project ka snapshot hai jismein author, message aur parent commit(s) ka pointer hota hai. Iska ID content se bana hash hai, isliye history badalne par hash bhi badal jaata hai. Commits ek chain (asal mein graph) banate hain jise `git log --oneline --graph` dikhata hai.",
+        "**Branch aur HEAD**: branch bas ek movable pointer hai jo kisi commit par point karta hai; naya commit karne par current branch aage khisak jaati hai. `HEAD` batata hai ki aap abhi kis branch (ya commit) par ho. `git switch -c feature` naya pointer banata hai, files copy nahi karta, isliye branch banana sasta hai.",
+        "**Merge ke do roop**: agar `main` branch banne ke baad aage nahi badhi, to `git merge feature` sirf pointer aage kar deta hai (fast-forward, koi naya commit nahi). Agar dono taraf naye commits hain, to git common ancestor se teen-tarfa (three-way) merge karke ek **merge commit** banata hai jiske do parents hote hain.",
+        "**Conflicts**: jab dono branches ne same file ki same lines alag tarah badli hon, git khud decide nahi karta aur file mein markers daal deta hai: `<<<<<<< HEAD` ke neeche aapki current branch ka version, `=======` ke baad merge ho rahi branch ka version, aur `>>>>>>> feature` par end. Aap sahi content rakhte ho, markers hataate ho, phir `git add` aur `git commit`.",
+        "**Remotes**: `origin` ek remote repository ka naam hai. `git fetch` remote ke naye commits download karke `origin/main` jaise remote-tracking branches update karta hai, par aapki local branch aur files ko nahi chhoota. `git pull` = fetch + merge (ya rebase) current branch mein. `git push` aapke commits remote par bhejta hai.",
+        "**.gitignore**: patterns jo untracked files ko `git status` aur `git add .` se chhupaate hain: `*.csv` har level par, `/build` sirf repo root ka build, `logs/` kisi bhi level ki logs directory, aur `!data/keep.csv` exception. Ye sirf untracked files par lagta hai; jo file pehle se tracked hai use `git rm --cached` se untrack karna padta hai.",
+        "**Undo aur PR workflow**: `git restore file` working tree ke badlaav hataata hai, `git restore --staged file` file ko unstage karta hai, `git revert <hash>` ek naya commit banata hai jo purane commit ka ulta karta hai (shared history safe rehti hai), jabki `git reset` branch pointer peeche le jaata hai (history rewrite). Team mein kaam feature branch par hota hai, push karke pull request kholte ho, review aur CI pass hone ke baad merge hota hai."
+      ],
+      "example": {
+        "problem": "Aap `main` par ho. Ek `feature` branch mein `config.py` ki line `rate = 0.07` ki gayi, aur isi beech `main` par wahi line `rate = 0.05` ki gayi. `git merge feature` chalane ke baad conflict ko kaise resolve karoge?",
+        "code": "git merge feature\n# CONFLICT (content): Merge conflict in config.py\ncat config.py\n<<<<<<< HEAD\nrate = 0.05\n=======\nrate = 0.07\n>>>>>>> feature\n# file edit karke sirf sahi line rakho, phir:\ngit add config.py\ngit commit",
+        "steps": [
+          "Dono branches ne common ancestor ke baad same line badli, isliye git automatic merge nahi kar sakta.",
+          "`<<<<<<< HEAD` aur `=======` ke beech `main` (current branch) ka version hai: `rate = 0.05`.",
+          "`=======` aur `>>>>>>> feature` ke beech merge ho rahi branch ka version hai: `rate = 0.07`.",
+          "Team se poochh kar sahi value decide karo (maan lo 0.07), aur teeno marker lines delete karo.",
+          "`git add config.py` git ko batata hai ki conflict resolve ho gaya; `git commit` merge commit banata hai jiske do parents hain.",
+          "Answer: **file mein sirf `rate = 0.07` rakho, markers hatao, `git add` + `git commit`**."
+        ]
+      },
+      "mistakes": [
+        "Pehle se tracked file (jaise `secrets.env`) ko `.gitignore` mein daal kar sochna ki ab git use ignore karega. Tracked files par ignore rules nahi lagte. Fix: `git rm --cached secrets.env`, commit karo, aur agar secret push ho chuka tha to use rotate karo (history mein woh abhi bhi hai).",
+        "Shared branch par `git reset --hard` karke force-push kar dena. Teammates ki history aur aapki history alag ho jaati hai aur unka kaam toot sakta hai. Fix: published commits ko `git revert` se undo karo.",
+        "Conflict resolve karte waqt `<<<<<<<`, `=======`, `>>>>>>>` markers file mein chhod dena. Code syntax error dega ya data file kharab hogi. Fix: commit se pehle `git diff --check` ya file search karke markers dhoondho."
+      ],
+      "revision": [
+        "`git add` us pal ka content stage karta hai; baad ke edits ke liye dobara add.",
+        "Branch = commit par movable pointer; HEAD = aap kahan ho.",
+        "Fast-forward mein naya commit nahi; three-way merge mein do parents wala merge commit.",
+        "`fetch` sirf download, `pull` = fetch + merge.",
+        "`.gitignore` sirf untracked files par; tracked ke liye `git rm --cached`.",
+        "Shared history ke liye `revert`, `reset` nahi."
+      ],
+      "questions": [
+        {
+          "id": "tds-w2-q1",
+          "question": "Teammate ne remote `main` par 3 naye commits push kiye. Aap apni local `main` par `git fetch origin` chalate ho. Iske turant baad kya sach hai?",
+          "options": [
+            "Aapki local `main` aur working tree mein teeno commits aa gaye",
+            "Git ne automatically ek merge commit bana diya",
+            "Kuch download nahi hua; uske liye `git pull` chahiye",
+            "Naye commits `origin/main` mein aa gaye, par local `main` aur aapki files wahi ki wahi hain"
+          ],
+          "answer": 3,
+          "explanation": "`git fetch` sirf remote se objects download karke remote-tracking branch `origin/main` ko update karta hai. Aapki local branch tab badlegi jab aap `git merge origin/main` karoge (ya `git pull`, jo fetch + merge hai). Option A ka trap fetch ko pull samajhna hai. Option C ulta galat hai: download fetch hi karta hai, pull bas uske upar merge jodta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w2-q2",
+          "question": "Aap `main` par ho aur `git merge feature` ke baad `report.py` mein ye conflict aaya. `main` branch ka version kaunsa hai?",
+          "code": "<<<<<<< HEAD\nthreshold = 0.8\n=======\nthreshold = 0.75\n>>>>>>> feature",
+          "options": [
+            "`threshold = 0.8`",
+            "`threshold = 0.75`",
+            "Dono lines `feature` branch se aayi hain",
+            "Markers se pata nahi chalta; `git log` dekhna padega"
+          ],
+          "answer": 0,
+          "explanation": "`<<<<<<< HEAD` se `=======` tak ka hissa HEAD, yaani current checked-out branch ka hai. Aap `main` par ho, isliye `threshold = 0.8` main ka version hai, aur `=======` se `>>>>>>> feature` tak wala (0.75) merge ho rahi `feature` branch ka. Option B ka trap HEAD ko 'nayi aane wali' branch samajhna hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w2-q3",
+          "question": "`a.txt` tracked hai aur committed content `v1` hai. Ye commands chalayi gayi. Naye commit mein `a.txt` ka content kya hoga, aur `git status` kya dikhayega?",
+          "code": "echo v2 > a.txt\ngit add a.txt\necho v3 > a.txt\ngit commit -m \"update\"",
+          "options": [
+            "Commit mein `v3`; status clean",
+            "Commit mein `v2`; status mein `a.txt` modified (unstaged `v3`)",
+            "Commit mein `v1`; kyunki commit se pehle file dobara badal gayi",
+            "Commit fail hoga kyunki staged aur working version alag hain"
+          ],
+          "answer": 1,
+          "explanation": "`git add` us waqt ka content (`v2`) index mein snapshot kar leta hai. Uske baad `v3` likhna sirf working tree badalta hai. `git commit` index se commit banata hai, isliye commit mein `v2` jaata hai, aur `v3` ek unstaged modification ke roop mein bacha rehta hai. Option A ka trap ye maanna hai ki `add` file ka 'naam' track karta hai aur commit latest content le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w2-q4",
+          "question": "`main` par commits C1, C2 hain. `feature` branch C2 se bani aur usmein C3, C4, C5 commit hue. Isi beech `main` par C6 commit hua. Ab `main` par `git merge feature` chalaya (koi conflict nahi). `git rev-list --count main` kya dega?",
+          "options": [
+            "5",
+            "6",
+            "7",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "Dono branches C2 ke baad alag-alag aage badhi hain, isliye fast-forward possible nahi; git three-way merge karke ek naya merge commit banata hai jiske do parents (C6 aur C5) hain. `main` se reachable commits: C1, C2, C3, C4, C5, C6 aur merge commit = 7. Option B ka trap merge commit ko bhool jaana hai, jo fast-forward wale case mein sahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w2-q5",
+          "question": "Ek buggy commit `a1b2c3d` pehle hi shared `main` par push ho chuka hai aur teammates ne uske upar kaam pull kar liya hai. Iska effect hatane ka sabse safe tareeka kaunsa hai?",
+          "options": [
+            "`git revert a1b2c3d` karke naya commit push karna",
+            "`git reset --hard a1b2c3d~1` karke `git push --force`",
+            "`.gitignore` mein badli hui files daal dena",
+            "Local repo delete karke dobara clone karna"
+          ],
+          "answer": 0,
+          "explanation": "`git revert` ek naya commit banata hai jo us commit ke changes ko ulta karta hai; purani history nahi badalti, isliye teammates normal pull kar sakte hain. Option B local history mein se commit hata deta hai aur force-push shared history rewrite karta hai, jisse teammates ke branches diverge ho jaate hain. Ye sabse tempting trap hai kyunki apni machine par 'saaf' dikhta hai. Option C ka tracked files par koi asar nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w2-q6",
+          "question": "Repo root par ye `.gitignore` hai. Inmein se kaunsi untracked file `git status` mein dikhegi (yaani ignore NAHI hogi)?",
+          "code": "*.csv\n!data/keep.csv\n/build\nlogs/",
+          "options": [
+            "`data/raw.csv`",
+            "`build/main.o`",
+            "`src/build/main.o`",
+            "`app/logs/run.txt`"
+          ],
+          "answer": 2,
+          "explanation": "`/build` ke shuru mein slash hai, isliye ye sirf repo root wali `build` ko match karta hai; `src/build/` match nahi hota, to `src/build/main.o` dikhegi. `data/raw.csv` ko `*.csv` ignore karta hai (exception sirf `keep.csv` ke liye hai). `build/main.o` root ki build mein hai, ignored. `logs/` bina leading slash ke kisi bhi level ki `logs` directory match karta hai, isliye `app/logs/run.txt` bhi ignored. Option D ka trap ye sochna hai ki `logs/` sirf root par lagta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "HTTP APIs, JSON and Serving a Small Python App",
+      "summary": "Is week aap HTTP request-response ka poora structure, status codes aur methods ke semantics, JSON ke exact rules, ek chhoti Python web API kaise serve hoti hai, aur config/secrets ko environment variables se kaise sambhalte hain, ye seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**HTTP request ka structure**: method (GET, POST, PUT, PATCH, DELETE), URL, headers aur optional body. URL ke hisse: scheme (`https`), host (`api.example.com`), port (`:8443`, na likho to https ke liye 443), path (`/v1/items`), query string (`?page=2&tag=x`) aur fragment (`#top`, jo browser mein hi rehta hai, server tak nahi jaata). Response mein status code, headers (jaise `Content-Type: application/json`) aur body aati hai.",
+        "**Status code families**: 2xx success (200 OK, 201 Created, 204 No Content), 3xx redirect (301 permanent, 302/307 temporary), 4xx client ki galti (400 bad request, 401 authentication missing/invalid, 403 authenticated par permission nahi, 404 not found, 405 method not allowed, 429 too many requests), 5xx server ki galti (500 internal error, 503 unavailable). Retry ka faisla isi par hota hai: 4xx par wahi request dobara bhejna aksar bekaar hai (429 apvaad hai), 5xx/429 par backoff ke saath retry samajhdaari hai.",
+        "**Methods ke semantics**: GET safe hai (server state nahi badalta) aur idempotent. PUT (poora resource replace) aur DELETE idempotent hain: ek baar bhejo ya paanch baar, final state same. POST idempotent nahi: do baar bhejne par do orders ban sakte hain. Isliye network timeout ke baad POST ko blindly retry nahi karte; idempotency key jaisa mechanism chahiye.",
+        "**REST style**: URLs resources (nouns) ko naam dete hain, actions methods se aate hain: `GET /users/42`, `POST /users`, `DELETE /users/42`. Filtering, sorting, paging query parameters se: `GET /orders?status=paid&page=3`. Response mein consistent JSON shape aur sahi status code dena client ka kaam aasaan karta hai.",
+        "**JSON ke rules**: types sirf object, array, string, number, `true`/`false` aur `null` hain. Keys aur strings double quotes mein hi, trailing comma aur comments allowed nahi, `undefined`/`NaN` valid JSON nahi. Python mein `json.dumps` dict ko JSON banata hai: tuple array ban jaata hai, `None` `null` aur `True` `true`; non-string keys (jaise 1) string `\"1\"` ban jaati hain. Isliye round-trip ke baad object hamesha pehle jaisa nahi milta.",
+        "**Python app serve karna**: ek web framework route (method + path) ko function se map karta hai; function request padhta hai aur response (JSON + status) lautata hai. Server ek host aur port par listen karta hai: `127.0.0.1` matlab sirf isi machine se connection, `0.0.0.0` matlab saare network interfaces se. Development server debugging ke liye hai; production mein proper application server aur reverse proxy lagaye jaate hain.",
+        "**Environment variables aur secrets**: config jo deployment ke saath badalta hai (database URL, API keys, port) code mein nahi, environment mein rakho, aur `os.environ` se padho. `os.environ` ki har value string hoti hai, isliye number chahiye to `int(...)` karo. Local development mein `.env` file use hoti hai jo `.gitignore` mein hoti hai; repo mein sirf `.env.example` jaati hai jismein dummy values hon.",
+        "**API keys ki safety**: key ko URL query mein bhejna risky hai kyunki URLs server logs, browser history aur proxies mein record hote hain; header (jaise `Authorization: Bearer <token>`) behtar hai. Key leak ho jaaye to sirf commit delete karna kaafi nahi, key ko revoke/rotate karo."
+      ],
+      "example": {
+        "problem": "Ek chhota prediction API chahiye: `POST /predict` JSON body `{\"area\": 1200}` le, aur JSON mein price lautaye. Model ka version environment se aaye. Code aur ek sample request-response samjhao.",
+        "code": "import os\nfrom flask import Flask, request, jsonify\n\napp = Flask(__name__)\nMODEL_VERSION = os.environ.get(\"MODEL_VERSION\", \"dev\")\n\n@app.post(\"/predict\")\ndef predict():\n    body = request.get_json(silent=True)\n    if not body or \"area\" not in body:\n        return jsonify(error=\"area is required\"), 400\n    price = 5000 * float(body[\"area\"])\n    return jsonify(price=price, model=MODEL_VERSION), 200\n\nif __name__ == \"__main__\":\n    app.run(host=\"127.0.0.1\", port=int(os.environ.get(\"PORT\", \"8000\")))\n\n# curl -X POST http://127.0.0.1:8000/predict \\\n#      -H \"Content-Type: application/json\" -d '{\"area\": 1200}'",
+        "steps": [
+          "`@app.post(\"/predict\")` route ko function se jodta hai: sirf POST method aur `/predict` path par ye chalega; GET bhejoge to 405 aayega.",
+          "`request.get_json(silent=True)` body ko JSON ki tarah parse karta hai; invalid ya missing body par `None` milta hai.",
+          "Agar `area` missing hai to client ki galti hai, isliye 400 aur ek clear error message lautaate hain, 500 nahi.",
+          "Valid input par price = 5000 × 1200 = 6000000.0 calculate hota hai aur `jsonify` use JSON response banata hai.",
+          "`MODEL_VERSION` aur `PORT` environment se aate hain; `PORT` string hai, isliye `int(...)` kiya.",
+          "Answer: response **status 200**, aur JSON body mein `price` = 6000000.0 aur `model` = \"dev\" (agar `MODEL_VERSION` set nahi hai)."
+        ]
+      },
+      "mistakes": [
+        "Har error par 200 bhej kar body mein `\"error\"` likh dena. Client, monitoring aur retry logic status code dekhte hain. Fix: validation fail par 400/422, auth par 401/403, missing resource par 404, aur sirf genuinely server failure par 5xx.",
+        "API key ko code mein hard-code karke repo push kar dena. Git history se woh kabhi asaani se nahi jaati. Fix: key environment variable se padho, `.env` ko ignore karo, aur leak hui key turant rotate karo.",
+        "`os.environ[\"PORT\"]` ko number samajh kar maths karna. Environment values hamesha strings hain, isliye `\"8000\" + \"1\"` `\"80001\"` banta hai. Fix: `int(os.environ.get(\"PORT\", \"8000\"))`."
+      ],
+      "revision": [
+        "4xx = client ki galti, 5xx = server ki galti; 401 = kaun ho pata nahi, 403 = pata hai par ijaazat nahi.",
+        "GET, PUT, DELETE idempotent; POST nahi.",
+        "JSON: double quotes, no trailing comma, no comments, `null` not `None`.",
+        "`json.dumps` mein tuple → array aur int key → string key.",
+        "`127.0.0.1` sirf local; `0.0.0.0` saare interfaces.",
+        "Secrets environment mein, `.env` gitignored, values strings."
+      ],
+      "questions": [
+        {
+          "id": "tds-w3-q1",
+          "question": "Client valid token bhejta hai (server ne user pehchaan liya), par us user ko `/admin/reports` dekhne ki permission nahi hai. Sabse sahi status code kaunsa hai?",
+          "options": [
+            "401 Unauthorized",
+            "404 Not Found",
+            "403 Forbidden",
+            "500 Internal Server Error"
+          ],
+          "answer": 2,
+          "explanation": "User authenticate ho chuka hai, problem sirf authorization (permission) ki hai, jiske liye 403 hai. 401 tab hota hai jab credentials missing ya invalid hon, yaani server ko pata hi nahi aap kaun ho; naam 'Unauthorized' hone ki wajah se option A sabse tempting trap hai. 500 server ki khud ki galti ke liye hai, yahan server sahi kaam kar raha hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w3-q2",
+          "question": "Inmein se kaunsa string valid JSON hai (Python ka `json.loads` bina error ke parse karega)?",
+          "options": [
+            "`{'a': 1}`",
+            "`{\"a\": 1,}`",
+            "`{\"a\": undefined}`",
+            "`{\"a\": [1, 2.5], \"b\": null, \"c\": \"x\"}`"
+          ],
+          "answer": 3,
+          "explanation": "JSON mein keys/strings double quotes mein, `null` allowed, numbers integer ya decimal dono ho sakte hain, isliye option D valid hai. Option A Python dict jaisa dikhta hai par single quotes JSON mein invalid hain; ye sabse common trap hai jab log `str(dict)` ko JSON samajh lete hain. Option B mein trailing comma hai, aur option C mein `undefined` JavaScript ka concept hai, JSON ka nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w3-q3",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import json\nd = {1: (2, 3), \"x\": None, \"y\": True}\ns = json.dumps(d)\nback = json.loads(s)\nprint(s)\nprint(back == d)",
+          "options": [
+            "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `False`",
+            "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `True`",
+            "`{1: (2, 3), \"x\": None, \"y\": True}` / `True`",
+            "`TypeError`, kyunki tuple JSON mein convert nahi hota"
+          ],
+          "answer": 0,
+          "explanation": "`json.dumps` int key 1 ko string `\"1\"`, tuple ko array, `None` ko `null` aur `True` ko `true` banata hai. Wapas `loads` karne par key `\"1\"` (string) aur value list `[2, 3]` milti hai, jabki original mein key int 1 aur value tuple thi, isliye `back == d` False hai. Option B ka trap ye maanna hai ki JSON round-trip lossless hai. Option D galat hai: tuple serialize hota hai, bas list ban kar.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w3-q4",
+          "question": "Network timeout ki wajah se client ko pata nahi ki request server tak pahunchi ya nahi. HTTP semantics ke hisaab se kin methods ko bina side-effect ki chinta ke dobara bhejna safe hai, kyunki ve idempotent hain?",
+          "options": [
+            "Sirf GET",
+            "GET, PUT aur DELETE",
+            "GET aur POST",
+            "Saare methods, kyunki server duplicate pehchaan leta hai"
+          ],
+          "answer": 1,
+          "explanation": "Idempotent ka matlab hai ek baar ya kai baar bhejne par server ki final state same rahe. GET (safe), PUT (resource ko same value se replace) aur DELETE (doosri baar bhi resource gayab hi rehta hai, chahe response 404 aaye) idempotent hain. POST nahi hai: do baar bhejne se do records ban sakte hain, isliye option C galat hai. Option A ka trap 'safe' aur 'idempotent' ko ek samajhna hai; PUT/DELETE safe nahi par idempotent hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w3-q5",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import os\nos.environ[\"PORT\"] = \"8000\"\nos.environ.pop(\"API_KEY\", None)\nprint(os.environ.get(\"API_KEY\"), os.environ[\"PORT\"] + \"1\")",
+          "options": [
+            "`KeyError: 'API_KEY'`",
+            "`None 8001`",
+            "`\"\" 80001` (missing variable khaali string deta hai, jaise shell mein)",
+            "`None 80001`"
+          ],
+          "answer": 3,
+          "explanation": "`pop(\"API_KEY\", None)` key ko hata deta hai (na ho to bhi error nahi). `os.environ.get(\"API_KEY\")` missing key par `None` lautata hai, `KeyError` sirf `os.environ[\"API_KEY\"]` jaise square-bracket access par aata (option A ka trap). Environment values strings hain, isliye `\"8000\" + \"1\"` string concatenation se `\"80001\"` banta hai. Option B ka trap PORT ko integer maan kar 8001 jodna hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w3-q6",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "from urllib.parse import urlsplit, parse_qs\nu = urlsplit(\"https://api.example.com:8443/v1/items?tag=data%20science&page=2&page=3#top\")\nq = parse_qs(u.query)\nprint(u.port, u.path, q[\"tag\"][0], q[\"page\"])",
+          "options": [
+            "`8443 /v1/items data%20science ['2', '3']`",
+            "`8443 /v1/items data science ['2', '3']`",
+            "`8443 /v1/items data science ['3']`",
+            "`443 /v1/items?tag=data%20science data science ['2', '3']`"
+          ],
+          "answer": 1,
+          "explanation": "URL mein port explicitly 8443 diya hai, path query string ke bina `/v1/items` hai, aur fragment `#top` query mein nahi aata. `parse_qs` percent-encoding decode karta hai (`%20` → space) aur har key ki values ki LIST deta hai; `page` do baar aaya hai to `['2', '3']`. Option C ka trap dict ki tarah 'aakhri value jeetti hai' sochna hai, option A ka trap ye ki decoding nahi hoti. Option D https ka default port maan leta hai jabki port URL mein likha hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Containers, Hosting Models and Continuous Integration",
+      "summary": "Is week aap image aur container ka fark, Dockerfile ke instructions aur layer caching, port mapping, static hosting aur serverless ka idea, aur har push par tests chalane wali CI pipeline ki basics seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Container kyun**: 'mere laptop par to chal raha tha' ki problem isliye aati hai kyunki OS libraries, Python version aur packages har machine par alag hote hain. Container app ko uski poori runtime (OS userland, interpreter, libraries) ke saath pack karta hai, par host ka kernel share karta hai, isliye virtual machine se bahut halka aur jaldi start hone wala hota hai.",
+        "**Image vs container**: image ek read-only template hai (layers ka stack), container us image ka chalta hua (ya ruka hua) instance hai jiske upar ek patli writable layer hoti hai. Ek image se kai containers ban sakte hain, jaise ek class se kai objects. Container delete karte hi uski writable layer ka data chala jaata hai; jo data bachana hai woh volume ya bahar ke storage mein rakho.",
+        "**Dockerfile instructions**: `FROM` base image chunta hai, `WORKDIR` working directory set karta hai, `COPY` files image mein daalta hai, `RUN` BUILD ke waqt command chalata hai (jaise `pip install`) aur nayi layer banata hai, `ENV` environment variable set karta hai, `EXPOSE` sirf document karta hai ki app kaunsa port use karta hai, aur `CMD` container START hone par chalne wali default command hai. Kai `CMD` likhe hon to sirf aakhri wala maana jaata hai, aur `docker run image <cmd>` use override kar deta hai.",
+        "**Layer caching**: har instruction ek layer hai; rebuild mein Docker tab tak cache use karta hai jab tak instruction aur uske inputs nahi badle. Pehla badla hua step aur uske baad ke saare steps dobara chalte hain. Isliye pehle sirf `requirements.txt` copy karke `pip install` karo, phir baaki code copy karo; code badalne par dependencies dobara install nahi hongi.",
+        "**Ports aur networking**: container ka apna network namespace hota hai. `docker run -p 8080:5000 img` ka matlab host ka port 8080 container ke port 5000 par forward hoga (format `HOST:CONTAINER`). Container ke andar app ko `0.0.0.0` par listen karna chahiye; `127.0.0.1` par listen karega to woh sirf container ke andar se reachable hoga aur forwarded traffic tak nahi pahunchega.",
+        "**Static hosting**: agar site sirf HTML, CSS, JavaScript aur data files hai (koi server-side code nahi), to use static host par serve kar sakte ho: server files ko jaise hain waise bhej deta hai, sasta, tez aur CDN-friendly. Dashboard ya report jo browser mein hi JSON padh kar chart banata hai, static ho sakta hai; Python API jo request par calculation karta hai, static nahi ho sakta.",
+        "**Serverless**: aap sirf ek function deploy karte ho, platform request aane par use chalata hai aur load ke hisaab se scale karta hai. Function stateless hona chahiye: do requests ke beech memory ya local disk par bharosa mat karo, state database/object storage mein rakho. Kaafi der idle rehne ke baad pehli request 'cold start' ki wajah se dheemi ho sakti hai, aur execution time ki limits hoti hain.",
+        "**CI (continuous integration)**: har push ya pull request par ek automated pipeline saaf machine par code checkout karti hai, dependencies install karti hai, linter aur tests chalati hai, aur fail hone par merge rokti hai. Pipeline ek YAML file mein steps ki tarah likhi jaati hai; koi step non-zero exit status de to job fail. Secrets (deploy tokens) CI ke secret store mein rakhe jaate hain, repo mein nahi."
+      ],
+      "example": {
+        "problem": "Ek chhoti Python API (`app.py`, port 5000) ko container mein pack karna hai aur host par `http://localhost:8080` se kholna hai. Dockerfile aur commands likho, aur batao ki code badalne par rebuild fast kyun rahega.",
+        "code": "# Dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nENV PORT=5000\nEXPOSE 5000\nCMD [\"python\", \"app.py\"]\n\n# app.py ke andar: app.run(host=\"0.0.0.0\", port=5000)\n\ndocker build -t price-api:1 .\ndocker run --rm -p 8080:5000 price-api:1",
+        "steps": [
+          "`FROM` ek chhota Python base image leta hai; `WORKDIR /app` aage ke saare paths ka base banata hai.",
+          "Pehle sirf `requirements.txt` copy hoti hai aur `RUN pip install` chalta hai; ye layer tab tak cached rahegi jab tak requirements file nahi badalti.",
+          "`COPY . .` baaki code daalta hai; `app.py` badalne par sirf yahin se aage ke steps dobara bante hain.",
+          "`CMD` build ke waqt nahi chalta, container start hone par chalta hai.",
+          "App `0.0.0.0` par listen karta hai taaki container ke network interface par aane wala forwarded traffic use mile.",
+          "`-p 8080:5000` host port 8080 ko container port 5000 se jodta hai; `--rm` container rukte hi use delete kar deta hai.",
+          "Answer: **browser mein `http://localhost:8080` kholo**; code change par sirf `COPY . .` se aage ki layers rebuild hongi, `pip install` cache se aayega."
+        ]
+      },
+      "mistakes": [
+        "Container ke andar data (jaise SQLite file ya uploads) likh kar sochna ki woh hamesha rahega. Container hatate hi writable layer chali jaati hai. Fix: volume mount karo ya bahar ke database/object storage mein likho.",
+        "`COPY . .` ko `pip install` se pehle rakhna. Har chhote code change par poori dependencies dobara install hoti hain aur build bahut dheema ho jaata hai. Fix: pehle requirements copy + install, phir code copy.",
+        "`EXPOSE 5000` likh kar sochna ki port host par khul gaya. `EXPOSE` sirf documentation hai. Fix: `docker run -p HOST:CONTAINER` se publish karo."
+      ],
+      "revision": [
+        "Image = read-only template; container = uska running/stopped instance + writable layer.",
+        "`RUN` build time par, `CMD` container start par; aakhri `CMD` hi gine jaata hai.",
+        "Pehla badla step aur uske baad sab rebuild; dependencies pehle install karo.",
+        "`-p HOST:CONTAINER`; container ke andar `0.0.0.0` par bind karo.",
+        "Static hosting = sirf files; serverless = stateless function + cold start.",
+        "CI har push par install + lint + test; non-zero exit = fail."
+      ],
+      "questions": [
+        {
+          "id": "tds-w4-q1",
+          "question": "Machine par pehle koi container nahi tha. Aapne ek image `etl:1` build ki aur `docker run etl:1` teen baar chalaya (bina `--rm` ke). Har baar script khatam hokar container exit ho gaya. Ab `docker ps -a` kitne containers dikhayega, aur `etl` ki kitni images hongi?",
+          "options": [
+            "1 container, 1 image",
+            "3 containers, 1 image",
+            "3 containers, 3 images",
+            "0 containers (sab exit ho gaye), 1 image"
+          ],
+          "answer": 1,
+          "explanation": "Har `docker run` usi ek image se ek naya container banata hai, isliye 3 containers aur 1 image. Exit hone ke baad bhi container stopped state mein rehta hai jab tak `--rm` na diya ho ya `docker rm` na kiya ho, aur `docker ps -a` stopped containers bhi dikhata hai. Option D ka trap 'exit = delete' maanna hai; option C ka trap har run par nayi image banne ki galatfehmi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w4-q2",
+          "question": "Container ke andar API port 5000 par `0.0.0.0` pe listen kar rahi hai. Aap `docker run -p 8080:5000 myapi` chalate ho. Host machine ke browser se API kis URL par milegi?",
+          "options": [
+            "`http://localhost:5000`",
+            "`http://<container-ka-IP>:8080`",
+            "`http://localhost:5000` aur `http://localhost:8080` dono",
+            "`http://localhost:8080`"
+          ],
+          "answer": 3,
+          "explanation": "`-p` ka format `HOST:CONTAINER` hai: host ka 8080 container ke 5000 par forward hota hai, isliye host se `localhost:8080` kholte hain. Option A ka trap order ulta padhna hai (container port ko host port samajhna); host par 5000 publish hi nahi hua. Option B mein container ke andar to 5000 hai, 8080 nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w4-q3",
+          "question": "Is Dockerfile se image banayi aur `docker run img` (bina extra arguments) chalaya. Container start hone par kaunsi command chalegi?",
+          "code": "FROM python:3.12-slim\nWORKDIR /app\nCOPY . .\nRUN python setup_data.py\nCMD [\"python\", \"train.py\"]\nCMD [\"python\", \"serve.py\"]",
+          "options": [
+            "`python serve.py`",
+            "`python train.py`",
+            "Pehle `train.py`, phir `serve.py`",
+            "`python setup_data.py`, phir `serve.py`"
+          ],
+          "answer": 0,
+          "explanation": "Dockerfile mein sirf aakhri `CMD` effective hota hai, isliye container start par `python serve.py` chalta hai. `RUN python setup_data.py` image BUILD ke waqt ek baar chal chuka hai, har container start par nahi, isliye option D galat hai. Option C ka trap ye sochna hai ki kai `CMD` script ki tarah order mein chalte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w4-q4",
+          "question": "Ek team apni image-resize service ko serverless function ke roop mein deploy kar rahi hai. Inmein se kaunsa statement sahi design guidance hai?",
+          "options": [
+            "Function ke global variable mein counter rakho; woh har request ke beech guaranteed bacha rahega",
+            "Serverless ka matlab hai koi server hota hi nahi, isliye latency hamesha zero hai",
+            "Function ko stateless likho, state database/object storage mein rakho, aur idle ke baad pehli request mein cold-start delay ki ummeed rakho",
+            "Function ko khud ek fixed port par HTTP server start karke listen karna padta hai"
+          ],
+          "answer": 2,
+          "explanation": "Serverless platform function instances ko zaroorat ke hisaab se banata aur hataata hai, isliye memory ya local disk ki state par bharosa nahi kiya ja sakta; idle ke baad naya instance banne mein cold start lagta hai. Option A sabse tempting trap hai kyunki kabhi-kabhi warm instance par value bachi dikh jaati hai, par guarantee nahi hai aur parallel instances ke apne alag counters hote hain. Option B galat hai: servers hote hain, bas platform sambhalta hai. Option D container-style soch hai; serverless mein platform hi request function tak pahunchata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w4-q5",
+          "question": "Ek Flask app container mein `app.run(host=\"127.0.0.1\", port=5000)` se chalti hai. `docker run -p 5000:5000 img` ke baad host par `curl http://localhost:5000` connection error deta hai, jabki container ke andar se `curl` chal jaata hai. Sabse sahi wajah aur fix kya hai?",
+          "options": [
+            "`EXPOSE 5000` missing hai; Dockerfile mein jodne se theek ho jaayega",
+            "Host par port 5000 kisi aur ne le rakha hai; `-p 5001:5000` karo",
+            "App container ke loopback par hi sun rahi hai, forwarded traffic container ke network interface par aata hai; app ko `host=\"0.0.0.0\"` par chalao",
+            "Flask containers mein kaam nahi karta; serverless use karo"
+          ],
+          "answer": 2,
+          "explanation": "Container ka `127.0.0.1` sirf container ke andar ka loopback hai. Port forwarding traffic ko container ke network interface (eth0) par bhejta hai, jahan app sun hi nahi rahi, isliye andar se curl chalta hai par bahar se nahi. `0.0.0.0` par bind karne se app saare interfaces par sunti hai. Option A tempting hai par `EXPOSE` sirf documentation hai, publishing `-p` ne pehle hi kar di. Option B mein port conflict hota to `docker run` khud start par error deta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w4-q6",
+          "question": "Is Dockerfile se ek baar image build ho chuki hai. Ab aap sirf `app.py` badalte ho (`requirements.txt` same hai) aur dobara `docker build` chalate ho. Kaunse steps asal mein dobara execute honge?",
+          "code": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCMD [\"python\", \"app.py\"]",
+          "options": [
+            "`FROM` se `RUN pip install` tak cache se aayenge; `COPY . .` aur uske baad ke steps dobara banenge",
+            "Saare steps dobara, kyunki build context badal gaya hai",
+            "Sirf `RUN pip install` dobara chalega, kyunki woh code par depend karta hai",
+            "Kuch bhi dobara nahi; Docker purani image hi lautayega"
+          ],
+          "answer": 0,
+          "explanation": "Docker har step ko cache se tab tak reuse karta hai jab tak instruction aur uske inputs same hain. `COPY requirements.txt .` ka input (requirements file) nahi badla, isliye woh aur `pip install` cached hain. `COPY . .` ka input (jismein `app.py` hai) badla, to wahi pehla invalidated step hai aur uske baad ke steps dobara bante hain. Option B ka trap ye maanna hai ki koi bhi file badalne par poora build dobara hota hai; ye tab sach hota jab `COPY . .` `pip install` se pehle hota. Option D galat hai kyunki badla hua code naye layer mein aana hi chahiye.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "LLMs as Tools: Tokens, Context and Prompt Design",
+      "summary": "Is week aap samjhoge ki large language model asal mein kya karta hai, tokens aur context window ka budget kaise banta hai, temperature kya badalta hai, aur clear instructions, examples aur structured output se aise prompts kaise likhte hain jinka output code mein bharose se use ho sake.",
+      "readMinutes": 15,
+      "concepts": [
+        "**LLM kya karta hai**: language model diye gaye text ke baad agla token kya hona chahiye, iski probability distribution nikaalta hai, ek token chunta hai, use input mein jodta hai aur dohraata hai. Isliye output fluent hota hai par 'sach' hone ki guarantee nahi; model facts lookup nahi karta, patterns se generate karta hai. Data work mein ise classification, extraction, summarisation, code drafting jaise tasks ke liye ek tool ki tarah use karte hain, aur output ko verify karte hain.",
+        "**Tokens**: model text ko words nahi, tokens (aksar sub-word pieces) mein todta hai. Ek lamba ya kam common word kai tokens ka ho sakta hai, aur alag languages/scripts mein same baat ke tokens bahut alag ho sakte hain. Limits, latency aur billing sab tokens mein gine jaate hain, isliye prompt chhota aur saaf rakhna seedha cost bachata hai.",
+        "**Context window**: ek request mein model jitne tokens dekh sakta hai uski limit, aur ismein input (system instructions, conversation history, documents) aur generate hone wala output DONO aate hain. Chat API stateless hoti hai: model pichhli call yaad nahi rakhta, aapka app har baar zaroori history dobara bhejta hai, isliye lambi conversation mein history ko trim ya summarise karna padta hai.",
+        "**Sampling aur temperature**: temperature kam (0 ke paas) hone par model sabse probable tokens chunta hai aur output zyada consistent hota hai; zyada temperature variety badhata hai. Extraction, classification aur code ke liye kam temperature, brainstorming ke liye zyada. Phir bhi kam temperature 'sahi' answer ki guarantee nahi, sirf consistency badhata hai.",
+        "**Prompt design ke principles**: (1) role aur task saaf likho; (2) input data ko delimiters (jaise triple quotes ya XML-style tags) mein rakho taaki instructions aur data alag dikhen; (3) output format exactly batao; (4) kuch examples do (few-shot), jo edge cases bhi cover karein; (5) zaroori ho to model ko pehle reasoning ya steps likhne do, phir final answer ek fixed field mein; (6) batao ki jaankari na mile to kya lautana hai (jaise `null` ya 'unknown').",
+        "**Structured output**: jab output code mein jaana hai, plain text ki jagah JSON maango aur ek schema (fields, types, allowed values) define karo. Response ko `json.loads` se parse karo aur validate karo: field missing, galat type (jaise age `\"29\"` string) ya extra text par retry ya fallback. Model ke output ko kabhi bina validation ke database ya shell command mein mat daalo.",
+        "**Tool/function calling aur injection**: kai APIs mein aap functions ka schema dete ho aur model batata hai ki kaunsa function kin arguments se call karna hai; asal call aapka code karta hai, jo arguments validate kar sakta hai. Jo text user ya documents se aata hai woh instructions jaisa dikh sakta hai ('pichhle instructions ignore karo'); isse prompt injection kehte hain. Untrusted text ko data ki tarah delimit karo aur model ko aisi permissions mat do jo galat instruction par nuksaan kar sakein."
+      ],
+      "example": {
+        "problem": "Customer reviews ko `positive`, `negative` ya `neutral` mein classify karna hai, aur result JSON mein chahiye taaki pipeline seedha parse kare. Ek robust prompt aur parsing logic banao.",
+        "code": "import json\n\nSYSTEM = (\"You classify product reviews. Reply with JSON only: \"\n          '{\"label\": \"positive\" | \"negative\" | \"neutral\", \"reason\": \"<10 words>\"}')\n\nEXAMPLES = [\n    (\"Battery lasts two days, love it\", '{\"label\": \"positive\", \"reason\": \"praises battery life\"}'),\n    (\"Arrived on time.\", '{\"label\": \"neutral\", \"reason\": \"states a fact only\"}'),\n]\n\ndef build_messages(review):\n    msgs = [{\"role\": \"system\", \"content\": SYSTEM}]\n    for text, out in EXAMPLES:\n        msgs.append({\"role\": \"user\", \"content\": f\"<review>{text}</review>\"})\n        msgs.append({\"role\": \"assistant\", \"content\": out})\n    msgs.append({\"role\": \"user\", \"content\": f\"<review>{review}</review>\"})\n    return msgs\n\ndef parse(reply):\n    data = json.loads(reply)\n    if data.get(\"label\") not in {\"positive\", \"negative\", \"neutral\"}:\n        raise ValueError(\"bad label\")\n    return data",
+        "steps": [
+          "System message role aur EXACT output format batata hai: sirf JSON, teen allowed labels.",
+          "Do few-shot examples dikhate hain ki format kaisa ho, aur ek neutral edge case bhi cover karte hain.",
+          "Review text `<review>` tags mein hai, taaki review ke andar likha koi 'instruction' data hi maana jaaye.",
+          "Har review ek alag stateless request hai; examples har baar dobara bheje jaate hain kyunki model kuch yaad nahi rakhta.",
+          "Temperature kam rakhte hain taaki same review par label baar-baar na badle.",
+          "`parse` JSON load karta hai aur label ko allowed set se check karta hai; fail par retry ya manual review queue.",
+          "Answer: **clear format + few-shot + delimiters + validation** wala ye pipeline free-text output se kahin zyada reliable hai."
+        ]
+      },
+      "mistakes": [
+        "Model ke output ko seedha trust kar lena kyunki woh confident lagta hai. LLM galat facts ya galat format bhi utne hi confidence se de sakta hai. Fix: format ko schema se validate karo aur facts ko source data se cross-check karo.",
+        "Ye maan lena ki model pichhli API call yaad rakhega. API stateless hai, isliye doosri call mein context gayab hota hai. Fix: zaroori history (ya uska summary) har request mein bhejo.",
+        "Prompt mein sirf 'short answer do' likhna aur phir parsing fail hone par hairaan hona. Ambiguous instruction ambiguous output deta hai. Fix: exact format, allowed values aur ek-do examples do."
+      ],
+      "revision": [
+        "LLM agla token predict karta hai; fluent hai, guaranteed sahi nahi.",
+        "Context window = input + output tokens; API stateless.",
+        "Kam temperature = zyada consistent, zaroori nahi ki sahi.",
+        "Prompt: role, task, delimiters, exact format, examples, fallback.",
+        "Structured output ko parse + validate karo, phir use karo.",
+        "Untrusted text ko data ki tarah delimit karo; prompt injection se bacho."
+      ],
+      "questions": [
+        {
+          "id": "tds-w5-q1",
+          "question": "Ek chat API ki pehli call mein user ne likha 'Mera naam Ravi hai'. Doosri, alag API call mein aap sirf `{\"role\": \"user\", \"content\": \"Mera naam kya hai?\"}` bhejte ho. Kya hoga?",
+          "options": [
+            "Model 'Ravi' bolega, kyunki model har user ki conversation server par yaad rakhta hai",
+            "Model 'Ravi' bolega, kyunki pehli call se model ke weights update ho gaye",
+            "Model ko naam pata nahi hoga; use jaanne ke liye pichhle messages isi request mein bhejne padenge",
+            "API error dega kyunki pehla message missing hai"
+          ],
+          "answer": 2,
+          "explanation": "Chat completion APIs stateless hoti hain: har request mein model sirf wahi dekhta hai jo us request mein bheja gaya. Isliye app har baar zaroori history khud bhejta hai. Option A ka trap chat apps ka experience hai, jahan app hi history dobara bhej raha hota hai. Option B galat hai: normal inference se weights kabhi update nahi hote.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w5-q2",
+          "question": "Aap invoices se `invoice_number` aur `total` nikaal rahe ho aur chahte ho ki same invoice par baar-baar chalane se output na badle. Temperature ke baare mein sabse sahi choice kya hai?",
+          "options": [
+            "Temperature kam (0 ke paas) rakho; output zyada consistent hoga, par phir bhi validate karna padega",
+            "Temperature zyada rakho taaki model zyada 'soch' kar accurate answer de",
+            "Temperature kam karne se model ki galtiyaan khatam ho jaati hain, validation ki zaroorat nahi",
+            "Temperature sirf response ki length control karta hai"
+          ],
+          "answer": 0,
+          "explanation": "Kam temperature sampling ko sabse probable tokens ki taraf le jaata hai, isliye extraction jaise tasks mein output stable rehta hai. Par stable ka matlab sahi nahi: model consistently galat bhi ho sakta hai, isliye option C ka 'validation ki zaroorat nahi' trap hai. Option B ulta hai: zyada temperature randomness badhata hai, accuracy nahi. Length max-tokens jaisi setting se control hoti hai, temperature se nahi (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w5-q3",
+          "question": "Ek (kalpanik) model ki context window 8,000 tokens hai. System prompt 600 tokens ka hai, conversation history 5,900 tokens ki, aur aap answer ke liye 1,000 tokens reserve rakhna chahte ho. Ek retrieved document ke liye zyada se zyada kitne tokens bachte hain?",
+          "options": [
+            "1,500",
+            "1,100",
+            "7,400",
+            "500"
+          ],
+          "answer": 3,
+          "explanation": "Context window mein input aur output dono aate hain: 8,000 − 600 − 5,900 − 1,000 = 500. Option A (1,500) ka trap output ke liye reserve bhool jaana hai; tab model ka jawab beech mein kat sakta hai. Option B (1,100) system prompt ko ginna bhool jaata hai, aur option C sirf system prompt ghataata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w5-q4",
+          "question": "Sentiment classifier ka prompt hai 'Is review ka sentiment batao.' Model kabhi `Positive`, kabhi `The sentiment is positive.`, kabhi `Label: POSITIVE` deta hai, aur parser toot jaata hai. Sabse effective sudhaar kaunsa hai?",
+          "options": [
+            "Prompt mein 'please' aur 'dhyaan se' jodna",
+            "Exact output format batana (sirf `positive`/`negative`/`neutral` mein se ek, ya in labels wala JSON), 2-3 examples dena, aur output ko allowed set se validate karna",
+            "Temperature badhana taaki model zyada options try kare",
+            "Review ko prompt se pehle uppercase mein badal dena"
+          ],
+          "answer": 1,
+          "explanation": "Problem ambiguous format ki hai, isliye format ko explicit karna (allowed values ya schema), few-shot examples se pattern dikhana aur code mein validate karna seedha ilaaj hai. Option C ulta asar karta hai: zyada temperature output ko aur variable banata hai. Option A tone badalta hai par format ki ambiguity nahi hatata, isliye ye 'kuch to kiya' wala trap hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w5-q5",
+          "question": "Model ne ye JSON lautaya aur aapne use parse kiya. Is Python code ka output kya hoga?",
+          "code": "import json\nraw = '{\"name\": \"Asha\", \"age\": \"29\", \"skills\": [\"sql\", \"git\"]}'\nd = json.loads(raw)\nprint(type(d[\"age\"]).__name__, d[\"age\"] * 2, len(d[\"skills\"]))",
+          "options": [
+            "`int 58 2`",
+            "`str 58 2`",
+            "`TypeError`, kyunki string ko int se multiply nahi kar sakte",
+            "`str 2929 2`"
+          ],
+          "answer": 3,
+          "explanation": "JSON mein `\"29\"` quotes mein hai, isliye `json.loads` use string banata hai, int nahi. Python mein string × int repetition hai: `\"29\" * 2` = `\"2929\"`. `skills` list mein 2 items hain. Ye isi baat ka example hai ki schema validation kyun chahiye: model ne age ko string mein de diya. Option A ka trap ye maanna hai ki number jaisa dikhne wala value apne aap int ban jaayega; option C ka trap ye sochna ki string * int error deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w5-q6",
+          "question": "2,000 reviews classify karne hain. Har request mein 250 tokens ke instructions aur ek review (average 100 tokens) jaata hai. Aap batching karte ho: har request mein wahi 250 tokens ke instructions ek baar, aur 20 reviews. Batched version mein kul kitne INPUT tokens lagenge?",
+          "options": [
+            "700,000",
+            "225,000",
+            "200,000",
+            "25,000"
+          ],
+          "answer": 1,
+          "explanation": "2,000 ÷ 20 = 100 requests. Har request: 250 + 20 × 100 = 2,250 tokens. Kul: 100 × 2,250 = 225,000. Bina batching ke 2,000 × (250 + 100) = 700,000 hote (option A), yaani bachat sirf instructions ke repeat na hone se hai. Option C ka trap instructions ko bilkul na ginna hai (100 × 2,000), aur option D sirf instructions ginta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Embeddings, Retrieval-Augmented Generation and Evaluating LLM Systems",
+      "summary": "Is week aap embeddings aur cosine similarity se semantic search, documents ko chunk karke retrieval-augmented generation (RAG) pipeline banana, retrieval aur answers ko evaluate karna, aur hallucination aur prompt injection jaise risks ko kam karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Embedding**: ek model text (ya image) ko fixed length ke numbers ke vector mein badalta hai, aisa ki milte-julte matlab wale texts ke vectors paas-paas hon. 'Refund kab milega?' aur 'paise wapas kitne din mein aate hain?' mein common words kam hain, par embeddings paas honge. Isse keyword search ki jagah meaning-based (semantic) search possible hoti hai.",
+        "**Cosine similarity**: do vectors ke beech angle ka cosine: `cos θ = (a·b) / (|a| |b|)`. Value −1 se 1 ke beech; 1 matlab same direction, 0 matlab perpendicular. Ye vector ki length ignore karta hai, sirf direction dekhta hai. Agar vectors pehle se unit length par normalised hain, to cosine similarity seedha dot product ke barabar hoti hai, jo compute karna sasta hai.",
+        "**Vector search**: saare document chunks ke embeddings ek baar compute karke store karo. Query aane par uska embedding banao aur sabse zyada similarity wale top-k chunks lao. Lakhon vectors par har ek se compare karna dheema hai, isliye vector indexes approximate nearest-neighbour methods use karte hain jo thodi accuracy ke badle bahut speed dete hain.",
+        "**Chunking**: lambe documents ko chhote hisson mein todte hain kyunki (1) poora document context window mein nahi aata, aur (2) chhota focused chunk query se behtar match karta hai. Chunk size aur overlap trade-off hai: bahut chhota chunk context kho deta hai, bahut bada chunk irrelevant text bhar deta hai. Overlap isliye rakhte hain taaki boundary par kati baat kisi ek chunk mein poori mile.",
+        "**RAG pipeline**: query → embedding → top-k chunks retrieve → prompt mein chunks + instruction ('sirf diye gaye context se jawab do, source cite karo, na mile to bolo ki pata nahi') → LLM answer. Fayda: model ke training data ke baahar ki ya taaza jaankari bina model retrain kiye use hoti hai; document badla to sirf uska embedding update karo. Answer ki quality retrieval ki quality se zyada nahi ho sakti.",
+        "**Evaluation**: 'demo mein achha laga' evaluation nahi hai. Ek golden set banao: questions, unke sahi answers aur relevant documents. Retrieval ke liye recall@k (relevant docs mein se kitne top-k mein aaye) aur precision@k (top-k mein se kitne relevant) nikaalo; answers ke liye correctness, faithfulness (kya answer context se support hota hai) aur format checks. Prompt ya chunking badalne par same set dobara chalao, taaki regression pakda jaaye.",
+        "**Hallucination aur safety**: hallucination matlab model ka confident par galat ya bina source wala claim. Kam karne ke tareeke: grounding (RAG), citations maangna, 'pata nahi' bolne ki ijaazat dena, aur output ko facts/rules se check karna. Retrieved documents mein bhi malicious instructions ho sakte hain (indirect prompt injection), aur personal data context mein jaa sakta hai; isliye sources filter karo, permissions limited rakho aur sensitive data mask karo."
+      ],
+      "example": {
+        "problem": "Ek (kalpanik) company ke help-center ke liye do chunk vectors aur ek query vector diye hain. Cosine similarity nikaal kar batao kaunsa chunk retrieve hoga: query q = (1, 2, 2), chunk A = (2, 0, 1), chunk B = (2, 4, 4).",
+        "code": "import math\n\ndef cosine(a, b):\n    dot = sum(x * y for x, y in zip(a, b))\n    return dot / (math.sqrt(sum(x * x for x in a)) * math.sqrt(sum(y * y for y in b)))\n\nq = [1, 2, 2]\nprint(round(cosine(q, [2, 0, 1]), 3))   # 0.596\nprint(round(cosine(q, [2, 4, 4]), 3))   # 1.0",
+        "steps": [
+          "|q| = √(1 + 4 + 4) = 3.",
+          "Chunk A: q·A = 2 + 0 + 2 = 4, |A| = √5 ≈ 2.236, cosine = 4 / (3 × 2.236) ≈ 0.596.",
+          "Chunk B: q·B = 2 + 8 + 8 = 18, |B| = √36 = 6, cosine = 18 / (3 × 6) = 1.",
+          "B, q ka hi double hai (same direction), isliye cosine 1; length ka koi asar nahi.",
+          "Dot product akela dekhte to bhi B jeet-ta, par lambe vectors ko dot product mein galat fayda mil sakta hai; cosine ye bias hata deta hai.",
+          "Answer: **chunk B (cosine 1.0) retrieve hoga**, chunk A ka score ≈ 0.596."
+        ]
+      },
+      "mistakes": [
+        "Retrieval ko check kiye bina sirf prompt ko tweak karte rehna. Agar sahi chunk top-k mein aaya hi nahi, to koi prompt sahi jawab nahi dila sakta. Fix: pehle recall@k measure karo, phir chunking/embedding/k sudhaaro.",
+        "Query aur documents ke liye alag-alag embedding models use karna. Do models ke vectors alag 'spaces' mein hote hain, unki similarity bematlab hai. Fix: index aur query dono ek hi model se embed karo; model badlo to poora index re-embed karo.",
+        "Model ke answer ko citation ke bina final maan lena. Fix: answer ke saath source chunk IDs maango aur check karo ki claim un chunks mein sach mein hai."
+      ],
+      "revision": [
+        "Embedding = meaning ka vector; paas = similar.",
+        "cos θ = a·b / (|a||b|); normalised vectors par cosine = dot product.",
+        "Chunk size aur overlap trade-off; overlap boundary ki baat bachata hai.",
+        "RAG = retrieve top-k + grounded prompt + citations.",
+        "recall@k = mile hue relevant / kul relevant; precision@k = mile hue relevant / k.",
+        "Hallucination aur injection ke liye grounding, citations, validation, limited permissions."
+      ],
+      "questions": [
+        {
+          "id": "tds-w6-q1",
+          "question": "Vector a = (3, 4) aur vector b = (6, 8) hai. Inki cosine similarity kya hai?",
+          "options": [
+            "1",
+            "0",
+            "2, kyunki b ki length a ki do guni hai",
+            "−1"
+          ],
+          "answer": 0,
+          "explanation": "b = 2a, yaani dono same direction mein hain, angle 0 hai aur cos 0 = 1. Calculation: a·b = 18 + 32 = 50, |a| = 5, |b| = 10, 50 / 50 = 1. Cosine length ko normalise kar deta hai, isliye option C ka trap ('lamba vector zyada similar') yahan nahi chalta; cosine kabhi 1 se zyada nahi hota. −1 opposite direction ke liye hota.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w6-q2",
+          "question": "Ek company ki HR policies har mahine update hoti hain aur aap ek assistant chahte ho jo latest policy ke basis par jawab de aur source bataye. Sabse uchit approach kaunsa hai?",
+          "options": [
+            "Har mahine model ko nayi policies par fine-tune karna aur source batana model par chhod dena",
+            "Policies ko poora ek baar prompt mein paste karke hamesha wahi prompt use karna",
+            "Temperature 0 karke model se policies yaad karne ko kehna",
+            "Policies ko chunk karke embeddings ke saath index karna, har query par relevant chunks retrieve karke prompt mein dena, aur answer ke saath chunk ka source dikhana"
+          ],
+          "answer": 3,
+          "explanation": "RAG mein knowledge index mein rehti hai, model mein nahi: policy badli to sirf us document ke chunks re-embed karo, aur retrieved chunk ka source seedha dikhaya ja sakta hai. Option A tempting hai par fine-tuning mehenga hai, har update par dobara karna padta hai, aur model reliable tarike se source nahi bata paata. Option B context window aur staleness dono problems laata hai. Option C mein model ke paas policy hai hi nahi, to temperature kuch nahi badlega.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w6-q3",
+          "question": "Query vector q = (1, 2, 2) aur document vector d = (2, 0, 1) hai. Inki cosine similarity (2 decimal tak) kya hai?",
+          "options": [
+            "0.80",
+            "0.45",
+            "0.60",
+            "4.00"
+          ],
+          "answer": 2,
+          "explanation": "q·d = 1×2 + 2×0 + 2×1 = 4. |q| = √9 = 3, |d| = √5 ≈ 2.236. cosine = 4 / (3 × 2.236) = 4 / 6.708 ≈ 0.596 ≈ 0.60. Option D ka trap sirf dot product (4) likh dena hai, jo normalise nahi hua; cosine 1 se bada ho hi nahi sakta. Option A (0.80) = 4/5 aur option B (0.45) ≈ 4/9 tab aate hain jab sirf ek vector ki squared length (|d|² = 5 ya |q|² = 9) se divide kar diya jaaye, dono norms ke product se nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w6-q4",
+          "question": "Saare vectors unit length ke hain, isliye score = dot product hai. Is code ka output kya hoga?",
+          "code": "docs = {\"refund\": [0.6, 0.8], \"shipping\": [1.0, 0.0], \"warranty\": [0.0, 1.0]}\nq = [0.8, 0.6]\nscores = {k: v[0]*q[0] + v[1]*q[1] for k, v in docs.items()}\ntop = sorted(scores, key=scores.get, reverse=True)[:2]\nprint(top)",
+          "options": [
+            "`['shipping', 'warranty']`",
+            "`['refund', 'shipping']`",
+            "`['refund', 'warranty']`",
+            "`['warranty', 'refund']`"
+          ],
+          "answer": 1,
+          "explanation": "Scores: refund = 0.6×0.8 + 0.8×0.6 = 0.96, shipping = 1.0×0.8 + 0 = 0.8, warranty = 0 + 1.0×0.6 = 0.6. Descending order mein top-2: refund (0.96), shipping (0.8). Option C ka trap q ke components ko ulta (0.6, 0.8) padh lena hai, jisse warranty ka score 0.8 ho jaata. `sorted(scores, ...)` dict ki keys sort karta hai, isliye output naamon ki list hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w6-q5",
+          "question": "1,000 tokens ka document hai. Is chunking function ka output kya hoga?",
+          "code": "def chunk_starts(n, size, overlap):\n    starts, s = [], 0\n    while True:\n        starts.append(s)\n        if s + size >= n:\n            break\n        s += size - overlap\n    return starts\n\nprint(chunk_starts(1000, 300, 50))",
+          "options": [
+            "`[0, 300, 600, 900]`",
+            "`[0, 250, 500, 750, 1000]`",
+            "`[0, 350, 700]`",
+            "`[0, 250, 500, 750]`"
+          ],
+          "answer": 3,
+          "explanation": "Har agla chunk `size − overlap` = 250 tokens aage shuru hota hai: 0, 250, 500, 750. Start 750 par chunk 750 + 300 = 1050 ≥ 1000 tak pahunchta hai, yaani document ka end cover ho gaya, to loop ruk jaata hai. Option A ka trap overlap ko bhool kar 300 ke step lena hai; option C overlap ko ghatane ki jagah jod deta hai (350). Option B ek khaali chunk 1000 se shuru kar deta, jo loop ki `break` condition hone nahi deti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w6-q6",
+          "question": "Golden set mein ek query ke relevant documents {d2, d5, d7} hain. Aapke retriever ne top-5 mein [d5, d1, d9, d2, d4] lautaye. recall@5 aur precision@5 kya hain?",
+          "options": [
+            "recall@5 = 0.40, precision@5 = 0.67",
+            "recall@5 = 1.00, precision@5 = 0.40",
+            "recall@5 ≈ 0.67, precision@5 = 0.40",
+            "recall@5 ≈ 0.67, precision@5 ≈ 0.67"
+          ],
+          "answer": 2,
+          "explanation": "Top-5 mein relevant documents d5 aur d2 hain, yaani 2 hits. recall@5 = hits / kul relevant = 2/3 ≈ 0.67 (d7 chhoot gaya). precision@5 = hits / k = 2/5 = 0.40. Option A dono formulas ko ulta kar deta hai, jo sabse common trap hai. Option D precision ka denominator k ki jagah relevant docs ki ginti (3) le leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Sourcing Data from Web APIs and Websites, Responsibly",
+      "summary": "Is week aap web APIs se data laana, authentication aur API keys ko sahi jagah rakhna, pagination ke tareeke (offset aur cursor), rate limits aur backoff ke saath retry, aur scraping se pehle `robots.txt`, terms aur privacy ka dhyaan rakhna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**API pehle, scraping baad mein**: agar data ka official API hai to woh structured (JSON), documented aur stable hota hai, aur provider ki shartein saaf hoti hain. HTML scraping tab jab API na ho; woh page ka design badalte hi toot sakta hai. Dono mein provider ke terms of service padhna aapki zimmedaari hai.",
+        "**Authentication**: API key ek secret string hai jo batati hai ki request kaun bhej raha hai; aksar `Authorization: Bearer <token>` ya custom header (jaise `X-API-Key`) mein jaati hai. OAuth mein user kisi app ko limited permission (scope) deta hai aur app ko token milta hai, password nahi. Keys environment variables mein rakho, URL mein nahi, kyunki URLs logs aur history mein save hote hain.",
+        "**Offset/page pagination**: `?limit=50&offset=100` ya `?page=3&per_page=50`. Simple hai aur kisi bhi page par jump kar sakte ho, par agar paging ke dauraan data add/delete ho to records shift ho jaate hain: kuch do baar aate hain, kuch chhoot jaate hain. Bahut bade offsets server ke liye mehenge bhi hote hain.",
+        "**Cursor pagination**: server har response ke saath ek `next_cursor` (ya `next` URL) deta hai jo 'kahan tak padha' ko encode karta hai, aur aap agli request mein wahi bhejte ho jab tak woh khaali na ho jaaye. Ye ek stable sort key (jaise id ya timestamp) par based hota hai, isliye naye inserts se duplicates/skips nahi hote. Loop ki stopping condition hamesha response se lo (khaali page ya null cursor), apne andaaze se nahi.",
+        "**Rate limits**: providers ek time window mein requests ki limit lagaate hain. Limit cross hone par 429 Too Many Requests aata hai, aksar `Retry-After` header ke saath. Sahi reaction: utna wait karo, phir exponential backoff (1 s, 2 s, 4 s, ...) ek maximum cap aur thode random jitter ke saath, aur ek max retry count. 5xx par bhi backoff se retry theek hai; 400/401/403/404 par wahi request dobara bhejna bekaar hai.",
+        "**Polite collection**: responses ko cache karo taaki same data baar-baar na maango, requests ke beech delay rakho, apna User-Agent pehchaan-yogya rakho, aur sirf woh fields lo jo chahiye. Raw responses ko disk par save karna (timestamp ke saath) reproducibility aur debugging dono mein madad karta hai.",
+        "**robots.txt aur ethics**: website ke root par `/robots.txt` crawlers ke liye rules deta hai: `User-agent` (kis bot ke liye), `Disallow: /path` (is prefix se shuru hone wale URLs mat lo), `Allow: /path` (exception). Matching path PREFIX par hoti hai, isliye `Disallow: /search` `/searchable` ko bhi rokta hai. Ye technically voluntary hai, par ise maanna professional standard hai. Personal data, login ke peeche ka content aur copyright wala material legal aur ethical sawal uthate hain, sirf technical nahi."
+      ],
+      "example": {
+        "problem": "Ek (kalpanik) API `GET /v1/orders?cursor=...` har page par max 100 orders aur `next_cursor` deta hai, aur kabhi-kabhi 429 lautata hai. Saare orders laane wala robust loop likho.",
+        "code": "import os, time, random, requests\n\nBASE = \"https://api.example.com/v1/orders\"\nHEADERS = {\"Authorization\": f\"Bearer {os.environ['ORDERS_TOKEN']}\"}\n\ndef get_with_retry(params, max_retries=5):\n    for attempt in range(max_retries + 1):\n        r = requests.get(BASE, headers=HEADERS, params=params, timeout=30)\n        if r.status_code == 429 or r.status_code >= 500:\n            wait = float(r.headers.get(\"Retry-After\", min(60, 2 ** attempt)))\n            time.sleep(wait + random.uniform(0, 0.5))\n            continue\n        r.raise_for_status()\n        return r.json()\n    raise RuntimeError(\"gave up after retries\")\n\norders, cursor = [], None\nwhile True:\n    page = get_with_retry({\"limit\": 100, **({\"cursor\": cursor} if cursor else {})})\n    orders.extend(page[\"data\"])\n    cursor = page.get(\"next_cursor\")\n    if not cursor:\n        break",
+        "steps": [
+          "Token environment variable se aata hai aur `Authorization` header mein jaata hai, URL mein nahi.",
+          "Har request par `timeout` diya hai, taaki atki hui connection program ko hamesha ke liye na rok de.",
+          "429 ya 5xx par `Retry-After` ho to utna, warna 1, 2, 4, 8, ... second (60 par cap) wait, plus thoda random jitter taaki kai clients ek saath retry na karein.",
+          "4xx (429 ke alawa) par `raise_for_status()` turant error deta hai, kyunki dobara bhejne se kuch nahi badlega.",
+          "Cursor loop tab tak chalta hai jab tak server `next_cursor` deta hai; stopping condition server se aati hai.",
+          "Answer: **cursor-based loop + header auth + timeout + capped exponential backoff with jitter** saare orders bina duplicate ke laata hai."
+        ]
+      },
+      "mistakes": [
+        "429 milne par turant tight loop mein retry karna. Isse limit aur der tak lagi rehti hai aur key block ho sakti hai. Fix: `Retry-After` maano, warna exponential backoff with cap aur jitter.",
+        "Pagination loop ko 'jab tak page number 10 tak na pahunche' jaisi fixed condition par chalana. Data kam-zyada hote hi records chhootenge ya khaali calls hongi. Fix: server ke signal (khaali page, `next` null, ya total count) se ruko.",
+        "Ye maan lena ki jo page browser mein public dikhta hai use bina soche bulk mein scrape karna theek hai. Terms, `robots.txt`, server load aur personal data ka dhyaan rakhna zaroori hai. Fix: pehle API dhoondho, rules padho, rate limit lagao, aur sirf zaroori data lo."
+      ],
+      "revision": [
+        "API key header mein, environment se; URL mein kabhi nahi.",
+        "Offset pagination simple par changing data par duplicates/skips; cursor stable.",
+        "429 = rate limit; `Retry-After`, phir capped exponential backoff + jitter.",
+        "400/401/403/404 ko retry mat karo; 429/5xx ko backoff se.",
+        "`robots.txt`: `Disallow`/`Allow` path prefix match karte hain.",
+        "Cache, delay, clear User-Agent, minimum data: polite collection."
+      ],
+      "questions": [
+        {
+          "id": "tds-w7-q1",
+          "question": "Ek data collection script ko API se `429 Too Many Requests` response aur header `Retry-After: 30` milta hai. Sabse sahi reaction kya hai?",
+          "options": [
+            "Turant same request dobara bhejna, jab tak 200 na mil jaaye",
+            "Rate limit cross hui hai; kam se kam 30 second ruk kar retry karna, aur aage bhi backoff ke saath requests dheemi karna",
+            "API key galat hai; nayi key generate karna",
+            "Server crash ho gaya hai; usi waqt doosre endpoint par switch karna"
+          ],
+          "answer": 1,
+          "explanation": "429 ka matlab hai client ne allowed rate se zyada requests bheji hain, aur `Retry-After` batata hai kitni der rukna hai. Isliye wait karke retry karna aur rate kam karna sahi hai. Option A sabse common galti hai: tight-loop retry limit ko aur lamba kheenchta hai aur key block karwa sakta hai. Galat key par 401/403 aata, aur server crash 5xx hota, isliye options C aur D galat hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w7-q2",
+          "question": "Ek notebook ek paid API ko call karta hai aur repo team ke saath share hota hai. API key ko kaise use karna sabse sahi hai?",
+          "options": [
+            "Key environment variable (ya gitignored `.env`) se padho aur request header mein bhejo",
+            "Key ko URL query mein `?api_key=...` ki tarah bhejo, kyunki HTTPS sab encrypt kar deta hai",
+            "Key notebook ke pehle cell mein likh do; private repo hai to koi dikkat nahi",
+            "Key ko base64 mein encode karke code mein rakho, taaki koi padh na sake"
+          ],
+          "answer": 0,
+          "explanation": "Environment se padhne par key code aur git history se bahar rehti hai, aur header mein bhejne par woh URL logs mein nahi aati. Option B ka trap ye hai ki HTTPS network par to encrypt karta hai, par URL server access logs, proxies aur browser history mein phir bhi record hota hai. Option C mein key history mein hamesha ke liye reh jaati hai aur repo kabhi bhi public ya fork ho sakta hai. Base64 encryption nahi, sirf encoding hai, koi bhi decode kar sakta hai (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w7-q3",
+          "question": "Ek API mein 237 records hain aur woh `?limit=50&offset=...` pagination deta hai (offset 0 se shuru). Aapka loop tab rukta hai jab kisi page par 50 se kam records aayein. Kitni requests hongi aur aakhri request kya laayegi?",
+          "options": [
+            "4 requests; aakhri offset 150 par 50 records",
+            "5 requests; aakhri offset 250 par 37 records",
+            "6 requests; chhathi request khaali aayegi",
+            "5 requests; aakhri offset 200 par 37 records"
+          ],
+          "answer": 3,
+          "explanation": "Offsets 0, 50, 100, 150, 200 = 5 requests. Pehli chaar mein 50-50 = 200 records, aakhri (offset 200) mein 237 − 200 = 37 records, jo 50 se kam hain, to loop ruk jaata hai. Option B ka trap offset ko page number × 50 maan kar 1 se shuru karna hai (50, 100, ..., 250). Option C tab sahi hota jab total 50 ka multiple hota (jaise 250), tab ek khaali page dekhkar hi rukna padta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w7-q4",
+          "question": "Retry policy: pehla wait 1 second, har retry par double, par koi bhi wait 10 second se zyada nahi, aur kul 5 retries. Ye code kya print karega (jitter ignore karo)?",
+          "code": "waits = [min(10, 1 * 2**i) for i in range(5)]\nprint(waits, sum(waits))",
+          "options": [
+            "`[1, 2, 4, 8, 16] 31`",
+            "`[1, 2, 4, 8] 15`",
+            "`[1, 2, 4, 8, 10] 25`",
+            "`[10, 10, 10, 10, 10] 50`"
+          ],
+          "answer": 2,
+          "explanation": "`i` 0 se 4 tak: 2⁰..2⁴ = 1, 2, 4, 8, 16. Cap `min(10, ...)` aakhri 16 ko 10 kar deta hai: [1, 2, 4, 8, 10], sum 25. Option A ka trap cap ko bhool jaana hai. Option B `range(5)` ko 4 values samajh leta hai. Option D `min` ko `max` ki tarah padhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w7-q5",
+          "question": "Ek site ka `robots.txt` neeche hai. Aapka crawler (koi bhi user agent) inmein se kaunsa path fetch kar sakta hai?",
+          "code": "User-agent: *\nAllow: /private/press/\nDisallow: /private/\nDisallow: /search",
+          "options": [
+            "`/private/press/note.html`",
+            "`/searchable-items`",
+            "`/private/reports/q1.csv`",
+            "`/search?q=tools`"
+          ],
+          "answer": 0,
+          "explanation": "`/private/press/note.html` `Allow: /private/press/` se match karta hai, jo `Disallow: /private/` ka zyada specific exception hai, isliye allowed. `/private/reports/q1.csv` sirf `Disallow: /private/` se match hota hai. Rules path PREFIX par lagte hain: `Disallow: /search` `/search?q=tools` ko bhi rokta hai aur `/searchable-items` ko bhi, kyunki dono `/search` se shuru hote hain. Option B sabse tempting trap hai, kyunki log ise poore word ka match samajhte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w7-q6",
+          "question": "Ek API posts ko newest-first order mein `?limit=50&offset=...` se deta hai. Aapne page 1 (offset 0) liya. Page 2 (offset 50) maangne se pehle site par 3 nayi posts publish ho gayi. Page 2 mein kya hoga?",
+          "options": [
+            "Page 2 bilkul sahi rahega, kyunki offset fix hai",
+            "Page 1 ki aakhri 3 posts page 2 mein dobara aayengi (duplicates), aur koi post skip nahi hogi",
+            "3 posts skip ho jaayengi aur kabhi nahi milengi",
+            "Nayi 3 posts page 2 ke shuru mein aa jaayengi"
+          ],
+          "answer": 1,
+          "explanation": "3 nayi posts list ke top par judti hain, to purani har post ki position 3 badh jaati hai. Page 1 ne purani positions 0–49 di thi. Ab offset 50 par jo posts hain woh purani positions 47–96 hain, to purani 47, 48, 49 (page 1 ki aakhri teen) dobara aati hain. Option C ka trap ulta case hai: skip tab hota jab paging ke dauraan posts DELETE hoti. Nayi posts offset 0–2 par hain, page 2 mein nahi (option D). Isi wajah se changing data par cursor pagination behtar hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Parsing Formats, Querying Databases and Extracting with Regular Expressions",
+      "summary": "Is week aap HTML ko CSS selectors se, nested JSON ko safely, aur CSV ko sahi parser se padhna, PDF se nikle text ki dikkatein samajhna, databases ko parameterised SQL se source ki tarah use karna, aur regular expressions se patterns extract karna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**HTML aur CSS selectors**: HTML ek tree (DOM) hai: elements, unke attributes (`id`, `class`, `href`) aur text. Parser (jaise BeautifulSoup ya lxml) is tree mein selectors se elements dhoondhta hai: `td` (tag), `.price` (class), `#items` (id), `#items .price` (items ke andar kahin bhi price, descendant), `tr > td` (direct child), `a[href]` (jismein href attribute ho). Text `get_text()` se aur link `['href']` se nikalte hain; relative links ko base URL ke saath `urljoin` se poora karo.",
+        "**Nested JSON**: API responses aksar nested hote hain: list ke andar dicts, dicts ke andar lists. Har field har record mein ho, ye maan kar `item[\"tags\"]` likhoge to ek missing field poora job gira degi; `item.get(\"tags\", [])` jaisa default do. Analysis ke liye nested data ko flat table (ek row per record, ya ek row per record-tag pair) mein badalna padta hai, aur ye decide karna padta hai ki list wale fields ka kya karna hai.",
+        "**CSV ke jaal**: CSV mein field ke andar comma ho to field double quotes mein hota hai (`\"Mumbai, MH\"`), quotes ke andar quote double ho jaata hai (`\"\"`), aur ek field mein newline bhi ho sakti hai. Isliye `line.split(\",\")` galat hai; Python ka `csv` module ya pandas ka reader use karo. Encoding (UTF-8, UTF-8 with BOM, purani files mein kuch aur), delimiter (`;` ya tab) aur header row hamesha check karo.",
+        "**PDF se nikla text**: PDF page par characters ki positions store karta hai, 'paragraph' ya 'table' ka structure nahi. Text extraction ke baad aksar milta hai: columns aapas mein mile hue, har page par repeat hone wale header/footer, line ke end par hyphen se tute words, aur tables jo spaces mein bikhar gaye. Scanned PDF mein text hota hi nahi, OCR chahiye. Har extraction ko kuch pages par manually verify karo.",
+        "**Database as a source**: production data aksar SQL database mein hota hai. Filtering aur aggregation database mein karo (`WHERE`, `GROUP BY`), poori table download karke Python mein nahi; network aur memory dono bachte hain. Read-only credentials use karo. Query mein user input kabhi string formatting se mat jodo; parameterised query (`?` ya `%s` placeholders) use karo, warna SQL injection se query ka matlab hi badal sakta hai.",
+        "**Regular expressions ki basics**: `\\d` digit, `\\w` word character, `\\s` whitespace, `.` (newline ke alawa) koi bhi character, `[A-Z]` character class, quantifiers `*` (0+), `+` (1+), `?` (0/1), `{4}` (exactly 4), anchors `^`/`$`, aur `( )` capture group. Python mein pattern hamesha raw string `r\"...\"` mein likho taaki backslash Python khud na kha jaaye.",
+        "**Greedy vs lazy aur findall**: `.*` greedy hai, jitna ho sake utna match karta hai; `.*?` lazy hai, kam se kam. `re.findall` agar pattern mein koi group nahi to poore matches ki list, ek group ho to us group ke strings ki list, aur do ya zyada groups hon to tuples ki list deta hai. Ye rule bhoolna extraction code mein sabse common bug hai."
+      ],
+      "example": {
+        "problem": "Ek (kalpanik) supplier ke invoice ka PDF-extracted text hai. Usse invoice number aur saari dates (DD/MM/YYYY) nikaal kar ISO format (YYYY-MM-DD) mein badlo.",
+        "code": "import re\n\ntext = \"\"\"ACME Supplies Pvt Ltd (fictional)    Page 1 of 2\nInvoice No: INV-2024-0173\nIssue date: 05/03/2024   Due date: 04/04/2024\nPayment re-\nceived on 28/03/2024\"\"\"\n\ninv = re.search(r\"Invoice No:\\s*([A-Z]+-\\d{4}-\\d{4})\", text).group(1)\ndates = re.findall(r\"\\b(\\d{2})/(\\d{2})/(\\d{4})\\b\", text)\niso = [f\"{y}-{m}-{d}\" for d, m, y in dates]\nprint(inv, iso)",
+        "steps": [
+          "Text PDF se aaya hai, isliye header ('Page 1 of 2') aur toota hua word ('re-' + 'ceived') dikh rahe hain; hamare patterns inse affect nahi hone chahiye.",
+          "`Invoice No:\\s*` label ke baad ke spaces skip karta hai, aur group `([A-Z]+-\\d{4}-\\d{4})` sirf ID pakadta hai; `search(...).group(1)` 'INV-2024-0173' deta hai.",
+          "Date pattern mein teen groups hain, isliye `findall` tuples deta hai: ('05','03','2024'), ('04','04','2024'), ('28','03','2024').",
+          "`\\b` word boundary ensure karta hai ki kisi lambe number ka hissa date na ban jaaye.",
+          "List comprehension tuple ko (d, m, y) mein unpack karke ISO string banata hai.",
+          "Answer: **INV-2024-0173 ['2024-03-05', '2024-04-04', '2024-03-28']**."
+        ]
+      },
+      "mistakes": [
+        "CSV ko `split(\",\")` se todna. Quoted field ke andar comma aate hi columns khisak jaate hain aur galti chupchaap data mein chali jaati hai. Fix: `csv.reader` ya pandas ka CSV reader.",
+        "HTML par `<b>(.*)</b>` jaisa greedy regex chalana. Ek line mein do tags hon to pehle opening se aakhri closing tak sab ek match ban jaata hai. Fix: lazy `.*?`, ya behtar, HTML parser aur CSS selector.",
+        "SQL query ko f-string se banana: `f\"... WHERE name = '{name}'\"`. Input mein quote aate hi query ka logic badal sakta hai (SQL injection). Fix: placeholders ke saath parameterised query."
+      ],
+      "revision": [
+        "`#id`, `.class`, descendant `A B`, child `A > B`, attribute `a[href]`.",
+        "Nested JSON mein `.get(key, default)`; flatten karne ka rule pehle tay karo.",
+        "CSV ke liye parser, `split(\",\")` nahi; encoding aur delimiter check karo.",
+        "PDF text: headers/footers, hyphenation, tooti tables; scanned = OCR.",
+        "Filtering database mein karo; queries hamesha parameterised.",
+        "`.*` greedy, `.*?` lazy; findall: 0 group = matches, 1 = strings, 2+ = tuples."
+      ],
+      "questions": [
+        {
+          "id": "tds-w8-q1",
+          "question": "Page ka HTML neeche hai. Kaunsa CSS selector SIRF table ke andar wale price cells (`20` aur `35`) select karega?",
+          "code": "<table id=\"items\">\n    <tr><td class=\"name\">Pen</td><td class=\"price\">20</td></tr>\n    <tr><td class=\"name\">Ink</td><td class=\"price\">35</td></tr>\n</table>\n<div class=\"price\">99</div>",
+          "options": [
+            "`.price`",
+            "`#items.price`",
+            "`#items .price`",
+            "`price#items`"
+          ],
+          "answer": 2,
+          "explanation": "`#items .price` (beech mein space) ka matlab hai 'id items wale element ke andar kahin bhi class price wale elements', yaani sirf do `td`. Option A `.price` bahar wala `div` (99) bhi pakad leta hai. Option B (bina space) ek hi element maangta hai jiska id items AUR class price dono hon, aisa koi nahi; space ka matlab samajhna hi is sawal ka main trap hai. Option D `price` naam ke tag ko dhoondhta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w8-q2",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import csv\nline = 'Asha,\"Mumbai, MH\",29'\nprint(len(line.split(\",\")), len(next(csv.reader([line]))))",
+          "options": [
+            "`4 3`",
+            "`3 3`",
+            "`4 4`",
+            "`3 4`"
+          ],
+          "answer": 0,
+          "explanation": "`split(\",\")` quotes ko nahi samajhta aur `\"Mumbai, MH\"` ke andar wale comma par bhi todta hai: `Asha`, `\"Mumbai`, ` MH\"`, `29` = 4 pieces. `csv.reader` quoted field ko ek hi field maanta hai: `Asha`, `Mumbai, MH`, `29` = 3. Option B ka trap ye maanna hai ki `split` bhi quotes respect karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w8-q3",
+          "question": "Is Python code ka output kya hoga (do lines)?",
+          "code": "import re\nhtml = '<b>alpha</b> and <b>beta</b>'\nprint(re.findall(r'<b>(.*)</b>', html))\nprint(re.findall(r'<b>(.*?)</b>', html))",
+          "options": [
+            "`['alpha', 'beta']` / `['alpha', 'beta']`",
+            "`['alpha</b> and <b>beta']` / `['alpha</b> and <b>beta']`",
+            "`['alpha', 'beta']` / `['alpha</b> and <b>beta']`",
+            "`['alpha</b> and <b>beta']` / `['alpha', 'beta']`"
+          ],
+          "answer": 3,
+          "explanation": "Pehle pattern mein `.*` greedy hai: pehle `<b>` se shuru hokar jitna ho sake utna khaata hai aur AAKHRI `</b>` par rukta hai, isliye ek hi bada match: `alpha</b> and <b>beta`. Doosre mein `.*?` lazy hai: pehle mile `</b>` par ruk jaata hai, isliye do alag matches. Option C greedy aur lazy ko ulta kar deta hai, jo is sawal ka main trap hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w8-q4",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import re\ntext = \"Order A-102 shipped 2024-03-05; order B-7 shipped 2024-11-20.\"\nprint(re.findall(r'(\\d{4})-(\\d{2})-\\d{2}', text))",
+          "options": [
+            "`['2024-03-05', '2024-11-20']`",
+            "`[('2024', '03'), ('2024', '11')]`",
+            "`[('2024', '03', '05'), ('2024', '11', '20')]`",
+            "`['2024', '03', '2024', '11']`"
+          ],
+          "answer": 1,
+          "explanation": "Pattern mein do capture groups hain (year aur month); day wala `\\d{2}` group mein nahi hai. Jab do ya zyada groups hon, `findall` har match ke liye groups ka tuple deta hai, poora match nahi. `A-102` match nahi hota kyunki `\\d{4}` ko chaar digits chahiye. Option A ka trap ye maanna hai ki `findall` hamesha poora match lautata hai; option C day ko bhi group samajh leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w8-q5",
+          "question": "API response ko parse karke ye code chalaya. Output kya hoga?",
+          "code": "import json\nraw = '{\"items\": [{\"id\": 1, \"tags\": [\"a\", \"b\"]}, {\"id\": 2}, {\"id\": 3, \"tags\": []}]}'\ndata = json.loads(raw)\nprint(sum(len(it.get(\"tags\", [])) for it in data[\"items\"]),\n      [it[\"id\"] for it in data[\"items\"] if it.get(\"tags\")])",
+          "options": [
+            "`2 [1]`",
+            "`2 [1, 3]`",
+            "`KeyError: 'tags'`",
+            "`3 [1, 3]`"
+          ],
+          "answer": 0,
+          "explanation": "Item 1 mein 2 tags, item 2 mein `tags` key hi nahi (`.get` default `[]` deta hai, length 0), item 3 mein khaali list (length 0): sum = 2. Doosri list mein `if it.get(\"tags\")` truthiness check karta hai: item 2 ka `None` aur item 3 ki khaali list `[]` dono falsy hain, isliye sirf id 1. Option B ka trap khaali list ko truthy maanna hai; option C ka trap ye ki missing key par `.get` bhi error deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w8-q6",
+          "question": "Table `users` mein 3 rows hain: ('asha','Pune'), ('ravi','Delhi'), ('meera','Pune'). Is code ka output kya hoga?",
+          "code": "name = \"x' OR '1'='1\"\nunsafe = con.execute(\n    f\"SELECT COUNT(*) FROM users WHERE name = '{name}'\").fetchone()[0]\nsafe = con.execute(\n    \"SELECT COUNT(*) FROM users WHERE name = ?\", (name,)).fetchone()[0]\nprint(unsafe, safe)",
+          "options": [
+            "`0 0`",
+            "`1 0`",
+            "`3 3`",
+            "`3 0`"
+          ],
+          "answer": 3,
+          "explanation": "f-string ke baad pehli query ban jaati hai `WHERE name = 'x' OR '1'='1'`. `'1'='1'` har row ke liye true hai, isliye `OR` poori condition ko true bana deta hai aur COUNT = 3 (SQL injection). Parameterised query mein poora string ek literal value ki tarah compare hota hai; kisi ka naam sach mein `x' OR '1'='1` nahi, isliye 0. Option A ka trap ye maanna hai ki dono queries same behave karengi; option C ye ki placeholder bhi string ko SQL ki tarah chala deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Data Preparation: Cleaning, Tidy Data, Joins and Command-Line Tools",
+      "summary": "Is week aap missing values, galat types, duplicates aur outliers ko soch-samajh kar handle karna, data ko tidy shape mein laana, joins aur reshaping ke row-count effects samajhna, aur `grep`, `sed`, `awk`, `sort`, `uniq`, `jq` jaise command-line tools se tez cleaning karna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Missing values pehchaano**: missing hamesha `NaN`/`None` ki shakal mein nahi aata; khaali string, `\"NA\"`, `\"-\"`, `-999` ya `0` jaise sentinel values bhi ho sakte hain. Pehle saare variants ko ek standard missing marker mein badlo, phir har column mein missing ka count aur pattern dekho: kya ye random hai ya kisi khaas group (jaise ek city ya ek date range) mein zyada hai? Pattern se hi decide hota hai ki kya karna hai.",
+        "**Missing handle karne ke options**: rows drop karna (missing kam aur random ho to theek, warna bias), impute karna (numeric mein median aksar mean se safe, categorical mein mode ya 'Unknown'), ya ek indicator column (`income_missing = 1`) banana. Mean imputation se column ka mean nahi badalta par variance kam ho jaata hai aur correlations kamzor dikhte hain, isliye imputed values ko 'asli' data mat samjho aur kya kiya woh document karo.",
+        "**Types aur formats**: numbers jo text ki tarah aaye (`\"1,200\"`, `\"₹950\"`, `\"12 %\"`), dates jo alag formats mein hon (`05/03/2024` DD/MM hai ya MM/DD?), aur categories jinki spelling alag ho (`Delhi`, `delhi `, `New Delhi`). Cleaning ka matlab: whitespace strip, case normalise, symbols aur thousand separators hatao, explicit format ke saath date parse karo, aur conversion fail hone wali values ko gin kar dekho, chupchaap drop mat karo.",
+        "**Duplicates aur outliers**: exact duplicate rows aasaani se pakdi jaati hain, par asli sawal 'business key' ka hai: kya same `order_id` do baar aaya? Outlier detection ke liye IQR rule (Q1 − 1.5·IQR se neeche ya Q3 + 1.5·IQR se upar) ya z-score use karte hain, par flag karna aur delete karna alag cheezein hain: pehle dekho ki value data entry error hai (age 420) ya genuinely rare event (ek bada order).",
+        "**Tidy data**: har variable ek column, har observation ek row, har type ki observational unit ek table. Wide table (`city, 2022, 2023, 2024`) mein saal column headers mein chhupa hai; use long format (`city, year, sales`) mein badalna 'melt'/'unpivot' kehlata hai, aur ulta 'pivot'. Long format grouping, plotting aur joins ke liye aasaan hota hai; wide format insaan ke padhne ke liye.",
+        "**Joins aur row counts**: inner join sirf matching keys rakhta hai, left join left table ki har row rakhta hai (match na mile to NULLs), full outer dono taraf ki. Agar right table mein ek key do baar hai, to us key ki har left row do baar aayegi: join ke baad row count badh jaata hai. Isliye join se pehle key ki uniqueness check karo aur join ke baad row count compare karo; yeh sabse common silent bug hai.",
+        "**Command-line tools**: `grep pattern` matching lines, `cut -d, -f2` column, `sort | uniq -c` frequency count, `sed 's/old/new/g'` text replace, `awk -F, '{s[$1]+=$2}'` group-wise sum, aur `jq '.items[].id'` JSON se fields. Bade log/CSV files par ye bina poori file memory mein load kiye stream karte hain aur pipeline mein jud jaate hain. Simple CSV ke liye theek, par quoted commas wale CSV par `cut`/`awk -F,` toot sakte hain; tab ek proper CSV parser use karo."
+      ],
+      "example": {
+        "problem": "Ek (kalpanik) store ki `sales.csv` mein header `city,amount` hai. Har city ka total amount nikaalo aur sabse zyada wali city batao, sirf command line se.",
+        "code": "printf 'city,amount\\nPune,10\\nDelhi,5\\nPune,7\\nMumbai,3\\nDelhi,8\\n' > sales.csv\n\nawk -F, 'NR > 1 { total[$1] += $2 }\n         END { for (c in total) print c, total[c] }' sales.csv \\\n  | sort -k2,2nr \\\n  | head -1",
+        "steps": [
+          "`-F,` awk ko batata hai ki fields comma se alag hain; `$1` city aur `$2` amount hai.",
+          "`NR > 1` header row (record number 1) ko skip karta hai, warna 'city' bhi ek group ban jaata.",
+          "`total[$1] += $2` associative array mein har city ka running sum rakhta hai: Pune 10 + 7 = 17, Delhi 5 + 8 = 13, Mumbai 3.",
+          "`END` block saari lines ke baad chalta hai aur har city ka total print karta hai (order guaranteed nahi).",
+          "`sort -k2,2nr` doosre field ko number ki tarah descending sort karta hai, isliye order ki guarantee na hone se fark nahi padta.",
+          "Answer: **`Pune 17`** (`head -1` sirf top line rakhta hai)."
+        ]
+      },
+      "mistakes": [
+        "Join ke baad row count check na karna. Lookup table mein duplicate key ho to facts table ki rows chupchaap double ho jaati hain aur totals galat aate hain. Fix: join se pehle key ki uniqueness assert karo aur baad mein counts compare karo.",
+        "Missing ko 0 se bhar dena. Isse mean aur totals neeche khisak jaate hain aur 'no data' ka matlab 'zero sales' ban jaata hai. Fix: missing ko missing rehne do, ya soch-samajh kar median/indicator use karo aur document karo.",
+        "Har outlier ko automatically delete kar dena. Kai baar wahi asli signal hota hai (fraud, bada customer). Fix: pehle flag karo, kuch cases khud dekho, phir rule ke saath decide karo."
+      ],
+      "revision": [
+        "Missing ke saare roop (`\"\"`, `NA`, `-999`) pehle ek standard marker mein.",
+        "Mean imputation: mean same, variance kam.",
+        "Tidy: variable = column, observation = row; wide → long = melt.",
+        "Right table mein duplicate keys = join ke baad zyada rows.",
+        "IQR fences: Q1 − 1.5·IQR aur Q3 + 1.5·IQR; flag ≠ delete.",
+        "`awk`, `sort`, `uniq -c`, `cut`, `sed`, `jq`: tez streaming cleaning."
+      ],
+      "questions": [
+        {
+          "id": "tds-w9-q1",
+          "question": "Ek wide table mein 3 cities ki rows aur columns `city, 2021, 2022, 2023, 2024` hain (har saal ka sales). Ise tidy long format (`city, year, sales`) mein melt karne par kitni rows banengi?",
+          "options": [
+            "3",
+            "4",
+            "12",
+            "15"
+          ],
+          "answer": 2,
+          "explanation": "Long format mein har (city, year) combination ek observation hai: 3 cities × 4 saal = 12 rows. Option D (15) ka trap `city` column ko bhi ek 'year' gin lena hai (3 × 5); `city` identifier hai jo har row mein repeat hota hai, melt nahi hota. Option A wide table ki hi row count hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w9-q2",
+          "question": "Ek column ki values hain 10, 20, missing, 30, missing. Missing values ko observed values ke mean se impute kiya jaata hai. Imputation ke baad column ke mean aur standard deviation ka kya hoga (observed values ke mukable)?",
+          "options": [
+            "Mean 20 hi rahega, par standard deviation kam ho jaayegi",
+            "Mean aur standard deviation dono badh jaayenge",
+            "Mean aur standard deviation dono bilkul same rahenge",
+            "Mean 12 ho jaayega"
+          ],
+          "answer": 0,
+          "explanation": "Observed mean (10 + 20 + 30) / 3 = 20. Do baar 20 jodne se mean 20 hi rehta hai, par ye values theek mean par baithi hain, isliye spread ghatta hai: population std lagbhag 8.16 se 6.32 ho jaati hai. Option C ka trap ye maanna hai ki mean nahi badla to kuch nahi badla; isi wajah se mean imputation variability aur correlations ko kam dikhata hai. Option D missing ko 0 maan kar (60 / 5) nikalta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w9-q3",
+          "question": "`sales.csv` ka content neeche ki pehli line ne banaya. Doosri command kya print karegi?",
+          "code": "printf 'city,amount\\nPune,10\\nDelhi,5\\nPune,7\\nMumbai,3\\nDelhi,8\\n' > sales.csv\nawk -F, 'NR>1 {s[$1]+=$2} END {for (c in s) print c, s[c]}' sales.csv | sort -k2,2nr | head -1",
+          "options": [
+            "`Delhi 13`",
+            "`Pune 2`",
+            "`Mumbai 3`",
+            "`Pune 17`"
+          ],
+          "answer": 3,
+          "explanation": "awk header ko `NR>1` se skip karke har city ka amount jodta hai: Pune 10 + 7 = 17, Delhi 5 + 8 = 13, Mumbai 3. `sort -k2,2nr` doosre field ko numerically descending karta hai, aur `head -1` top line deta hai: Pune 17. Option B ka trap ise `uniq -c` jaisa count samajhna hai (Pune 2 baar aaya), jabki awk yahan amounts ka SUM kar raha hai. Option C tab aata jab `n` flag na hota: text sort mein \"3\" ko \"17\" se bada maana jaata hai, isliye reverse order mein Mumbai 3 upar aa jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w9-q4",
+          "question": "Delivery time (minutes) ke ek column mein Q1 = 20 aur Q3 = 30 hai. IQR rule (1.5 × IQR) se in mein se kaunsi values outlier flag hongi: 2, 8, 44, 47?",
+          "options": [
+            "Sirf 47",
+            "2 aur 47",
+            "2, 8 aur 47",
+            "Koi nahi"
+          ],
+          "answer": 1,
+          "explanation": "IQR = 30 − 20 = 10. Lower fence = 20 − 1.5 × 10 = 5, upper fence = 30 + 15 = 45. 2 < 5 aur 47 > 45, isliye ye dono flag hote hain; 8 aur 44 fences ke andar hain. Option C ka trap fences ko 1.5 × IQR ki jagah sirf IQR (10 aur 40) se banana hai, jisse 8 bhi flag ho jaata. Option A ka trap sirf bade outliers dhoondhna hai; IQR rule dono taraf check karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w9-q5",
+          "question": "Is cleaning code ka output kya hoga?",
+          "code": "raw = [\"1,200\", \"950\", \"\", \"N/A\", \"1,050.5\"]\nclean = []\nfor v in raw:\n    v = v.replace(\",\", \"\").strip()\n    if v in (\"\", \"N/A\"):\n        continue\n    clean.append(float(v))\nprint(len(clean), sum(clean) / len(clean))",
+          "options": [
+            "`ValueError: could not convert string to float: '1,200'`",
+            "`5 640.1`",
+            "`3 1066.8333333333333`",
+            "`2 1075.0`"
+          ],
+          "answer": 2,
+          "explanation": "`replace(\",\", \"\")` pehle hi thousand separator hata deta hai, isliye `\"1200\"` aur `\"1050.5\"` float ban jaate hain; khaali string aur `\"N/A\"` skip hote hain. Clean list [1200.0, 950.0, 1050.5], length 3, mean 3200.5 / 3 = 1066.8333333333333. Option B ka trap missing ko 0 maan kar 5 se divide karna (640.1) hai. Option A tab hota jab comma hataye bina `float` lagate.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w9-q6",
+          "question": "`orders` mein 5 rows hain jinke `customer_id` hain 1, 1, 2, 3, 4. `customers` lookup table mein 4 rows hain jinke `customer_id` hain 1, 2, 2, 3 (galti se customer 2 do baar hai). `SELECT COUNT(*) FROM orders o LEFT JOIN customers c ON o.customer_id = c.customer_id` kya dega?",
+          "options": [
+            "5",
+            "6",
+            "4",
+            "8"
+          ],
+          "answer": 1,
+          "explanation": "Har order ko us key ki saari matching customer rows milti hain. Customer 1 ke 2 orders × 1 match = 2; customer 2 ka 1 order × 2 matches = 2; customer 3: 1; customer 4 ka koi match nahi, par LEFT JOIN use NULLs ke saath rakhta hai: 1. Kul 6. Option A sabse tempting trap hai: 'left join ke baad row count left table jitna hi rehta hai' sirf tab sach hai jab right table mein key unique ho. Option C unmatched order ko hata deta hai, jo inner join jaisa soch hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Exploratory Analysis, Aggregation and Reading Relationships Correctly",
+      "summary": "Is week aap ek systematic exploratory data analysis (EDA) karna, SQL aur Python mein group-wise aggregation (WHERE vs HAVING samet) likhna, robust summaries chunna, correlation ko sahi padhna aur causation ke jaal (confounding, Simpson's paradox) pehchaanna, aur kaam ke hisaab se spreadsheet, SQL ya Python chunna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**EDA ka kram**: (1) shape aur grain: kitni rows, ek row kya represent karti hai; (2) har column ka type aur missing count; (3) numeric columns ke summaries aur distributions (histogram, box plot); (4) categorical columns ki frequencies; (5) relationships (scatter, group-wise summaries); (6) anomalies aur sawal note karna. EDA ka maqsad hypotheses banana aur data ki galtiyaan pakadna hai, final conclusions nikaalna nahi.",
+        "**Robust summaries**: mean har value se prabhavit hota hai, isliye ek bahut badi value use kheench leti hai; median aur IQR aise outliers se kam hilte hain. Skewed data (income, delivery time, order value) mein median batana aksar zyada imaandaar hai. Hamesha count (n) ke saath summary do; 3 rows ka average aur 3,000 rows ka average barabar bharose ke nahi.",
+        "**Aggregation (split-apply-combine)**: data ko groups mein todo, har group par function lagao (sum, mean, count, max), phir results jodo. SQL mein `GROUP BY`; Python (pandas) mein `groupby().agg()`; spreadsheet mein pivot table. Execution order yaad rakho: `WHERE` rows ko grouping SE PEHLE filter karta hai, `HAVING` groups ko aggregation KE BAAD filter karta hai. Isliye aggregate (jaise `SUM(amount) > 200`) par condition sirf `HAVING` mein aati hai.",
+        "**Correlation**: Pearson r do variables ke beech LINEAR relationship ki strength aur direction batata hai (−1 se 1). r ≈ 0 ka matlab 'koi linear trend nahi', 'koi relationship nahi' nahi: y = x² jaisa U-shape r = 0 de sakta hai. r outliers ke prati sensitive hai; ek extreme point r ko bahut badal sakta hai. Isliye number ke saath scatter plot hamesha dekho; rank-based Spearman correlation monotonic par non-linear trends aur outliers ke liye zyada robust hai.",
+        "**Correlation vs causation**: do cheezein saath badhti hain to iski kai wajahein ho sakti hain: A se B (causal), B se A (reverse causation), koi teesri cheez C dono ko chalaati hai (confounder), selection bias (sirf kuch type ke records data mein aaye), ya sirf sanyog. Causal claim ke liye randomised experiment (A/B test) ya confounders ko control karne wala careful design chahiye; observational correlation akela kaafi nahi.",
+        "**Simpson's paradox**: jab groups ka mix alag ho, to har subgroup mein jo trend hai, combined data mein uska ulta dikh sakta hai. Jaise ek treatment har severity group mein behtar ho, par use zyaadatar severe patients mile hon to overall success rate kam dikhega. Sabak: koi variable outcome aur group-assignment dono ko affect karta ho to us par stratify karke dekho.",
+        "**Outlier detection aur tool choice**: z-score `(x − mean) / sd` approx normal data ke liye theek hai (|z| > 3 ya koi chuna hua threshold), par outliers khud mean aur sd ko bigaad dete hain; skewed data mein IQR ya median-based rules behtar. Tool: chhota, ek-baar ka, business user ke saath share hone wala kaam spreadsheet mein; data database mein hai aur bada hai to SQL (data wahin process hota hai); repeatable pipeline, complex cleaning, stats ya plots ke liye Python."
+      ],
+      "example": {
+        "problem": "Ek (kalpanik) retail table `sales(region, amount)` hai. Sirf 55 se bade orders gin kar woh regions chahiye jinka total 260 se zyada ho. Query likho aur result batao. Rows: (N,100), (N,300), (S,50), (S,160), (E,500), (S,90).",
+        "code": "SELECT region, SUM(amount) AS total\nFROM sales\nWHERE amount > 55\nGROUP BY region\nHAVING SUM(amount) > 260\nORDER BY region;",
+        "steps": [
+          "`FROM sales` saari 6 rows leta hai.",
+          "`WHERE amount > 55` grouping se pehle chalta hai aur (S, 50) ko hata deta hai.",
+          "`GROUP BY region` bachi rows ke totals banata hai: N = 100 + 300 = 400, S = 160 + 90 = 250, E = 500.",
+          "`HAVING SUM(amount) > 260` groups par filter hai: S (250) hat jaata hai.",
+          "`ORDER BY region` alphabetical order deta hai: E, N.",
+          "Answer: **(E, 500) aur (N, 400)**. Agar `WHERE` na hota to S ka total 300 hota aur S bhi aa jaata."
+        ]
+      },
+      "mistakes": [
+        "Aggregate par condition `WHERE SUM(amount) > 200` mein likhna. `WHERE` grouping se pehle chalta hai, tab tak SUM bana hi nahi, isliye SQL error deta hai. Fix: group-level condition `HAVING` mein.",
+        "Sirf correlation coefficient dekh kar 'koi relation nahi' ya 'strong relation' bol dena. Non-linear pattern aur outliers r ko gumraah karte hain. Fix: hamesha scatter plot ke saath padho.",
+        "Observational data mein correlation ko cause bata dena ('coaching join karne se marks badhte hain'). Fix: confounders aur selection ke baare mein socho, aur causal claim ke liye experiment ya proper design chahiye, ye report mein saaf likho."
+      ],
+      "revision": [
+        "EDA: grain, types, missing, distributions, relationships, anomalies.",
+        "Skewed data mein median/IQR; har summary ke saath n.",
+        "`WHERE` rows ko grouping se pehle, `HAVING` groups ko baad mein.",
+        "r sirf linear relationship naapta hai; r = 0 ≠ no relationship.",
+        "Correlation ke peeche: cause, reverse cause, confounder, selection, chance.",
+        "Simpson's paradox: subgroups ka trend combined mein ulta ho sakta hai."
+      ],
+      "questions": [
+        {
+          "id": "tds-w10-q1",
+          "question": "Ek (kalpanik) survey mein dikha ki jin cities mein coffee shops zyada hain, wahan average income bhi zyada hai. Is observational data se sabse justified conclusion kya hai?",
+          "options": [
+            "Coffee shops kholne se city ki income badhegi",
+            "Dono saath badhte hain; ho sakta hai koi teesra factor (jaise city ka size aur jobs) ya reverse causation (zyada income wahan shops khulti hain) is association ko samjhaaye",
+            "Coffee pine se log zyada kamaate hain",
+            "Correlation hai to causation bhi hona hi chahiye, bas direction pata karni hai"
+          ],
+          "answer": 1,
+          "explanation": "Observational data sirf association dikhata hai. Bade, job-rich shehron mein dono cheezein zyada hoti hain (confounder), aur zyada income wale ilaakon mein businesses shops kholte hain (reverse causation). Option A sabse tempting trap hai kyunki kahani sunne mein logical lagti hai, par bina experiment ya confounders control kiye causal claim nahi bana sakte. Option D bhi galat hai: correlation bina kisi causal link ke bhi ho sakta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w10-q2",
+          "question": "Ek chhoti team ki monthly salaries (hazaar ₹ mein) hain: 30, 32, 35, 38, 400 (aakhri founder ki). 'Typical' salary report karne ke liye kaunsa summary sabse uchit hai aur uski value kya hai?",
+          "options": [
+            "Mean, 107",
+            "Mode, 30",
+            "Range, 370",
+            "Median, 35"
+          ],
+          "answer": 3,
+          "explanation": "Mean = (30 + 32 + 35 + 38 + 400) / 5 = 535 / 5 = 107, jo paanch mein se chaar logon se bahut upar hai, kyunki ek extreme value use kheench leti hai. Median (beech wali value, 35) outlier se prabhavit nahi hoti aur 'typical' ko behtar dikhati hai. Option A ka trap 'average = mean' ki aadat hai. Is data mein koi value repeat nahi hoti, isliye mode bematlab hai, aur range spread hai, typical value nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w10-q3",
+          "question": "Table `sales(region, amount)` ki rows: (N,100), (N,300), (S,50), (S,160), (E,500), (S,90). Is query ka result kya hoga?",
+          "code": "SELECT region, SUM(amount)\nFROM sales\nWHERE amount > 55\nGROUP BY region\nHAVING SUM(amount) > 260\nORDER BY region;",
+          "options": [
+            "(E, 500), (N, 400)",
+            "(E, 500), (N, 400), (S, 300)",
+            "(E, 500), (N, 400), (S, 250)",
+            "(E, 500)"
+          ],
+          "answer": 0,
+          "explanation": "`WHERE` grouping se pehle (S, 50) hata deta hai. Phir totals: N = 400, S = 160 + 90 = 250, E = 500. `HAVING SUM > 260` S (250) ko hata deta hai. Result (E, 500), (N, 400). Option B ka trap `WHERE` ko ignore karke S ka total 300 maanna hai (jo 260 se zyada hota). Option C `HAVING` lagana bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w10-q4",
+          "question": "x = −2, −1, 0, 1, 2 aur y = x² (yaani 4, 1, 0, 1, 4). In dono ka Pearson correlation r kitna hai, aur iska sahi matlab kya hai?",
+          "options": [
+            "r = 1; y poori tarah x par depend karta hai",
+            "r = −1; x badhne par y ghatta hai",
+            "r = 0; koi linear trend nahi, jabki y poori tarah x se tay hota hai",
+            "r = 0; x aur y mein koi relationship nahi"
+          ],
+          "answer": 2,
+          "explanation": "Mean x = 0, mean y = 2. Σ(x − 0)(y − 2) = (−2)(2) + (−1)(−1) + 0 + (1)(−1) + (2)(2) = −4 + 1 + 0 − 1 + 4 = 0, isliye r = 0. U-shape mein left aur right aadhe ek doosre ko cancel kar dete hain. Option D sabse tempting trap hai: r sirf LINEAR relationship naapta hai; yahan y = x² ek perfect (non-linear) relationship hai. Option A 'perfect dependence = r 1' maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w10-q5",
+          "question": "Ek sensor ki readings ka mean 50 aur standard deviation 8 hai. Rule: |z| > 2.5 ho to reading flag karo. Inmein se kaunsi reading flag hogi?",
+          "options": [
+            "70",
+            "31",
+            "71",
+            "32"
+          ],
+          "answer": 2,
+          "explanation": "z = (x − 50) / 8. 71 ke liye z = 21 / 8 = 2.625 > 2.5, flag. 70 ke liye z = 20 / 8 = 2.5, jo strictly 2.5 se bada nahi, isliye flag nahi; boundary ko shaamil kar lena option A ka trap hai. 31 ke liye z = −19 / 8 = −2.375 aur 32 ke liye −2.25; dono ka |z| 2.5 se kam hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w10-q6",
+          "question": "Ek (kalpanik) clinic data: Treatment A: mild cases 18/20 theek hue, severe 30/80. Treatment B: mild 64/80, severe 6/20. Overall A 48/100 = 48%, B 70/100 = 70%. Sabse sahi interpretation kya hai?",
+          "options": [
+            "A har severity group mein behtar hai (90% vs 80%, 37.5% vs 30%); overall B behtar isliye dikhta hai kyunki A ko zyaadatar severe cases mile. Severity confounder hai, isliye stratified comparison dekhna chahiye",
+            "B behtar hai, kyunki overall success rate hi asli measure hai",
+            "Data mein galti hai; har group mein behtar treatment overall mein kharab nahi ho sakta",
+            "A sirf severe cases mein behtar hai; mild cases mein B behtar hai"
+          ],
+          "answer": 0,
+          "explanation": "Group-wise: mild mein A 18/20 = 90% vs B 64/80 = 80%; severe mein A 30/80 = 37.5% vs B 6/20 = 30%, yaani A dono mein aage. Par A ke 100 mein se 80 patients severe the aur B ke sirf 20, aur severe cases ka success rate waise hi kam hai, isliye A ka overall rate neeche aa gaya. Ye Simpson's paradox hai. Option B ka trap pooled rate ko hi sach maanna hai; option C ka trap ye sochna ki aisa ulta trend mathematically possible hi nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Statistical Tests, Time Series, Geospatial and Network Analysis",
+      "summary": "Is week aap hypothesis testing ka logic aur p-value ka sahi matlab, situation ke hisaab se test chunna aur multiple testing ka khatra, time series mein trend, seasonality, rolling averages aur percent change, geospatial data ke coordinates aur distance, aur network analysis mein degree aur shortest path ki basics seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Hypothesis test ka logic**: null hypothesis H₀ 'koi fark/effect nahi' kehta hai. Test ek statistic nikaalta hai aur p-value batata hai: AGAR H₀ sach ho, to itna ya isse zyada extreme data milne ki probability kitni hai. p < α (aksar 0.05) ho to H₀ reject karte hain. p-value ye NAHI batata ki H₀ sach hone ki probability kitni hai, aur na hi effect kitna bada hai.",
+        "**Kaunsa test kab**: do groups ke numeric mean compare karne ho (jaise do page designs par time-on-page) to two-sample t-test; same logon ke before/after measurements ho to paired t-test; do categorical variables ka association (jaise city vs plan type ka contingency table) to chi-square test; do numeric variables ka linear association to correlation test. Data bahut skewed ho ya sample chhota ho to rank-based (non-parametric) tests ek option hain.",
+        "**Significance vs importance aur multiple testing**: bahut bade sample mein chhota sa, practically bekaar fark bhi 'significant' ho jaata hai, isliye effect size aur confidence interval bhi report karo. Agar 20 alag tests α = 0.05 par chalao aur sab mein H₀ sach ho, to kam se kam ek false positive ki probability 1 − 0.95²⁰ ≈ 64% hai. Bahut saare comparisons mein correction (jaise Bonferroni: α ko tests ki sankhya se divide karna) ya pehle se tay hypotheses chahiye.",
+        "**Time series ke components**: trend (lambi avadhi ka upar/neeche), seasonality (fixed period par dohraane wala pattern, jaise har weekend ya har Diwali), aur noise. Rolling (moving) average `window` points ka average leta hai aur noise smooth karta hai; trailing window mein shuru ke `window − 1` points ke liye value nahi banti. Percent change `(new − old) / old` hai, isliye +25% ke baad −25% wapas wahin nahi laata. Year-over-year comparison seasonality ka asar hata deta hai.",
+        "**Time series ke jaal**: model evaluate karte waqt random train/test split mat karo; future ka data training mein aa jaata hai (leakage). Time ke hisaab se split karo: purana data train, naya data test. Timestamps ka time zone aur missing dates (jaise chhuttiyon par koi record nahi) bhi check karo, warna rolling windows galat periods par bante hain.",
+        "**Geospatial basics**: location latitude (equator se north/south, −90 se 90) aur longitude (Greenwich se east/west, −180 se 180) se. GeoJSON standard mein order `[longitude, latitude]` hai, jabki bahut se maps aur log 'lat, long' bolte hain; order ulta karne se point kisi aur desh mein chala jaata hai. Do points ki doori sphere par great-circle (haversine) formula se nikalti hai, plain Euclidean degree difference se nahi. Choropleth map mein raw counts nahi, per-capita ya rate dikhao, warna map sirf population dikhata hai.",
+        "**Network analysis**: nodes (log, stations, web pages) aur edges (dosti, routes, links), directed ya undirected, weighted ya unweighted. Degree = node ke edges ki sankhya; directed graph mein in-degree aur out-degree alag. Shortest path (unweighted mein kam se kam edges) breadth-first search se milta hai. Centrality measures (degree, betweenness, PageRank) batate hain kaunse nodes important hain, jaise kaunsa station band hone se network sabse zyada toot-ta hai."
+      ],
+      "example": {
+        "problem": "Ek (kalpanik) app ke daily active users: 10, 12, 14, 20, 24 (hazaar mein). 3-day trailing rolling average aur aakhri din ka day-over-day percent change nikaalo.",
+        "code": "s = [10, 12, 14, 20, 24]\nroll = [round(sum(s[i-2:i+1]) / 3, 2) for i in range(2, len(s))]\npct_last = (s[-1] - s[-2]) / s[-2] * 100\nprint(roll, pct_last)   # [12.0, 15.33, 19.33] 20.0",
+        "steps": [
+          "Trailing window 3 ka matlab har din ke liye us din aur pichhle do din ka average; pehle do din ke liye poori window nahi, isliye value nahi banti.",
+          "Day 3: (10 + 12 + 14) / 3 = 12.0.",
+          "Day 4: (12 + 14 + 20) / 3 = 15.33; Day 5: (14 + 20 + 24) / 3 = 19.33.",
+          "Rolling average raw series se peeche chalta hai (lag): day 5 ka raw 24 hai par smooth value 19.33.",
+          "Day-over-day change: (24 − 20) / 20 = 0.20, yaani +20%.",
+          "Answer: **rolling = [12.0, 15.33, 19.33], aakhri din +20%**."
+        ]
+      },
+      "mistakes": [
+        "p = 0.03 ko 'H₀ sach hone ki 3% probability' ya '97% confidence ki effect asli hai' padhna. p-value H₀ ko sach MAAN kar data ki probability hai. Fix: wording yaad rakho aur effect size alag se report karo.",
+        "GeoJSON mein `[latitude, longitude]` likh dena. Chennai (lat ≈ 13, long ≈ 80) ulta likhne par point lat 80 par, yaani Arctic ke paas chala jaata hai. Fix: GeoJSON mein hamesha `[longitude, latitude]`.",
+        "Time series par random train/test split. Model future ka data dekh kar achha score deta hai jo deployment mein nahi milega. Fix: time-based split ya rolling-origin validation."
+      ],
+      "revision": [
+        "p-value = H₀ sach maan kar itna extreme data milne ki probability.",
+        "Two means: t-test; categorical association: chi-square.",
+        "20 tests at 0.05, sab H₀ sach: P(≥1 false positive) ≈ 0.64.",
+        "Percent change = (new − old) / old; rolling average lag karta hai.",
+        "GeoJSON = `[longitude, latitude]`; doori haversine se.",
+        "Degree = edges ki ginti; unweighted shortest path = BFS."
+      ],
+      "questions": [
+        {
+          "id": "tds-w11-q1",
+          "question": "Ek A/B test mein naye checkout page ke liye p-value 0.03 aaya (α = 0.05). Iska sabse sahi matlab kya hai?",
+          "options": [
+            "Null hypothesis (koi fark nahi) sach hone ki probability 3% hai",
+            "97% probability hai ki naya page behtar hai",
+            "Naya page conversion ko 3% badhata hai",
+            "Agar asal mein koi fark na hota, to itna ya isse zyada extreme fark sirf sanyog se milne ki probability 3% hoti"
+          ],
+          "answer": 3,
+          "explanation": "p-value H₀ ko sach maan kar calculate hota hai: 'koi fark nahi' hota to observed jitna ya zyada extreme result kitni baar milta. Ye H₀ ki probability nahi hai, isliye option A (sabse common galatfehmi) aur option B dono galat hain. p-value effect ka size bhi nahi batata, isliye option C galat hai; size ke liye effect estimate aur confidence interval dekhna padta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w11-q2",
+          "question": "Chennai ke paas ek point hai: latitude ≈ 13.08 (North), longitude ≈ 80.27 (East). GeoJSON mein ise sahi tarah kaise likhenge?",
+          "options": [
+            "`{\"type\": \"Point\", \"coordinates\": [13.08, 80.27]}`",
+            "`{\"type\": \"Point\", \"coordinates\": [80.27, 13.08]}`",
+            "`{\"type\": \"Point\", \"coordinates\": [-80.27, 13.08]}`",
+            "`{\"type\": \"Point\", \"coordinates\": [13.08, -80.27]}`"
+          ],
+          "answer": 1,
+          "explanation": "GeoJSON standard mein position ka order `[longitude, latitude]` hai, isliye `[80.27, 13.08]`. East longitude aur North latitude positive hote hain, isliye minus sign wale options C aur D point ko doosre hemisphere mein le jaate hain. Option A ka trap roz-marra ki 'lat, long' aadat hai; isse point latitude 80.27 par, yaani Arctic ke paas, chala jaata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w11-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "s = [10, 12, 14, 20, 24]\nroll = [round(sum(s[i-2:i+1]) / 3, 2) for i in range(2, len(s))]\nprint(roll)",
+          "options": [
+            "`[12.0, 15.33, 19.33]`",
+            "`[10.0, 11.0, 12.0, 15.33, 19.33]`",
+            "`[11.0, 13.0, 17.0, 22.0]`",
+            "`[15.33, 19.33]`"
+          ],
+          "answer": 0,
+          "explanation": "`i` 2 se 4 tak chalta hai, aur `s[i-2:i+1]` teen elements ka slice hai: [10, 12, 14] → 12.0, [12, 14, 20] → 15.33, [14, 20, 24] → 19.33. Shuru ke do din ke liye poori window nahi, isliye unki koi value nahi banti. Option B ka trap ye maanna hai ki shuru mein jitne points hain unhi ka average le liya jaayega (partial window). Option C window 2 ka result hai, aur option D pehli window bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w11-q4",
+          "question": "Ek (kalpanik) store ki monthly sales: January 200, February 250, March 200 (hazaar ₹). March ka month-over-month percent change kya hai?",
+          "options": [
+            "−25%",
+            "+25%",
+            "−20%",
+            "0%"
+          ],
+          "answer": 2,
+          "explanation": "Month-over-month change pichhle mahine ke base par hota hai: (200 − 250) / 250 = −0.20 = −20%. Option A ka trap ye sochna hai ki February ka +25% ulta karne ke liye −25% chahiye; base badal gaya hai (200 ki jagah 250), isliye nahi. Option D January se tulna karta hai, jo month-over-month nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w11-q5",
+          "question": "Ek undirected network ke edges hain: A–B, A–C, B–C, C–D, D–E. Sabse zyada degree wala node kaunsa hai, aur A se E tak shortest path mein kitne edges hain?",
+          "options": [
+            "C; 2 edges",
+            "C; 3 edges",
+            "A; 3 edges",
+            "D; 4 edges"
+          ],
+          "answer": 1,
+          "explanation": "Degrees: A 2 (B, C), B 2 (A, C), C 3 (A, B, D), D 2 (C, E), E 1. Isliye C sabse zyada. A se E: A–C–D–E = 3 edges; isse chhota koi raasta nahi kyunki E sirf D se juda hai aur D sirf C se. Option A ka trap nodes ki jagah beech ke nodes (C, D = 2) ginna hai. Option D ek lamba raasta A–B–C–D–E ginta hai jo shortest nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w11-q6",
+          "question": "Ek analyst 20 alag metrics par independent tests chalata hai, har ek α = 0.05 par, aur asal mein kisi bhi metric par koi effect nahi hai (saare H₀ sach). Kam se kam ek 'significant' result (false positive) milne ki probability lagbhag kitni hai?",
+          "options": [
+            "0.05",
+            "1.00, kyunki 20 × 0.05 = 1",
+            "0.64",
+            "0.36"
+          ],
+          "answer": 2,
+          "explanation": "Har test mein false positive na hone ki probability 0.95 hai; 20 independent tests mein ek bhi na hone ki 0.95²⁰ ≈ 0.358. Isliye kam se kam ek ki probability 1 − 0.358 ≈ 0.64. Option B ka trap 20 × 0.05 = 1 ko probability samajhna hai; 1 asal mein false positives ki EXPECTED ginti hai, probability nahi. Option D 'ek bhi nahi' ki probability hai, aur option A sirf ek test ke liye sach hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Data Visualisation and Storytelling with Evidence",
+      "summary": "Is week aap sawal ke hisaab se sahi chart chunna, visual encodings ki accuracy, colour palettes aur accessibility, misleading charts ko pehchaanna (truncated axis, area scaling, lie factor), aur insight ko ek saaf, annotated kahani ki tarah present karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Sawal se chart**: pehle tay karo ki chart kaunsa sawal answer kar raha hai. Categories ki tulna: bar chart (sorted, horizontal agar labels lambe hon). Time ke saath trend: line chart. Distribution: histogram ya box plot. Do numeric variables ka relationship: scatter plot. Part-to-whole: kam categories ho to stacked bar ya (2-3 slices tak) pie. Kai groups ko ek jaise compare karna ho to small multiples (same axes wale chhote charts ki grid).",
+        "**Encodings ki accuracy**: insaan values ko sabse sahi common scale par position se padhte hain, phir length, phir angle/slope, phir area, aur sabse kam sahi colour intensity se. Isliye exact tulna ke liye bar ya dot plot pie aur bubble se behtar hai. Colour ko categories alag karne ya ek highlight ke liye use karo, precise values padhwane ke liye nahi.",
+        "**Axes ke rules**: bar chart length se value dikhata hai, isliye uska value axis zero se shuru hona chahiye; truncated axis chhote fark ko bahut bada dikhata hai. Line chart position aur slope dikhata hai, isliye uska axis data ki range par zoom kar sakta hai, bas clearly label ho. Dual y-axis wale charts mein do scales manmarzi se align karke koi bhi 'correlation' dikhaya ja sakta hai, isliye inse bacho ya bahut saavdhaani se use karo.",
+        "**Colour palettes**: sequential (halke se gehre ek hue mein) ordered values ke liye, jaise population density; diverging (do hues, beech mein neutral) jab ek meaningful midpoint ho, jaise 0% change ya target; categorical (alag-alag hues) unordered groups ke liye, aur zyada se zyada 6-8 categories. Rainbow palette ordered data ke liye kharab hai kyunki uski brightness evenly nahi badhti aur woh nakli boundaries banata hai.",
+        "**Accessibility**: kaafi log red-green colour difference theek se nahi dekh paate, isliye sirf red vs green par meaning mat tikao; colour-blind-safe palettes (jaise blue-orange) use karo aur colour ke saath doosra cue bhi do: direct labels, markers, line styles. Text aur background ka contrast achha rakho, font size padhne layak rakho, aur important chart ke saath alt text ya ek line ka summary do.",
+        "**Misleading graphics aur lie factor**: area ya volume se value dikhane par size galat scale karna aam jaal hai: value double karne ke liye circle ka radius double karoge to area 4 guna ho jaata hai; sahi tareeka radius ko √2 guna karna hai. Lie factor = (graphic mein dikhaya gaya effect) ÷ (data mein asal effect); 1 ke paas hona imaandaar chart hai. Cherry-picked time range, bina label ke axes, 3D effects aur inconsistent intervals bhi galat impression dete hain.",
+        "**Storytelling**: chart ka title insight bataye ('Q3 mein returns 40% badhe, mostly size issues se'), sirf topic nahi ('Returns by quarter'). Ek chart mein ek main message, highlight colour sirf us par, baaki grey; zaroori points par annotation; clutter (heavy gridlines, borders, 3D, legend jab direct labels ho sakte hain) hatao. Audience ke hisaab se detail chuno, aur caveats (data ki seemayein, sample size) saaf likho."
+      ],
+      "example": {
+        "problem": "Ek (kalpanik) company ka dashboard dikhata hai: 'Customer satisfaction 96% se 98% hua', bar chart mein y-axis 95 se shuru hota hai aur doosra bar pehle se 3 guna lamba dikhta hai. Is chart ko critique karo aur sudhaaro.",
+        "steps": [
+          "Bar chart value ko length se dikhata hai, isliye axis 0 se shuru hona chahiye. Yahan axis 95 se shuru hai.",
+          "Dikhne wali lengths: 96 − 95 = 1 aur 98 − 95 = 3, isliye doosra bar 3 guna lamba lagta hai.",
+          "Asal ratio 98 / 96 ≈ 1.02, yaani sirf lagbhag 2% zyada (2 percentage points).",
+          "Dikhaya gaya effect: (3 − 1) / 1 = 200% badhotri; data mein effect: (98 − 96) / 96 ≈ 2.08%. Lie factor ≈ 200 / 2.08 ≈ 96, jo 1 se bahut door hai.",
+          "Sudhaar: bar chart ka axis 0 se, ya agar chhota change hi focus hai to zero baseline wali bars ke saath change ko direct label karo ('+2 pts'), ya time ke saath trend ho to line chart jismein axis range clearly label ho.",
+          "Answer: **truncated axis ne ~2% badhotri ko 3 guna jaisa dikhaya**; zero-based axis aur direct label se chart imaandaar banta hai."
+        ]
+      },
+      "mistakes": [
+        "Bar chart ka y-axis zero ke bajaye data ke minimum se shuru karna. Chhota fark bahut bada dikhta hai. Fix: bars ke liye zero baseline; zoom chahiye to line ya dot plot use karo aur axis clearly label karo.",
+        "Saari categories ko ek se ek chamakdaar rang de dena. Kuch bhi highlight nahi hota aur colour-blind readers ke liye categories mil jaati hain. Fix: neutral grey + ek highlight colour, colour-blind-safe palette, aur direct labels.",
+        "Chart ka title sirf topic rakhna ('Sales by region'). Reader ko khud insight dhoondhna padta hai. Fix: title mein takeaway likho aur use support karne wale point ko annotate karo."
+      ],
+      "revision": [
+        "Comparison: bar; trend: line; distribution: histogram/box; relationship: scatter.",
+        "Accuracy: position > length > angle > area > colour intensity.",
+        "Bar chart axis zero se; line chart zoom kar sakta hai.",
+        "Sequential ordered ke liye, diverging midpoint ke liye, categorical groups ke liye.",
+        "Area scaling: value ×2 ⇒ radius ×√2; lie factor ≈ 1 ho.",
+        "Title = insight; ek chart, ek message; red-green par mat tiko."
+      ],
+      "questions": [
+        {
+          "id": "tds-w12-q1",
+          "question": "Aapko do products ki monthly revenue 24 mahinon ke liye dikhani hai, taaki trend aur seasonality dikhe. Sabse uchit chart kaunsa hai?",
+          "options": [
+            "Line chart, har product ki ek line, x-axis par mahine",
+            "Do pie charts, ek har product ke liye",
+            "3D stacked area chart",
+            "Scatter plot jismein x product aur y revenue ho"
+          ],
+          "answer": 0,
+          "explanation": "Time ke saath badlaav dikhane ke liye line chart sabse natural hai: position aur slope se trend aur seasonal ups-downs seedhe dikhte hain, aur do lines aasaani se compare hoti hain. Pie chart time ko dikha hi nahi sakta aur 24 slices padhna asambhav hai (option B). Option C tempting lag sakta hai par 3D aur stacking ke kaaran upar wali series ki values padhna mushkil ho jaata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w12-q2",
+          "question": "Ek map par har state ki sales ka pichhle saal ke mukable percent change dikhana hai; values −30% se +40% tak hain. Kaunsa colour palette sabse sahi hai?",
+          "options": [
+            "Rainbow palette, taaki zyada rang dikhen",
+            "Ek hue ka sequential palette (halke se gehra)",
+            "Diverging palette jiska neutral beech ka rang 0% par ho, ek taraf ghatav aur doosri taraf badhotri",
+            "Categorical palette, har state ka alag rang"
+          ],
+          "answer": 2,
+          "explanation": "Yahan 0% ek meaningful midpoint hai: neeche matlab giravat, upar matlab badhotri. Diverging palette dono directions ko alag hues mein aur 0 ko neutral mein dikhata hai. Option B tempting hai par sequential palette mein −30% sirf 'halka' dikhega, giravat jaisa nahi, aur 0 ki koi pehchaan nahi hogi. Rainbow brightness ko evenly nahi badhata aur nakli boundaries banata hai, aur categorical palette ordered values ke liye galat hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w12-q3",
+          "question": "Ek bar chart mein do values 96 aur 98 hain, aur y-axis 95 se shuru hota hai. Chart mein doosra bar pehle bar se kitne guna lamba DIKHEGA?",
+          "options": [
+            "Lagbhag 1.02 guna",
+            "2 guna",
+            "1.5 guna",
+            "3 guna"
+          ],
+          "answer": 3,
+          "explanation": "Bar ki dikhne wali length axis ke start se naapi jaati hai: 96 − 95 = 1 aur 98 − 95 = 3, isliye doosra bar 3 guna lamba dikhta hai, jabki asal ratio 98 / 96 ≈ 1.02 hai. Option A asal data ka ratio hai, chart ka nahi; yahi fark truncated axis ka khatra hai. Option B ka trap values ke difference (2) ko ratio maan lena hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w12-q4",
+          "question": "Ek infographic mein city ki population circle ke AREA se dikhani hai. City B ki population City A se double hai. City B ke circle ka radius City A ke radius ka kitna guna hona chahiye?",
+          "options": [
+            "2 guna",
+            "Lagbhag 1.41 guna (√2)",
+            "4 guna",
+            "Utna hi; sirf rang badlo"
+          ],
+          "answer": 1,
+          "explanation": "Circle ka area πr² hai, yaani radius ke square ke proportional. Area double karne ke liye r² double hona chahiye, to r ko √2 ≈ 1.41 se multiply karo. Option A sabse common jaal hai: radius double karne se area 4 guna ho jaata hai aur B ki population chaar guna jaisi dikhti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w12-q5",
+          "question": "Ek line chart mein 'actual' line red aur 'target' line green hai, aur dono ek hi style ki solid lines hain. Accessibility ke liye sabse achha sudhaar kya hai?",
+          "options": [
+            "Colour-blind-safe palette (jaise blue aur orange) lena, aur saath mein lines ke end par direct labels ya alag line style (solid vs dashed) dena",
+            "Red aur green ko aur zyada bright kar dena",
+            "Legend ka font bada kar dena",
+            "Chart ko 3D bana dena taaki lines alag dikhen"
+          ],
+          "answer": 0,
+          "explanation": "Red-green colour difference kaafi logon ke liye mushkil hota hai, isliye meaning sirf us par nahi tikna chahiye. Safe palette ke saath ek non-colour cue (direct label, dashed line, markers) dene se chart bina colour ke bhi padha ja sakta hai. Option B tempting hai par brightness badhane se hue ka confusion nahi jaata. Option C legend padhne mein madad karta hai, par lines ko pehchaanne mein nahi; 3D clutter aur badhata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w12-q6",
+          "question": "Ek report mein metric 50 se 60 hua. Graphic mein isse dikhane wale bars ki height 2 cm se 5 cm ho gayi. Lie factor (dikhaya gaya effect ÷ data ka effect, dono relative change ke roop mein) kitna hai?",
+          "options": [
+            "2.5",
+            "1.2",
+            "0.13",
+            "7.5"
+          ],
+          "answer": 3,
+          "explanation": "Graphic mein effect: (5 − 2) / 2 = 1.5, yaani 150% badhotri. Data mein effect: (60 − 50) / 50 = 0.2, yaani 20%. Lie factor = 1.5 / 0.2 = 7.5, matlab chart badlaav ko 7.5 guna bada dikhata hai (imaandaar chart mein ye 1 ke paas hota). Option A ka trap heights ka simple ratio (5 / 2) lena hai, aur option B data values ka ratio (60 / 50); dono relative CHANGE nahi naapte. Option C formula ko ulta (0.2 / 1.5) kar deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

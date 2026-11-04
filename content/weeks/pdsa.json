@@ -1,0 +1,1482 @@
+{
+  "subjectId": "pdsa",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Python Essentials for Algorithms",
+      "summary": "Is week aap Python ke woh hisse dobara pakkaoge jo poore course mein lagenge: lists, dicts, sets ki cost, functions, recursion, classes, exceptions aur code ka time naapna.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Python list ek dynamic array hai**: andar contiguous memory mein references rakhe jaate hain, isliye `a[i]` O(1) hai. `append` amortized O(1) hai (kabhi-kabhi poori array badi jagah copy hoti hai), par `insert(0, x)`, `pop(0)` aur `x in a` O(n) hain kyunki items shift ya scan karne padte hain.",
+        "**Aliasing aur copy**: `b = a` nayi list nahi banata, dono naam ek hi object ko point karte hain. `a[:]` ya `a.copy()` shallow copy hai: bahar ki list nayi, par andar ki nested lists abhi bhi shared. Poori independent copy ke liye `copy.deepcopy`.",
+        "**dict aur set hash table hain**: lookup, insert aur `in` average O(1) hain. Keys hashable (immutable) honi chahiye: `int`, `str`, `tuple` chalenge, `list` key banaoge to `TypeError: unhashable type`. Python 3.7+ mein dict insertion order yaad rakhta hai.",
+        "**Functions first-class objects hain**: inhe variable mein rakh sakte ho, argument mein pass kar sakte ho (`sorted(data, key=len)`). Default argument sirf ek baar, function define hote waqt banta hai, isliye mutable default (`def f(x, acc=[])`) calls ke beech share ho jaata hai. Fix: `acc=None` rakho aur andar nayi list banao.",
+        "**Recursion**: har call ka apna stack frame hota hai. Base case zaroori hai, aur har recursive call problem ko base ki taraf chhota kare. CPython ka default recursion limit lagbhag 1000 hai (`sys.getrecursionlimit()`), isliye 10⁵ depth wali recursion `RecursionError` degi; aise case mein loop ya explicit stack use karo.",
+        "**Classes**: `__init__` object ki state set karta hai, methods `self` se state padhte hain. Operator overloading se apne objects ko built-ins ke saath chala sakte ho: `__lt__` define karo to `sorted()` aur `heapq` un objects ko compare kar lete hain; `__repr__`/`__str__` printing ke liye.",
+        "**Exceptions**: `try` mein risky code, `except` mein specific error handle karo, `else` tabhi chalta hai jab koi exception nahi aayi, aur `finally` hamesha chalta hai, chahe `return` ho jaaye. Bare `except:` mat likho, woh asli bugs bhi chhupa deta hai.",
+        "**Timing**: `time.perf_counter()` se code ka time naapo. Algorithm ki growth samajhne ka practical tareeka: input size n ko double karo aur dekho time kitna badhta hai. ~2× matlab linear, ~4× matlab quadratic. Ek single run ka time noisy hota hai, isliye kuch baar repeat karo."
+      ],
+      "example": {
+        "problem": "Fast exponentiation: `power(3, 13)` recursion se nikaalo, jahan exponent har baar aadha hota hai. Kitni recursive calls hongi aur answer kya hai?",
+        "steps": [
+          "Idea: xⁿ = (x^(n//2))², aur n odd ho to ek extra x se multiply. Isse exponent har call mein aadha hota hai.",
+          "Calls: power(3, 13) → power(3, 6) → power(3, 3) → power(3, 1) → power(3, 0) (base case, 1 return).",
+          "Wapas aate hue: n = 1: 1² · 3 = 3; n = 3: 3² · 3 = 27; n = 6: 27² = 729.",
+          "n = 13: 729² · 3 = 531441 · 3 = 1594323.",
+          "Total 5 calls, yaani ⌊log₂ 13⌋ + 2 = 5. Naive loop 13 multiplications karta; yeh O(log n) hai.",
+          "Answer: **1594323**, aur 5 calls."
+        ],
+        "code": "calls = 0\n\ndef power(x, n):\n    global calls\n    calls += 1\n    if n == 0:\n        return 1\n    half = power(x, n // 2)\n    if n % 2 == 0:\n        return half * half\n    return half * half * x\n\nprint(power(3, 13), calls)"
+      },
+      "mistakes": [
+        "`grid = [[0] * 3] * 3` likh kar 2D list banana. Teeno rows ek hi list object hain, to `grid[0][0] = 1` teeno rows badal deta hai. Sahi: `grid = [[0] * 3 for _ in range(3)]`.",
+        "Bade data par `if x in my_list` loop ke andar chalana. Har check O(n) hai, to poora loop O(n²) ho jaata hai. Pehle `s = set(my_list)` banao, phir `x in s` average O(1).",
+        "Recursive function mein base case ko aisa likhna jo kabhi hit na ho (jaise `n == 0` jab n negative bhi ho sakta hai). Result: `RecursionError`. Base case `n <= 0` jaisa safe rakho."
+      ],
+      "revision": [
+        "list: index O(1), append amortized O(1), `insert(0)`/`pop(0)`/`in` O(n).",
+        "dict/set: average O(1) lookup; keys hashable honi chahiye.",
+        "`b = a` alias hai; `a[:]` shallow copy; `deepcopy` poori copy.",
+        "Mutable default argument calls ke beech share hota hai; `None` default use karo.",
+        "`finally` hamesha chalta hai; `else` sirf tab jab exception na aaye.",
+        "Growth check: n double karo, time ka ratio dekho."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w1-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "a = [1, 2, 3]\nb = a\nb.append(4)\nc = a[:]\nc.append(5)\nprint(len(a), len(b), len(c))",
+          "options": [
+            "3 4 5",
+            "4 4 5",
+            "4 4 4",
+            "5 5 5"
+          ],
+          "answer": 1,
+          "explanation": "`b = a` alias hai, isliye `b.append(4)` se a bhi [1, 2, 3, 4] ho jaata hai (len 4, aur b bhi wahi list). `c = a[:]` us waqt ki copy hai, yaani [1, 2, 3, 4], phir usme 5 judta hai to len 5. Output \"4 4 5\", option B. Trap: option A, `b = a` ko copy samajh kar a ko 3 hi maan lena; option D, `a[:]` ko bhi alias maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w1-q2",
+          "question": "Ek fictional app mein 10⁶ user ids hain, aur har request par check karna hai ki ek id blocked list mein hai ya nahi. Blocked ids ko kis structure mein rakhna sabse fast hoga?",
+          "options": [
+            "Python list, check `x in blocked`",
+            "tuple, check `x in blocked`",
+            "set, check `x in blocked`",
+            "Sorted list, aur shuru se linear scan"
+          ],
+          "answer": 2,
+          "explanation": "set hash table hai, isliye `x in blocked` average O(1) hai, option C. list aur tuple mein `in` har element ko ek-ek karke dekhta hai (O(n)), isliye options A aur B slow hain. Option D ka trap: sorted list ka fayda tabhi hai jab binary search (O(log n)) karo; linear scan phir bhi O(n) hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w1-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "def add(x, bucket=[]):\n    bucket.append(x)\n    return bucket\n\nadd(1)\nadd(2)\nprint(add(3))",
+          "options": [
+            "[3]",
+            "[1, 2]",
+            "TypeError aayega",
+            "[1, 2, 3]"
+          ],
+          "answer": 3,
+          "explanation": "Default value `bucket=[]` sirf ek baar banti hai, jab `def` chalta hai. Teeno calls bina bucket diye usi ek list mein append karti hain, to teesri call ke baad woh [1, 2, 3] hai, option D. Trap: option A, yeh maanna ki har call par nayi khaali list banti hai. Fix: `bucket=None` aur andar `if bucket is None: bucket = []`.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w1-q4",
+          "question": "Naive recursive Fibonacci mein `fib(5)` chalane par function kitni baar call hota hai (pehli call mila kar)?",
+          "code": "calls = 0\n\ndef fib(n):\n    global calls\n    calls += 1\n    if n <= 1:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nfib(5)\nprint(calls)",
+          "options": [
+            "15",
+            "5",
+            "9",
+            "31"
+          ],
+          "answer": 0,
+          "explanation": "Calls ka count C(n) = 1 + C(n−1) + C(n−2), aur C(0) = C(1) = 1. To C(2) = 3, C(3) = 5, C(4) = 9, C(5) = 1 + 9 + 5 = 15, option A. Yahi exponential blow-up memoization (week 9) se theek hota hai. Traps: option B, fib(5) ki value (5) ko calls ka count samajhna; option C, C(4) = 9, yaani ek level kam ginna; option D, 2⁵ − 1 = 31, poora balanced binary tree maan lena, jabki fib(n − 2) wali branch chhoti hoti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w1-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "class Job:\n    def __init__(self, name, pr):\n        self.name = name\n        self.pr = pr\n\n    def __lt__(self, other):\n        return self.pr > other.pr\n\njobs = [Job(\"a\", 2), Job(\"b\", 5), Job(\"c\", 1)]\nprint([j.name for j in sorted(jobs)])",
+          "options": [
+            "['c', 'a', 'b']",
+            "['b', 'a', 'c']",
+            "['a', 'b', 'c']",
+            "TypeError: '<' not supported"
+          ],
+          "answer": 1,
+          "explanation": "`sorted()` objects ko `<` se compare karta hai, aur `<` ke liye `__lt__` chalta hai. Yahan `__lt__` ulta hai: `self.pr > other.pr`, yaani jiski priority badi woh \"chhota\" maana jaata hai aur pehle aata hai. Priority 5, 2, 1 ke order mein: ['b', 'a', 'c'], option B. Trap: option A, `sorted` ko normal ascending priority samajhna; option D, yeh bhoolna ki `__lt__` define hone se objects comparable ho jaate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w1-q6",
+          "question": "Is code ka output kya hoga? (`end=\" \"` newline ki jagah space print karta hai.)",
+          "code": "def g(x):\n    try:\n        r = 10 // x\n    except ZeroDivisionError:\n        print(\"Z\", end=\" \")\n        return -1\n    else:\n        print(\"E\", end=\" \")\n        return r\n    finally:\n        print(\"F\", end=\" \")\n\nprint(g(0), g(5))",
+          "options": [
+            "Z E -1 2",
+            "-1 2 Z F E F",
+            "Z F E F -1 2",
+            "Z -1 E F 2"
+          ],
+          "answer": 2,
+          "explanation": "Arguments pehle evaluate hote hain, left se right. `g(0)`: `10 // 0` ZeroDivisionError deta hai, `except` mein \"Z\" print hota hai aur `return -1` hota hai, par return se pehle `finally` \"F\" print karta hai. `g(5)`: koi error nahi, to `else` \"E\" print karke 2 return karta hai, phir bhi `finally` \"F\" chalta hai. Aakhir mein `print` \"-1 2\" likhta hai. Output \"Z F E F -1 2\", option C. Trap: option A, sochna ki `return` ke baad `finally` nahi chalta; option B, sochna ki outer `print` pehle output deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Complexity, Searching and Sorting",
+      "summary": "Is week aap algorithms ki speed ko O, Ω, Θ notation mein naapna, binary search, aur selection, insertion, merge aur quicksort ko unke best/worst case aur stability ke saath samajhna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Asymptotic notation**: f(n) = O(g(n)) matlab kuch constant c aur n₀ ke baad f(n) ≤ c·g(n) (upper bound). Ω lower bound hai, aur Θ dono ek saath (tight bound). Constants aur chhote terms hata dete hain: 3n² + 50n + 7 = Θ(n²). Default mein hum worst case ki baat karte hain.",
+        "**Growth ka order**: 1 < log n < √n < n < n log n < n² < n³ < 2ⁿ < n!. Rough rule: Python ek second mein lagbhag 10⁷ simple steps karta hai. n = 10⁵ par n² = 10¹⁰ steps, yaani minutes; n log n ≈ 1.7 × 10⁶, yaani pal bhar.",
+        "**Steps ginna**: alag loops ka cost add hota hai, nested loops ka multiply. Dependent loop (`for j in range(i)`) ka total Σ i = n(n − 1)/2 = Θ(n²). Jo loop variable ko har baar aadha ya double karta hai woh sirf log₂ n baar chalta hai.",
+        "**Binary search**: sirf sorted data par. Har step mein search range [lo, hi] aadhi hoti hai, isliye O(log n); 10⁶ elements mein max ~20 comparisons. Invariant: agar x hai to woh [lo, hi] ke andar hi hai. Python mein `bisect.bisect_left` yahi kaam karta hai.",
+        "**Selection sort**: har pass mein baaki hisse ka minimum dhoondh kar aage swap. Hamesha n(n − 1)/2 comparisons, chahe input sorted ho; swaps sirf n − 1 tak. Door ka swap equal keys ka order bigaad sakta hai, isliye **not stable**.",
+        "**Insertion sort**: har naya element peeche ki sorted list mein sahi jagah tak shift hota hai. Already sorted input par O(n), reverse sorted par O(n²). Shifts ki ginti = input ke inversions. Stable aur in-place; chhote ya almost-sorted data par bahut accha.",
+        "**Merge sort**: list ko aadha karo, dono half recursively sort karo, phir do sorted lists ko O(n) mein merge karo. Har case mein Θ(n log n), stable (merge mein barabar hone par left wala pehle lo), par O(n) extra memory chahiye.",
+        "**Quicksort aur stability**: pivot chuno, chhote elements left aur bade right partition karo, phir dono taraf recursion. Average Θ(n log n), in-place, par bura pivot (jaise sorted input par pehla element) Θ(n²) deta hai; random pivot isse bachata hai. **Stable sort** equal keys ka original order rakhta hai; Python ka `sorted` (Timsort) stable hai, isliye multi-key sorting ek ke baad ek sort se ho sakti hai."
+      ],
+      "example": {
+        "problem": "Merge sort se [29, 4, 17, 8, 35, 12] sort karo, aur har merge step dikhao.",
+        "steps": [
+          "Split: [29, 4, 17] aur [8, 35, 12]. Phir [29] | [4, 17] aur [8] | [35, 12].",
+          "Neeche se merge: [4] + [17] → [4, 17]; phir [29] + [4, 17] → [4, 17, 29].",
+          "Right side: [35] + [12] → [12, 35]; phir [8] + [12, 35] → [8, 12, 35].",
+          "Aakhri merge: dono fronts compare karo: 4 vs 8 → 4; 17 vs 8 → 8; 17 vs 12 → 12; 17 vs 35 → 17; 29 vs 35 → 29; left khatam, 35 copy.",
+          "Har level par total O(n) kaam, aur levels ⌈log₂ 6⌉ = 3, isliye O(n log n).",
+          "Answer: **[4, 8, 12, 17, 29, 35]**."
+        ],
+        "code": "def merge(L, R):\n    out, i, j = [], 0, 0\n    while i < len(L) and j < len(R):\n        if L[i] <= R[j]:          # <= keeps it stable\n            out.append(L[i]); i += 1\n        else:\n            out.append(R[j]); j += 1\n    return out + L[i:] + R[j:]\n\ndef merge_sort(a):\n    if len(a) <= 1:\n        return a\n    mid = len(a) // 2\n    return merge(merge_sort(a[:mid]), merge_sort(a[mid:]))\n\nprint(merge_sort([29, 4, 17, 8, 35, 12]))"
+      },
+      "mistakes": [
+        "Binary search mein `while lo < hi` aur `hi = mid - 1` mila dena: aakhri bacha hua element check hi nahi hota, ya loop kabhi khatam nahi hota. Ek convention pakdo: closed range [lo, hi] ke saath `while lo <= hi`, `lo = mid + 1`, `hi = mid - 1`.",
+        "Unsorted list par binary search chalana. Code error nahi deta, bas galat answer deta hai. Pehle sort karo (O(n log n)), aur baar-baar search karna ho tabhi yeh fayde ka hai.",
+        "Sochna ki O(n log n) har input size par O(n²) se fast hai. Chhote n par constants jeette hain, isliye Timsort jaise practical sorts chhote tukdon par insertion sort hi use karte hain."
+      ],
+      "revision": [
+        "O upper, Ω lower, Θ tight bound; constants aur chhote terms hata do.",
+        "Dependent nested loop Σ i = n(n − 1)/2 = Θ(n²); halving loop Θ(log n).",
+        "Binary search: sorted data, O(log n), `while lo <= hi`.",
+        "Selection: hamesha Θ(n²), unstable. Insertion: best Θ(n), stable.",
+        "Merge sort: Θ(n log n) hamesha, stable, O(n) extra space.",
+        "Quicksort: average Θ(n log n), worst Θ(n²), in-place, unstable."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w2-q1",
+          "question": "Bahut bade n ke liye inme se kaunsa function sabse tez badhta hai?",
+          "options": [
+            "100·n²",
+            "50·n·log₂ n",
+            "2^(log₂ n)",
+            "n³/1000"
+          ],
+          "answer": 3,
+          "explanation": "Asymptotic comparison mein constants maayne nahi rakhte, sirf n ki power dekhte hain. n³/1000 = Θ(n³), jo n² se tez badhta hai; lagbhag n = 10⁵ ke baad yeh 100·n² se aage nikal jaata hai. Isliye option D. Trap: option A, bada constant 100 dekh kar use bada maan lena. Option C asal mein sirf n hai, kyunki 2^(log₂ n) = n.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w2-q2",
+          "question": "Insertion sort kis input par sabse kam kaam karta hai, yaani Θ(n) time leta hai?",
+          "options": [
+            "Pehle se ascending order mein sorted list",
+            "Descending order (ulti sorted) list",
+            "Random order list",
+            "Koi bhi list jisme saare elements distinct hon"
+          ],
+          "answer": 0,
+          "explanation": "Sorted input par har naya element apne left wale se sirf ek baar compare hota hai aur koi shift nahi hota, to total n − 1 comparisons: Θ(n), option A. Option B worst case hai: har element ko poori sorted list ke paar shift hona padta hai, n(n − 1)/2 shifts. Trap: option D, distinct elements hone se kaam kam nahi hota; kaam inversions ki ginti par depend karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w2-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "n = 64\ncount = 0\ni = 1\nwhile i < n:\n    for j in range(i):\n        count += 1\n    i *= 2\nprint(count)",
+          "options": [
+            "384",
+            "63",
+            "6",
+            "4096"
+          ],
+          "answer": 1,
+          "explanation": "Outer loop i = 1, 2, 4, 8, 16, 32 ke liye chalta hai (64 par ruk jaata hai). Inner loop har baar i steps: 1 + 2 + 4 + 8 + 16 + 32 = 63, option B. Yeh geometric series hai jiska total n se kam hai, isliye code Θ(n) hai, Θ(n log n) nahi. Trap: option A, 6 outer passes × 64 = 384 maan lena, yaani har pass mein poora n; option D, nested loop dekh kar n² = 4096.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w2-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "def bsearch(a, x):\n    lo, hi = 0, len(a) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        print(mid, end=\" \")\n        if a[mid] == x:\n            return mid\n        elif a[mid] < x:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n\nprint(bsearch([3, 8, 12, 19, 23, 31, 40, 47, 55], 10))",
+          "options": [
+            "4 1 -1",
+            "4 1 0 -1",
+            "4 1 2 -1",
+            "4 2 -1"
+          ],
+          "answer": 2,
+          "explanation": "lo = 0, hi = 8. mid = 4: a[4] = 23 > 10, to hi = 3. mid = (0 + 3) // 2 = 1: a[1] = 8 < 10, to lo = 2. mid = (2 + 3) // 2 = 2: a[2] = 12 > 10, to hi = 1. Ab lo > hi, loop khatam, return -1. Output \"4 1 2 -1\", option C. Trap: option A, 8 aur 12 ke beech gap dekh kar wahin rok dena, jabki code ek aur mid check karta hai; option B, 8 < 10 par galti se left jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w2-q5",
+          "question": "Records ko sirf pehle number (key) par selection sort kiya gaya. Output kya hoga?",
+          "code": "def selection_sort(a):\n    n = len(a)\n    for i in range(n - 1):\n        m = i\n        for j in range(i + 1, n):\n            if a[j][0] < a[m][0]:\n                m = j\n        a[i], a[m] = a[m], a[i]\n\nrecs = [(2, \"x\"), (2, \"y\"), (1, \"z\")]\nselection_sort(recs)\nprint(\" \".join(r[1] for r in recs))",
+          "options": [
+            "z x y",
+            "x y z",
+            "y x z",
+            "z y x"
+          ],
+          "answer": 3,
+          "explanation": "i = 0: minimum key 1 index 2 par hai, to index 0 aur 2 swap: [(1, z), (2, y), (2, x)]. i = 1: `a[2][0] < a[1][0]` yaani 2 < 2 False hai, koi swap nahi. Output \"z y x\", option D. Equal keys wale x aur y ka order ulta ho gaya, yahi dikhata hai ki selection sort stable nahi hai. Trap: option A, stable sort ki tarah x ko y se pehle maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w2-q6",
+          "question": "Yeh quicksort pehle element ko pivot banata hai aur `comps` mein element-pivot comparisons ginta hai. Pehle se sorted 8 elements par output kya hoga?",
+          "code": "comps = 0\n\ndef qs(a, lo, hi):\n    global comps\n    if lo >= hi:\n        return\n    p = a[lo]\n    i = lo\n    for j in range(lo + 1, hi + 1):\n        comps += 1\n        if a[j] < p:\n            i += 1\n            a[i], a[j] = a[j], a[i]\n    a[lo], a[i] = a[i], a[lo]\n    qs(a, lo, i - 1)\n    qs(a, i + 1, hi)\n\ndata = list(range(1, 9))\nqs(data, 0, len(data) - 1)\nprint(comps)",
+          "options": [
+            "24",
+            "36",
+            "28",
+            "64"
+          ],
+          "answer": 2,
+          "explanation": "Sorted input par pivot (pehla element) hamesha sabse chhota hai, to har partition ek side khaali aur doosri side mein baaki saare elements chhodta hai. Size 8 ke partition mein 7 comparisons, phir size 7 par 6, ..., size 2 par 1: 7 + 6 + ... + 1 = 28 = n(n − 1)/2, option C. Yahi Θ(n²) worst case hai. Trap: option A, average case n log₂ n = 8 × 3 = 24 lagaana; option B, n(n + 1)/2 = 36, har partition mein ek extra comparison gin lena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Lists, Stacks, Queues and Hashing",
+      "summary": "Is week aap arrays aur linked lists ka fark, Python list ki amortized cost, stack aur queue ka sahi implementation, aur hash tables mein collisions aur load factor kaise kaam karte hain, yeh seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Array vs linked list**: array mein elements contiguous memory mein hote hain, isliye `a[i]` O(1) hai, par beech mein insert/delete ke liye baaki elements shift karne padte hain (O(n)). Linked list ke nodes mein value aur `next` reference hota hai: kisi known node ke baad insert/delete O(1), par i-th element tak pahunchna O(n), aur har node ka extra memory overhead.",
+        "**Python list = dynamic array**: capacity bhar jaane par list ek badi array (lagbhag ek fixed factor se badi) allocate karke sab copy karti hai. Copies ka total kul appends ke proportional rehta hai, isliye `append` **amortized O(1)** hai. `pop()` O(1), par `pop(0)` aur `insert(0, x)` O(n).",
+        "**Stack (LIFO)**: push, pop, peek, teeno O(1). Python mein list ke `append` aur `pop()` se. Uses: function call stack, undo, bracket matching, postfix expression evaluation, DFS.",
+        "**Queue (FIFO)**: enqueue peeche, dequeue aage se. List par `pop(0)` O(n) hai, isliye `collections.deque` use karo: `append` aur `popleft` dono O(1). Fixed size array mein queue **circular buffer** se banti hai: head aur tail index `% capacity` se ghoomte hain.",
+        "**Hashing**: hash function key ko table index mein badalta hai, jaise h(k) = k mod m. Accha hash keys ko slots mein barabar failata hai. Keys slots se zyada ho sakti hain, to **collision** (do keys ek slot par) hona tay hai.",
+        "**Collision resolution**: (1) **Separate chaining**: har slot mein ek chhoti list (bucket), colliding keys usme. (2) **Open addressing**: table ke andar hi doosra slot dhoondho; **linear probing** mein h(k), h(k) + 1, h(k) + 2, ... (mod m). Linear probing mein lagataar bhare slots ke clusters bante hain, aur delete ke liye seedha khaali karne ki jagah tombstone marker lagta hai.",
+        "**Load factor α = n/m** (keys / slots). Chaining mein average search O(1 + α). Open addressing mein α < 1 zaroori hai, aur α 1 ke paas pahunchte hi probes tezi se badhte hain. Isliye table ek threshold (jaise 0.75) par lagbhag double karke saari keys **rehash** karti hai; yeh resize kabhi-kabhi O(n) hai, par amortized har insert O(1).",
+        "**dict/set ke rules**: keys hashable honi chahiye (`int`, `str`, `tuple` of immutables). `list` ya `dict` key nahi ban sakte, kyunki mutable object ka hash badal jaaye to woh galat slot mein pada reh jaayega. Jo do objects `==` hain unka hash bhi barabar hona chahiye."
+      ],
+      "example": {
+        "problem": "Postfix expression `6 2 3 + * 4 -` ko stack se evaluate karo.",
+        "steps": [
+          "Rule: number aaye to push; operator aaye to do pop karo (pehla pop right operand hai), result push karo.",
+          "6, 2, 3 push: stack [6, 2, 3].",
+          "`+`: 3 aur 2 pop, 2 + 3 = 5 push: [6, 5].",
+          "`*`: 5 aur 6 pop, 6 × 5 = 30 push: [30].",
+          "4 push: [30, 4]. `-`: 4 aur 30 pop, 30 − 4 = 26 push: [26].",
+          "Input khatam, stack mein ek hi value: **26**. Har token O(1), total O(n)."
+        ],
+        "code": "def eval_postfix(expr):\n    st = []\n    for tok in expr.split():\n        if tok in \"+-*\":\n            right = st.pop()\n            left = st.pop()\n            if tok == \"+\":\n                st.append(left + right)\n            elif tok == \"-\":\n                st.append(left - right)\n            else:\n                st.append(left * right)\n        else:\n            st.append(int(tok))\n    return st.pop()\n\nprint(eval_postfix(\"6 2 3 + * 4 -\"))"
+      },
+      "mistakes": [
+        "BFS ya kisi bhi queue ke liye list ka `pop(0)` use karna. Har dequeue O(n) hai, to 10⁵ items par poora program O(n²) ho jaata hai. `collections.deque` aur `popleft()` use karo.",
+        "Postfix/stack problems mein pop ka order ulta lena: pehla pop **right** operand hai. `8 2 -` ka answer 6 hai, −6 nahi.",
+        "Linear probing table se key ko seedha khaali karke delete karna. Uske baad wali keys ki search beech mein khaali slot dekh kar ruk jaati hai aur \"not found\" deti hai. Tombstone (deleted marker) lagao."
+      ],
+      "revision": [
+        "Array: index O(1), beech mein insert O(n). Linked list: known node ke baad insert O(1), access O(n).",
+        "list `append` amortized O(1); `pop(0)`/`insert(0)` O(n).",
+        "Stack = LIFO (list), queue = FIFO (`deque`).",
+        "α = n/m; chaining average O(1 + α); open addressing mein α < 1.",
+        "Linear probing: h(k), h(k)+1, ... mod m; clustering hoti hai.",
+        "Keys hashable honi chahiye; table resize par sab rehash."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w3-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "s = []\ns.append(4)\ns.append(7)\ns.pop()\ns.append(9)\ns.append(2)\ntop = s.pop()\nprint(top, s)",
+          "options": [
+            "2 [4, 9]",
+            "7 [9, 2]",
+            "2 [4, 7, 9]",
+            "2 [4, 9, 2]"
+          ],
+          "answer": 0,
+          "explanation": "List stack ki tarah chal rahi hai: `pop()` aakhri item hatata hai. [4, 7] → pop (7 gaya) → [4] → 9 aur 2 push → [4, 9, 2] → pop 2 return karta hai aur list [4, 9] rehti hai. Output \"2 [4, 9]\", option A. Trap: option B, queue ki tarah aage se nikaalna (FIFO); option D, `pop()` ko peek samajhna jo item hatata nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w3-q2",
+          "question": "Python list `a` (n items) aur dict `d` par inme se kaunsa operation n ke proportional, yaani Θ(n), time leta hai?",
+          "options": [
+            "`a.append(x)`",
+            "`a.pop()`",
+            "`d[key]` lookup",
+            "`a.pop(0)`"
+          ],
+          "answer": 3,
+          "explanation": "`a.pop(0)` pehla item hatata hai, to baaki n − 1 references ek jagah aage shift karne padte hain: Θ(n), option D. Option A amortized O(1) hai, option B aakhri item hatata hai (O(1)), aur option C hash lookup hai (average O(1)). Trap: option A, kabhi-kabhi hone wale resize ko dekh kar append ko O(n) bol dena; amortized cost O(1) hi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w3-q3",
+          "question": "Kis input par `balanced` True return karega?",
+          "code": "def balanced(s):\n    pairs = {\")\": \"(\", \"]\": \"[\", \"}\": \"{\"}\n    st = []\n    for ch in s:\n        if ch in \"([{\":\n            st.append(ch)\n        elif not st or st.pop() != pairs[ch]:\n            return False\n    return not st",
+          "options": [
+            "([)]",
+            "(()",
+            "{[()()]}",
+            "())("
+          ],
+          "answer": 2,
+          "explanation": "\"{[()()]}\": har closing bracket stack ke top wale opening se match karta hai, aur end mein stack khaali hai, to True, option C. Option A mein `)` aata hai jab top par `[` hai, mismatch. Option B ke end mein ek `(` bacha rehta hai, `not st` False. Option D mein teesra character `)` aata hai jab stack khaali hai. Trap: option A, sirf brackets ki ginti barabar dekh kar True maan lena; order bhi match hona chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w3-q4",
+          "question": "Hash table ka size 7 hai, h(k) = k mod 7, aur collision par linear probing (agla slot, aakhri slot ke baad index 0). Keys is order mein daali jaati hain: 10, 17, 24, 3. Key 3 kis index par jaayegi?",
+          "options": [
+            "3",
+            "6",
+            "4",
+            "0"
+          ],
+          "answer": 1,
+          "explanation": "10 mod 7 = 3, to 10 index 3 par. 17 mod 7 = 3 (bhara), to 4. 24 mod 7 = 3 (bhara), 4 (bhara), to 5. 3 mod 7 = 3: 3, 4, 5 teeno bhare, to 6, option B. Yeh primary clustering hai: ek hi home slot wali keys ek lambi line bana deti hain. Trap: option A, sirf home slot 3 dekh kar collision ignore karna; option C, sirf ek probe karke ruk jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w3-q5",
+          "question": "Yeh code ek hash table ka resizing rule simulate karta hai: insert se pehle agar (n + 1)/m > 0.75 ho to m double hota hai. 13 inserts ke baad output kya hoga?",
+          "code": "m, n = 8, 0\nresizes = 0\nfor key in range(13):\n    if (n + 1) / m > 0.75:\n        m *= 2\n        resizes += 1\n    n += 1\nprint(m, resizes)",
+          "options": [
+            "16 1",
+            "32 2",
+            "64 3",
+            "24 2"
+          ],
+          "answer": 1,
+          "explanation": "m = 8 par 6 keys tak (6/8 = 0.75, threshold se zyada nahi) koi resize nahi. 7th insert par 7/8 > 0.75, to m = 16. 12 keys tak 12/16 = 0.75 theek hai; 13th par 13/16 > 0.75, to m = 32. Do resizes: \"32 2\", option B. Trap: option A, sirf pehla resize ginna; option D, har baar 8 slots jodna (24), jabki rule double karne ka hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w3-q6",
+          "question": "Do stacks se bani queue. Output kya hoga?",
+          "code": "class Q2:\n    def __init__(self):\n        self.inb, self.out = [], []\n\n    def enq(self, x):\n        self.inb.append(x)\n\n    def deq(self):\n        if not self.out:\n            while self.inb:\n                self.out.append(self.inb.pop())\n        return self.out.pop()\n\nq = Q2()\nfor x in (1, 2, 3):\n    q.enq(x)\na = q.deq()\nq.enq(4)\nb = q.deq()\nc = q.deq()\nprint(a, b, c, len(q.inb), len(q.out))",
+          "options": [
+            "3 2 1 1 0",
+            "1 2 3 0 1",
+            "1 2 4 1 0",
+            "1 2 3 1 0"
+          ],
+          "answer": 3,
+          "explanation": "Pehle `deq` par `out` khaali hai, to `inb` [1, 2, 3] ulta karke `out` = [3, 2, 1] banta hai; pop se 1. Phir 4 `inb` mein jaata hai. Agle do `deq` mein `out` khaali nahi, to wahi se 2 aur 3 nikalte hain; 4 `inb` mein hi rehta hai. Output \"1 2 3 1 0\", option D. Har element zyada se zyada ek baar move hota hai, isliye dequeue amortized O(1). Trap: option B, sochna ki har `deq` par `inb` ka sab kuch `out` mein chala jaata hai; option A, ise stack (LIFO) samajhna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Graphs: Representation, BFS, DFS and Topological Sort",
+      "summary": "Is week aap graphs ko matrix aur adjacency list mein store karna, BFS aur DFS se explore karna, connected components nikaalna, aur DAG ka topological order banana seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Graph G = (V, E)**: n vertices aur m edges. Undirected graph mein edge {u, v} dono taraf, directed mein u → v sirf ek taraf. Undirected mein Σ degree = 2m (har edge do baar gini jaati hai), aur m ≤ n(n − 1)/2. m n² ke paas ho to graph dense, n ke order ka ho to sparse.",
+        "**Adjacency matrix**: n × n table, A[u][v] = 1 agar edge hai. Edge check O(1), par space O(n²) aur kisi vertex ke neighbours nikaalna O(n). **Adjacency list** (Python mein `dict` of lists): space O(n + m), neighbours O(degree). Real data (road, social network) aksar sparse hota hai, isliye list zyada use hoti hai.",
+        "**BFS (breadth-first search)**: queue se level-by-level explore. Vertex ko queue mein daalte hi visited mark karo, warna woh do baar aa sakta hai. Unweighted graph mein BFS har vertex tak minimum edges wala path deta hai; `parent` pointers se path wapas banta hai. Time O(n + m) list ke saath, O(n²) matrix ke saath.",
+        "**DFS (depth-first search)**: ek raste par jitna gehra ja sako jao, phir backtrack. Recursion ya explicit stack se. Har vertex ka pre number (pehli baar visit) aur post number (saare descendants khatam) rakh sakte ho. Directed graph mein back edge (kisi ancestor ki taraf edge) ka matlab cycle hai.",
+        "**Connected components**: undirected graph mein har unvisited vertex se ek BFS/DFS chalao; har naya start ek naya component hai. Poora kaam phir bhi O(n + m). Isse pata chalta hai ki network mein kitne alag tukde hain aur do vertices connected hain ya nahi.",
+        "**DAG aur topological sort**: directed acyclic graph mein vertices ka aisa order jahan har edge u → v ke liye u pehle aaye (jaise course prerequisites ya build steps). Order tabhi possible hai jab koi directed cycle na ho, aur aksar ek se zyada valid orders hote hain.",
+        "**Kahn's algorithm**: har vertex ki indegree gino, indegree 0 wale queue mein daalo. Ek nikaalo, output karo, uske har out-neighbour ki indegree 1 ghatao, aur jo 0 ho jaaye use queue mein daalo. O(n + m). Agar output mein n se kam vertices aaye to graph mein cycle hai.",
+        "**DFS se topological sort**: DFS mein vertex tab \"finish\" hota hai jab uske saare descendants ho chuke. Finish order (post order) ko ulta karo, woh valid topological order hai. Python mein bahut gehri recursion `RecursionError` de sakti hai; bade graph par iterative DFS likho."
+      ],
+      "example": {
+        "problem": "Ek fictional college ke 8 students (0 se 7) ki friendship edges di hain: (0,1), (1,2), (3,4), (5,6), (6,7), (5,7). Kitne alag friend groups (connected components) hain?",
+        "steps": [
+          "Edge list se adjacency list banao; dono directions mein edge daalo kyunki graph undirected hai.",
+          "Vertex 0 unvisited hai: BFS se 0, 1, 2 milte hain. Component 1 = {0, 1, 2}.",
+          "Agla unvisited 3: BFS se {3, 4}. Component 2.",
+          "Agla unvisited 5: BFS se {5, 6, 7}; 5-6-7 ek triangle hai, par visited check se koi do baar nahi aata. Component 3.",
+          "Saare vertices visited. Har vertex aur edge ek-do baar hi dekhe gaye: O(n + m).",
+          "Answer: **3** components."
+        ],
+        "code": "from collections import deque\n\ndef components(n, edges):\n    adj = {v: [] for v in range(n)}\n    for u, v in edges:\n        adj[u].append(v)\n        adj[v].append(u)\n    seen, comps = set(), []\n    for s in range(n):\n        if s in seen:\n            continue\n        seen.add(s)\n        comp, q = [], deque([s])\n        while q:\n            u = q.popleft()\n            comp.append(u)\n            for w in adj[u]:\n                if w not in seen:\n                    seen.add(w)\n                    q.append(w)\n        comps.append(comp)\n    return comps\n\nc = components(8, [(0, 1), (1, 2), (3, 4), (5, 6), (6, 7), (5, 7)])\nprint(len(c), c)"
+      },
+      "mistakes": [
+        "BFS mein vertex ko queue se nikaalte waqt visited mark karna, daalte waqt nahi. Ek hi vertex queue mein kai baar aa jaata hai aur dense graph par kaam bahut badh jaata hai. Enqueue karte hi mark karo.",
+        "Topological order ko DFS ka pre-order (visit order) samajhna. Sahi order finish order ka **ulta** hai; pre-order mein koi vertex apne prerequisite se pehle aa sakta hai.",
+        "Undirected graph ki adjacency list mein edge sirf ek taraf (u → v) daalna. Phir v se u tak nahi pahunch paate aur components galat aate hain."
+      ],
+      "revision": [
+        "Σ degree = 2m (undirected).",
+        "Matrix: O(n²) space, O(1) edge check. List: O(n + m) space.",
+        "BFS = queue, unweighted shortest path, O(n + m).",
+        "DFS = stack/recursion; finish order ulta = topological order.",
+        "Kahn: indegree 0 queue; output < n vertices ⇒ cycle.",
+        "Topological order sirf DAG mein; aksar kai valid orders."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w4-q1",
+          "question": "Ek undirected graph ke 6 vertices ki degrees 3, 2, 2, 3, 1, 1 hain. Graph mein kitne edges hain?",
+          "options": [
+            "12",
+            "5",
+            "6",
+            "3"
+          ],
+          "answer": 2,
+          "explanation": "Har edge do vertices ki degree mein ek-ek baar judta hai, isliye Σ degree = 2m. Yahan 3 + 2 + 2 + 3 + 1 + 1 = 12 = 2m, to m = 6, option C. Trap: option A, degree ka sum hi edges maan lena (2 se divide bhoolna); option B, sochna ki 6 vertices ke graph mein n − 1 = 5 edges hote hain, jo sirf tree ke liye sach hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w4-q2",
+          "question": "n vertices aur m edges wale graph ko **adjacency matrix** mein rakha hai. Poore graph par BFS ka time (tight bound) kya hoga?",
+          "options": [
+            "Θ(n + m)",
+            "Θ(n²)",
+            "Θ(m log n)",
+            "Θ(n · m)"
+          ],
+          "answer": 1,
+          "explanation": "BFS har vertex ko ek baar queue se nikaalta hai, aur uske neighbours dhoondhne ke liye matrix ki poori row (n entries) padhni padti hai. n vertices × n entries = Θ(n²), option B, chahe graph mein edges kam hi hon. Trap: option A, jo adjacency **list** ke saath sahi hai; matrix mein neighbours O(degree) mein nahi milte.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w4-q3",
+          "question": "Is BFS code ka output kya hoga? (Neighbours list mein diye gaye order mein hi dekhe jaate hain.)",
+          "code": "from collections import deque\n\ng = {0: [2, 1], 1: [0, 4, 3], 2: [0, 4],\n     3: [1, 5], 4: [2, 1, 5], 5: [4, 3]}\norder, parent = [], {0: None}\nq = deque([0])\nwhile q:\n    u = q.popleft()\n    order.append(u)\n    for v in g[u]:\n        if v not in parent:\n            parent[v] = u\n            q.append(v)\nprint(order, parent[5])",
+          "options": [
+            "[0, 1, 2, 3, 4, 5] 3",
+            "[0, 2, 4, 1, 3, 5] 4",
+            "[0, 2, 1, 4, 3, 5] 4",
+            "[0, 2, 1, 4, 3, 5] 3"
+          ],
+          "answer": 2,
+          "explanation": "Queue [0]. 0 nikla: 2, 1 discover (order 0, 2, 1). 2 nikla: 4 naya (parent 2). 1 nikla: 3 naya (parent 1); 4 pehle se seen. 4 nikla: 5 naya, parent[5] = 4. Phir 3 aur 5 se kuch naya nahi. Output \"[0, 2, 1, 4, 3, 5] 4\", option C. Trap: option D, sochna ki 5 ko 3 ne discover kiya (3 bhi 5 ka neighbour hai, par 4 queue mein pehle tha); option B DFS ka order hai; option A neighbours ko sorted maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w4-q4",
+          "question": "Is directed graph par DFS chalaya gaya hai; `post` mein vertex tab judta hai jab uska DFS khatam hota hai. Output kya hoga?",
+          "code": "g = {\"a\": [\"b\", \"c\"], \"b\": [\"d\"], \"c\": [\"d\", \"e\"],\n     \"d\": [], \"e\": [\"b\"]}\nseen, post = set(), []\n\ndef dfs(u):\n    seen.add(u)\n    for v in g[u]:\n        if v not in seen:\n            dfs(v)\n    post.append(u)\n\ndfs(\"a\")\nprint(\" \".join(post))",
+          "options": [
+            "d b e c a",
+            "a b d c e",
+            "d e b c a",
+            "a c e b d"
+          ],
+          "answer": 0,
+          "explanation": "a → b → d: d ke koi out-edges nahi, d finish; phir b finish. Wapas a se c: d pehle se visited, e par jao; e → b visited, to e finish; phir c, phir a. Post order \"d b e c a\", option A. Iska ulta (option D) ek valid topological order hai. Trap: option B, visit (pre) order likh dena; option D, post order ko pehle hi ulta kar dena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w4-q5",
+          "question": "Ek fictional degree ke courses A–F ke prerequisites graph mein hain (X → Y matlab X pehle). Kahn's algorithm ka output kya hoga?",
+          "code": "from collections import deque\n\ng = {\"A\": [\"C\"], \"B\": [\"C\", \"D\"], \"C\": [\"E\"],\n     \"D\": [\"E\"], \"E\": [], \"F\": [\"D\"]}\nindeg = {v: 0 for v in g}\nfor u in g:\n    for v in g[u]:\n        indeg[v] += 1\nq = deque(v for v in g if indeg[v] == 0)\nout = []\nwhile q:\n    u = q.popleft()\n    out.append(u)\n    for v in g[u]:\n        indeg[v] -= 1\n        if indeg[v] == 0:\n            q.append(v)\nprint(\" \".join(out))",
+          "options": [
+            "A B C D F E",
+            "A C B D F E",
+            "F B A D C E",
+            "A B F C D E"
+          ],
+          "answer": 3,
+          "explanation": "Indegree: A 0, B 0, C 2, D 2, E 2, F 0. Queue shuru mein dict order mein [A, B, F]. A nikla: C → 1. B nikla: C → 0 (queue mein), D → 1. F nikla: D → 0 (queue mein). C nikla: E → 1. D nikla: E → 0. Phir E. Output \"A B F C D E\", option D. Trap: option A, C ke 0 hote hi use F se pehle chala dena; queue FIFO hai, F pehle se line mein tha.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w4-q6",
+          "question": "Ek DAG mein 6 vertices a, b, c, d, e, f hain aur sirf yeh edges hain: a → c, b → c, c → d, c → e. (f ka koi edge nahi.) Kitne alag-alag valid topological orders hain?",
+          "options": [
+            "4",
+            "24",
+            "20",
+            "720"
+          ],
+          "answer": 1,
+          "explanation": "c se pehle a aur b dono chahiye (2 orders: ab ya ba), c ke baad d aur e (2 orders). To a, b, c, d, e ke 2 × 2 = 4 orders. f ka koi constraint nahi, to har order ki 6 jagahon mein se kahin bhi aa sakta hai: 4 × 6 = 24, option B. Traps: option A, isolated vertex f ko bhool jaana; option C, f ke liye 6 ki jagah sirf 5 jagahen ginna, yaani ek end bhool jaana (4 × 5); option D, constraints ignore karke 6! = 720.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Shortest Paths and Minimum Spanning Trees",
+      "summary": "Is week aap weighted graphs mein Dijkstra, Bellman–Ford aur Floyd–Warshall se shortest paths, aur Prim aur Kruskal se minimum spanning tree banana seekhoge, saath mein yeh bhi ki kaunsa algorithm kab fail hota hai.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Weighted shortest path**: har edge ka weight (distance, time, cost) hai, aur path ka cost uske edges ka sum. BFS sirf edges ginta hai, isliye weights alag hon to galat answer deta hai. **Relaxation** sabka core step hai: agar dist[u] + w(u, v) < dist[v] to dist[v] update karo.",
+        "**Dijkstra**: source se shuru, har baar sabse chhoti tentative distance wala unfinished vertex chuno, use final maano, aur uske edges relax karo. Yeh greedy tabhi sahi hai jab saare weights **non-negative** hon. Time: matrix ke saath O(n²), binary heap (`heapq`) aur adjacency list ke saath O((n + m) log n).",
+        "**Negative edges par Dijkstra kyun fail**: ek vertex final hone ke baad koi aur raasta negative edge se use sasta bana sakta hai, par Dijkstra use dobara nahi kholta. Negative weight bhi ho par negative cycle na ho, to shortest paths phir bhi defined hain; bas algorithm badalna padta hai.",
+        "**Bellman–Ford**: saare edges ko n − 1 rounds tak relax karo. Kisi bhi shortest path mein zyada se zyada n − 1 edges hote hain, aur round i ke baad i edges tak wale saare shortest paths sahi ho jaate hain. Time O(n · m). n-th round mein bhi koi distance ghate to source se reachable **negative cycle** hai.",
+        "**Floyd–Warshall (all pairs)**: D[i][j] ko update karo: D[i][j] = min(D[i][j], D[i][k] + D[k][j]), k = 0 se n − 1 tak (outer loop k hi hona chahiye). Matlab: sirf vertices 0..k ko beech mein use karne wale best paths. Time O(n³), space O(n²); negative edges chalte hain, aur koi D[i][i] < 0 ho jaaye to negative cycle.",
+        "**Minimum spanning tree (MST)**: connected undirected weighted graph ke saare n vertices ko jodne wala, minimum total weight ka tree (n − 1 edges). **Cut property**: vertices ko do hisson mein baanto, to unke beech ka sabse halka edge kisi MST mein zaroor hota hai. Saare weights distinct hon to MST unique hota hai.",
+        "**Prim**: ek vertex se tree shuru karo; har step mein tree aur baaki graph ke beech ka sabse halka edge jodo. Dijkstra jaisa structure, par key \"tree se edge ka weight\" hai, \"source se distance\" nahi. Heap ke saath O((n + m) log n).",
+        "**Kruskal**: saare edges weight se sort karo; ek-ek edge lo, aur jodo agar woh cycle na banaye (dono ends alag components mein hon). Component check union-find se (week 6). Time O(m log m), sorting hi dominate karti hai. MST shortest-path tree se alag cheez hai: MST total weight minimize karta hai, source se distances nahi."
+      ],
+      "example": {
+        "problem": "Directed graph (vertices 0–3): 0→1 (4), 0→2 (3), 1→2 (−2), 1→3 (6), 2→3 (2), 3→0 (1). Floyd–Warshall se D[0][3] aur D[1][0] nikaalo.",
+        "steps": [
+          "Shuru: D[i][j] = edge weight, D[i][i] = 0, baaki ∞.",
+          "k = 0 (vertex 0 beech mein): 3→0→1 se D[3][1] = 1 + 4 = 5, 3→0→2 se D[3][2] = 4.",
+          "k = 1: 0→1→2 = 4 − 2 = 2 < 3, to D[0][2] = 2; D[0][3] = 4 + 6 = 10; D[3][2] = 5 − 2 = 3.",
+          "k = 2: D[0][3] = D[0][2] + D[2][3] = 2 + 2 = 4 (10 se kam); D[1][3] = −2 + 2 = 0.",
+          "k = 3: D[1][0] = D[1][3] + D[3][0] = 0 + 1 = 1; isi tarah D[2][0] = 3, D[2][1] = 7.",
+          "Koi diagonal entry negative nahi, to negative cycle nahi hai.",
+          "Answer: **D[0][3] = 4** (0→1→2→3) aur **D[1][0] = 1** (1→2→3→0)."
+        ],
+        "code": "INF = float(\"inf\")\nn = 4\nedges = [(0, 1, 4), (0, 2, 3), (1, 2, -2), (1, 3, 6), (2, 3, 2), (3, 0, 1)]\nD = [[0 if i == j else INF for j in range(n)] for i in range(n)]\nfor u, v, w in edges:\n    D[u][v] = w\nfor k in range(n):              # k must be the outermost loop\n    for i in range(n):\n        for j in range(n):\n            if D[i][k] + D[k][j] < D[i][j]:\n                D[i][j] = D[i][k] + D[k][j]\nprint(D[0][3], D[1][0])"
+      },
+      "mistakes": [
+        "Negative weight wale graph par Dijkstra chala dena. Code error nahi deta, chup-chaap galat distance deta hai. Negative edges hon to Bellman–Ford (ya all-pairs ke liye Floyd–Warshall) use karo.",
+        "Floyd–Warshall mein loops ka order `i, j, k` likh dena. Tab D[i][k] aur D[k][j] abhi tak final nahi hote aur answer galat aa sakta hai. k sabse bahar wala loop hona chahiye.",
+        "Prim aur Dijkstra ko mila dena: Prim mein vertex ki key sirf ek edge ka weight hai (tree se), poore path ka sum nahi. Sum lagaoge to shortest-path tree banega, MST nahi."
+      ],
+      "revision": [
+        "Relax: dist[u] + w < dist[v] ⇒ update.",
+        "Dijkstra: non-negative weights, heap ke saath O((n + m) log n).",
+        "Bellman–Ford: n − 1 rounds, O(nm); n-th round mein update ⇒ negative cycle.",
+        "Floyd–Warshall: k bahar, O(n³), all pairs.",
+        "MST: n − 1 edges; Prim tree badhata hai, Kruskal sorted edges + union-find.",
+        "Cut ka sabse halka edge kisi MST mein zaroor hota hai."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w5-q1",
+          "question": "Dijkstra ka algorithm sahi shortest distances guarantee kare, iske liye graph mein kaunsi shart zaroori hai?",
+          "options": [
+            "Graph undirected ho",
+            "Saare edge weights non-negative hon",
+            "Graph mein koi cycle na ho",
+            "Saare edge weights alag-alag hon"
+          ],
+          "answer": 1,
+          "explanation": "Dijkstra jab kisi vertex ko final karta hai to maanta hai ki baad mein koi sasta raasta nahi milega. Yeh tabhi sach hai jab koi edge weight negative na ho, option B. Directed ya undirected (option A) aur cycles (option C) se fark nahi padta. Trap: option C, Bellman–Ford ki \"negative cycle nahi honi chahiye\" wali shart ko yahan laga dena; Dijkstra ke liye ek bhi negative edge kaafi hai galti ke liye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w5-q2",
+          "question": "Ek graph mein 6 vertices aur 15 edges hain, aur koi negative cycle nahi hai. Bellman–Ford ko saare edges ke kitne rounds chahiye taaki saari distances final ho jaayein (worst case)?",
+          "options": [
+            "15",
+            "6",
+            "5",
+            "36"
+          ],
+          "answer": 2,
+          "explanation": "Kisi bhi shortest path mein zyada se zyada n − 1 = 5 edges hote hain (cycle wala path kabhi chhota nahi hota jab negative cycle na ho). Round i ke baad i edges tak ke saare shortest paths sahi hain, to 5 rounds kaafi hain, option C. Trap: option B, n rounds; n-th round sirf negative cycle check karne ke liye chalaya jaata hai. Option A edges ki ginti hai, rounds ki nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w5-q3",
+          "question": "Undirected graph ke edges (weight brackets mein): A–B (4), A–C (1), C–B (2), B–D (5), C–D (8), C–E (10), D–E (2), D–F (6), E–F (3). Dijkstra A se chalao. E aur F ki final distances kya hongi?",
+          "options": [
+            "11 14",
+            "10 14",
+            "9 12",
+            "10 13"
+          ],
+          "answer": 3,
+          "explanation": "A = 0, C = 1. B = min(4, 1 + 2) = 3. D = min(3 + 5, 1 + 8) = 8. E = min(1 + 10, 8 + 2) = 10. F = min(8 + 6, 10 + 3) = 13. Output \"10 13\", option D (raasta A–C–B–D–E–F). Trap: option A, E ko seedhe C–E (1 + 10 = 11) se final maan lena kyunki woh edge pehle dikha; option B, F ko sirf D–F se lena aur E–F wala sasta raasta miss karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w5-q4",
+          "question": "Undirected graph ke edges: P–Q (7), P–R (3), Q–R (1), Q–S (6), R–S (8), R–T (5), S–T (4), S–U (2), T–U (9). Kruskal se MST banao. Total weight aur edges ki ginti kya hai?",
+          "options": [
+            "15 (5 edges)",
+            "10 (4 edges)",
+            "21 (6 edges)",
+            "16 (5 edges)"
+          ],
+          "answer": 0,
+          "explanation": "Sorted order: Q–R 1 ✓, S–U 2 ✓, P–R 3 ✓, S–T 4 ✓, R–T 5 ✓ ({P, Q, R} ko {S, T, U} se jodta hai). Ab 6 vertices ke liye n − 1 = 5 edges ho gaye; Q–S 6 aur baaki cycle banaate. Total 1 + 2 + 3 + 4 + 5 = 15, option A. Trap: option B, 4 edges par ruk jaana, jabki tab graph do tukdon mein hai; option C, Q–S bhi jod dena, jo cycle banata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w5-q5",
+          "question": "Pichhle question wala hi graph: P–Q (7), P–R (3), Q–R (1), Q–S (6), R–S (8), R–T (5), S–T (4), S–U (2), T–U (9). Prim ka algorithm P se shuru karo. Edges kis order mein tree mein judte hain?",
+          "options": [
+            "Q–R, S–U, P–R, S–T, R–T",
+            "P–R, Q–R, Q–S, S–U, T–U",
+            "P–R, Q–R, R–T, S–T, S–U",
+            "P–R, R–T, S–T, S–U, Q–R"
+          ],
+          "answer": 2,
+          "explanation": "Tree {P}: sabse halka crossing edge P–R (3). {P, R}: Q–R (1). {P, Q, R}: crossing edges Q–S 6, R–S 8, R–T 5 (P–Q ab tree ke andar hai); R–T (5). Phir S–T (4), aur aakhir mein S–U (2). Order \"P–R, Q–R, R–T, S–T, S–U\", option C; total phir bhi 15. Trap: option A Kruskal ka order hai (global sorted); option B, sirf aakhri jude vertex ke neighbours dekhna (Q se Q–S), jabki Prim poore tree ke saare crossing edges dekhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w5-q6",
+          "question": "Is Dijkstra code mein ek negative edge (B → A, weight −4) hai. Output kya hoga?",
+          "code": "import heapq\n\ndef dijkstra(g, s):\n    dist = {v: float(\"inf\") for v in g}\n    dist[s] = 0\n    done = set()\n    pq = [(0, s)]\n    while pq:\n        d, u = heapq.heappop(pq)\n        if u in done:\n            continue\n        done.add(u)\n        for v, w in g[u]:\n            if v not in done and d + w < dist[v]:\n                dist[v] = d + w\n                heapq.heappush(pq, (dist[v], v))\n    return dist\n\ng = {\"S\": [(\"A\", 2), (\"B\", 5)], \"A\": [(\"C\", 3)],\n     \"B\": [(\"A\", -4)], \"C\": []}\ndist = dijkstra(g, \"S\")\nprint(dist[\"A\"], dist[\"C\"])",
+          "options": [
+            "1 4",
+            "2 5",
+            "1 5",
+            "Error: negative weight"
+          ],
+          "answer": 1,
+          "explanation": "S final (0): A = 2, B = 5. Heap se A (2) nikalta hai, final hota hai, C = 2 + 3 = 5. Phir (5, 'B') aur (5, 'C') mein tuple compare se B pehle: B final, par B → A relax nahi hota kyunki A `done` mein hai. Phir C. Output \"2 5\", option B, jabki sahi distances A = 5 − 4 = 1 aur C = 4 hain (option A). Trap: option A, code ke bajaye sahi shortest distances likh dena; option C, sochna ki A update ho jaayega par C nahi. Python koi error nahi deta (option D).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Union-Find, Heaps and Binary Search Trees",
+      "summary": "Is week aap union-find se groups jodna, binary heap aur `heapq` se priority queue chalaana, aur binary search tree mein search, insert aur delete karna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Union-find (disjoint sets)**: elements ke alag-alag groups maintain karta hai. `find(x)` x ke group ka representative (root) deta hai, `union(a, b)` do groups ko jodta hai. Kruskal mein \"yeh edge cycle banayega?\" ka matlab hai `find(u) == find(v)`. Dynamic connectivity aur image segmentation jaise kaam bhi isi se hote hain.",
+        "**Naive vs tree-based union-find**: har element ka component label rakho to find O(1), par union mein poora array relabel karna padta hai (O(n)). Tree version mein har element ka `parent` hota hai aur root representative hai. **Union by size/rank**: chhote tree ka root bade tree ke root ke neeche lagao; isse height ≤ log₂ n rehti hai, to find O(log n).",
+        "**Path compression**: find karte waqt raste ke saare nodes ko seedha root se jod do. Union by rank aur path compression dono saath hon to har operation amortized O(α(n)) hai, jahan α (inverse Ackermann) har practical n ke liye 4 se zyada nahi hota, yaani lagbhag constant.",
+        "**Priority queue**: insert aur \"sabse chhota (ya bada) nikaalo\". Unsorted list: insert O(1), extract O(n). Sorted list: extract O(1), insert O(n). **Binary heap** dono ko O(log n) mein karta hai, isliye Dijkstra, Prim, scheduling aur top-k problems mein yahi use hota hai.",
+        "**Binary heap**: complete binary tree jo array mein rakha jaata hai, pointers ki zaroorat nahi. 0-indexed array mein node i ka parent (i − 1)//2, children 2i + 1 aur 2i + 2. Min-heap property: har parent apne children se ≤. Insert: end mein daalo aur **sift up**. Extract: root nikaalo, aakhri element root par rakho aur **sift down** (chhote child se swap).",
+        "**Build-heap aur heap sort**: n elements ko bottom-up (aakhri parent se root tak sift down) heap banana O(n) hai, n baar insert karne (O(n log n)) se sasta. Heap sort: build-heap, phir n baar extract: O(n log n), in-place, par stable nahi.",
+        "**Python `heapq`**: ek normal list par **min-heap**: `heappush`, `heappop`, `heapify`, `nsmallest`. Max-heap ke liye values ka negative daalo (`-x`). Priority ke saath item rakhne ke liye tuple `(priority, item)`; barabar priority par tuple ka doosra element compare hota hai.",
+        "**Binary search tree (BST)**: har node ke left subtree ki keys usse chhoti aur right ki badi. Search, insert, delete sab O(h), jahan h height hai. Inorder traversal sorted order deta hai. Delete: leaf ho to hata do; ek child ho to child ko upar jod do; do children hon to **inorder successor** (right subtree ka minimum) ki key copy karo aur successor ko right subtree se delete karo. Sorted order mein inserts se tree ek chain ban jaata hai (h = n − 1)."
+      ],
+      "example": {
+        "problem": "Array [9, 4, 7, 1, 8, 2, 6] ko bottom-up min-heap banao.",
+        "steps": [
+          "n = 7, aakhri parent index (7 − 2)//2 = 2. Indexes 2, 1, 0 par ulte order mein sift down karo.",
+          "i = 2 (value 7): children 2 aur 6; chhota 2 < 7, swap → [9, 4, 2, 1, 8, 7, 6].",
+          "i = 1 (value 4): children 1 aur 8; 1 < 4, swap → [9, 1, 2, 4, 8, 7, 6]. Index 3 leaf hai, ruko.",
+          "i = 0 (value 9): children 1 aur 2; 1 < 9, swap → [1, 9, 2, 4, 8, 7, 6].",
+          "9 ab index 1 par: children 4 aur 8; 4 < 9, swap → [1, 4, 2, 9, 8, 7, 6]. Index 3 leaf, ruko.",
+          "Har parent ab children se chhota hai. `heapq.heapify` bhi is input par yahi list deta hai.",
+          "Answer: **[1, 4, 2, 9, 8, 7, 6]**."
+        ],
+        "code": "def sift_down(a, i, n):\n    while True:\n        small = i\n        for c in (2 * i + 1, 2 * i + 2):\n            if c < n and a[c] < a[small]:\n                small = c\n        if small == i:\n            return\n        a[i], a[small] = a[small], a[i]\n        i = small\n\ndef build_heap(a):\n    for i in range(len(a) // 2 - 1, -1, -1):\n        sift_down(a, i, len(a))\n    return a\n\nprint(build_heap([9, 4, 7, 1, 8, 2, 6]))"
+      },
+      "mistakes": [
+        "1-indexed formulas (parent i//2, children 2i, 2i + 1) ko 0-indexed Python list par lagana. 0-indexed mein parent (i − 1)//2 aur children 2i + 1, 2i + 2 hain.",
+        "`heapq` ko max-heap samajhna ya heap list ko sorted maan lena. `h[0]` hi guaranteed minimum hai; baaki list sirf heap property follow karti hai, sorted nahi hoti.",
+        "Union mein `parent[a] = b` likhna, roots nikaale bina. Hamesha `ra, rb = find(a), find(b)` karo aur root ko root ke neeche lagao; warna trees toot jaate hain aur find galat answer deta hai."
+      ],
+      "revision": [
+        "Union by size/rank ⇒ height ≤ log₂ n; + path compression ⇒ ~O(1) amortized.",
+        "Heap (0-indexed): parent (i − 1)//2, children 2i + 1, 2i + 2.",
+        "Heap insert/extract O(log n); build-heap O(n); heap sort O(n log n).",
+        "`heapq` min-heap hai; max ke liye −x push karo.",
+        "BST: operations O(h); inorder = sorted.",
+        "Do children wala delete: inorder successor se replace."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w6-q1",
+          "question": "0-indexed Python list mein rakhe binary heap mein index 4 wale node ke children aur parent ke index kya hain?",
+          "options": [
+            "Children 8, 9; parent 2",
+            "Children 9, 10; parent 2",
+            "Children 8, 9; parent 1",
+            "Children 9, 10; parent 1"
+          ],
+          "answer": 3,
+          "explanation": "0-indexed heap mein children 2i + 1 = 9 aur 2i + 2 = 10, aur parent (i − 1)//2 = 3//2 = 1, option D. Check: index 1 ke children 3 aur 4 hain, to 4 ka parent 1 hi hai. Trap: option A, 1-indexed formulas (2i, 2i + 1, i//2) ko 0-indexed list par laga dena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w6-q2",
+          "question": "Ek khaali (unbalanced) BST mein keys 1, 2, 3, ..., n is sorted order mein insert ki gayi. Ab is tree mein ek key search karne ka worst-case time kya hai?",
+          "options": [
+            "Θ(log n), kyunki BST mein search hamesha log n hai",
+            "Θ(n), kyunki tree ek lambi chain ban jaata hai",
+            "Θ(1), kyunki keys sorted hain",
+            "Θ(n log n)"
+          ],
+          "answer": 1,
+          "explanation": "Har nayi key pichhli se badi hai, to woh hamesha right child banti hai. Tree ek right-going chain ban jaata hai jiski height n − 1 hai, aur search Θ(h) = Θ(n), option B. Trap: option A, BST ko automatically balanced maan lena; O(log n) sirf balanced tree (jaise AVL, week 7) ki guarantee hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w6-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "import heapq\n\nh = []\nfor x in [5, 3, 8, 1, 9, 2]:\n    heapq.heappush(h, x)\nprint(heapq.heappop(h), h)",
+          "options": [
+            "1 [2, 3, 5, 8, 9]",
+            "1 [3, 2, 5, 9, 8]",
+            "1 [2, 3, 8, 5, 9]",
+            "9 [1, 3, 2, 5, 8]"
+          ],
+          "answer": 2,
+          "explanation": "Pushes ke baad heap [1, 3, 2, 5, 9, 8] hai (2 ne 8 se swap kiya tha). `heappop` root 1 lauta deta hai, aakhri element 8 root par aata hai: [8, 3, 2, 5, 9]. Sift down: children 3 aur 2 mein chhota 2, swap → [2, 3, 8, 5, 9]; index 2 ke children nahi. Output \"1 [2, 3, 8, 5, 9]\", option C. Trap: option A, heap list ko sorted maan lena; option B, pop ko bas pehla element hatana samajhna; option D, heapq ko max-heap maanna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w6-q4",
+          "question": "Khaali BST mein keys is order mein insert ki gayi: 40, 20, 60, 10, 30, 50, 70, 25. Is tree ka **preorder** traversal kya hai?",
+          "options": [
+            "40 20 10 30 25 60 50 70",
+            "10 20 25 30 40 50 60 70",
+            "40 20 60 10 30 50 70 25",
+            "10 25 30 20 50 70 60 40"
+          ],
+          "answer": 0,
+          "explanation": "Tree: root 40; left 20 (children 10 aur 30), right 60 (children 50 aur 70); 25 < 40, 25 > 20, 25 < 30, to 30 ka left child. Preorder (node, left, right): 40, 20, 10, 30, 25, 60, 50, 70, option A. Option B inorder hai (sorted), option C level order (yahan insert order jaisa), option D postorder. Trap: option C, sochna ki preorder insert order ke barabar hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w6-q5",
+          "question": "Union by size wala union-find. Output kya hoga?",
+          "code": "parent = list(range(8))\nsize = [1] * 8\n\ndef find(x):\n    while parent[x] != x:\n        x = parent[x]\n    return x\n\ndef union(a, b):\n    ra, rb = find(a), find(b)\n    if ra == rb:\n        return\n    if size[ra] < size[rb]:\n        ra, rb = rb, ra\n    parent[rb] = ra\n    size[ra] += size[rb]\n\nfor a, b in [(0, 1), (2, 3), (1, 3), (4, 5), (5, 0), (6, 7)]:\n    union(a, b)\nr = find(5)\nprint(r, size[r], len({find(x) for x in range(8)}))",
+          "options": [
+            "4 6 2",
+            "0 6 3",
+            "0 6 2",
+            "4 2 3"
+          ],
+          "answer": 2,
+          "explanation": "union(0, 1): 1 → 0, size[0] = 2. union(2, 3): 3 → 2. union(1, 3): roots 0 aur 2, barabar size, to 2 → 0, size[0] = 4. union(4, 5): 5 → 4, size[4] = 2. union(5, 0): roots 4 (size 2) aur 0 (size 4); chhota 4 bade 0 ke neeche, size[0] = 6. union(6, 7): 7 → 6. find(5) = 5 → 4 → 0. Groups {0..5} aur {6, 7}: output \"0 6 2\", option C. Trap: option A, size check bhool kar pehle argument ke root (4) ko hi root bana dena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w6-q6",
+          "question": "BST se root 50 delete kiya jaata hai (do children wale node ke liye inorder successor). Output kya hoga?",
+          "code": "class Node:\n    def __init__(self, k):\n        self.k, self.l, self.r = k, None, None\n\ndef insert(t, k):\n    if t is None:\n        return Node(k)\n    if k < t.k:\n        t.l = insert(t.l, k)\n    else:\n        t.r = insert(t.r, k)\n    return t\n\ndef delete(t, k):\n    if t is None:\n        return None\n    if k < t.k:\n        t.l = delete(t.l, k)\n    elif k > t.k:\n        t.r = delete(t.r, k)\n    else:\n        if t.l is None:\n            return t.r\n        if t.r is None:\n            return t.l\n        s = t.r\n        while s.l:\n            s = s.l\n        t.k = s.k\n        t.r = delete(t.r, s.k)\n    return t\n\ndef pre(t):\n    return [] if t is None else [t.k] + pre(t.l) + pre(t.r)\n\nroot = None\nfor k in [50, 30, 70, 20, 40, 60, 80, 65]:\n    root = insert(root, k)\nroot = delete(root, 50)\nprint(*pre(root))",
+          "options": [
+            "40 30 20 70 60 65 80",
+            "60 30 20 40 70 65 80",
+            "60 30 20 40 70 80",
+            "70 30 20 40 60 65 80"
+          ],
+          "answer": 1,
+          "explanation": "Tree: 50 (left 30 → 20, 40; right 70 → 60, 80; 65 60 ka right child). 50 ke do children hain, to successor = right subtree ka minimum = 60. Root ki key 60 ho jaati hai, aur 60 ko right subtree se delete karte hain; uska sirf right child 65 hai, jo 70 ka left child ban jaata hai. Preorder: 60 30 20 40 70 65 80, option B. Trap: option C, successor hatate waqt uske child 65 ko kho dena; option A predecessor (40) use karta hai, jo is code ka rule nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Balanced Search Trees and Greedy Algorithms",
+      "summary": "Is week aap AVL tree ke rotations se BST ko balanced rakhna, aur greedy algorithms (interval scheduling, Huffman coding) ko unke correctness argument aur failure cases ke saath samajhna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**AVL tree**: aisa BST jisme har node ka **balance factor** = height(left) − height(right) sirf −1, 0 ya +1 ho. Isse height lagbhag 1.44 log₂ n se zyada nahi hoti, to search, insert aur delete teeno worst case mein bhi O(log n). (Convention: khaali subtree ki height −1 ya 0 maano, bas ek hi rakho; balance factor par fark nahi padta.)",
+        "**Rotation**: right rotation at z: z ka left child y naya root banta hai, z y ka right child banta hai, aur y ka purana right subtree z ka naya left subtree. Left rotation iska mirror hai. Rotation O(1) hai aur inorder order (BST property) nahi badalta.",
+        "**Chaar imbalance cases**: insert ke baad neeche se upar jao aur pehla node dhoondho jiska balance ±2 hai. **LL** (left child ke left mein insert): right rotation. **RR**: left rotation. **LR** (left child ke right mein): pehle child par left rotation, phir node par right rotation. **RL**: mirror. Insert ke baad ek (single ya double) rotation se poora tree balanced ho jaata hai.",
+        "**Greedy algorithms**: har step par us waqt ka sabse accha dikhne wala choice lo aur use kabhi wapas mat badlo. Fast aur simple, par har problem par sahi nahi. Sahi hone ka proof aksar **exchange argument** se hota hai: kisi bhi optimal solution ko, value kharab kiye bina, greedy ke choice ki taraf badla ja sakta hai.",
+        "**Interval scheduling**: zyada se zyada non-overlapping intervals chuno. Sahi greedy: **earliest finish time** pehle; jo interval sabse jaldi khatam ho use lo, overlapping hatao, repeat. Sort karke O(n log n). Earliest start, shortest duration ya fewest conflicts wale rules ke counterexamples milte hain.",
+        "**Huffman coding**: characters ko variable-length **prefix-free** codes do (koi code kisi doosre ka prefix nahi, isliye decoding ambiguous nahi). Algorithm: sabse kam frequency wale do nodes ko merge karo, unka sum naya node, heap se repeat. Total bits = Σ frequency × depth, jo har prefix code mein minimum hai. Time O(n log n).",
+        "**Greedy kab fail hota hai**: coin change mein Indian notes (1, 2, 5, 10, ...) par greedy sahi hai, par kisi bhi arbitrary set par nahi: {1, 4, 5} se 8 banane mein greedy 5 + 1 + 1 + 1 (4 coins) leta hai jabki 4 + 4 (2 coins) best hai. Fractional knapsack value/weight ratio wale greedy se sahi hota hai, 0/1 knapsack nahi (usko DP chahiye, week 9)."
+      ],
+      "example": {
+        "problem": "Ek fictional sensor ke 5 status symbols ki frequencies: O = 40, W = 25, E = 15, C = 12, X = 8 (total 100). Huffman code lengths aur total bits nikaalo.",
+        "steps": [
+          "Heap: [8, 12, 15, 25, 40]. Sabse chhote do: X (8) + C (12) = 20.",
+          "Heap: [15, 20, 25, 40]. E (15) + node(20) = 35.",
+          "Heap: [25, 35, 40]. W (25) + node(35) = 60.",
+          "Heap: [40, 60]. O (40) + node(60) = 100, yeh root hai.",
+          "Depths: O = 1, W = 2, E = 3, X = 4, C = 4.",
+          "Total = 40·1 + 25·2 + 15·3 + 12·4 + 8·4 = 40 + 50 + 45 + 48 + 32 = 215 bits. Fixed-length mein 5 symbols ko 3 bits chahiye, yaani 300 bits.",
+          "Answer: **215 bits** (average 2.15 bits per symbol)."
+        ],
+        "code": "import heapq\n\ndef huffman_lengths(freq):\n    # heap items: (weight, tie_breaker, {symbol: depth})\n    h = [(f, i, {s: 0}) for i, (s, f) in enumerate(freq.items())]\n    heapq.heapify(h)\n    k = len(h)\n    while len(h) > 1:\n        f1, _, d1 = heapq.heappop(h)\n        f2, _, d2 = heapq.heappop(h)\n        merged = {s: d + 1 for s, d in {**d1, **d2}.items()}\n        heapq.heappush(h, (f1 + f2, k, merged))\n        k += 1\n    return h[0][2]\n\nfreq = {\"O\": 40, \"W\": 25, \"E\": 15, \"C\": 12, \"X\": 8}\nL = huffman_lengths(freq)\nprint(L, sum(freq[s] * L[s] for s in freq))"
+      },
+      "mistakes": [
+        "LR case mein sirf ek right rotation kar dena. Isse imbalance doosri taraf chala jaata hai. Pehle left child par left rotation, phir node par right rotation.",
+        "Greedy rule ko bina proof ya counterexample check kiye maan lena. Chhote examples par 2-3 rules try karo (jaise earliest start vs earliest finish); ek counterexample kaafi hai rule ko reject karne ke liye.",
+        "Huffman ka total cost likhte waqt aakhri (root wala) merge bhool jaana. Total bits = saare merges ke sums ka jod, root wala bhi."
+      ],
+      "revision": [
+        "AVL: |balance| ≤ 1, height O(log n), rotation O(1).",
+        "LL → right, RR → left, LR → left-then-right, RL → right-then-left.",
+        "Interval scheduling: earliest finish time greedy optimal hai.",
+        "Huffman: do sabse chhoti frequencies merge; cost = Σ f × depth.",
+        "Greedy ka proof: exchange argument; reject ke liye ek counterexample."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w7-q1",
+          "question": "Ek fictional auditorium ke booking requests (start, end) mein se zyada se zyada non-overlapping bookings chunni hain. Kaunsa greedy rule hamesha optimal answer deta hai?",
+          "options": [
+            "Sabse pehle shuru hone wali booking pehle lo",
+            "Sabse chhoti (kam duration) booking pehle lo",
+            "Sabse pehle khatam hone wali booking pehle lo",
+            "Sabse kam conflicts wali booking pehle lo"
+          ],
+          "answer": 2,
+          "explanation": "Earliest finish time, option C: jo booking sabse jaldi khatam hoti hai woh baaki ke liye sabse zyada time chhodti hai, aur exchange argument se kisi bhi optimal solution ki pehli booking ko is choice se badla ja sakta hai. Trap: option A; ek lambi booking jo sabse pehle shuru ho, poora din le sakti hai. Options B aur D ke bhi counterexamples hote hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w7-q2",
+          "question": "Khaali AVL tree mein keys 10, 20, 30 is order mein insert ki gayi. 30 daalne ke baad kya hota hai?",
+          "options": [
+            "Left rotation (10 par), naya root 20",
+            "Right rotation (10 par), naya root 20",
+            "Left-right double rotation, naya root 20",
+            "Koi rotation nahi, root 10 hi rehta hai"
+          ],
+          "answer": 0,
+          "explanation": "10 → 20 → 30 right-right chain hai: 10 ka balance factor 0 − 2 = −2. Yeh RR case hai, isliye 10 par ek left rotation: 20 root, 10 left child, 30 right child, option A. Trap: option B, rotation ki direction ulti lena (right rotation LL case ke liye hai); option C, double rotation sirf zig-zag (LR/RL) shape mein chahiye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w7-q3",
+          "question": "Intervals (start, end): (0, 10), (1, 3), (2, 4), (3, 5), (4, 6), (5, 7), (6, 9), (8, 10). Ek interval ka end aur doosre ka start barabar ho to dono saath chal sakte hain. Zyada se zyada kitne non-overlapping intervals chune ja sakte hain?",
+          "options": [
+            "1",
+            "3",
+            "5",
+            "4"
+          ],
+          "answer": 3,
+          "explanation": "Finish time se sort karke greedy: (1, 3) lo; (2, 4) overlap; (3, 5) lo (3 ≥ 3); (4, 6) overlap; (5, 7) lo; (6, 9) aur (0, 10) overlap; (8, 10) lo. Total 4, option D, aur brute force bhi 4 hi deta hai. Trap: option A, earliest start rule jo (0, 10) pehle le leta hai aur baaki sab block ho jaate hain; option B, end = start ko bhi overlap maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w7-q4",
+          "question": "Ek fictional log file mein 100 characters hain: p = 20, q = 5, r = 10, s = 30, t = 15, u = 20. Huffman coding se poori file kitne bits mein encode hogi?",
+          "options": [
+            "300",
+            "245",
+            "145",
+            "100"
+          ],
+          "answer": 1,
+          "explanation": "Merges: q5 + r10 = 15; 15 + t15 = 30; p20 + u20 = 40; 30 + s30 = 60; 40 + 60 = 100. Total bits = saare merge sums ka jod = 15 + 30 + 40 + 60 + 100 = 245, option B. (Depth se bhi: p, u, s = 2; t = 3; q, r = 4.) Trap: option C, aakhri root merge (100) gin-na bhool jaana; option A fixed-length 3 bits × 100 hai, jo Huffman nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w7-q5",
+          "question": "Ek fictional currency mein sirf 1, 4 aur 5 ke coins hain. Amount 8 ke liye \"sabse bada coin pehle\" greedy kitne coins deta hai, aur minimum possible kitne hain?",
+          "options": [
+            "4 aur 2",
+            "2 aur 2",
+            "4 aur 3",
+            "3 aur 2"
+          ],
+          "answer": 0,
+          "explanation": "Greedy: 5 lo (3 bacha), phir 4 nahi aata, to 1 + 1 + 1: total 4 coins. Best: 4 + 4 = 2 coins. Answer \"4 aur 2\", option A. Yahi dikhata hai ki greedy har coin system par optimal nahi; is problem ka sahi tareeka DP hai. Trap: option B, sochna ki greedy hamesha optimal hai, jaise Indian notes par hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w7-q6",
+          "question": "Khaali AVL tree mein keys is order mein insert ki gayi: 50, 20, 70, 10, 30, 25. Aakhri tree ka preorder traversal kya hai?",
+          "options": [
+            "50 20 10 30 25 70",
+            "20 10 50 30 25 70",
+            "30 20 10 50 25 70",
+            "30 20 10 25 50 70"
+          ],
+          "answer": 3,
+          "explanation": "25 daalne tak tree balanced hai: 50 (20 → 10, 30; 70). 25, 30 ka left child banta hai. Ab 50 ka balance: left height 3, right 1, yaani +2; uske left child 20 ka balance −1 (right heavy). Yeh LR case hai: 20 par left rotation, phir 50 par right rotation. Naya root 30: left 20 (10, 25), right 50 (–, 70). Preorder 30 20 10 25 50 70, option D. Trap: option B, LR ko LL samajh kar sirf right rotation karna; option C, 30 ka left subtree (25) galat side 50 ko de dena; option A rotation hi bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Divide and Conquer",
+      "summary": "Is week aap divide and conquer ka pattern, recurrences aur master theorem se running time nikaalna, merge ke saath inversions ginna, aur closest pair aur Karatsuba ka idea seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Divide and conquer**: problem ko chhote, **independent** subproblems mein todo (divide), unhe recursively solve karo (conquer), aur unke answers jodo (combine). Merge sort, binary search, quicksort sab isi pattern par hain. Running time ek recurrence se nikalta hai.",
+        "**Recurrence aur recursion tree**: T(n) = a·T(n/b) + f(n) ka matlab: a subproblems, har ek size n/b ka, aur divide + combine ka kaam f(n). Recursion tree ke level i par aⁱ nodes hain, har ek size n/bⁱ; har level ka kaam jodo. Merge sort: har level n kaam, log₂ n levels, total Θ(n log n).",
+        "**Master theorem**: f(n) ko n^(log_b a) se compare karo. (1) f(n) polynomially chhota (jaise n^(log_b a − ε)) ⇒ T(n) = Θ(n^(log_b a)); leaves ka kaam jeetta hai. (2) f(n) = Θ(n^(log_b a) · logᵏ n) ⇒ T(n) = Θ(n^(log_b a) · logᵏ⁺¹ n); har level barabar. (3) f(n) polynomially bada (aur regularity condition) ⇒ T(n) = Θ(f(n)); root jeetta hai.",
+        "**Counting inversions**: inversion ek pair (i < j) hai jahan a[i] > a[j]. Brute force O(n²). D&C: total = left half ke + right half ke + cross inversions. Cross wale merge ke time gin lo: jab right ka element R[j] left ke L[i] se chhota nikle, to L[i] aur uske baad ke saare **len(L) − i** left elements R[j] se bade hain. Total O(n log n). Use: do rankings kitni alag hain (jaise recommendation systems).",
+        "**Closest pair of points**: brute force O(n²). D&C: points ko x se sort karo, median line se do hisse, dono taraf recursively δ_L aur δ_R nikaalo, δ = min. Ab sirf line ke dono taraf δ chaudi **strip** ke points dekho, unhe y se sort karo; har point ko sirf apne baad ke kuch (constant, 7 se zyada nahi) points se compare karna padta hai. Combine O(n) (presorting ke saath), total O(n log n).",
+        "**Karatsuba multiplication**: do n-digit numbers ko seedha multiply karna Θ(n²). Halves mein todne par 4 multiplications chahiye (T = 4T(n/2) + n, phir bhi n²), par ek algebraic trick se 3 kaafi hain: T(n) = 3T(n/2) + O(n) = Θ(n^(log₂ 3)) ≈ Θ(n^1.585). Lesson: subproblems ki ginti a ghatana f(n) ghatane se zyada fayda deta hai.",
+        "**D&C kab nahi**: agar subproblems overlap karte hain (jaise naive Fibonacci mein fib(n − 2) do baar banta hai), to D&C wahi kaam baar-baar karta hai aur exponential ho jaata hai. Wahan answers yaad rakho: dynamic programming (week 9)."
+      ],
+      "example": {
+        "problem": "Points: (0, 0), (1, 6), (3, 2), (4, 8) | (6, 3), (8, 9), (9, 1), (11, 6). Closest pair D&C idea se nikaalo (dividing line x = 4 ke baad).",
+        "steps": [
+          "x se sorted 8 points, pehle 4 left half, baaki 4 right half; dividing line x = 4 (left half ka aakhri x).",
+          "Left half mein best: (0, 0)–(3, 2) ya (1, 6)–(4, 8), dono √13 ≈ 3.61. Right half mein best: (6, 3)–(9, 1) = √13 ≈ 3.61. To δ = √13.",
+          "Strip: jinka |x − 4| < δ ≈ 3.61, yaani x 0.39 aur 7.61 ke beech: (1, 6), (3, 2), (4, 8), (6, 3).",
+          "Strip ko y se sort karo: (3, 2), (6, 3), (1, 6), (4, 8). Har point ko sirf aage ke kuch points se compare karo.",
+          "(3, 2)–(6, 3): √(9 + 1) = √10 ≈ 3.16 < δ. Baaki strip pairs isse bade hain.",
+          "Answer: closest pair **(3, 2) aur (6, 3)**, distance **√10 ≈ 3.16**; yeh cross pair hai jo sirf halves dekhne par miss ho jaata."
+        ],
+        "code": "import math\n\ndef closest(P):                     # P sorted by x\n    n = len(P)\n    if n <= 3:\n        return min(math.dist(a, b) for i, a in enumerate(P) for b in P[i + 1:])\n    mid = n // 2\n    line = P[mid - 1][0]\n    d = min(closest(P[:mid]), closest(P[mid:]))\n    strip = sorted((p for p in P if abs(p[0] - line) < d), key=lambda p: p[1])\n    for i, a in enumerate(strip):\n        for b in strip[i + 1:i + 8]:  # only a few neighbours by y\n            d = min(d, math.dist(a, b))\n    return d\n\npts = sorted([(0, 0), (1, 6), (3, 2), (4, 8), (6, 3), (8, 9), (9, 1), (11, 6)])\nprint(round(closest(pts), 2))"
+      },
+      "mistakes": [
+        "Master theorem mein f(n) = n log n ko n^(log_b a) = n se \"polynomially bada\" maan kar case 3 lagaana. log n kisi bhi nᵋ se dheere badhta hai, isliye yeh case 2 (k = 1) hai.",
+        "Inversions ginte waqt merge mein har \"right element pehle\" par sirf 1 jodna. Sahi count `len(L) - i` hai, kyunki left ke saare bache elements us right element se bade hain.",
+        "Closest pair mein sirf dono halves ke answers ka minimum le lena aur strip check chhod dena. Line ke paar wala pair sabse paas ho sakta hai."
+      ],
+      "revision": [
+        "T(n) = aT(n/b) + f(n); f ko n^(log_b a) se compare karo.",
+        "2T(n/2) + n ⇒ n log n; T(n/2) + 1 ⇒ log n; 8T(n/2) + n² ⇒ n³.",
+        "Inversions: merge mein R[j] < L[i] par `len(L) - i` jodo; O(n log n).",
+        "Closest pair: δ strip, y-sorted, har point ke constant neighbours; O(n log n).",
+        "Karatsuba: 3T(n/2) + n ⇒ n^1.585."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w8-q1",
+          "question": "Recurrence T(n) = 2T(n/2) + Θ(n) (jaise merge sort) ka solution kya hai?",
+          "options": [
+            "Θ(n)",
+            "Θ(n²)",
+            "Θ(n log n)",
+            "Θ(log n)"
+          ],
+          "answer": 2,
+          "explanation": "a = 2, b = 2, to n^(log₂ 2) = n, aur f(n) = Θ(n) bhi utna hi hai: master theorem ka case 2, T(n) = Θ(n log n), option C. Recursion tree se: har level par total n kaam, aur log₂ n levels. Trap: option A, sirf ek level ka kaam (n) dekh kar levels ki ginti bhool jaana.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w8-q2",
+          "question": "List [2, 4, 1, 3, 5] mein kitne inversions hain? (Inversion: i < j aur a[i] > a[j].)",
+          "options": [
+            "1",
+            "7",
+            "10",
+            "3"
+          ],
+          "answer": 3,
+          "explanation": "Pairs jahan bada number pehle hai: (2, 1), (4, 1), (4, 3). Total 3, option D. Trap: option A, sirf padosi (adjacent) pairs ginna, jahan sirf (4, 1) hai; option B, ulta gin-na, yaani jo pairs sahi order mein hain (10 − 3 = 7); option C saare pairs ki ginti 5·4/2 hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w8-q3",
+          "question": "Recurrence T(n) = 8T(n/2) + n² ka solution kya hai?",
+          "options": [
+            "Θ(n² log n)",
+            "Θ(n³)",
+            "Θ(n²)",
+            "Θ(n³ log n)"
+          ],
+          "answer": 1,
+          "explanation": "a = 8, b = 2, to n^(log₂ 8) = n³. f(n) = n² isse polynomially chhota hai (n^(3 − 1)), to case 1: leaves ka kaam jeetta hai, T(n) = Θ(n³), option B. Yeh naive block matrix multiplication jaisa hai. Trap: option A, f(n) = n² dekh kar case 2 laga dena; pehle n^(log_b a) nikaalo, phir compare karo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w8-q4",
+          "question": "Merge sort ke saath inversions ginne wala code. Output kya hoga?",
+          "code": "def sort_count(a):\n    if len(a) <= 1:\n        return a, 0\n    mid = len(a) // 2\n    L, x = sort_count(a[:mid])\n    R, y = sort_count(a[mid:])\n    out, i, j, cross = [], 0, 0, 0\n    while i < len(L) and j < len(R):\n        if L[i] <= R[j]:\n            out.append(L[i]); i += 1\n        else:\n            out.append(R[j]); j += 1\n            cross += len(L) - i\n    out += L[i:] + R[j:]\n    return out, x + y + cross\n\nprint(sort_count([5, 3, 8, 1, 4])[1])",
+          "options": [
+            "6",
+            "3",
+            "5",
+            "10"
+          ],
+          "answer": 0,
+          "explanation": "[5, 3] | [8, 1, 4]. Left: 5 > 3, 1 inversion. Right: [8] aur [1, 4] merge mein 1 aur 4 dono 8 se pehle, 1 + 1 = 2. Top merge [3, 5] + [1, 4, 8]: 1 aate waqt left mein 2 bache (+2), 4 aate waqt sirf 5 bacha (+1), total 3. Sab milake 1 + 2 + 3 = 6, option A. Trap: option C, `len(L) - i` ki jagah har baar sirf 1 jodne se 5 aata hai; option B sirf top-level cross inversions hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w8-q5",
+          "question": "Karatsuba multiplication do n-digit numbers ko 3 half-size multiplications aur O(n) extra kaam se multiply karta hai: T(n) = 3T(n/2) + O(n). Iska time kya hai?",
+          "options": [
+            "Θ(n log n)",
+            "Θ(n²)",
+            "Θ(n^1.585) (yaani n^(log₂ 3))",
+            "Θ(n^1.5)"
+          ],
+          "answer": 2,
+          "explanation": "a = 3, b = 2: n^(log₂ 3) ≈ n^1.585. f(n) = n isse polynomially chhota, to case 1: T(n) = Θ(n^(log₂ 3)), option C. Trap: option A, merge sort jaisa dikhne ki wajah se n log n bol dena; merge sort mein a = 2 hai, yahan a = 3. Option B purane schoolbook method (ya 4 subproblems wale D&C) ka time hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w8-q6",
+          "question": "Recurrence T(n) = 2T(n/2) + n log n ka tight solution kya hai?",
+          "options": [
+            "Θ(n log n)",
+            "Θ(n log² n)",
+            "Θ(n²)",
+            "Θ(n^1.5)"
+          ],
+          "answer": 1,
+          "explanation": "n^(log₂ 2) = n, aur f(n) = n log n = n · log¹ n. Yeh n se sirf log factor bada hai, polynomially nahi, isliye case 3 nahi lagta. Extended case 2 (k = 1): T(n) = Θ(n log² n), option B. Recursion tree se: level i par kaam n · log(n/2ⁱ), aur Σ (log n − i) ≈ (log² n)/2. Trap: option A, f(n) ko \"bada\" maan kar case 3 se Θ(f(n)) = n log n likh dena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Dynamic Programming",
+      "summary": "Is week aap dynamic programming ko memoization aur tabulation dono tarah se likhna, aur LCS, edit distance, 0/1 knapsack aur matrix chain jaise classic problems ki recurrence banana seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Dynamic programming kab**: jab problem mein (1) **optimal substructure** ho (bade problem ka best answer chhote subproblems ke best answers se banta hai) aur (2) **overlapping subproblems** hon (same subproblem baar-baar aata hai). DP design ke steps: state define karo, recurrence likho, base cases, kis order mein bharna hai, aur answer kis cell mein hai.",
+        "**Memoization (top-down)**: normal recursive function likho, aur har subproblem ka answer ek dict/cache mein rakho; dobara aaye to seedha lauta do. Python mein `functools.lru_cache(maxsize=None)` (ya `functools.cache`). Sirf wahi subproblems solve hote hain jo sach mein chahiye, par gehri recursion par recursion limit lag sakti hai.",
+        "**Tabulation (bottom-up)**: table ko loop se us order mein bharo jisme har cell ki dependencies pehle ready hon. Recursion nahi, function-call overhead nahi, aur aksar sirf pichhli row rakh kar space bachaya ja sakta hai. Time dono mein lagbhag same: (subproblems ki ginti) × (har subproblem ka kaam).",
+        "**LCS (longest common subsequence)**: subsequence mein characters order mein hon par lagaataar hona zaroori nahi. L[i][j] = L[i−1][j−1] + 1 agar a[i] = b[j], warna max(L[i−1][j], L[i][j−1]). Time aur space O(mn). Table ko peeche se trace karke asli subsequence bhi milta hai. Use: diff tools, DNA comparison.",
+        "**Edit distance**: ek string ko doosri banane ke liye minimum insert, delete, substitute. D[i][0] = i, D[0][j] = j, aur D[i][j] = min(D[i−1][j] + 1, D[i][j−1] + 1, D[i−1][j−1] + (a[i] ≠ b[j] ho to 1, warna 0)). O(mn). Spell checkers aur fuzzy search isi par chalte hain.",
+        "**0/1 knapsack**: har item ya to poora lo ya bilkul nahi. K[i][c] = max(K[i−1][c], vᵢ + K[i−1][c − wᵢ]) (jab wᵢ ≤ c). Time O(nW). Yeh **pseudo-polynomial** hai: W ki value par depend karta hai, uske bits par nahi; W = 10⁹ ho to table nahi ban sakti. 1D array use karo to capacity ko neeche se upar nahi, upar se neeche loop karo.",
+        "**Matrix chain multiplication**: p × q aur q × r matrices ko multiply karne mein pqr scalar multiplications. Chain A₁…Aₙ (Aᵢ ka size p(i−1) × p(i)) mein brackets kahan lagein? M[i][j] = min over k (M[i][k] + M[k+1][j] + p(i−1)·p(k)·p(j)). Chain length ke order mein bharo: O(n³) time, O(n²) space. Multiplication ka result same rehta hai, sirf cost badalti hai."
+      ],
+      "example": {
+        "problem": "Ek fictional currency mein coins 1, 4, 5 hain. Amount 13 ke liye minimum coins DP se nikaalo (greedy 5 + 5 + 1 + 1 + 1 = 5 coins deta hai).",
+        "steps": [
+          "State: best[x] = amount x ke liye minimum coins. Base: best[0] = 0.",
+          "Recurrence: best[x] = 1 + min(best[x − c]) un coins c ke liye jahan c ≤ x.",
+          "Chhote amounts: best[1..5] = 1, 2, 3, 1, 1. best[8] = 1 + best[4] = 2 (4 + 4).",
+          "best[9] = 1 + min(best[8], best[5], best[4]) = 2; best[12] = 3 (4 + 4 + 4).",
+          "best[13] = 1 + min(best[12], best[9], best[8]) = 1 + 2 = 3.",
+          "Time O(amount × coins); greedy ke ulat yeh har coin system par sahi hai.",
+          "Answer: **3 coins** (5 + 4 + 4)."
+        ],
+        "code": "def min_coins(coins, amount):\n    INF = float(\"inf\")\n    best = [0] + [INF] * amount\n    for x in range(1, amount + 1):\n        for c in coins:\n            if c <= x and best[x - c] + 1 < best[x]:\n                best[x] = best[x - c] + 1\n    return best[amount]\n\nprint(min_coins([1, 4, 5], 13))"
+      },
+      "mistakes": [
+        "Subsequence aur substring ko mila dena. LCS mein characters ke beech gap allowed hai; longest common substring ek alag (lagaataar wala) problem hai jiski recurrence bhi alag hai.",
+        "0/1 knapsack ko 1D array se karte waqt capacity ko 0 se W tak loop karna. Tab ek hi item baar-baar use ho jaata hai (unbounded knapsack ban jaata hai). Capacity W se neeche ki taraf loop karo.",
+        "Table ka order galat lena: matrix chain mein i aur j ko simple nested loop se bharna, jabki M[i][j] ko chhoti chains pehle chahiye. Chain length (j − i) ke badhte order mein bharo."
+      ],
+      "revision": [
+        "DP = optimal substructure + overlapping subproblems.",
+        "Time ≈ (subproblems) × (har ek ka kaam).",
+        "LCS: match par diagonal + 1, warna max(upar, left); O(mn).",
+        "Edit distance: min(delete, insert, substitute); base D[i][0] = i.",
+        "0/1 knapsack O(nW), pseudo-polynomial.",
+        "Matrix chain: cost pqr; M[i][j] min over k; O(n³)."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w9-q1",
+          "question": "Matrix A ka size 10 × 30 aur B ka 30 × 5 hai. Normal method se A·B nikaalne mein kitne scalar multiplications lagenge?",
+          "options": [
+            "450",
+            "1500",
+            "50",
+            "300"
+          ],
+          "answer": 1,
+          "explanation": "Result 10 × 5 hai, yaani 50 entries, aur har entry 30 products ka sum hai. Total 10 × 30 × 5 = 1500, option B. Trap: option C, sirf result ki entries (50) ginna aur har entry ke 30 multiplications bhool jaana; option A, dimensions multiply karne ki jagah jodna (10·30 + 30·5).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w9-q2",
+          "question": "`lru_cache` ke saath Fibonacci. Output kya hoga?",
+          "code": "from functools import lru_cache\n\ncalls = 0\n\n@lru_cache(maxsize=None)\ndef fib(n):\n    global calls\n    calls += 1\n    return n if n < 2 else fib(n - 1) + fib(n - 2)\n\nfib(30)\nprint(calls)",
+          "options": [
+            "30",
+            "2692537",
+            "832040",
+            "31"
+          ],
+          "answer": 3,
+          "explanation": "Cache ki wajah se har n (0 se 30) ke liye function body sirf ek baar chalti hai; baaki calls cache se lautti hain aur `calls` nahi badhata. To 31 distinct values, output 31, option D. Trap: option B, bina memo wale naive recursion ke calls (2·F(31) − 1 = 2692537); option C, fib(30) ki value; option A, n = 0 wala call bhool jaana.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w9-q3",
+          "question": "Is LCS code ka output kya hoga?",
+          "code": "def lcs(a, b):\n    m, n = len(a), len(b)\n    L = [[0] * (n + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, n + 1):\n            if a[i - 1] == b[j - 1]:\n                L[i][j] = L[i - 1][j - 1] + 1\n            else:\n                L[i][j] = max(L[i - 1][j], L[i][j - 1])\n    return L[m][n]\n\nprint(lcs(\"PYTHON\", \"PHOTON\"))",
+          "options": [
+            "4",
+            "2",
+            "5",
+            "6"
+          ],
+          "answer": 0,
+          "explanation": "\"PYTHON\" aur \"PHOTON\" ka ek longest common subsequence \"PHON\" (ya \"PTON\") hai, length 4, option A. Table mein L[6][6] = 4. Trap: option B, longest common **substring** (\"ON\", lagaataar) ginna; option C, dono mein common letters P, T, H, O, N gin lena, order ka dhyaan rakhe bina (T aur H ka order dono strings mein ulta hai, isliye dono ek saath nahi aa sakte).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w9-q4",
+          "question": "\"PLANET\" ko \"PLATE\" banane ke liye minimum kitne operations chahiye? (Ek operation: ek character insert, delete ya substitute.)",
+          "options": [
+            "3",
+            "1",
+            "2",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "N ko T se substitute karo (PLATET), phir aakhri T delete karo (PLATE): 2 operations, option C. 1 possible nahi, kyunki length ek kam karne ke liye ek delete chahiye aur uske baad bhi \"PLAET\" ya \"PLANE\" jaisi string bachegi jo PLATE nahi. Trap: option A, sirf insert/delete se ginna: 6 + 5 − 2 × LCS(4) = 3, jo substitution ko ek operation nahi maanta; option B, sirf lengths ka fark.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w9-q5",
+          "question": "Knapsack capacity 10 kg. Fictional items (weight, value): A (6, 30), B (5, 20), C (5, 20), D (2, 5). Har item ya poora lo ya nahi (0/1). Maximum value kya hai?",
+          "options": [
+            "35",
+            "46",
+            "30",
+            "40"
+          ],
+          "answer": 3,
+          "explanation": "B + C: weight 10, value 40, option D. Baaki combinations: A + D = 35 (weight 8), A akela 30; A ke saath B ya C fit nahi hota. Trap: option A, value/weight ratio wala greedy (A ratio 5 pehle, phir D) jo 0/1 knapsack mein optimal nahi; option B, fractional answer (A + B ka 4/5 hissa = 30 + 16), jo tabhi chalega jab items tod sakte.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w9-q6",
+          "question": "Matrices A₁ (5 × 10), A₂ (10 × 3), A₃ (3 × 12), A₄ (12 × 5). A₁A₂A₃A₄ nikaalne ke liye minimum scalar multiplications kitne hain?",
+          "options": [
+            "630",
+            "405",
+            "580",
+            "1260"
+          ],
+          "answer": 1,
+          "explanation": "Best brackets (A₁A₂)(A₃A₄): A₁A₂ = 5·10·3 = 150 (5 × 3), A₃A₄ = 3·12·5 = 180 (3 × 5), phir (5 × 3)(3 × 5) = 5·3·5 = 75. Total 405, option B. Baaki: ((A₁A₂)A₃)A₄ = 150 + 180 + 300 = 630, A₁(A₂(A₃A₄)) = 180 + 150 + 250 = 580, aur do aur 1210 aur 1260. Trap: option A, seedha left se right multiply karna; option C, right se left. DP saare split points k dekhta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "String Matching and Tries",
+      "summary": "Is week aap pattern matching ke naive, Rabin–Karp aur KMP algorithms, prefix function banana, aur tries se prefix-based search karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Pattern matching**: text T (length n) mein pattern P (length m) ki saari occurrences dhoondhni hain. Log search, plagiarism check, DNA motifs, editor ka find, sab yahi hai. Python mein `in`, `str.find` aur `re` ready hain, par andar ka idea samajhna zaroori hai.",
+        "**Naive matcher**: har shift s = 0 se n − m tak (kul n − m + 1 alignments) P ko T[s : s + m] se character-by-character compare karo. Worst case O(nm), jaise T = \"AAAA…A\" aur P = \"AA…AB\", jahan har alignment par lagbhag m comparisons ke baad mismatch milta hai.",
+        "**Rabin–Karp**: string ko number ki tarah hash karo: h = (c₀·d^(m−1) + … + c(m−1)) mod q. **Rolling hash**: agla window O(1) mein: pehla character hatao, d se multiply karo, naya character jodo, mod q. Hash match ho to bhi characters verify karo, kyunki alag strings ka hash same ho sakta hai (**spurious hit**). Expected O(n + m), worst O(nm). Kai patterns ek saath dhoondhne mein kaam aata hai.",
+        "**Prefix function (π)**: π[i] = P[0..i] ka sabse lamba **proper** prefix jo usi ka suffix bhi ho (poori string khud nahi gini jaati). \"ABAB\" ke liye [0, 0, 1, 2]. O(m) mein banta hai: mismatch par k = π[k − 1] par fall back karo, 0 par seedha nahi.",
+        "**KMP (Knuth–Morris–Pratt)**: j characters match hone ke baad mismatch ho to text pointer peeche nahi jaata; j = π[j − 1] kar do, kyunki itna prefix pehle se match hai. Har text character par amortized O(1) kaam, total O(n + m). Match milne par bhi j = π[j − 1] karke aage badho, isliye overlapping matches bhi milte hain.",
+        "**Trie (prefix tree)**: har edge ek character, root se kisi node tak ka raasta ek prefix. Word ke end par flag. Insert aur search O(L) (L = word length), chahe dictionary mein kitne bhi words hon. Autocomplete aur \"is prefix se kitne words\" jaise queries ke liye best. Common prefixes share hote hain, par har node ka children dict memory leta hai.",
+        "**Python ki baarikiyan**: `s.count(p)` non-overlapping occurrences ginta hai (\"AAAA\".count(\"AA\") = 2, jabki overlapping 3 hain). `s.find(p)` pehli position deta hai, na mile to −1. Overlapping matches chahiye to apna loop ya KMP likho."
+      ],
+      "example": {
+        "problem": "KMP se text \"ABABABCAB\" mein pattern \"ABABC\" dhoondho.",
+        "steps": [
+          "Pehle π(\"ABABC\") = [0, 0, 1, 2, 0]. Matlab \"ABAB\" ka prefix \"AB\" uska suffix bhi hai.",
+          "Text index 0 se 3 tak A, B, A, B match: j = 4.",
+          "Index 4 par text 'A' aur P[4] = 'C': mismatch. Text pointer wahi rehta hai, j = π[3] = 2 (\"AB\" pehle se matched hai).",
+          "Ab text 'A' vs P[2] = 'A': match, j = 3. Index 5 'B' vs P[3]: match, j = 4. Index 6 'C' vs P[4]: match, j = 5 = m.",
+          "Match mila, start = 6 − 5 + 1 = 2. Text ka koi character dobara nahi padha gaya.",
+          "Answer: pattern index **2** par hai."
+        ],
+        "code": "def prefix_function(p):\n    pi = [0] * len(p)\n    k = 0\n    for i in range(1, len(p)):\n        while k > 0 and p[i] != p[k]:\n            k = pi[k - 1]\n        if p[i] == p[k]:\n            k += 1\n        pi[i] = k\n    return pi\n\ndef kmp(t, p):\n    pi, j, out = prefix_function(p), 0, []\n    for i, ch in enumerate(t):\n        while j > 0 and ch != p[j]:\n            j = pi[j - 1]\n        if ch == p[j]:\n            j += 1\n        if j == len(p):\n            out.append(i - len(p) + 1)\n            j = pi[j - 1]\n    return out\n\nprint(prefix_function(\"ABABC\"), kmp(\"ABABABCAB\", \"ABABC\"))"
+      },
+      "mistakes": [
+        "Prefix function mein poori string ko bhi apna border maan lena. π[i] sirf **proper** prefix ginta hai, isliye π[0] hamesha 0 hai.",
+        "Rabin–Karp mein hash match hote hi occurrence maan lena. Hash collision (spurious hit) ho sakta hai; characters compare karke confirm karo.",
+        "Overlapping occurrences ke liye `str.count` use karna. Woh match ke baad poora pattern skip karta hai, isliye overlapping matches miss hote hain."
+      ],
+      "revision": [
+        "Naive: n − m + 1 alignments, worst O(nm).",
+        "Rabin–Karp: rolling hash O(1) per window; hash match par verify; expected O(n + m).",
+        "π[i] = longest proper prefix = suffix; mismatch par k = π[k − 1].",
+        "KMP: text pointer kabhi peeche nahi; O(n + m); overlapping matches milte hain.",
+        "Trie: insert/search O(L); prefix queries ke liye."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w10-q1",
+          "question": "Text ki length 10 aur pattern ki length 3 hai. Naive matcher kitni starting positions (alignments) try karta hai?",
+          "options": [
+            "10",
+            "30",
+            "8",
+            "7"
+          ],
+          "answer": 2,
+          "explanation": "Pattern ko shift s = 0, 1, ..., n − m par rakha ja sakta hai, yaani n − m + 1 = 10 − 3 + 1 = 8 alignments, option C. Trap: option D, +1 bhool jaana (n − m); option A, har text position ko start maan lena, jabki aakhri 2 positions se poora pattern fit hi nahi hota. Option B worst-case comparisons ka upper bound n·m hai, alignments nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w10-q2",
+          "question": "Pattern \"ABAB\" ka prefix function π kya hai?",
+          "options": [
+            "[0, 0, 1, 2]",
+            "[1, 2, 3, 4]",
+            "[0, 0, 1, 0]",
+            "[0, 1, 0, 1]"
+          ],
+          "answer": 0,
+          "explanation": "π[0] = 0 (ek character ka koi proper prefix-suffix nahi). \"AB\": 0. \"ABA\": \"A\" prefix bhi hai aur suffix bhi, 1. \"ABAB\": \"AB\", 2. Answer [0, 0, 1, 2], option A. Trap: option B, poori string ko bhi apna prefix-suffix gin lena (proper nahi); option C, aakhri step par sirf last character dekhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w10-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "def prefix_function(p):\n    pi = [0] * len(p)\n    k = 0\n    for i in range(1, len(p)):\n        while k > 0 and p[i] != p[k]:\n            k = pi[k - 1]\n        if p[i] == p[k]:\n            k += 1\n        pi[i] = k\n    return pi\n\nprint(prefix_function(\"ABACABAB\"))",
+          "options": [
+            "[0, 0, 1, 0, 1, 2, 3, 4]",
+            "[0, 0, 1, 0, 1, 2, 3, 0]",
+            "[0, 1, 0, 0, 1, 2, 3, 2]",
+            "[0, 0, 1, 0, 1, 2, 3, 2]"
+          ],
+          "answer": 3,
+          "explanation": "i = 6 tak: \"ABACABA\" ka π = 3 (\"ABA\"). i = 7 par P[7] = 'B' aur P[3] = 'C' mismatch, to k = π[2] = 1; ab P[7] = 'B' aur P[1] = 'B' match, k = 2. Answer [0, 0, 1, 0, 1, 2, 3, 2], option D (\"AB\" prefix bhi hai suffix bhi). Trap: option A, mismatch ke baad bhi k badhate jaana; option B, mismatch par seedha 0 par gir jaana aur π[k − 1] wala fallback bhool jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w10-q4",
+          "question": "Rabin–Karp: text \"27182818\", pattern \"18\", aur hash = (2-digit number) mod 7. Kitne windows ka hash pattern ke hash se match karta hai, aur unme se kitne spurious hits hain?",
+          "options": [
+            "2 aur 0",
+            "3 aur 1",
+            "3 aur 2",
+            "4 aur 2"
+          ],
+          "answer": 1,
+          "explanation": "Pattern hash 18 mod 7 = 4. Windows: 27 → 6, 71 → 1, 18 → 4, 82 → 5, 28 → 0, 81 → 4, 18 → 4. Teen windows (18, 81, 18) ka hash 4 hai; verify karne par 81 asli match nahi, to 1 spurious hit. Answer \"3 aur 1\", option B. Trap: option A, sirf asli matches ginna aur spurious hit miss karna; option C, dono 18 mein se ek ko bhi spurious maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w10-q5",
+          "question": "Khaali trie mein words \"car\", \"cart\", \"cat\", \"dog\", \"do\" insert kiye gaye. Root ke alawa trie mein kitne nodes hain? (Har node ek character.)",
+          "options": [
+            "15",
+            "9",
+            "6",
+            "8"
+          ],
+          "answer": 3,
+          "explanation": "c → a → r → t, aur a ke neeche alag t (\"cat\"): c, a, r, t, t = 5 nodes. d → o → g = 3 nodes; \"do\" ke liye naya node nahi, sirf o par end flag. Total 8, option D. Trap: option A, har word ke characters jod dena (3 + 4 + 3 + 3 + 2 = 15) aur yeh bhoolna ki common prefixes share hote hain; option B, root ko bhi gin lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w10-q6",
+          "question": "KMP aur `str.count` dono \"ABABABA\" mein \"ABA\" dhoondhte hain. Output kya hoga?",
+          "code": "def kmp(t, p):\n    pi, k = [0] * len(p), 0\n    for i in range(1, len(p)):\n        while k > 0 and p[i] != p[k]:\n            k = pi[k - 1]\n        if p[i] == p[k]:\n            k += 1\n        pi[i] = k\n    out, j = [], 0\n    for i, ch in enumerate(t):\n        while j > 0 and ch != p[j]:\n            j = pi[j - 1]\n        if ch == p[j]:\n            j += 1\n        if j == len(p):\n            out.append(i - len(p) + 1)\n            j = pi[j - 1]\n    return out\n\nprint(kmp(\"ABABABA\", \"ABA\"), \"ABABABA\".count(\"ABA\"))",
+          "options": [
+            "[0, 4] 2",
+            "[0, 2, 4] 3",
+            "[0, 2, 4] 2",
+            "[0, 2] 2"
+          ],
+          "answer": 2,
+          "explanation": "\"ABA\" positions 0, 2 aur 4 par shuru hota hai, aur yeh overlap karte hain. KMP match ke baad j = π[2] = 1 rakhta hai (\"A\" pehle se matched), isliye teeno milte hain: [0, 2, 4]. `str.count` non-overlapping ginta hai: 0 par match ke baad index 3 se dhoondhta hai, agla match 4 par, total 2. Output \"[0, 2, 4] 2\", option C. Trap: option B, count ko bhi overlapping maan lena; option A, KMP ko bhi match ke baad poora pattern skip karta hua maanna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Network Flows, Linear Programming and Intractability",
+      "summary": "Is week aap flow networks mein Ford–Fulkerson aur max-flow min-cut, bipartite matching, LP problems ki formulation, aur P, NP, reductions aur NP-completeness ka basic idea seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Flow network**: directed graph, har edge ki capacity c(e), ek source s aur ek sink t. Flow f do shartein maanta hai: **capacity** 0 ≤ f(e) ≤ c(e), aur **conservation**: s aur t ke alawa har vertex mein jitna aaye utna hi nikle. Flow ki value = s se nikla net flow. Pipelines, network bandwidth, logistics sab aise model hote hain.",
+        "**Residual graph**: har edge par bachi capacity c − f aage ki taraf, aur jitna flow bheja hai utna peeche ki taraf (**reverse edge**, yaani pehle bheja flow wapas lene ka option). **Augmenting path**: residual graph mein s se t tak koi bhi path; uski sabse chhoti residual capacity (bottleneck) jitna flow badha sakte ho.",
+        "**Ford–Fulkerson**: jab tak augmenting path mile, us par bottleneck jitna flow bhejo. Integer capacities par yeh rukta hai aur final flow bhi integer hota hai. Time O(m · |f*|), jo bade capacities par slow ho sakta hai. **Edmonds–Karp** har baar BFS se sabse kam edges wala path leta hai: O(n·m²), capacities se independent.",
+        "**Cut aur max-flow min-cut**: s-t cut (S, T) vertices ka aisa bantwara hai jahan s ∈ S, t ∈ T. Capacity = sirf S se T jaane wale edges ki capacities ka sum (T se S wale edges nahi gine jaate). Har flow ≤ har cut. **Theorem**: max flow ki value = min cut ki capacity. Algorithm khatam hone par residual graph mein s se reachable vertices hi min cut ka S hain.",
+        "**Flow ki applications**: **bipartite matching** (s → har worker capacity 1, worker → eligible job capacity 1, job → t capacity 1; max flow = max matching), edge-disjoint paths, project selection, image segmentation. Kisi problem ko flow mein badalna khud ek reduction hai.",
+        "**Linear programming (LP)**: variables par linear objective (max ya min) aur linear inequality constraints. Feasible region ek convex polygon (ya higher dimensions mein polytope) hota hai, aur agar optimum hai to kisi **vertex** (corner) par milta hai. Simplex practice mein tez hai; interior-point methods polynomial time dete hain. Max flow bhi ek LP hai. Variables ko integer hona zaroori ho (integer programming) to problem NP-hard ho jaata hai.",
+        "**P aur NP**: **P** = jo problems polynomial time mein solve hoti hain. **NP** = jinke \"haan\" answer ka certificate polynomial time mein verify ho sake (jaise di gayi assignment se formula satisfy hota hai ya nahi). P ⊆ NP; P = NP hai ya nahi, yeh abhi tak open hai. NP ka matlab \"non-polynomial\" nahi, \"nondeterministic polynomial\" hai.",
+        "**Reductions aur NP-completeness**: A ≤p B (A ko polynomial time mein B mein badal sakte ho) ka matlab B kam se kam A jitna mushkil hai: B easy ⇒ A easy, aur A hard ⇒ B hard. **NP-complete**: NP mein hai aur har NP problem usme reduce hoti hai (SAT, 3-SAT, vertex cover, clique, Hamiltonian cycle, subset sum). Inme se ek bhi P mein aaya to P = NP. Practice mein: approximation, heuristics, ya chhote inputs par exact search."
+      ],
+      "example": {
+        "problem": "Network: s→a (2), s→b (2), a→b (2), a→t (2), b→t (2). Ford–Fulkerson mein maan lo pehla path s→a→b→t chuna gaya. Reverse edge ka role dikhao aur max flow nikaalo.",
+        "steps": [
+          "Path s→a→b→t, bottleneck 2. Ab s→a, a→b, b→t teeno full; residual mein in par reverse edges a→s, b→a, t→b (capacity 2) aa jaate hain.",
+          "Seedha raasta nahi bacha: s→a full hai, aur s→b ke baad b→t full hai.",
+          "Residual graph mein path: s→b (2), b→a (reverse, 2), a→t (2). Bottleneck 2.",
+          "b→a par flow bhejna matlab a→b ka pehle bheja flow cancel karna. Net effect: s→a→t (2) aur s→b→t (2).",
+          "Ab s ke dono edges full hain, residual mein s se t nahi pahunch sakte. Cut ({s}, baaki) ki capacity 2 + 2 = 4.",
+          "Answer: **max flow = 4**. Reverse edges ke bina algorithm 2 par atak jaata."
+        ],
+        "code": "from collections import deque\n\ndef max_flow(edges, s, t):\n    cap, adj = {}, {}\n    for u, v, c in edges:\n        cap[(u, v)] = cap.get((u, v), 0) + c\n        cap.setdefault((v, u), 0)            # reverse (residual) edge\n        adj.setdefault(u, set()).add(v)\n        adj.setdefault(v, set()).add(u)\n    flow = 0\n    while True:\n        parent, q = {s: None}, deque([s])    # BFS = Edmonds-Karp\n        while q:\n            u = q.popleft()\n            for v in adj[u]:\n                if v not in parent and cap[(u, v)] > 0:\n                    parent[v] = u\n                    q.append(v)\n        if t not in parent:\n            return flow\n        b, v = float(\"inf\"), t\n        while parent[v] is not None:\n            b, v = min(b, cap[(parent[v], v)]), parent[v]\n        v = t\n        while parent[v] is not None:\n            cap[(parent[v], v)] -= b\n            cap[(v, parent[v])] += b\n            v = parent[v]\n        flow += b\n\nE = [(\"s\", \"a\", 2), (\"s\", \"b\", 2), (\"a\", \"b\", 2), (\"a\", \"t\", 2), (\"b\", \"t\", 2)]\nprint(max_flow(E, \"s\", \"t\"))"
+      },
+      "mistakes": [
+        "Cut ki capacity mein T se S wale (ulte) edges ko bhi jodna ya ghatana. Sirf S → T edges ki capacities jodo.",
+        "Reduction ki direction ulti padhna. A ≤p B aur B NP-hard ho to A ke baare mein kuch pata nahi chalta; A ka hard hona B ko hard banata hai, ulta nahi.",
+        "LP mein optimum ko feasible region ke andar kahin dhoondhna. Linear objective ka optimum kisi corner (vertex) par hi hota hai; corners nikaal kar objective compare karo."
+      ],
+      "revision": [
+        "Flow: capacity aur conservation; value = s se net out-flow.",
+        "Residual: forward c − f, reverse f; augmenting path ka bottleneck.",
+        "Cut capacity = sirf S → T edges; max flow = min cut.",
+        "Bipartite matching = unit capacities wala max flow.",
+        "LP optimum vertex par; integer programming NP-hard.",
+        "A ≤p B: B easy ⇒ A easy; A hard ⇒ B hard."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w11-q1",
+          "question": "Ek flow network mein ek s-t cut ki capacity 17 hai. Is network ke maximum flow ke baare mein kya pakka kaha ja sakta hai?",
+          "options": [
+            "Max flow = 17",
+            "Max flow ≤ 17",
+            "Max flow ≥ 17",
+            "Kuch nahi kaha ja sakta"
+          ],
+          "answer": 1,
+          "explanation": "Har flow ko s se t jaate hue har cut ke S → T edges paar karne padte hain, isliye har flow har cut ki capacity se ≤ hai. To max flow ≤ 17, option B. Barabari sirf **minimum** cut ke liye hoti hai (max-flow min-cut theorem). Trap: option A, kisi bhi cut ko min cut maan lena; yeh cut minimum na ho to max flow 17 se kam hoga.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w11-q2",
+          "question": "Problem A ka problem B mein polynomial-time reduction hai (A ≤p B). Agar B ka polynomial-time algorithm mil jaaye, to A ke baare mein kya pata chalta hai?",
+          "options": [
+            "A NP-hard hai",
+            "A ke baare mein kuch nahi pata chalta",
+            "A bhi polynomial time mein solve ho sakta hai",
+            "B NP-complete hai"
+          ],
+          "answer": 2,
+          "explanation": "A ke input ko polynomial time mein B ke input mein badlo, phir B ka polynomial algorithm chalao: total polynomial. To A bhi P mein hai, option C. Trap: option B, direction ulti padhna; agar B ≤p A hota tab B ke easy hone se A ke baare mein kuch pata nahi chalta, par yahan reduction A se B ki taraf hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w11-q3",
+          "question": "Flow network (capacity brackets mein): s→a (10), s→b (8), a→c (7), a→b (5), b→a (4), b→d (10), c→t (9), d→c (6), d→t (6). s se t tak maximum flow kitna hai?",
+          "options": [
+            "18",
+            "20",
+            "17",
+            "15"
+          ],
+          "answer": 3,
+          "explanation": "t mein aane wale edges c→t (9) aur d→t (6) ka total 15 hai, to cut ({s, a, b, c, d}, {t}) ki capacity 15 hai aur flow 15 se zyada nahi ho sakta. 15 achieve bhi hota hai: s→a→c→t 7, s→b→d→t 6, s→b→d→c→t 2 (c→t mein 7 + 2 = 9). Max flow 15, option D. Trap: option A, s se nikalne wali capacity (10 + 8) ko hi answer maan lena; options B aur C asli cuts hain (({s, a}) = 20, ({s, a, b}) = 17), par minimum nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w11-q4",
+          "question": "Usi network mein: s→a (10), s→b (8), a→c (7), a→b (5), b→a (4), b→d (10), c→t (9), d→c (6), d→t (6). Cut S = {s, a}, T = {b, c, d, t} ki capacity kya hai?",
+          "options": [
+            "20",
+            "16",
+            "24",
+            "15"
+          ],
+          "answer": 0,
+          "explanation": "Sirf S se T jaane wale edges: s→b (8), a→b (5), a→c (7). Total 20, option A. b→a (4) T se S ki taraf hai, cut capacity mein nahi gina jaata. Trap: option B, ulte edge ko ghata dena (20 − 4); option C, use jod dena (20 + 4); option D, sochna ki har cut ki capacity max flow (15) ke barabar hoti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w11-q5",
+          "question": "Ek fictional bakery x trays cake aur y trays cookies banati hai. Oven: x + y ≤ 4 ghante, decoration: x + 3y ≤ 6 ghante, x, y ≥ 0. Profit 2x + 3y (hazaar ₹) maximize karna hai. Optimum kya hai?",
+          "options": [
+            "x = 4, y = 0, profit 8",
+            "x = 0, y = 2, profit 6",
+            "x = 2, y = 2, profit 10",
+            "x = 3, y = 1, profit 9"
+          ],
+          "answer": 3,
+          "explanation": "Feasible region ke corners: (0, 0) → 0, (4, 0) → 8, (0, 2) → 6, aur dono constraints ka intersection: x + y = 4, x + 3y = 6 ⇒ y = 1, x = 3 → 2·3 + 3·1 = 9. Sabse bada 9, option D. Trap: option C, (2, 2) mein x + 3y = 8 > 6, yeh feasible hi nahi; option A, sirf axis wale corners check karna aur dono lines ka intersection bhool jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w11-q6",
+          "question": "Fictional workers aur unke eligible jobs: W1: J1, J2; W2: J1; W3: J1, J2; W4: J3, J4; W5: J3. Har worker ko zyada se zyada ek job, aur har job ko ek worker. Maximum kitne worker-job pairs ban sakte hain? (Yeh unit capacities wale max flow ke barabar hai.)",
+          "options": [
+            "3",
+            "4",
+            "5",
+            "2"
+          ],
+          "answer": 1,
+          "explanation": "W1, W2, W3 teeno ke eligible jobs sirf {J1, J2} hain, to inme se zyada se zyada 2 match ho sakte hain (Hall's condition fail), isliye 5 impossible. Baaki W4, W5 ke liye J3, J4: dono match. Ek matching: W2–J1, W1–J2, W5–J3, W4–J4 = 4, option B. Trap: option A, greedy (W1 ko pehla free job J1, phir W2 khaali, W3–J2, W4–J3, W5 khaali) par ruk jaana; flow ka augmenting path (reverse edge se) W1 ko J1 se J2 par shift karke W2 ko jagah deta hai. Option C, 5 workers aur 5 ka matlab perfect matching maan lena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Problem Solving Across the Course",
+      "summary": "Is week aap poore course ko jod kar dekhoge: constraints se algorithm aur data structure chunna, design paradigm pehchaanna, aur mixed code-tracing aur complexity problems solve karna.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Constraints se algorithm**: input size dekh kar allowed complexity socho (Python ~10⁷ simple steps per second). n ≤ 20: 2ⁿ ya n! wali search chal sakti hai; n ≤ 500: O(n³); n ≤ 5000: O(n²); n ~ 10⁵ se 10⁶: O(n log n) ya O(n). Pehle brute force socho, phir dekho kaunsa hissa repeat ho raha hai.",
+        "**Data structure ka chunaav**: membership aur counting ke liye `set`/`dict` (average O(1)); sorted data par range ya \"next bada\" queries ke liye binary search (`bisect`) ya balanced BST; baar-baar minimum/maximum ya top-k ke liye heap; FIFO processing ke liye `deque`; groups jodne aur \"same group?\" ke liye union-find.",
+        "**Graph problem ka chunaav**: unweighted shortest path → BFS; non-negative weights → Dijkstra; negative edges → Bellman–Ford; saare pairs aur chhota n → Floyd–Warshall; sabko minimum cost par jodna → MST (Prim/Kruskal); dependencies ka order → topological sort; capacities ke saath kitna bhej sakte → max flow.",
+        "**Design paradigm pehchaano**: har step par ek choice jo kabhi badalni na pade aur jiska exchange proof ho → greedy. Independent halves → divide and conquer. Wahi subproblems baar-baar → DP (pehle recursive brute force likho, phir memoize, phir table). Agar greedy ka ek bhi counterexample mile to DP ki taraf jao.",
+        "**Strings**: ek pattern ek text mein → KMP ya built-in `find`; bahut saare words aur prefix queries → trie; substrings ki equality jaldi compare karni ho → rolling hash. Overlapping matches ke liye `str.count` par bharosa mat karo.",
+        "**Mushkil problems**: agar problem SAT, vertex cover, subset sum ya TSP jaisi NP-complete lagti hai, to general polynomial algorithm ki ummeed mat karo. Chhote n par exact search (backtracking), numbers chhote hon to pseudo-polynomial DP (knapsack jaisa), warna approximation ya heuristic.",
+        "**Code tracing ka tareeka**: har loop iteration ke liye variables ki table banao, boundaries (`<` vs `<=`, `range` ka end) dhyaan se dekho, aur mutable objects (lists, default arguments) par nazar rakho. Complexity ke liye chhote n (jaise 8, 16) par steps gino aur pattern dekho: n double karne par steps ~2×, ~4× ya +constant."
+      ],
+      "example": {
+        "problem": "Ek fictional office mein meetings (start, end) minutes mein: (0, 30), (5, 10), (15, 20), (25, 40), (35, 45). Ek room mein ek time par ek meeting. Kam se kam kitne rooms chahiye? (End time = agli ka start ho to room reuse ho sakta hai.)",
+        "steps": [
+          "Idea (greedy + heap): meetings ko start time se sort karo, aur ek min-heap mein har busy room ka end time rakho.",
+          "(0, 30): heap khaali, naya room: [30].",
+          "(5, 10): sabse jaldi free hone wala room 30 par, 30 > 5, naya room: [10, 30].",
+          "(15, 20): heap top 10 ≤ 15, woh room reuse: pop 10, push 20 → [20, 30].",
+          "(25, 40): 20 ≤ 25, reuse → [30, 40]. (35, 45): 30 ≤ 35, reuse → [40, 45].",
+          "Heap ka sabse bada size 2 raha. Time O(n log n): sorting aur har meeting par ek heap operation.",
+          "Answer: **2 rooms**."
+        ],
+        "code": "import heapq\n\ndef min_rooms(meetings):\n    ends = []                       # min-heap of end times of busy rooms\n    for start, end in sorted(meetings):\n        if ends and ends[0] <= start:\n            heapq.heapreplace(ends, end)   # reuse the room that frees first\n        else:\n            heapq.heappush(ends, end)      # open a new room\n    return len(ends)\n\nprint(min_rooms([(0, 30), (5, 10), (15, 20), (25, 40), (35, 45)]))"
+      },
+      "mistakes": [
+        "Algorithm ka naam yaad karke chala dena aur uski shart check na karna: Dijkstra negative edges par, binary search unsorted data par, greedy bina proof ke. Har algorithm ki precondition pehle likho.",
+        "Edge cases bhool jaana: khaali list, ek element, duplicates, disconnected graph, ya pattern text se lamba. Exam ke trace questions aksar inhi par bane hote hain.",
+        "Complexity mein sirf loops gin-na aur loop ke andar ke operations ki cost bhool jaana: `x in list`, `list.pop(0)`, `s[i:j]` slicing ya `sorted()` khud O(n) ya zyada hain."
+      ],
+      "revision": [
+        "Input size se allowed complexity socho.",
+        "Lookup → set/dict; min/max baar-baar → heap; order queries → bisect/BST.",
+        "BFS (unweighted), Dijkstra (≥ 0), Bellman–Ford (negative), Floyd–Warshall (all pairs).",
+        "Greedy ko proof chahiye; overlapping subproblems → DP.",
+        "NP-complete lage to exact sirf chhote n par; warna approximation."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w12-q1",
+          "question": "n elements ki list par `heapq.heapify` (bottom-up build-heap) ka tight worst-case time kya hai?",
+          "options": [
+            "Θ(n log n)",
+            "Θ(n)",
+            "Θ(log n)",
+            "Θ(n²)"
+          ],
+          "answer": 1,
+          "explanation": "Bottom-up build mein aadhe nodes leaves hain (0 kaam), chauthai nodes ko max 1 level sift down, aur aage aise hi; Σ (n/2^(h+1)) · h = Θ(n). Isliye option B. Trap: option A, sochna ki n nodes × har ek O(log n) sift down = n log n; yeh upper bound sahi hai par tight nahi, kyunki zyada tar nodes neeche hote hain aur kam door jaate hain. n baar `heappush` karna hi O(n log n) hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w12-q2",
+          "question": "Ek fictional metro map mein har do jude stations ke beech travel ek hi \"stop\" gina jaata hai. Do stations ke beech minimum stops wala route chahiye. Sabse seedha sahi algorithm kaunsa hai?",
+          "options": [
+            "Kruskal (MST)",
+            "Bellman–Ford",
+            "BFS",
+            "Topological sort"
+          ],
+          "answer": 2,
+          "explanation": "Har edge ka weight barabar (1 stop) hai, to yeh unweighted shortest path hai: BFS O(n + m) mein minimum edges wala path deta hai, option C. Dijkstra bhi sahi answer dega par heap ka extra kharcha hai, aur Bellman–Ford (option B) O(nm) hai, negative weights ke liye bana hai. Trap: option A, MST saare stations ko sasta jodta hai, par do stations ke beech MST ka raasta shortest hona zaroori nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w12-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "def two_sum(a, target):\n    seen = {}\n    for i, x in enumerate(a):\n        if target - x in seen:\n            return (seen[target - x], i)\n        seen[x] = i\n    return None\n\nprint(two_sum([3, 8, 2, 7, 5], 10))",
+          "options": [
+            "(0, 3)",
+            "(1, 2)",
+            "(2, 1)",
+            "None"
+          ],
+          "answer": 1,
+          "explanation": "i = 0, x = 3: 7 abhi `seen` mein nahi; seen = {3: 0}. i = 1, x = 8: 2 nahi; seen mein 8: 1. i = 2, x = 2: 10 − 2 = 8 seen mein hai (index 1), to (1, 2) return, option B. Yeh pehla pair hai jiska **doosra** element sabse pehle aata hai; ek pass, O(n). Trap: option A, sochna ki function sabse pehle element (3) wala pair 3 + 7 dhoondhega; 7 index 3 par hai, us tak pahunchne se pehle hi return ho jaata hai. Option C mein tuple ka order ulta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w12-q4",
+          "question": "Is code ka time complexity n ke terms mein kya hai?",
+          "code": "def work(n):\n    steps = 0\n    for i in range(n):\n        j = 1\n        while j < n:\n            j *= 2\n            steps += 1\n    return steps",
+          "options": [
+            "Θ(n log n)",
+            "Θ(n)",
+            "Θ(n²)",
+            "Θ(log n)"
+          ],
+          "answer": 0,
+          "explanation": "Outer loop n baar chalta hai. Andar j = 1, 2, 4, ... jab tak j < n, yaani ⌈log₂ n⌉ baar, aur yeh har outer iteration mein j = 1 se dobara shuru hota hai. Total n · ⌈log₂ n⌉ = Θ(n log n), option A (n = 1024 par 1024 × 10 steps). Trap: option C, nested loop dekhte hi n² bol dena; option B, week 2 jaisa geometric series wala case samajhna, par wahan inner loop ka size outer variable par depend karta tha, yahan har baar poora log n hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w12-q5",
+          "question": "Size-k min-heap se k-th largest element. Output kya hoga?",
+          "code": "import heapq\n\ndef kth_largest(a, k):\n    h = []\n    for x in a:\n        heapq.heappush(h, x)\n        if len(h) > k:\n            heapq.heappop(h)\n    return h[0]\n\nprint(kth_largest([7, 2, 9, 4, 11, 5, 9], 3))",
+          "options": [
+            "7",
+            "5",
+            "11",
+            "9"
+          ],
+          "answer": 3,
+          "explanation": "Heap mein hamesha ab tak ke sabse bade k = 3 elements rehte hain; size 4 hote hi sabse chhota nikal jaata hai. End mein heap {9, 9, 11} hai, aur `h[0]` inme sabse chhota, 9. Descending order 11, 9, 9, 7, ... mein teesra 9 hai, option D. Time O(n log k). Trap: option A, duplicate 9 ko ek hi gin kar distinct values mein teesra (7) lena; option C, sochna ki `h[0]` heap ka maximum hai; option B teesra sabse chhota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w12-q6",
+          "question": "`bisect` wala O(n log n) LIS code. Output kya hoga?",
+          "code": "from bisect import bisect_left\n\ndef lis_tails(a):\n    tails = []\n    for x in a:\n        i = bisect_left(tails, x)\n        if i == len(tails):\n            tails.append(x)\n        else:\n            tails[i] = x\n    return tails\n\nt = lis_tails([4, 8, 9, 2, 5])\nprint(t, len(t))",
+          "options": [
+            "[4, 8, 9] 3",
+            "[2, 5] 2",
+            "[2, 5, 9] 3",
+            "[2, 4, 5, 8, 9] 5"
+          ],
+          "answer": 2,
+          "explanation": "4 → [4]; 8 → [4, 8]; 9 → [4, 8, 9]; 2: bisect_left 0, replace → [2, 8, 9]; 5: bisect_left 1, replace → [2, 5, 9]. Output \"[2, 5, 9] 3\", option C. Length 3 sahi LIS length hai (jaise 4, 8, 9), par `tails` khud koi subsequence nahi: 9 list mein 2 aur 5 se pehle aata hai. tails[i] = length i + 1 wale increasing subsequences ka sabse chhota possible end. Trap: option A, tails ko hi asli LIS maan lena; option D, replace ki jagah insert karna (tab yeh bas sorting ho jaati hai); option B, 2 aane par sab reset maan lena.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

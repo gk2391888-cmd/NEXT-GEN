@@ -7,7 +7,7 @@ An independent learning and exam-preparation site for IIT Madras online BS stude
 ## What's in Phase 1
 
 - **Programmes**: right after sign-up (and once for existing students) NEXT GEN asks "What are you preparing for?": a programme level (Data Science Foundation or a Diploma, Electronic Systems, Aeronautics or Management & Data Science Foundation) or a qualifier exam (Data Science or Electronic Systems). From then on the student sees only that choice's material: its subjects, its tools in the sidebar, and numbers that count only it. See [Programmes](#programmes) below.
-- **Study Library**: 12 weeks of original Hinglish notes per subject (concept, solved example, common mistakes, quick revision) for the Foundation level of all four programmes: Data Science (8), Electronic Systems (9 theory courses), Aeronautics (8) and Management & Data Science (8). Shared courses are written once, so that's 22 subjects and 1,584 questions. The Data Science Diplomas are listed as "coming soon". "Save as PDF" prints a clean copy.
+- **Study Library**: 12 weeks of original Hinglish notes per subject (concept, solved example, common mistakes, quick revision) for the Foundation level of all four programmes (Data Science 8, Electronic Systems 9 theory courses, Aeronautics 8, Management & Data Science 8) and both Data Science Diplomas (Programming 6, Data Science 7). Shared courses are written once, so that's 35 subjects and 3,384 questions. "Save as PDF" prints a clean copy.
 - **Practice Quiz**: MCQs with instant explanations (15 per week, 1,440 in total, in the 8 Data Science Foundation subjects; 6 per week elsewhere), in English or Hinglish: each student picks with the English / Hinglish switch on practice, mock tests, My Mistakes and search (English by default, remembered in the browser).
   - **Levels**: every Data Science Foundation week has at least 5 Easy, 5 Medium and 5 Hard questions. Students pick Easy, Medium, Hard or Mixed (all of the week's questions, easy first) on the practice pages; each level shows how many questions it has, and the choice is remembered in the browser.
 - **Mock Tests**: Quiz 1 (weeks 1–4), Quiz 2 (weeks 5–8) and End term (all weeks) per subject, with timer, question palette, mark-for-review, auto-submit, resume after refresh, and a result page with week-wise performance and answer review.
@@ -212,7 +212,7 @@ Open http://localhost:3000.
   | Choice | Subjects and weeks | Sidebar tools beyond the shared ones |
   |---|---|---|
   | Data Science – Foundation | Its 8 subjects, all 12 weeks | Mock Tests, Coding Lab, Exam Planner, Grade Calculator |
-  | Data Science – a Diploma | Its subjects ("coming soon" for now) | Mock Tests, Coding Lab, Exam Planner, Grade Calculator |
+  | Data Science – a Diploma | Its subjects | Mock Tests, Coding Lab, Exam Planner, Grade Calculator |
   | Electronic Systems / Aeronautics / Management & DS – Foundation | That Foundation's subjects, all 12 weeks | Mock Tests, Exam Planner, Grade Calculator |
   | Qualifier – Data Science | Maths I, Stats I, CT, English I, weeks 1–4 only | Qualifier Prep (opens `/qualifier/ds`) |
   | Qualifier – Electronic Systems | English I, Maths for Electronics I, Electronic Systems Thinking and Circuits, C Programming, weeks 1–4 only | Qualifier Prep (opens `/qualifier/es`) |

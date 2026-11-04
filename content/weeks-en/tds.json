@@ -1,0 +1,725 @@
+{
+  "subjectId": "tds",
+  "questions": {
+    "tds-w1-q1": {
+      "question": "What actually changes when you run `source .venv/bin/activate`?",
+      "options": [
+        "The `.venv/bin` directory is put at the front of `PATH`, so `python` and `pip` resolve to the venv's copies",
+        "All packages of the system Python are copied into `.venv`",
+        "A new container starts in which the project runs",
+        "The global `site-packages` permanently starts pointing at the venv"
+      ],
+      "explanation": "The activation script mainly changes `PATH` (and shows the name in the prompt). So when you type `python`/`pip`, the venv's executables are found first, and they use their own separate site-packages. Option B is wrong: a venv starts empty and nothing is copied. Option D's trap is thinking activation changes a global setting; it only affects the current shell session and ends with `deactivate` or a new terminal."
+    },
+    "tds-w1-q2": {
+      "question": "`PATH` is `/opt/tools/bin:/usr/local/bin:/usr/bin`. An executable named `python` exists in both `/usr/local/bin` and `/usr/bin`, but not in `/opt/tools/bin`. Which one runs when you type `python`?",
+      "options": [
+        "`/usr/bin/python`, because system directories get priority",
+        "The shell reports an error because the name exists in two places",
+        "`/usr/local/bin/python`, because it comes first in `PATH`",
+        "Whichever has the newer version number"
+      ],
+      "explanation": "The shell checks the `PATH` directories left to right and runs the first match. `/opt/tools/bin` has no `python`; the next one is `/usr/local/bin`, where it is found, so the search stops there. Option A's trap is assuming `/usr/bin` wins for being the 'system' directory; for the shell only the order matters. Option D is wrong because the shell never compares versions."
+    },
+    "tds-w1-q3": {
+      "question": "A directory has no file named `missing.txt`. What does this bash line print?",
+      "options": [
+        "absent / 1 (two lines)",
+        "found / 0 (two lines)",
+        "absent / 0 (two lines)",
+        "only 1"
+      ],
+      "explanation": "`test -f missing.txt` fails (status 1), so `&& echo found` is skipped and `|| echo absent` runs, printing 'absent'. `$?` always holds the status of the MOST RECENT command, which was `echo absent`, and it succeeded, so 0 is printed. Option A's trap is thinking `$?` still remembers the 1 from `test`."
+    },
+    "tds-w1-q4": {
+      "question": "`requirements.txt` contains `pandas~=1.5.2` (the PEP 440 compatible-release operator). Which of these versions satisfies the specifier?",
+      "options": [
+        "1.5.1",
+        "1.6.0",
+        "2.0.0",
+        "1.5.3"
+      ],
+      "explanation": "`~=1.5.2` means `>=1.5.2` and `==1.5.*`: the last component may grow but you cannot leave the `1.5` series. 1.5.3 meets both conditions. 1.5.1 is below the lower bound (option A). Option B's trap is reading `~=` as 'keep only the major version'; that would be the rule for `~=1.5` (two components), not `~=1.5.2`."
+    },
+    "tds-w1-q5": {
+      "question": "Project layout: `/home/u/proj/data/raw.csv` and `/home/u/proj/src/load.py`. `load.py` contains `open(\"data/raw.csv\")`. You run `cd /home/u/proj/src` and then `python load.py`. What happens?",
+      "options": [
+        "The file opens, because the path is resolved from the script's location",
+        "`FileNotFoundError`, because Python looks for `/home/u/proj/src/data/raw.csv`",
+        "Python searches parent directories for `data/` by itself",
+        "`PermissionError`, because files outside `src` cannot be read"
+      ],
+      "explanation": "A relative path is resolved against the current working directory (where the command was run), not against the script's location. The CWD is `/home/u/proj/src`, so Python looks for `src/data/raw.csv`, which does not exist. Option A is the most common misconception. Fix: run `python src/load.py` from the project root, or build the path like `Path(__file__).resolve().parent.parent / \"data\" / \"raw.csv\"`. Option C is wrong: Python does not search parent folders on its own."
+    },
+    "tds-w1-q6": {
+      "question": "These lines run in a fresh bash shell (A, B and C are not set beforehand). What is the output?",
+      "options": [
+        "A=1 B=2 C=3 / C=3",
+        "A= B=2 C=3 / C=",
+        "A= B=2 C= / C=",
+        "A=1 B=2 C=3 / C="
+      ],
+      "explanation": "`bash -c` is a child process; it only receives exported variables. A was not exported, so it is empty in the child; B was exported, so it is 2. `C=3 cmd` puts C into the environment of that one command only, so the child gets C=3 but C is never set in the parent shell, and the last line prints `C=`. Option D's trap is assuming every shell variable reaches the child; option A's trap is thinking `C=3 cmd` also sets C in the parent."
+    },
+    "tds-w2-q1": {
+      "question": "A teammate pushed 3 new commits to the remote `main`. On your local `main` you run `git fetch origin`. What is true right after this?",
+      "options": [
+        "All three commits are now in your local `main` and working tree",
+        "Git automatically created a merge commit",
+        "Nothing was downloaded; that needs `git pull`",
+        "The new commits are in `origin/main`, but your local `main` and your files are unchanged"
+      ],
+      "explanation": "`git fetch` only downloads objects from the remote and updates the remote-tracking branch `origin/main`. Your local branch changes only when you run `git merge origin/main` (or `git pull`, which is fetch + merge). Option A's trap is confusing fetch with pull. Option C is backwards: fetch is what downloads; pull just adds a merge on top of it."
+    },
+    "tds-w2-q2": {
+      "question": "You are on `main`, and after `git merge feature` this conflict appears in `report.py`. Which is the `main` branch's version?",
+      "options": [
+        "`threshold = 0.8`",
+        "`threshold = 0.75`",
+        "Both lines came from the `feature` branch",
+        "The markers don't tell you; you have to check `git log`"
+      ],
+      "explanation": "The part from `<<<<<<< HEAD` to `=======` belongs to HEAD, the currently checked-out branch. You are on `main`, so `threshold = 0.8` is main's version, and the part from `=======` to `>>>>>>> feature` (0.75) is from the `feature` branch being merged. Option B's trap is taking HEAD to mean the 'incoming' branch."
+    },
+    "tds-w2-q3": {
+      "question": "`a.txt` is tracked and its committed content is `v1`. These commands are run. What is the content of `a.txt` in the new commit, and what does `git status` show?",
+      "options": [
+        "Commit has `v3`; status is clean",
+        "Commit has `v2`; status shows `a.txt` modified (unstaged `v3`)",
+        "Commit has `v1`, because the file changed again before the commit",
+        "The commit fails because the staged and working versions differ"
+      ],
+      "explanation": "`git add` snapshots the content at that moment (`v2`) into the index. Writing `v3` afterwards only changes the working tree. `git commit` builds the commit from the index, so `v2` goes in and `v3` remains as an unstaged modification. Option A's trap is assuming `add` tracks the file's 'name' and commit takes the latest content."
+    },
+    "tds-w2-q4": {
+      "question": "`main` has commits C1, C2. A `feature` branch was created from C2 and got commits C3, C4, C5. Meanwhile C6 was committed on `main`. Now you run `git merge feature` on `main` (no conflicts). What does `git rev-list --count main` print?",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "4"
+      ],
+      "explanation": "Both branches moved on after C2, so a fast-forward is not possible; git does a three-way merge and creates a new merge commit with two parents (C6 and C5). Commits reachable from `main`: C1, C2, C3, C4, C5, C6 and the merge commit = 7. Option B's trap is forgetting the merge commit, which would be right only in a fast-forward case."
+    },
+    "tds-w2-q5": {
+      "question": "A buggy commit `a1b2c3d` has already been pushed to the shared `main`, and teammates have pulled work on top of it. What is the safest way to remove its effect?",
+      "options": [
+        "Run `git revert a1b2c3d` and push the new commit",
+        "Run `git reset --hard a1b2c3d~1` and then `git push --force`",
+        "Add the changed files to `.gitignore`",
+        "Delete the local repo and clone it again"
+      ],
+      "explanation": "`git revert` creates a new commit that reverses that commit's changes; existing history is untouched, so teammates can pull normally. Option B drops the commit from local history and the force-push rewrites shared history, making teammates' branches diverge. It is the most tempting trap because it looks 'clean' on your own machine. Option C has no effect on tracked files."
+    },
+    "tds-w2-q6": {
+      "question": "This `.gitignore` is at the repo root. Which of these untracked files will show up in `git status` (that is, is NOT ignored)?",
+      "options": [
+        "`data/raw.csv`",
+        "`build/main.o`",
+        "`src/build/main.o`",
+        "`app/logs/run.txt`"
+      ],
+      "explanation": "`/build` starts with a slash, so it only matches the `build` at the repo root; `src/build/` does not match, so `src/build/main.o` shows up. `data/raw.csv` is ignored by `*.csv` (the exception is only for `keep.csv`). `build/main.o` is in the root build, so it is ignored. `logs/` without a leading slash matches a `logs` directory at any level, so `app/logs/run.txt` is ignored too. Option D's trap is thinking `logs/` applies only at the root."
+    },
+    "tds-w3-q1": {
+      "question": "A client sends a valid token (the server has identified the user), but that user is not allowed to view `/admin/reports`. Which status code fits best?",
+      "options": [
+        "401 Unauthorized",
+        "404 Not Found",
+        "403 Forbidden",
+        "500 Internal Server Error"
+      ],
+      "explanation": "The user is already authenticated; the problem is only authorization (permission), which is what 403 is for. 401 is for missing or invalid credentials, when the server does not know who you are; because of its name 'Unauthorized', option A is the most tempting trap. 500 is for the server's own failure, and here the server is working correctly."
+    },
+    "tds-w3-q2": {
+      "question": "Which of these strings is valid JSON (Python's `json.loads` parses it without an error)?",
+      "options": [
+        "`{'a': 1}`",
+        "`{\"a\": 1,}`",
+        "`{\"a\": undefined}`",
+        "`{\"a\": [1, 2.5], \"b\": null, \"c\": \"x\"}`"
+      ],
+      "explanation": "In JSON keys/strings use double quotes, `null` is allowed, and numbers may be integers or decimals, so option D is valid. Option A looks like a Python dict, but single quotes are invalid in JSON; this is the common trap when people treat `str(dict)` as JSON. Option B has a trailing comma, and in option C `undefined` is a JavaScript concept, not JSON."
+    },
+    "tds-w3-q3": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `False`",
+        "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `True`",
+        "`{1: (2, 3), \"x\": None, \"y\": True}` / `True`",
+        "`TypeError`, because a tuple cannot be converted to JSON"
+      ],
+      "explanation": "`json.dumps` turns the int key 1 into the string `\"1\"`, the tuple into an array, `None` into `null` and `True` into `true`. After `loads` you get key `\"1\"` (a string) and the list `[2, 3]`, while the original had int key 1 and a tuple, so `back == d` is False. Option B's trap is assuming a JSON round-trip is lossless. Option D is wrong: a tuple is serialized, just as a list."
+    },
+    "tds-w3-q4": {
+      "question": "Because of a network timeout, the client does not know whether its request reached the server. By HTTP semantics, which methods are idempotent, so resending them is safe without worrying about side effects?",
+      "options": [
+        "Only GET",
+        "GET, PUT and DELETE",
+        "GET and POST",
+        "All methods, because the server detects duplicates"
+      ],
+      "explanation": "Idempotent means the server's final state is the same whether the request is sent once or many times. GET (safe), PUT (replaces the resource with the same value) and DELETE (the resource stays gone the second time, even if the response is 404) are idempotent. POST is not: sending it twice can create two records, so option C is wrong. Option A's trap is treating 'safe' and 'idempotent' as the same; PUT/DELETE are not safe but are idempotent."
+    },
+    "tds-w3-q5": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`KeyError: 'API_KEY'`",
+        "`None 8001`",
+        "`\"\" 80001` (a missing variable gives an empty string, as in the shell)",
+        "`None 80001`"
+      ],
+      "explanation": "`pop(\"API_KEY\", None)` removes the key (and raises no error if it is absent). `os.environ.get(\"API_KEY\")` returns `None` for a missing key; a `KeyError` would come only from square-bracket access like `os.environ[\"API_KEY\"]` (option A's trap). Environment values are strings, so `\"8000\" + \"1\"` concatenates to `\"80001\"`. Option B's trap is treating PORT as an integer and getting 8001."
+    },
+    "tds-w3-q6": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`8443 /v1/items data%20science ['2', '3']`",
+        "`8443 /v1/items data science ['2', '3']`",
+        "`8443 /v1/items data science ['3']`",
+        "`443 /v1/items?tag=data%20science data science ['2', '3']`"
+      ],
+      "explanation": "The URL gives port 8443 explicitly, the path without the query string is `/v1/items`, and the fragment `#top` is not part of the query. `parse_qs` decodes percent-encoding (`%20` → space) and returns a LIST of values for each key; `page` appears twice, so `['2', '3']`. Option C's trap is assuming 'last value wins' as in a dict; option A's trap is assuming no decoding. Option D assumes the https default port even though the port is written in the URL."
+    },
+    "tds-w4-q1": {
+      "question": "The machine had no containers before. You built an image `etl:1` and ran `docker run etl:1` three times (without `--rm`). Each time the script finished and the container exited. How many containers will `docker ps -a` show, and how many `etl` images are there?",
+      "options": [
+        "1 container, 1 image",
+        "3 containers, 1 image",
+        "3 containers, 3 images",
+        "0 containers (all exited), 1 image"
+      ],
+      "explanation": "Every `docker run` creates a new container from the same single image, so 3 containers and 1 image. After exiting, a container stays in the stopped state unless `--rm` was given or `docker rm` was run, and `docker ps -a` lists stopped containers too. Option D's trap is assuming 'exit = delete'; option C's trap is the idea that each run creates a new image."
+    },
+    "tds-w4-q2": {
+      "question": "Inside the container an API listens on port 5000 at `0.0.0.0`. You run `docker run -p 8080:5000 myapi`. At which URL does the host machine's browser reach the API?",
+      "options": [
+        "`http://localhost:5000`",
+        "`http://<container-IP>:8080`",
+        "Both `http://localhost:5000` and `http://localhost:8080`",
+        "`http://localhost:8080`"
+      ],
+      "explanation": "The `-p` format is `HOST:CONTAINER`: the host's 8080 is forwarded to the container's 5000, so from the host you open `localhost:8080`. Option A's trap is reading the order backwards (taking the container port as the host port); port 5000 was never published on the host. In option B, the container itself listens on 5000, not 8080."
+    },
+    "tds-w4-q3": {
+      "question": "An image is built from this Dockerfile and `docker run img` is run (no extra arguments). Which command runs when the container starts?",
+      "options": [
+        "`python serve.py`",
+        "`python train.py`",
+        "First `train.py`, then `serve.py`",
+        "`python setup_data.py`, then `serve.py`"
+      ],
+      "explanation": "Only the last `CMD` in a Dockerfile takes effect, so `python serve.py` runs at container start. `RUN python setup_data.py` already ran once at image BUILD time, not on each container start, so option D is wrong. Option C's trap is thinking several `CMD` lines run in order like a script."
+    },
+    "tds-w4-q4": {
+      "question": "A team is deploying its image-resize service as a serverless function. Which statement is correct design guidance?",
+      "options": [
+        "Keep a counter in the function's global variable; it is guaranteed to survive between requests",
+        "Serverless means there are no servers at all, so latency is always zero",
+        "Write the function stateless, keep state in a database/object storage, and expect a cold-start delay on the first request after idling",
+        "The function must start its own HTTP server and listen on a fixed port"
+      ],
+      "explanation": "A serverless platform creates and removes function instances as needed, so state in memory or on local disk cannot be relied on; after idling, creating a new instance costs a cold start. Option A is the most tempting trap because a warm instance sometimes keeps the value, but there is no guarantee and parallel instances each have their own counter. Option B is wrong: servers exist, the platform just manages them. Option D is container-style thinking; in serverless the platform delivers the request to the function."
+    },
+    "tds-w4-q5": {
+      "question": "A Flask app runs in a container with `app.run(host=\"127.0.0.1\", port=5000)`. After `docker run -p 5000:5000 img`, `curl http://localhost:5000` on the host gives a connection error, while `curl` from inside the container works. What is the most accurate cause and fix?",
+      "options": [
+        "`EXPOSE 5000` is missing; adding it to the Dockerfile fixes it",
+        "Port 5000 on the host is taken by something else; use `-p 5001:5000`",
+        "The app listens only on the container's loopback, while forwarded traffic arrives on the container's network interface; run the app with `host=\"0.0.0.0\"`",
+        "Flask does not work in containers; use serverless"
+      ],
+      "explanation": "The container's `127.0.0.1` is only the loopback inside the container. Port forwarding delivers traffic to the container's network interface (eth0), where the app is not listening, so curl works inside but not from outside. Binding to `0.0.0.0` makes the app listen on all interfaces. Option A is tempting, but `EXPOSE` is only documentation; `-p` already published the port. In option B, a port conflict would have made `docker run` itself fail at start."
+    },
+    "tds-w4-q6": {
+      "question": "An image has already been built once from this Dockerfile. Now you change only `app.py` (`requirements.txt` is unchanged) and run `docker build` again. Which steps are actually executed again?",
+      "options": [
+        "`FROM` through `RUN pip install` come from cache; `COPY . .` and the steps after it are rebuilt",
+        "All steps, because the build context changed",
+        "Only `RUN pip install`, because it depends on the code",
+        "Nothing; Docker returns the old image"
+      ],
+      "explanation": "Docker reuses each step from cache as long as the instruction and its inputs are unchanged. The input of `COPY requirements.txt .` (the requirements file) did not change, so it and `pip install` are cached. The input of `COPY . .` (which includes `app.py`) changed, so it is the first invalidated step and everything after it is rebuilt. Option B's trap is assuming any file change rebuilds everything; that would be true only if `COPY . .` came before `pip install`. Option D is wrong because the changed code must land in a new layer."
+    },
+    "tds-w5-q1": {
+      "question": "In the first call to a chat API the user wrote 'My name is Ravi'. In a second, separate API call you send only `{\"role\": \"user\", \"content\": \"What is my name?\"}`. What happens?",
+      "options": [
+        "The model says 'Ravi', because the model remembers each user's conversation on the server",
+        "The model says 'Ravi', because the first call updated the model's weights",
+        "The model does not know the name; to know it, the earlier messages must be sent in this same request",
+        "The API returns an error because the first message is missing"
+      ],
+      "explanation": "Chat completion APIs are stateless: in each request the model sees only what that request contains. So the app itself resends the needed history every time. Option A's trap comes from chat apps, where the app is the one resending the history. Option B is wrong: normal inference never updates the weights."
+    },
+    "tds-w5-q2": {
+      "question": "You are extracting `invoice_number` and `total` from invoices and want the output not to change when the same invoice is run repeatedly. What is the best choice about temperature?",
+      "options": [
+        "Keep temperature low (near 0); output becomes more consistent, but it still has to be validated",
+        "Keep temperature high so the model 'thinks more' and answers accurately",
+        "Lowering temperature removes the model's mistakes, so no validation is needed",
+        "Temperature only controls the length of the response"
+      ],
+      "explanation": "A low temperature pushes sampling toward the most probable tokens, so output stays stable on tasks like extraction. But stable does not mean correct: the model can be consistently wrong, which is why option C's 'no validation needed' is the trap. Option B is backwards: a higher temperature adds randomness, not accuracy. Length is controlled by a max-tokens style setting, not temperature (option D)."
+    },
+    "tds-w5-q3": {
+      "question": "A (fictional) model has a context window of 8,000 tokens. The system prompt is 600 tokens, the conversation history is 5,900 tokens, and you want to reserve 1,000 tokens for the answer. At most how many tokens are left for a retrieved document?",
+      "options": [
+        "1,500",
+        "1,100",
+        "7,400",
+        "500"
+      ],
+      "explanation": "The context window holds both input and output: 8,000 − 600 − 5,900 − 1,000 = 500. Option A (1,500) forgets the reservation for the output; then the model's answer could be cut off. Option B (1,100) forgets to count the system prompt, and option C subtracts only the system prompt."
+    },
+    "tds-w5-q4": {
+      "question": "A sentiment classifier's prompt is 'Tell me the sentiment of this review.' The model sometimes returns `Positive`, sometimes `The sentiment is positive.`, sometimes `Label: POSITIVE`, and the parser breaks. Which fix is most effective?",
+      "options": [
+        "Adding 'please' and 'carefully' to the prompt",
+        "Stating the exact output format (only one of `positive`/`negative`/`neutral`, or JSON with these labels), giving 2-3 examples, and validating the output against the allowed set",
+        "Raising the temperature so the model tries more options",
+        "Converting the review to uppercase before the prompt"
+      ],
+      "explanation": "The problem is an ambiguous format, so making the format explicit (allowed values or a schema), showing the pattern with few-shot examples and validating in code is the direct cure. Option C has the opposite effect: a higher temperature makes the output even more variable. Option A changes the tone but not the format ambiguity, so it is the 'at least I did something' trap."
+    },
+    "tds-w5-q5": {
+      "question": "The model returned this JSON and you parsed it. What is the output of this Python code?",
+      "options": [
+        "`int 58 2`",
+        "`str 58 2`",
+        "`TypeError`, because a string cannot be multiplied by an int",
+        "`str 2929 2`"
+      ],
+      "explanation": "In the JSON `\"29\"` is in quotes, so `json.loads` makes it a string, not an int. In Python string × int is repetition: `\"29\" * 2` = `\"2929\"`. The `skills` list has 2 items. This is exactly why schema validation is needed: the model returned age as a string. Option A's trap is assuming a number-like value becomes an int automatically; option C's trap is thinking string * int raises an error."
+    },
+    "tds-w5-q6": {
+      "question": "2,000 reviews must be classified. Each request carries 250 tokens of instructions and one review (100 tokens on average). You switch to batching: each request carries the same 250 tokens of instructions once, plus 20 reviews. How many INPUT tokens does the batched version use in total?",
+      "options": [
+        "700,000",
+        "225,000",
+        "200,000",
+        "25,000"
+      ],
+      "explanation": "2,000 ÷ 20 = 100 requests. Each request: 250 + 20 × 100 = 2,250 tokens. Total: 100 × 2,250 = 225,000. Without batching it would be 2,000 × (250 + 100) = 700,000 (option A), so the saving comes only from not repeating the instructions. Option C's trap is not counting the instructions at all (100 × 2,000), and option D counts only the instructions."
+    },
+    "tds-w6-q1": {
+      "question": "Vector a = (3, 4) and vector b = (6, 8). What is their cosine similarity?",
+      "options": [
+        "1",
+        "0",
+        "2, because b is twice as long as a",
+        "−1"
+      ],
+      "explanation": "b = 2a, so both point in the same direction, the angle is 0 and cos 0 = 1. Calculation: a·b = 18 + 32 = 50, |a| = 5, |b| = 10, 50 / 50 = 1. Cosine normalises away length, so option C's trap ('a longer vector is more similar') does not apply; cosine is never above 1. −1 would be for opposite directions."
+    },
+    "tds-w6-q2": {
+      "question": "A company's HR policies are updated every month, and you want an assistant that answers from the latest policy and cites its source. Which approach fits best?",
+      "options": [
+        "Fine-tune the model on the new policies every month and leave citing sources to the model",
+        "Paste all the policies into the prompt once and keep using that prompt forever",
+        "Set temperature to 0 and ask the model to remember the policies",
+        "Chunk the policies and index them with embeddings, retrieve the relevant chunks for each query into the prompt, and show the chunk's source with the answer"
+      ],
+      "explanation": "In RAG the knowledge lives in the index, not the model: when a policy changes, re-embed only that document's chunks, and the retrieved chunk's source can be shown directly. Option A is tempting, but fine-tuning is costly, must be redone for every update, and the model cannot reliably cite sources. Option B causes both context-window and staleness problems. In option C the model does not have the policy at all, so temperature changes nothing."
+    },
+    "tds-w6-q3": {
+      "question": "Query vector q = (1, 2, 2) and document vector d = (2, 0, 1). What is their cosine similarity (to 2 decimals)?",
+      "options": [
+        "0.80",
+        "0.45",
+        "0.60",
+        "4.00"
+      ],
+      "explanation": "q·d = 1×2 + 2×0 + 2×1 = 4. |q| = √9 = 3, |d| = √5 ≈ 2.236. cosine = 4 / (3 × 2.236) = 4 / 6.708 ≈ 0.596 ≈ 0.60. Option D's trap is writing just the dot product (4), which is not normalised; a cosine can never exceed 1. Option A (0.80) = 4/5 and option B (0.45) ≈ 4/9 come from dividing by just one vector's squared length (|d|² = 5 or |q|² = 9) instead of the product of both norms."
+    },
+    "tds-w6-q4": {
+      "question": "All vectors have unit length, so score = dot product. What is the output of this code?",
+      "options": [
+        "`['shipping', 'warranty']`",
+        "`['refund', 'shipping']`",
+        "`['refund', 'warranty']`",
+        "`['warranty', 'refund']`"
+      ],
+      "explanation": "Scores: refund = 0.6×0.8 + 0.8×0.6 = 0.96, shipping = 1.0×0.8 + 0 = 0.8, warranty = 0 + 1.0×0.6 = 0.6. Top-2 in descending order: refund (0.96), shipping (0.8). Option C's trap is reading q's components in reverse (0.6, 0.8), which would make warranty's score 0.8. `sorted(scores, ...)` sorts the dict's keys, so the output is a list of names."
+    },
+    "tds-w6-q5": {
+      "question": "A document has 1,000 tokens. What is the output of this chunking function?",
+      "options": [
+        "`[0, 300, 600, 900]`",
+        "`[0, 250, 500, 750, 1000]`",
+        "`[0, 350, 700]`",
+        "`[0, 250, 500, 750]`"
+      ],
+      "explanation": "Each next chunk starts `size − overlap` = 250 tokens later: 0, 250, 500, 750. The chunk starting at 750 reaches 750 + 300 = 1050 ≥ 1000, so the end of the document is covered and the loop stops. Option A's trap is forgetting the overlap and stepping by 300; option C adds the overlap instead of subtracting it (350). Option B would start an empty chunk at 1000, which the loop's `break` condition prevents."
+    },
+    "tds-w6-q6": {
+      "question": "In the golden set, the relevant documents for a query are {d2, d5, d7}. Your retriever returned [d5, d1, d9, d2, d4] as the top 5. What are recall@5 and precision@5?",
+      "options": [
+        "recall@5 = 0.40, precision@5 = 0.67",
+        "recall@5 = 1.00, precision@5 = 0.40",
+        "recall@5 ≈ 0.67, precision@5 = 0.40",
+        "recall@5 ≈ 0.67, precision@5 ≈ 0.67"
+      ],
+      "explanation": "The relevant documents in the top 5 are d5 and d2, so 2 hits. recall@5 = hits / total relevant = 2/3 ≈ 0.67 (d7 was missed). precision@5 = hits / k = 2/5 = 0.40. Option A swaps the two formulas, which is the most common trap. Option D uses the number of relevant docs (3) as the precision denominator instead of k."
+    },
+    "tds-w7-q1": {
+      "question": "A data collection script gets a `429 Too Many Requests` response from an API with the header `Retry-After: 30`. What is the right reaction?",
+      "options": [
+        "Resend the same request immediately until a 200 arrives",
+        "The rate limit was exceeded; wait at least 30 seconds before retrying, and slow future requests with backoff",
+        "The API key is wrong; generate a new key",
+        "The server crashed; switch to another endpoint right away"
+      ],
+      "explanation": "429 means the client sent more requests than the allowed rate, and `Retry-After` says how long to wait. So waiting, retrying, and lowering the rate is right. Option A is the most common mistake: tight-loop retries prolong the limit and can get the key blocked. A wrong key gives 401/403, and a server crash is a 5xx, so options C and D are wrong."
+    },
+    "tds-w7-q2": {
+      "question": "A notebook calls a paid API and the repo is shared with the team. What is the right way to use the API key?",
+      "options": [
+        "Read the key from an environment variable (or a gitignored `.env`) and send it in a request header",
+        "Send the key in the URL query as `?api_key=...`, because HTTPS encrypts everything",
+        "Write the key in the notebook's first cell; it is a private repo, so no problem",
+        "Encode the key in base64 and keep it in the code so nobody can read it"
+      ],
+      "explanation": "Reading from the environment keeps the key out of the code and git history, and sending it in a header keeps it out of URL logs. Option B's trap is that HTTPS encrypts the network traffic, but the URL is still recorded in server access logs, proxies and browser history. In option C the key stays in history forever, and the repo may be made public or forked at any time. Base64 is encoding, not encryption; anyone can decode it (option D)."
+    },
+    "tds-w7-q3": {
+      "question": "An API has 237 records and offers `?limit=50&offset=...` pagination (offset starts at 0). Your loop stops when a page returns fewer than 50 records. How many requests are made, and what does the last request return?",
+      "options": [
+        "4 requests; the last at offset 150 with 50 records",
+        "5 requests; the last at offset 250 with 37 records",
+        "6 requests; the sixth comes back empty",
+        "5 requests; the last at offset 200 with 37 records"
+      ],
+      "explanation": "Offsets 0, 50, 100, 150, 200 = 5 requests. The first four bring 50 each = 200 records, the last (offset 200) brings 237 − 200 = 37 records, fewer than 50, so the loop stops. Option B's trap is computing the offset as page number × 50 starting from 1 (50, 100, ..., 250). Option C would be right if the total were a multiple of 50 (say 250); then you would have to see an empty page to stop."
+    },
+    "tds-w7-q4": {
+      "question": "Retry policy: first wait 1 second, double on every retry, but no wait longer than 10 seconds, with 5 retries in total. What does this code print (ignore jitter)?",
+      "options": [
+        "`[1, 2, 4, 8, 16] 31`",
+        "`[1, 2, 4, 8] 15`",
+        "`[1, 2, 4, 8, 10] 25`",
+        "`[10, 10, 10, 10, 10] 50`"
+      ],
+      "explanation": "`i` goes from 0 to 4: 2⁰..2⁴ = 1, 2, 4, 8, 16. The cap `min(10, ...)` turns the last 16 into 10: [1, 2, 4, 8, 10], sum 25. Option A's trap is forgetting the cap. Option B reads `range(5)` as 4 values. Option D reads `min` as if it were `max`."
+    },
+    "tds-w7-q5": {
+      "question": "A site's `robots.txt` is shown below. Which path may your crawler (any user agent) fetch?",
+      "options": [
+        "`/private/press/note.html`",
+        "`/searchable-items`",
+        "`/private/reports/q1.csv`",
+        "`/search?q=tools`"
+      ],
+      "explanation": "`/private/press/note.html` matches `Allow: /private/press/`, a more specific exception to `Disallow: /private/`, so it is allowed. `/private/reports/q1.csv` matches only `Disallow: /private/`. Rules apply to path PREFIXES: `Disallow: /search` blocks `/search?q=tools` and also `/searchable-items`, since both start with `/search`. Option B is the most tempting trap, because people read it as a whole-word match."
+    },
+    "tds-w7-q6": {
+      "question": "An API returns posts newest-first with `?limit=50&offset=...`. You fetched page 1 (offset 0). Before you request page 2 (offset 50), 3 new posts are published. What happens on page 2?",
+      "options": [
+        "Page 2 is exactly right, because the offset is fixed",
+        "The last 3 posts of page 1 appear again on page 2 (duplicates), and no post is skipped",
+        "3 posts are skipped and never fetched",
+        "The 3 new posts appear at the start of page 2"
+      ],
+      "explanation": "The 3 new posts are added at the top, so every old post's position grows by 3. Page 1 gave old positions 0–49. The posts now at offset 50 are old positions 47–96, so old 47, 48, 49 (the last three of page 1) come again. Option C's trap is the opposite case: skips happen when posts are DELETED during paging. The new posts sit at offsets 0–2, not on page 2 (option D). This is why cursor pagination is better for changing data."
+    },
+    "tds-w8-q1": {
+      "question": "The page's HTML is below. Which CSS selector selects ONLY the price cells inside the table (`20` and `35`)?",
+      "options": [
+        "`.price`",
+        "`#items.price`",
+        "`#items .price`",
+        "`price#items`"
+      ],
+      "explanation": "`#items .price` (with a space) means 'elements with class price anywhere inside the element with id items', which is just the two `td`s. Option A `.price` also catches the outside `div` (99). Option B (no space) asks for a single element whose id is items AND whose class is price; there is none, and understanding the space is the main trap here. Option D looks for a tag named `price`."
+    },
+    "tds-w8-q2": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`4 3`",
+        "`3 3`",
+        "`4 4`",
+        "`3 4`"
+      ],
+      "explanation": "`split(\",\")` does not understand quotes and also splits at the comma inside `\"Mumbai, MH\"`: `Asha`, `\"Mumbai`, ` MH\"`, `29` = 4 pieces. `csv.reader` treats the quoted field as one field: `Asha`, `Mumbai, MH`, `29` = 3. Option B's trap is assuming `split` respects quotes too."
+    },
+    "tds-w8-q3": {
+      "question": "What is the output of this Python code (two lines)?",
+      "options": [
+        "`['alpha', 'beta']` / `['alpha', 'beta']`",
+        "`['alpha</b> and <b>beta']` / `['alpha</b> and <b>beta']`",
+        "`['alpha', 'beta']` / `['alpha</b> and <b>beta']`",
+        "`['alpha</b> and <b>beta']` / `['alpha', 'beta']`"
+      ],
+      "explanation": "In the first pattern `.*` is greedy: starting at the first `<b>` it consumes as much as possible and stops at the LAST `</b>`, giving one big match: `alpha</b> and <b>beta`. In the second, `.*?` is lazy: it stops at the first `</b>` it finds, so there are two separate matches. Option C swaps greedy and lazy, which is the main trap here."
+    },
+    "tds-w8-q4": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`['2024-03-05', '2024-11-20']`",
+        "`[('2024', '03'), ('2024', '11')]`",
+        "`[('2024', '03', '05'), ('2024', '11', '20')]`",
+        "`['2024', '03', '2024', '11']`"
+      ],
+      "explanation": "The pattern has two capture groups (year and month); the day's `\\d{2}` is not in a group. With two or more groups, `findall` returns a tuple of the groups for each match, not the whole match. `A-102` does not match because `\\d{4}` needs four digits. Option A's trap is assuming `findall` always returns the whole match; option C treats the day as a group too."
+    },
+    "tds-w8-q5": {
+      "question": "This code runs on a parsed API response. What is the output?",
+      "options": [
+        "`2 [1]`",
+        "`2 [1, 3]`",
+        "`KeyError: 'tags'`",
+        "`3 [1, 3]`"
+      ],
+      "explanation": "Item 1 has 2 tags, item 2 has no `tags` key at all (`.get` returns the default `[]`, length 0), item 3 has an empty list (length 0): sum = 2. In the second list `if it.get(\"tags\")` is a truthiness check: item 2's `None` and item 3's empty list `[]` are both falsy, so only id 1. Option B's trap is treating an empty list as truthy; option C's trap is thinking `.get` also raises an error for a missing key."
+    },
+    "tds-w8-q6": {
+      "question": "Table `users` has 3 rows: ('asha','Pune'), ('ravi','Delhi'), ('meera','Pune'). What is the output of this code?",
+      "options": [
+        "`0 0`",
+        "`1 0`",
+        "`3 3`",
+        "`3 0`"
+      ],
+      "explanation": "After the f-string the first query becomes `WHERE name = 'x' OR '1'='1'`. `'1'='1'` is true for every row, so the `OR` makes the whole condition true and COUNT = 3 (SQL injection). In the parameterised query the whole string is compared as one literal value; nobody's name is literally `x' OR '1'='1`, so 0. Option A's trap is assuming both queries behave the same; option C's is thinking the placeholder also runs the string as SQL."
+    },
+    "tds-w9-q1": {
+      "question": "A wide table has rows for 3 cities and the columns `city, 2021, 2022, 2023, 2024` (sales for each year). How many rows result from melting it into tidy long format (`city, year, sales`)?",
+      "options": [
+        "3",
+        "4",
+        "12",
+        "15"
+      ],
+      "explanation": "In long format each (city, year) combination is one observation: 3 cities × 4 years = 12 rows. Option D (15) comes from also counting the `city` column as a 'year' (3 × 5); `city` is an identifier that is repeated on each row, not melted. Option A is just the wide table's row count."
+    },
+    "tds-w9-q2": {
+      "question": "A column's values are 10, 20, missing, 30, missing. The missing values are imputed with the mean of the observed values. After imputation, what happens to the column's mean and standard deviation (compared with the observed values)?",
+      "options": [
+        "The mean stays 20, but the standard deviation goes down",
+        "Both the mean and the standard deviation go up",
+        "Both the mean and the standard deviation stay exactly the same",
+        "The mean becomes 12"
+      ],
+      "explanation": "Observed mean (10 + 20 + 30) / 3 = 20. Adding 20 twice keeps the mean at 20, but these values sit exactly at the mean, so the spread shrinks: the population std goes from about 8.16 to 6.32. Option C's trap is assuming nothing changed because the mean did not; this is why mean imputation understates variability and correlations. Option D treats missing as 0 (60 / 5)."
+    },
+    "tds-w9-q3": {
+      "question": "The first line below creates `sales.csv`. What does the second command print?",
+      "options": [
+        "`Delhi 13`",
+        "`Pune 2`",
+        "`Mumbai 3`",
+        "`Pune 17`"
+      ],
+      "explanation": "awk skips the header with `NR>1` and adds up each city's amount: Pune 10 + 7 = 17, Delhi 5 + 8 = 13, Mumbai 3. `sort -k2,2nr` sorts the second field numerically in descending order, and `head -1` keeps the top line: Pune 17. Option B's trap is reading this as a `uniq -c` style count (Pune appears 2 times), while awk is SUMming the amounts here. Option C would appear without the `n` flag: a text sort treats \"3\" as greater than \"17\", so in reverse order Mumbai 3 would come first."
+    },
+    "tds-w9-q4": {
+      "question": "A delivery-time column (minutes) has Q1 = 20 and Q3 = 30. Using the IQR rule (1.5 × IQR), which of these values are flagged as outliers: 2, 8, 44, 47?",
+      "options": [
+        "Only 47",
+        "2 and 47",
+        "2, 8 and 47",
+        "None"
+      ],
+      "explanation": "IQR = 30 − 20 = 10. Lower fence = 20 − 1.5 × 10 = 5, upper fence = 30 + 15 = 45. 2 < 5 and 47 > 45, so both are flagged; 8 and 44 lie inside the fences. Option C's trap is building the fences with just the IQR (10 and 40) instead of 1.5 × IQR, which would also flag 8. Option A's trap is looking only for large outliers; the IQR rule checks both sides."
+    },
+    "tds-w9-q5": {
+      "question": "What is the output of this cleaning code?",
+      "options": [
+        "`ValueError: could not convert string to float: '1,200'`",
+        "`5 640.1`",
+        "`3 1066.8333333333333`",
+        "`2 1075.0`"
+      ],
+      "explanation": "`replace(\",\", \"\")` removes the thousands separator first, so `\"1200\"` and `\"1050.5\"` become floats; the empty string and `\"N/A\"` are skipped. Clean list [1200.0, 950.0, 1050.5], length 3, mean 3200.5 / 3 = 1066.8333333333333. Option B's trap is treating missing as 0 and dividing by 5 (640.1). Option A would happen if `float` were applied without removing the comma."
+    },
+    "tds-w9-q6": {
+      "question": "`orders` has 5 rows with `customer_id` values 1, 1, 2, 3, 4. The `customers` lookup table has 4 rows with `customer_id` values 1, 2, 2, 3 (customer 2 appears twice by mistake). What does `SELECT COUNT(*) FROM orders o LEFT JOIN customers c ON o.customer_id = c.customer_id` return?",
+      "options": [
+        "5",
+        "6",
+        "4",
+        "8"
+      ],
+      "explanation": "Each order gets every matching customer row for its key. Customer 1: 2 orders × 1 match = 2; customer 2: 1 order × 2 matches = 2; customer 3: 1; customer 4 has no match, but a LEFT JOIN keeps it with NULLs: 1. Total 6. Option A is the most tempting trap: 'after a left join the row count equals the left table's' holds only when the key is unique in the right table. Option C drops the unmatched order, which is inner-join thinking."
+    },
+    "tds-w10-q1": {
+      "question": "A (fictional) survey found that cities with more coffee shops also have higher average incomes. What is the most justified conclusion from this observational data?",
+      "options": [
+        "Opening coffee shops will raise a city's income",
+        "The two rise together; a third factor (such as city size and jobs) or reverse causation (shops open where incomes are high) may explain the association",
+        "Drinking coffee makes people earn more",
+        "If there is correlation there must be causation; only the direction needs finding"
+      ],
+      "explanation": "Observational data only shows association. Large, job-rich cities have more of both (a confounder), and businesses open shops in higher-income areas (reverse causation). Option A is the most tempting trap because the story sounds logical, but a causal claim needs an experiment or control for confounders. Option D is also wrong: correlation can exist without any causal link."
+    },
+    "tds-w10-q2": {
+      "question": "A small team's monthly salaries (in thousands of ₹) are 30, 32, 35, 38, 400 (the last is the founder's). Which summary best reports the 'typical' salary, and what is its value?",
+      "options": [
+        "Mean, 107",
+        "Mode, 30",
+        "Range, 370",
+        "Median, 35"
+      ],
+      "explanation": "Mean = (30 + 32 + 35 + 38 + 400) / 5 = 535 / 5 = 107, far above four of the five people, because one extreme value pulls it up. The median (the middle value, 35) is not affected by the outlier and represents 'typical' better. Option A's trap is the habit of 'average = mean'. No value repeats in this data, so the mode is meaningless, and the range is a spread, not a typical value."
+    },
+    "tds-w10-q3": {
+      "question": "Table `sales(region, amount)` has the rows (N,100), (N,300), (S,50), (S,160), (E,500), (S,90). What is the result of this query?",
+      "options": [
+        "(E, 500), (N, 400)",
+        "(E, 500), (N, 400), (S, 300)",
+        "(E, 500), (N, 400), (S, 250)",
+        "(E, 500)"
+      ],
+      "explanation": "`WHERE` removes (S, 50) before grouping. Then the totals: N = 400, S = 160 + 90 = 250, E = 500. `HAVING SUM > 260` removes S (250). Result (E, 500), (N, 400). Option B's trap is ignoring `WHERE` and taking S's total as 300 (which would exceed 260). Option C forgets to apply `HAVING`."
+    },
+    "tds-w10-q4": {
+      "question": "x = −2, −1, 0, 1, 2 and y = x² (that is, 4, 1, 0, 1, 4). What is their Pearson correlation r, and what does it correctly mean?",
+      "options": [
+        "r = 1; y depends entirely on x",
+        "r = −1; y falls as x rises",
+        "r = 0; there is no linear trend, even though y is fully determined by x",
+        "r = 0; there is no relationship between x and y"
+      ],
+      "explanation": "Mean x = 0, mean y = 2. Σ(x − 0)(y − 2) = (−2)(2) + (−1)(−1) + 0 + (1)(−1) + (2)(2) = −4 + 1 + 0 − 1 + 4 = 0, so r = 0. In a U-shape the left and right halves cancel each other out. Option D is the most tempting trap: r measures only a LINEAR relationship; here y = x² is a perfect (non-linear) relationship. Option A assumes 'perfect dependence = r of 1'."
+    },
+    "tds-w10-q5": {
+      "question": "A sensor's readings have mean 50 and standard deviation 8. Rule: flag a reading if |z| > 2.5. Which of these readings is flagged?",
+      "options": [
+        "70",
+        "31",
+        "71",
+        "32"
+      ],
+      "explanation": "z = (x − 50) / 8. For 71, z = 21 / 8 = 2.625 > 2.5, flagged. For 70, z = 20 / 8 = 2.5, which is not strictly greater than 2.5, so not flagged; including the boundary is option A's trap. For 31, z = −19 / 8 = −2.375 and for 32 it is −2.25; both have |z| below 2.5."
+    },
+    "tds-w10-q6": {
+      "question": "(Fictional) clinic data: Treatment A: mild cases 18/20 recovered, severe 30/80. Treatment B: mild 64/80, severe 6/20. Overall A 48/100 = 48%, B 70/100 = 70%. What is the most accurate interpretation?",
+      "options": [
+        "A is better in each severity group (90% vs 80%, 37.5% vs 30%); B only looks better overall because A received mostly severe cases. Severity is a confounder, so the stratified comparison should be used",
+        "B is better, because the overall success rate is the real measure",
+        "The data has an error; a treatment that is better in every group cannot be worse overall",
+        "A is better only for severe cases; B is better for mild cases"
+      ],
+      "explanation": "By group: in mild cases A 18/20 = 90% vs B 64/80 = 80%; in severe cases A 30/80 = 37.5% vs B 6/20 = 30%, so A leads in both. But 80 of A's 100 patients were severe versus only 20 of B's, and severe cases have a lower success rate anyway, which drags A's overall rate down. This is Simpson's paradox. Option B's trap is trusting the pooled rate; option C's trap is thinking such a reversal is mathematically impossible."
+    },
+    "tds-w11-q1": {
+      "question": "An A/B test of a new checkout page gives a p-value of 0.03 (α = 0.05). What does this most accurately mean?",
+      "options": [
+        "The probability that the null hypothesis (no difference) is true is 3%",
+        "There is a 97% probability that the new page is better",
+        "The new page raises conversion by 3%",
+        "If there were truly no difference, the probability of a difference this extreme or more by chance alone would be 3%"
+      ],
+      "explanation": "A p-value is computed assuming H₀ is true: how often a result as extreme as or more extreme than the observed one would appear if there were 'no difference'. It is not the probability of H₀, so option A (the most common misconception) and option B are both wrong. A p-value does not give the size of the effect either, so option C is wrong; for size you need the effect estimate and a confidence interval."
+    },
+    "tds-w11-q2": {
+      "question": "A point near Chennai has latitude ≈ 13.08 (North) and longitude ≈ 80.27 (East). How is it written correctly in GeoJSON?",
+      "options": [
+        "`{\"type\": \"Point\", \"coordinates\": [13.08, 80.27]}`",
+        "`{\"type\": \"Point\", \"coordinates\": [80.27, 13.08]}`",
+        "`{\"type\": \"Point\", \"coordinates\": [-80.27, 13.08]}`",
+        "`{\"type\": \"Point\", \"coordinates\": [13.08, -80.27]}`"
+      ],
+      "explanation": "The GeoJSON standard orders a position as `[longitude, latitude]`, so `[80.27, 13.08]`. East longitude and North latitude are positive, so options C and D, with minus signs, move the point to another hemisphere. Option A's trap is the everyday 'lat, long' habit; it puts the point at latitude 80.27, near the Arctic."
+    },
+    "tds-w11-q3": {
+      "question": "What is the output of this code?",
+      "options": [
+        "`[12.0, 15.33, 19.33]`",
+        "`[10.0, 11.0, 12.0, 15.33, 19.33]`",
+        "`[11.0, 13.0, 17.0, 22.0]`",
+        "`[15.33, 19.33]`"
+      ],
+      "explanation": "`i` runs from 2 to 4, and `s[i-2:i+1]` is a three-element slice: [10, 12, 14] → 12.0, [12, 14, 20] → 15.33, [14, 20, 24] → 19.33. The first two days have no full window, so no value is produced for them. Option B's trap is assuming the first days are averaged over whatever points exist (a partial window). Option C is the result for window 2, and option D forgets the first window."
+    },
+    "tds-w11-q4": {
+      "question": "A (fictional) store's monthly sales: January 200, February 250, March 200 (thousand ₹). What is March's month-over-month percent change?",
+      "options": [
+        "−25%",
+        "+25%",
+        "−20%",
+        "0%"
+      ],
+      "explanation": "Month-over-month change uses the previous month as the base: (200 − 250) / 250 = −0.20 = −20%. Option A's trap is thinking that undoing February's +25% needs −25%; the base has changed (250 instead of 200), so it does not. Option D compares with January, which is not month-over-month."
+    },
+    "tds-w11-q5": {
+      "question": "An undirected network has the edges A–B, A–C, B–C, C–D, D–E. Which node has the highest degree, and how many edges are on the shortest path from A to E?",
+      "options": [
+        "C; 2 edges",
+        "C; 3 edges",
+        "A; 3 edges",
+        "D; 4 edges"
+      ],
+      "explanation": "Degrees: A 2 (B, C), B 2 (A, C), C 3 (A, B, D), D 2 (C, E), E 1. So C is highest. A to E: A–C–D–E = 3 edges; nothing shorter exists because E connects only to D, and D only to C. Option A's trap is counting the intermediate nodes (C, D = 2) instead of edges. Option D counts the longer route A–B–C–D–E, which is not the shortest."
+    },
+    "tds-w11-q6": {
+      "question": "An analyst runs independent tests on 20 different metrics, each at α = 0.05, and in reality no metric has any effect (all H₀ are true). What is the approximate probability of getting at least one 'significant' result (a false positive)?",
+      "options": [
+        "0.05",
+        "1.00, because 20 × 0.05 = 1",
+        "0.64",
+        "0.36"
+      ],
+      "explanation": "Each test avoids a false positive with probability 0.95; across 20 independent tests the chance of none at all is 0.95²⁰ ≈ 0.358. So the chance of at least one is 1 − 0.358 ≈ 0.64. Option B's trap is treating 20 × 0.05 = 1 as a probability; 1 is actually the EXPECTED number of false positives, not a probability. Option D is the probability of none, and option A holds for a single test only."
+    },
+    "tds-w12-q1": {
+      "question": "You need to show the monthly revenue of two products over 24 months so that trend and seasonality are visible. Which chart fits best?",
+      "options": [
+        "A line chart, one line per product, with months on the x-axis",
+        "Two pie charts, one per product",
+        "A 3D stacked area chart",
+        "A scatter plot with product on x and revenue on y"
+      ],
+      "explanation": "A line chart is the most natural way to show change over time: position and slope show the trend and seasonal ups and downs directly, and two lines are easy to compare. A pie chart cannot show time at all, and 24 slices are impossible to read (option B). Option C may seem tempting, but 3D and stacking make the upper series' values hard to read."
+    },
+    "tds-w12-q2": {
+      "question": "A map must show each state's percent change in sales versus last year; values range from −30% to +40%. Which colour palette is most appropriate?",
+      "options": [
+        "A rainbow palette, so more colours show",
+        "A single-hue sequential palette (light to dark)",
+        "A diverging palette whose neutral middle colour sits at 0%, with declines on one side and growth on the other",
+        "A categorical palette, a different colour per state"
+      ],
+      "explanation": "Here 0% is a meaningful midpoint: below means decline, above means growth. A diverging palette shows the two directions in different hues and 0 in a neutral colour. Option B is tempting, but in a sequential palette −30% would only look 'light', not like a decline, and 0 would have no visible identity. A rainbow does not increase brightness evenly and creates false boundaries, and a categorical palette is wrong for ordered values."
+    },
+    "tds-w12-q3": {
+      "question": "A bar chart shows two values, 96 and 98, and its y-axis starts at 95. How many times longer does the second bar LOOK than the first?",
+      "options": [
+        "About 1.02 times",
+        "2 times",
+        "1.5 times",
+        "3 times"
+      ],
+      "explanation": "A bar's visible length is measured from the axis start: 96 − 95 = 1 and 98 − 95 = 3, so the second bar looks 3 times as long, while the true ratio is 98 / 96 ≈ 1.02. Option A is the data's real ratio, not the chart's; that gap is exactly the danger of a truncated axis. Option B's trap is taking the difference of the values (2) as the ratio."
+    },
+    "tds-w12-q4": {
+      "question": "An infographic shows city population by the AREA of a circle. City B's population is double City A's. How many times City A's radius should City B's radius be?",
+      "options": [
+        "2 times",
+        "About 1.41 times (√2)",
+        "4 times",
+        "The same; just change the colour"
+      ],
+      "explanation": "A circle's area is πr², proportional to the square of the radius. To double the area, r² must double, so multiply r by √2 ≈ 1.41. Option A is the most common trap: doubling the radius makes the area 4 times larger, so B's population looks four times as big."
+    },
+    "tds-w12-q5": {
+      "question": "In a line chart the 'actual' line is red and the 'target' line is green, and both are solid lines of the same style. What is the best accessibility fix?",
+      "options": [
+        "Use a colour-blind-safe palette (such as blue and orange), and also add direct labels at the line ends or a different line style (solid vs dashed)",
+        "Make the red and green brighter",
+        "Increase the legend's font size",
+        "Make the chart 3D so the lines stand apart"
+      ],
+      "explanation": "Many people find the red-green colour difference hard to see, so meaning should not rest on it alone. A safe palette plus a non-colour cue (direct labels, dashed lines, markers) keeps the chart readable even without colour. Option B is tempting, but brightening does not remove the hue confusion. Option C helps read the legend, not tell the lines apart; 3D only adds clutter."
+    },
+    "tds-w12-q6": {
+      "question": "In a report a metric went from 50 to 60. The bars showing it grew from 2 cm to 5 cm tall. What is the lie factor (effect shown in the graphic ÷ effect in the data, both as relative change)?",
+      "options": [
+        "2.5",
+        "1.2",
+        "0.13",
+        "7.5"
+      ],
+      "explanation": "Effect in the graphic: (5 − 2) / 2 = 1.5, a 150% increase. Effect in the data: (60 − 50) / 50 = 0.2, a 20% increase. Lie factor = 1.5 / 0.2 = 7.5, so the chart shows the change 7.5 times larger (an honest chart is near 1). Option A's trap is using the simple ratio of heights (5 / 2), and option B the ratio of the data values (60 / 50); neither measures relative CHANGE. Option C inverts the formula (0.2 / 1.5)."
+    }
+  }
+}

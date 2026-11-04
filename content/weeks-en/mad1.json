@@ -1,0 +1,725 @@
+{
+  "subjectId": "mad1",
+  "questions": {
+    "mad1-w1-q1": {
+      "question": "A browser opens this URL: `https://shop.example.com:8443/items/list?page=2&sort=price#reviews`. Which part of the URL is **not** sent to the server with the HTTP request?",
+      "options": [
+        "The query string `page=2&sort=price`",
+        "The fragment `reviews`",
+        "The path `/items/list`",
+        "The host `shop.example.com` (which goes in the `Host` header)"
+      ],
+      "explanation": "The fragment (the part after `#`) is only for the browser, for example to scroll to a section of the page; the browser does not include it in the request. The path and query go in the request line (`GET /items/list?page=2&sort=price HTTP/1.1`) and the host goes in the `Host` header, so options A, C and D are wrong. Trap: option A, because people think the query is also browser-only, while the server uses it to filter and sort."
+    },
+    "mad1-w1-q2": {
+      "question": "In an app, the `/login` route accepts only GET and POST. A client sends a `DELETE /login` request. Which status code is the most accurate?",
+      "options": [
+        "404 Not Found",
+        "403 Forbidden",
+        "405 Method Not Allowed",
+        "501 Not Implemented"
+      ],
+      "explanation": "The resource (`/login`) exists; this method just isn't allowed on it. That is 405, and the response's `Allow` header lists the allowed methods (GET, POST). Option A's trap: the resource was found, so 404 is wrong. Option D (501) is for a server that doesn't recognise the method for any resource at all. Option B (403) is about missing permission, not about the method."
+    },
+    "mad1-w1-q3": {
+      "question": "A 2 MB file is downloaded over a 16 Mbps link with an RTT of 80 ms. Before data arrives, 2 RTTs are needed (TCP handshake + request); ignore TLS and server time. 1 MB = 10⁶ bytes, 1 Mbps = 10⁶ bits/s. What is the total time?",
+      "options": [
+        "0.29 s",
+        "1.00 s",
+        "1.08 s",
+        "1.16 s"
+      ],
+      "explanation": "Latency: 2 × 80 ms = 0.16 s. Transmission: 2 MB = 16 × 10⁶ bits, and 16 × 10⁶ ÷ 16 × 10⁶ = 1.0 s. Total = 0.16 + 1.0 = 1.16 s. Option A's trap: not converting bytes to bits (2 ÷ 16 = 0.125 s, plus 0.16). Option B forgets the latency, and option C counts only 1 RTT."
+    },
+    "mad1-w1-q4": {
+      "question": "A browser sends `GET /old-page` and the server replies `301 Moved Permanently` with the header `Location: /new-page`. What happens next?",
+      "options": [
+        "The browser automatically sends a new GET request for `/new-page`, and the address bar shows `/new-page`",
+        "The server fetches the content of `/new-page` internally and sends it in the body of that same 301 response",
+        "The browser shows the user an error page, because 3xx codes are failures",
+        "The browser waits a little and requests `/old-page` again"
+      ],
+      "explanation": "A 3xx redirect means 'the resource is elsewhere': the browser reads the `Location` header and sends a **new request** there, so there are two request-response cycles and the URL changes. Option B's trap: that is like a server-side forward/include, not a redirect; in a redirect the client does the work. Option C is wrong because 3xx is not an error class, and option D is thinking of `Retry-After`/503."
+    },
+    "mad1-w1-q5": {
+      "question": "In a fresh browser (no caches) a user opens `https://www.example.org/`. The connection is HTTP/1.1 or HTTP/2 over TCP. Which order is correct?",
+      "options": [
+        "TCP handshake → DNS lookup → TLS handshake → HTTP request",
+        "DNS lookup → TCP handshake → TLS handshake → HTTP request",
+        "DNS lookup → TLS handshake → TCP handshake → HTTP request",
+        "HTTP request → DNS lookup → TCP handshake → TLS handshake"
+      ],
+      "explanation": "A TCP connection needs an IP address, so DNS comes first. TLS runs on top of TCP, so the TLS handshake comes after TCP. Only once the encrypted channel exists does the HTTP request go out. Option C's trap: putting TLS before TCP because 'security comes first'; but TLS needs a TCP connection to send its bytes. Option A starts TCP without an IP, which isn't possible."
+    },
+    "mad1-w1-q6": {
+      "question": "Plain HTTP/1.1 (no TLS), DNS already cached, RTT 50 ms. A browser loads an HTML page that references 5 more files (3 CSS/JS + 2 images, same server). No TCP connection is open yet; the browser opens one **persistent** TCP connection and requests the files one after another (no pipelining). Ignore transmission and server time. What is the minimum time to get all 6 files?",
+      "options": [
+        "600 ms",
+        "150 ms",
+        "350 ms",
+        "300 ms"
+      ],
+      "explanation": "TCP handshake = 1 RTT. Then the HTML request-response = 1 RTT, and the other 5 files one after another = 5 RTTs. Total 7 RTTs × 50 ms = 350 ms. Option A's trap: that is the non-persistent connection count, where every file needs a new handshake (6 × 2 × 50 = 600 ms). Option D forgets the handshake (6 × 50), and option B assumes all the files arrived at once."
+    },
+    "mad1-w2-q1": {
+      "question": "Which markup is the most accessible for an email input, so that clicking the label focuses the input and a screen reader announces the field's name?",
+      "options": [
+        "`<input type=\"email\" name=\"email\" placeholder=\"Email\">` (placeholder only)",
+        "`<span>Email</span> <input type=\"email\" name=\"email\">`",
+        "`<label>Email</label> <input type=\"email\" name=\"email\">` (label outside the input, no `for`)",
+        "`<label for=\"email\">Email</label> <input type=\"email\" id=\"email\" name=\"email\">`"
+      ],
+      "explanation": "The label's `for` matches the input's `id`, so the label is programmatically tied to that input: a click focuses it and a screen reader announces the field as 'Email'. Option A's trap: a placeholder disappears as soon as you type and does not replace a label. Option C has a `<label>`, but with no `for` and the input not inside it there is no link; option B's `<span>` is just text."
+    },
+    "mad1-w2-q2": {
+      "question": "In this CSS `box-sizing` is not set anywhere (default). What is the card's visible width (from one edge of the border to the other)?",
+      "options": [
+        "300px",
+        "340px",
+        "350px",
+        "370px"
+      ],
+      "explanation": "With the default `content-box`, `width` is only the content: 300 + 2 × 20 (padding) + 2 × 5 (border) = 350px. Option A's trap: thinking like `border-box`, where 300px would include everything. Option B forgets the border, and option D also adds the margin, but the margin is empty space outside the border, not part of the visible box."
+    },
+    "mad1-w2-q3": {
+      "question": "The user presses Go without changing anything. Which URL will the browser request?",
+      "options": [
+        "`/search?q=flask&sort=new`",
+        "`/search?q=flask&lang=en&sort=new`",
+        "`/search?q=flask&sort=Newest`",
+        "`/search` (the data goes in the request body)"
+      ],
+      "explanation": "Only controls with a `name` are submitted: `q=flask` and the select's `sort`. A select's value is the chosen option's `value` attribute (`new`), not its visible text (`Newest`). Option B's trap: the `lang` input has only an `id`, no `name`, so it isn't sent. Option C sends the display text, and option D is POST behaviour, while the method here is GET."
+    },
+    "mad1-w2-q4": {
+      "question": "The HTML is `<nav id=\"menu\"><a class=\"link active\" href=\"/\">Home</a></nav>` and the CSS is below. What colour is the \"Home\" link?",
+      "options": [
+        "blue",
+        "red",
+        "green",
+        "the browser's default link colour, because the rules conflict"
+      ],
+      "explanation": "Specificity: `#menu a` = (1, 0, 1), `nav a.active` = (0, 1, 2), `.link.active` = (0, 2, 0). The comparison goes from the left and only the first rule has an id, so red wins. Option A's trap: 'the last rule wins' or 'two classes are more'; source order only matters when specificity is equal. Option D is wrong because the cascade always resolves a conflict."
+    },
+    "mad1-w2-q5": {
+      "question": "The viewport width is first 768px, then 400px. What is the width of `.col` in each case?",
+      "options": [
+        "50% at 768px, 90% at 400px",
+        "100% at 768px, 100% at 400px",
+        "50% at 768px, 100% at 400px",
+        "100% at 768px, 90% at 400px"
+      ],
+      "explanation": "`max-width: 768px` means width ≤ 768px, so at 768px the first query applies and the width is 100%. At 400px both queries match; specificity is equal, so the later rule (90%) wins. Option A's trap: reading `max-width` as 'strictly less than'. Option B's trap: thinking that after the first matching media query the rest are ignored; in CSS every matching rule enters the cascade."
+    },
+    "mad1-w2-q6": {
+      "question": "Two `<div>`s sit one below the other in normal block flow (the parent is a plain block, not flex/grid), with no padding, border or content between them. What is the vertical gap between the border of \"One\" and the border of \"Two\"?",
+      "options": [
+        "50px",
+        "20px",
+        "30px",
+        "10px"
+      ],
+      "explanation": "In normal flow the vertical margins of adjacent block siblings **collapse**: the gap is the larger of the two margins, i.e. max(30, 20) = 30px. Option A's trap: adding the margins as you would horizontally (30 + 20). Collapsing happens only for vertical margins in block flow; margins of flex or grid items don't collapse, and there you would get 50px. Option D's 10px is the difference, which no rule uses."
+    },
+    "mad1-w3-q1": {
+      "question": "The context has `courses = ['MAD1', 'DBMS']`. What does this (one-line) template render?",
+      "options": [
+        "1.MAD1 2.DBMS",
+        "0.MAD1 1.DBMS",
+        "MAD1.1 DBMS.2",
+        "1.MAD1 1.DBMS"
+      ],
+      "explanation": "In Jinja `loop.index` starts at 1 and goes up on every iteration, so you get `1.MAD1 2.DBMS`. Option B's trap: counting from 0 like Python's `enumerate`; that would be `loop.index0`. Option D assumes the index never increases, and option C has the order reversed."
+    },
+    "mad1-w3-q2": {
+      "question": "A Flask app renders `<p>{{ comment }}</p>` in a `comment.html` template, and a user wrote `<b>hi</b>` as the comment. With default settings, what does the browser show?",
+      "options": [
+        "'hi' in bold text",
+        "The literal text `<b>hi</b>`, because `<` and `>` were escaped to `&lt;` and `&gt;`",
+        "The template fails to render with an error",
+        "The `<b>` tags are removed and only a plain 'hi' is shown"
+      ],
+      "explanation": "Flask turns autoescaping on for `.html` templates, so the special characters in `{{ comment }}` become HTML entities and the browser shows them as text, not as tags. Option A's trap: that only happens with `|safe` (and then a `<script>` would run too). Option D is 'sanitizing', which autoescaping does not do; it doesn't strip tags, it turns them into harmless text."
+    },
+    "mad1-w3-q3": {
+      "question": "The template is the same both times. First `user = {'name': 'Asha'}` (no `nickname` key) is passed, then `user = {'name': 'Asha', 'nickname': ''}`. What are the two outputs?",
+      "options": [
+        "`Hi Guest!` and `Hi Guest!`",
+        "`Hi !` and `Hi Guest!`",
+        "An error the first time, `Hi !` the second time",
+        "`Hi Guest!` and `Hi !`"
+      ],
+      "explanation": "The first time there is no `nickname` key, so `user.nickname` is undefined and `default` gives 'Guest'. The second time the key exists and its value is an empty string; `default` only acts on undefined values, so the empty string is printed: `Hi !`. Option A's trap: treating `default` like Python's `or`; for that you need `default('Guest', true)`. Option C is wrong because with default settings a missing key does not raise an error."
+    },
+    "mad1-w3-q4": {
+      "question": "`base.html` has `<title>{% block title %}Site{% endblock %}</title>`. When the `profile.html` below is rendered, what is the title, and does \"Hello\" appear on the page?",
+      "options": [
+        "`<title>Profile - Site</title>`, and \"Hello\" also appears on the page",
+        "`<title>Profile - </title>`, and \"Hello\" does not appear",
+        "`<title>Profile - Site</title>`, and \"Hello\" does not appear",
+        "`<title>Site</title>`, because a parent's block cannot be overridden"
+      ],
+      "explanation": "The child's `title` block replaces the parent's block, and `{{ super() }}` brings back the parent's content 'Site', so the title is `Profile - Site`. In a template that extends another, text outside blocks (here \"Hello\") is not rendered, because the output is the parent's layout. Option A's trap: treating the child like a normal page where everything is printed. Option B ignores `super()`, and option D gets the meaning of block overriding backwards."
+    },
+    "mad1-w3-q5": {
+      "question": "The header has a link `<a href=\"/cart\"><img src=\"cart.svg\" ...></a>`; there is no text in the link, only a cart icon. What is the best `alt` for the image?",
+      "options": [
+        "`alt=\"View cart\"`",
+        "`alt=\"\"`, because the icon is decorative",
+        "`alt=\"cart.svg\"`",
+        "Leave out `alt`; `title=\"cart\"` is enough"
+      ],
+      "explanation": "Here the image is the link's entire content, so its `alt` becomes the link's accessible name. So the alt should state what the link does: 'View cart'. Option B's trap: `alt=\"\"` is for decorative images that already have text next to them; here it would leave the link without a name and a screen reader would just say 'link'. Option C makes it read a filename that is useless to users, and in option D `title` is not a reliable replacement."
+    },
+    "mad1-w3-q6": {
+      "question": "The context has `nums = [3, 4, 7, 8, 10]`. What does this (one-line) template render?",
+      "options": [
+        "2=4;4=8;5=10;",
+        "0=4;1=8;2=10;",
+        "1=3;2=7;",
+        "1=4;2=8;3=10;"
+      ],
+      "explanation": "`for ... if ...` filters the sequence first, and the `loop` variable counts only the items that enter the loop: 4, 8, 10 get indices 1, 2, 3. Option A's trap: that is what happens with an `{% if %}` inside the loop, where `loop.index` counts positions in the original list (including 3). Option B is like `loop.index0`, and option C reads the condition backwards (odd numbers)."
+    },
+    "mad1-w4-q1": {
+      "question": "A student can take many courses and a course has many students. What is the correct way to store this in a relational database?",
+      "options": [
+        "A `course_id` column in the `student` table",
+        "A `student_ids` column in the `course` table holding comma-separated ids",
+        "A separate association table (such as `enrollment`) with both `student_id` and `course_id` as foreign keys",
+        "Merging Student and Course into a single table"
+      ],
+      "explanation": "This is a many-to-many (M:N) relationship, and in the relational model it is represented by an association table in which each row is one (student, course) pair. Option A's trap: one column can hold only one course, which makes it 1:N. Option B allows neither a foreign key nor a join, and option D duplicates data again and again."
+    },
+    "mad1-w4-q2": {
+      "question": "In a blog app a User can have many Posts, but every Post has exactly one author. Where should the foreign key go?",
+      "options": [
+        "A `post_id` column in the `users` table",
+        "A `user_id` column in the `posts` table, pointing to `users.id`",
+        "Each table holding the other's id",
+        "A separate association table is required"
+      ],
+      "explanation": "In a 1:N relationship the FK goes on the 'many' side (posts): every post stores the id of its one author. Option A's trap: a user has many posts, so a single `post_id` column cannot hold them all. Option C creates duplicated and inconsistent data, and option D (an association table) is for M:N, which isn't needed here."
+    },
+    "mad1-w4-q3": {
+      "question": "`users` has (1, Asha), (2, Bilal), (3, Chen). `posts` has three rows: two with `user_id = 1` and one with `user_id = 3`. What does this query return?",
+      "options": [
+        "Asha 2, Bilal 0, Chen 1",
+        "Asha 2, Bilal 1, Chen 1",
+        "Asha 2, Chen 1",
+        "Asha 2, Bilal NULL, Chen 1"
+      ],
+      "explanation": "The LEFT JOIN keeps Bilal too, with NULL post columns. `COUNT(p.id)` counts only non-NULL values, so Bilal's count is 0. Option B's trap: thinking like `COUNT(*)`, which would count the NULL row as 1. Option C is the INNER JOIN result, and option D is wrong because COUNT never returns NULL; it returns 0."
+    },
+    "mad1-w4-q4": {
+      "question": "Which statement about the model below is correct? (The `User` model's table is `user`.)",
+      "options": [
+        "`author` creates a separate column in the database that stores the user's name",
+        "`db.ForeignKey('user.id')` is wrong; it should use the class name `'User.id'`",
+        "A Post can be saved without a user, because relationships are optional",
+        "In the table the link is only the `user_id` column; `post.author` gives the User object and `user.posts` gives that user's list of posts"
+      ],
+      "explanation": "`relationship` creates no column; it provides Python attributes based on the `user_id` FK, and `backref='posts'` adds the reverse attribute on User. Option A's trap: taking the relationship for a column. Option B is wrong because `ForeignKey` takes a table.column name; the class name belongs in `relationship('User')`. Option C is wrong because `user_id` has `nullable=False`."
+    },
+    "mad1-w4-q5": {
+      "question": "A Flask-SQLAlchemy view creates `u = User(email='a@x.in')`, calls `db.session.add(u)`, and returns a response without calling `commit()`. What happens?",
+      "options": [
+        "The row is saved automatically at the end of the request",
+        "The row is not saved; at the end of the request the session is removed and the uncommitted work is discarded",
+        "The row is saved but appears only after the app restarts",
+        "`add()` itself raises an error, because add is not allowed without commit"
+      ],
+      "explanation": "`add()` only marks the object as pending in the session; making it permanent in the database is `commit()`'s job. Flask-SQLAlchemy removes the session at the end of the app context, and a transaction that was never committed is rolled back. Option A's trap: assuming an 'auto-save', which is not the default behaviour. Option D is wrong because calling commit after add is the normal flow; add on its own raises no error."
+    },
+    "mad1-w4-q6": {
+      "question": "`User.posts` is a relationship that uses the default (lazy) loading. The database has 50 users. How many SELECT queries does this code run in total?",
+      "options": [
+        "1",
+        "2",
+        "50",
+        "51"
+      ],
+      "explanation": "The first query loads all 50 users. With lazy loading, every `u.posts` runs a separate SELECT for that user the first time it is accessed, so 50 more queries: 1 + 50 = 51. This is the **N+1 problem**. Option B's trap: that is the count for eager loading such as `selectinload`, not for the default. Option A assumes a single JOIN like `joinedload`, and option C forgets the first query for the users."
+    },
+    "mad1-w5-q1": {
+      "question": "A route is defined with `@app.route('/submit')` (no `methods` argument). An HTML form sends `POST /submit`. What is the status of the response?",
+      "options": [
+        "200, because the route exists",
+        "404 Not Found",
+        "405 Method Not Allowed",
+        "500 Internal Server Error"
+      ],
+      "explanation": "Without `methods`, a route accepts only GET (plus the automatic HEAD/OPTIONS). The URL matches but the method doesn't, so 405. Option B's trap: thinking 'the request failed, so 404'; 404 is for when no rule matches at all. Option A is wrong because the route existing isn't enough, the method must be allowed too, and option D would happen if an exception occurred inside the view."
+    },
+    "mad1-w5-q2": {
+      "question": "`<form action=\"/signup\" method=\"post\">` contains `<input name=\"email\">`. Where does the Flask view find this field's value?",
+      "options": [
+        "`request.form['email']`",
+        "`request.args['email']`",
+        "`request.get_json()['email']`",
+        "`request.cookies['email']`"
+      ],
+      "explanation": "A POST form's data is form-encoded in the request body, and Flask exposes it as `request.form`. Option B's trap: `request.args` is only the URL's query string, which a GET form fills. Option C is for a JSON body (for example `fetch` sending `application/json`), and option D is for cookies; a normal form submit puts nothing there."
+    },
+    "mad1-w5-q3": {
+      "question": "The route is `@app.route('/user/<int:uid>')` and the view is `def profile(uid):`. What happens for the requests `GET /user/42` and `GET /user/abc`?",
+      "options": [
+        "The view runs for both; in the second case `uid` is the string `'abc'`",
+        "For `/user/42`, `uid` is the string `'42'`; `/user/abc` gives 404",
+        "`/user/42` works; for `/user/abc`, `int()` fails inside the view and a 500 is returned",
+        "For `/user/42`, `uid` is the integer 42; `/user/abc` does not match the route at all, so 404"
+      ],
+      "explanation": "The `int` converter checks during matching: if the segment is digits it passes an int to the view, otherwise the rule doesn't match and, with no other rule, the result is 404. Option C's trap: thinking the conversion happens inside the view and a failure crashes it (500); the view never runs. Option B is wrong because the converter changes the type, and option A ignores the converter."
+    },
+    "mad1-w5-q4": {
+      "question": "A POST handler that places an order returns `redirect(url_for('order_status', oid=o.id))` on success instead of `render_template('done.html')`. What is the main benefit?",
+      "options": [
+        "Less server load, because a redirect response is small",
+        "If the user refreshes, the browser repeats only a GET, not the form's POST, so no duplicate order is created",
+        "HTTP does not allow HTML in the response to a POST",
+        "The redirect puts the form data into the URL, which helps debugging"
+      ],
+      "explanation": "This is the Post/Redirect/Get pattern: after the redirect the last request in the browser's history is a GET, so a refresh or back/forward does not POST the order again. Option A's trap: seeing the redirect as an optimisation; it actually costs an extra request. Option C is wrong, a POST response can be HTML; the risk is only a resubmit on refresh. Option D is also wrong, the form data does not go into the redirect URL."
+    },
+    "mad1-w5-q5": {
+      "question": "The route `@app.route('/post/<int:post_id>')` has the view function `show_post`. Inside a request, what does `url_for('show_post', post_id=7, ref='mail')` return?",
+      "options": [
+        "`/post/7/mail`",
+        "An error, because `ref` is not in the route",
+        "`/post/7?ref=mail`",
+        "`/post?post_id=7&ref=mail`"
+      ],
+      "explanation": "`url_for` fills the rule's variables (`post_id`) into the path, and turns any extra arguments that are not in the rule (`ref`) into the query string. Option B's trap: treating an extra argument as an error; Flask quietly puts it in the query. Option D puts every value in the query and option A puts them in the path; both ignore the rule."
+    },
+    "mad1-w5-q6": {
+      "question": "A controller validates a form with this function. What is the output of the code?",
+      "options": [
+        "{'name': 'required', 'age': 'number'} {'age': 'range'}",
+        "{'age': 'number'} {'age': 'range'}",
+        "{'name': 'required', 'age': 'range'} {'age': 'range'}",
+        "{'name': 'required', 'age': 'number'} {'age': 'number'}"
+      ],
+      "explanation": "In the first form `'  '.strip()` is an empty string, so there is a `name` error. `'-5'.isdigit()` is False (the minus sign is not a digit), so `age` = 'number'. In the second form `'075'.isdigit()` is True and `int('075')` = 75, which is outside 18–60, so only `age` = 'range'. Option C's trap: treating '-5' as a number and reaching the range check. Option D treats the leading zero as invalid, and option B ignores `strip()`."
+    },
+    "mad1-w6-q1": {
+      "question": "According to HTTP semantics, which of these methods is **not idempotent**?",
+      "options": [
+        "GET",
+        "PUT",
+        "DELETE",
+        "POST"
+      ],
+      "explanation": "POST usually creates a new item in a collection; send the same request twice and you can get two items, so POST is not idempotent. Option B's trap: PUT also changes data, but PUT sets the whole resource to a given state, so after ten calls the final state is the same. GET (option A) is safe and DELETE (option C) is idempotent: deleting again after a delete changes the state no further."
+    },
+    "mad1-w6-q2": {
+      "question": "`POST /api/v1/courses` successfully created a new course. Which status code is the most appropriate for the response?",
+      "options": [
+        "200 OK",
+        "201 Created, with the new course's URI in the `Location` header",
+        "204 No Content",
+        "202 Accepted"
+      ],
+      "explanation": "201 Created is the standard when a new resource is created, and the `Location` header tells the client where the new resource lives. Option A's trap: 200 also means 'success', so people send it, but it doesn't signal creation. Option D (202) is for work that has been queued and will happen later, and option C is for a success with no body."
+    },
+    "mad1-w6-q3": {
+      "question": "An API needs to read all enrollments of student 17. Which of these endpoints is the most RESTful?",
+      "options": [
+        "`GET /api/v1/students/17/enrollments`",
+        "`GET /api/v1/getEnrollmentsForStudent?id=17`",
+        "`POST /api/v1/students/17/enrollments`",
+        "`GET /api/v1/enrollments/fetch/17`"
+      ],
+      "explanation": "Enrollments are a sub-resource of the student, the URI has only nouns, and reading uses GET. Option C's trap: the right URI with the wrong method; POST would create a new enrollment in that collection. Options B and D put a verb ('get', 'fetch') in the URI, which is RPC style; in REST the HTTP method does the verb's job."
+    },
+    "mad1-w6-q4": {
+      "question": "A client sends `DELETE /api/v1/items/5` and gets 204. Because of a network glitch the client sends the same request again and now gets 404. Is DELETE still called idempotent?",
+      "options": [
+        "No, because the two response codes were different (204 and 404)",
+        "Yes, but only if the server sends 204 both times; sending 404 violates the standard",
+        "Yes; idempotence is about the effect on server state, and after both cases item 5 is deleted. The response code may differ",
+        "No, DELETE is never idempotent; only GET is"
+      ],
+      "explanation": "Idempotent means the request's effect on server state is the same whether it is sent once or many times. After the first DELETE the item is gone, and after the second the state is unchanged, so DELETE is idempotent. Option A's trap: reading idempotence as 'the same response every time'. Option B is wrong because a 404 the second time is perfectly valid, and option D contradicts DELETE's standard property."
+    },
+    "mad1-w6-q5": {
+      "question": "An API view sends this payload as JSON. What is the output of the code?",
+      "options": [
+        "{'ok': True, 'items': [], 'next': None, 'price': 99.5}",
+        "{\"ok\": \"True\", \"items\": [], \"next\": \"None\", \"price\": 99.5}",
+        "{\"ok\": true, \"items\": [], \"next\": undefined, \"price\": 99.5}",
+        "{\"ok\": true, \"items\": [], \"next\": null, \"price\": 99.5}"
+      ],
+      "explanation": "`json.dumps` writes keys in double quotes and turns `True` into JSON's `true` and `None` into `null`; the float 99.5 stays as it is. Option A's trap: that is Python's `print` (repr) of a dict, not JSON; single quotes are not valid JSON. Option B turns booleans/None into strings, and option C writes JavaScript's `undefined`, which isn't a JSON type at all."
+    },
+    "mad1-w6-q6": {
+      "question": "In a notes API, note 9 belongs to Meera. Three requests: (i) `DELETE /api/notes/9` with no token; (ii) the same request with Ravi's valid token; (iii) `PUT /api/notes/9` with Meera's valid token and the body `{\"title\": \"x\"` (closing brace missing, i.e. invalid JSON). In order, what are the most standard status codes?",
+      "options": [
+        "403, 401, 400",
+        "401, 403, 400",
+        "401, 404, 500",
+        "400, 403, 401"
+      ],
+      "explanation": "(i) The client gave no identity at all, so 401 Unauthorized (i.e. unauthenticated). (ii) Ravi is identified but the note isn't his, so 403 Forbidden. (iii) The body can't even be parsed, which is the client's fault: 400 Bad Request. Option A's trap: swapping the meanings of 401 and 403. Some APIs deliberately return 404 in (ii) to hide that the note exists, but option C gives 500 for (iii), which is wrong because bad input is not a server error. Option D swaps (i) and (iii)."
+    },
+    "mad1-w7-q1": {
+      "question": "Where and how does Flask's default `session` (no extensions) keep its data?",
+      "options": [
+        "In the server's memory; the browser only gets a random session id",
+        "In a sessions table in the database",
+        "In a browser cookie, signed with `SECRET_KEY` but not encrypted; the user can read the content but cannot change it",
+        "In a browser cookie, encrypted; the user cannot even read the content"
+      ],
+      "explanation": "Flask's default session is client-side: the data is serialized into a cookie and signed with `SECRET_KEY`, so a modified cookie is rejected, but the content can be read by decoding it. Option D's trap: confusing 'signed' with 'encrypted'. Options A and B describe server-side sessions, which come from extensions such as Flask-Session, not from the default."
+    },
+    "mad1-w7-q2": {
+      "question": "To protect a session cookie from being stolen through XSS, i.e. so that page JavaScript cannot read it via `document.cookie`, which cookie attribute do you set?",
+      "options": [
+        "`Secure`",
+        "`HttpOnly`",
+        "`SameSite=Strict`",
+        "`Max-Age=0`"
+      ],
+      "explanation": "The browser sends an `HttpOnly` cookie with HTTP requests but hides it from JavaScript, so an injected script cannot steal it. Option A's trap: `Secure` is also a security attribute, but it only ensures the cookie travels over HTTPS; JS can still read it. Option C is about cross-site requests (CSRF), and option D expires (deletes) the cookie immediately."
+    },
+    "mad1-w7-q3": {
+      "question": "A WSGI app is called with `environ = {'name': 'Zoë'}`. What is the value of the `Content-Length` header?",
+      "options": [
+        "8",
+        "7",
+        "10",
+        "9"
+      ],
+      "explanation": "`'Hi Zoë!'` has 7 characters, but in UTF-8 'ë' takes 2 bytes, so the encoded body is 8 bytes, and `len(body)` counts bytes. `Content-Length` is always in bytes, so this is the correct approach. Option B's trap: counting the string's characters (`len` before encoding). Option C counts the characters of the template `Hi {name}!`, and option D takes 'ë' as 3 bytes."
+    },
+    "mad1-w7-q4": {
+      "question": "The response to `GET /logo.png` had `Cache-Control: max-age=600` and `ETag: \"v7\"`. The user loads the same image again 5 minutes later and then 15 minutes after the first request. The image has not changed on the server. What does the browser do?",
+      "options": [
+        "Downloads the full image from the server both times",
+        "Uses the cache both times without contacting the server, because an ETag is present",
+        "Sends `If-None-Match` at 5 minutes; downloads the full image at 15 minutes",
+        "At 5 minutes uses the cache directly (no server contact); at 15 minutes sends a conditional request with `If-None-Match: \"v7\"`, and the server replies 304 Not Modified"
+      ],
+      "explanation": "max-age=600 means the copy is fresh for 10 minutes, so at 5 minutes the cache is used without any network. At 15 minutes the copy is stale, but there is an ETag, so the browser asks with `If-None-Match`; the image hasn't changed, so the server sends 304 with no body and the cached copy is reused. Option B's trap: treating the ETag as freshness; an ETag is only for revalidation. Option C reverses freshness and revalidation."
+    },
+    "mad1-w7-q5": {
+      "question": "An API uses cache-aside. The cache hit ratio is 0.8. A cache check takes 2 ms; on a miss, after the cache check, the DB query takes another 50 ms. What is the average response time (data fetch only)?",
+      "options": [
+        "11.6 ms",
+        "12 ms",
+        "42 ms",
+        "26 ms"
+      ],
+      "explanation": "Hit: 2 ms. Miss: 2 + 50 = 52 ms (first the cache check, then the DB). Average = 0.8 × 2 + 0.2 × 52 = 1.6 + 10.4 = 12 ms. Option A's trap: forgetting the 2 ms cache check on a miss (0.8 × 2 + 0.2 × 50). Option C swaps the hit and miss probabilities, and option D just takes (2 + 50) ÷ 2, as if both happened equally often."
+    },
+    "mad1-w7-q6": {
+      "question": "This Flask app has just started on Gunicorn with 2 sync worker **processes**. Assume requests alternate between the two workers (1st to worker A, 2nd to worker B, 3rd to worker A, ...). After 6 requests to `/hits`, what does the 6th response show?",
+      "options": [
+        "hits=6",
+        "hits=1",
+        "hits=3",
+        "An error, because two processes are changing the same `global` variable"
+      ],
+      "explanation": "Each worker process has its own copy of the module, so `hits` is two separate counters. Worker A handled requests 1, 3, 5 and worker B handled 2, 4, 6; the 6th request is worker B's third, so `hits=3`. Option A's trap: assuming all workers share one memory. Option D is wrong because the processes have separate memory, so there is no conflict at all; that is exactly why a shared counter needs a DB or Redis."
+    },
+    "mad1-w8-q1": {
+      "question": "For a comment form, what does **progressive enhancement** correctly mean?",
+      "options": [
+        "Build the whole app in a JavaScript framework and show 'Please enable JavaScript' when JS is off",
+        "The form works with a normal POST without JavaScript; when JS is available, enhance the same form with `fetch` so the page doesn't reload",
+        "Support only the latest browsers and block older ones",
+        "Render all content with JavaScript, because that improves SEO"
+      ],
+      "explanation": "In progressive enhancement the base layer (HTML form + server) works everywhere, and JS adds a better experience on top. Option A's trap: that is the opposite approach, where nothing works without JS. Option D is also wrong: content rendered only by JS is often harder for crawlers and slow devices, and option C doesn't enhance anyone, it just excludes them."
+    },
+    "mad1-w8-q2": {
+      "question": "A user's comment has arrived from an API in the string `comment`. It must be shown in `<p id=\"c\">`, and any HTML/JS in the comment must not run. Which line is correct?",
+      "options": [
+        "`document.querySelector('#c').innerHTML = comment;`",
+        "`document.querySelector('#c').outerHTML = comment;`",
+        "`document.write(comment);`",
+        "`document.querySelector('#c').textContent = comment;`"
+      ],
+      "explanation": "`textContent` inserts the string only as a text node; content like `<script>` or `<img onerror=...>` just shows up as text. Option A's trap: `innerHTML` is short and common, but it parses the string as HTML, which leads to DOM-based XSS. Options B and C also put the string into the page as HTML."
+    },
+    "mad1-w8-q3": {
+      "question": "In what order does this JavaScript code print its output?",
+      "options": [
+        "A D C B",
+        "A B C D",
+        "A C B D",
+        "A D B C"
+      ],
+      "explanation": "First all the synchronous code: A, D. Then the microtask queue: the Promise's `.then` → C. After that a macrotask: the `setTimeout` callback → B. Option D's trap: the `setTimeout` was registered first, so it is assumed to run first; but a timer callback is a macrotask and runs after the microtasks. Option B assumes `setTimeout(..., 0)` runs immediately."
+    },
+    "mad1-w8-q4": {
+      "question": "The server responds to `/api/missing` with status 404 and a short text body (the network is fine). What does this code print?",
+      "options": [
+        "catch",
+        "then 200 false",
+        "then 404 false",
+        "then 404 true"
+      ],
+      "explanation": "fetch's Promise resolves even when the server sends 4xx/5xx, because an HTTP response was received successfully. `res.status` is 404 and `res.ok` is true only for 200–299, so it is false. Option A's trap: treating a 404 as an exception; `.catch` runs only on a network failure. Option D reads `ok` as 'a response arrived', and option B gets the status wrong."
+    },
+    "mad1-w8-q5": {
+      "question": "These items came from a cart API. What is the output of the code?",
+      "options": [
+        "270 pen|book",
+        "260 pen|book|bag",
+        "1160 pen|book|bag",
+        "270 pen|book|bag"
+      ],
+      "explanation": "After the filter, pen and book remain: 2 × 10 + 1 × 250 = 270. The `map` runs on the original `items` (filter returns a new array and doesn't change the original), so all three names appear: pen|book|bag. Option A's trap: thinking that `filter` changed `items` itself. Option B forgets to multiply by qty, and option C adds up all the prices."
+    },
+    "mad1-w8-q6": {
+      "question": "In what order does this code print its output?",
+      "options": [
+        "1 4 2 3",
+        "1 2 3 4",
+        "1 2 4 3",
+        "4 1 2 3"
+      ],
+      "explanation": "`load()` runs synchronously as soon as it is called and prints 1. At `await` the function pauses and control returns to the caller, which prints 4. Then, as a microtask, the function resumes, prints 2 and returns 3, so `.then` prints 3. Option B's trap: reading `await` as a 'wait' for the whole program, like synchronous code. Option D assumes even the first part of an async function runs later."
+    },
+    "mad1-w9-q1": {
+      "question": "Riya logs in, opens `/admin/reports` and gets 403 Forbidden, because her role is 'student'. Which check failed?",
+      "options": [
+        "Authentication: the server did not identify Riya at all",
+        "Authorization: Riya was identified, but she has no permission for this resource",
+        "Encryption: the connection was not HTTPS",
+        "Input validation: the request's data was invalid"
+      ],
+      "explanation": "Riya is logged in, so authentication has already happened; the server looked at her role and denied access, which is authorization, and 403 is its status. Option A's trap: mixing up the two 'auth' words; if she had not been identified the response would be 401. Options C and D have nothing to do with this scenario."
+    },
+    "mad1-w9-q2": {
+      "question": "In a new app, what is the best way to store users' passwords?",
+      "options": [
+        "In plain text, so the password can be emailed to the user on 'forgot password'",
+        "`sha256(password)` without a salt, because SHA-256 is a secure hash",
+        "A slow password-hashing function (bcrypt, scrypt, Argon2 or PBKDF2) with a random per-user salt, storing the salt + hash",
+        "Encrypting the password with AES using the server's secret key"
+      ],
+      "explanation": "A salted slow hash is one-way, differs per user and makes every guess expensive. Option B's trap: SHA-256 is a secure hash, but it is far too fast for passwords and, without a salt, equal passwords give equal hashes. Option D is reversible: if the key leaks, every password is exposed. Option A is the worst; for a reset, send a reset link instead of the password."
+    },
+    "mad1-w9-q3": {
+      "question": "What is the output of this code?",
+      "options": [
+        "True True 64",
+        "False False 64",
+        "False True 32",
+        "False True 64"
+      ],
+      "explanation": "The same password with a different salt gives a different hash (`a == b` is False), and the same password + same salt always gives the same hash (`a == c` is True); that is how a login is verified. SHA-256 outputs 32 bytes and `.hex()` writes each byte as 2 characters, so the length is 64. Option C's trap: mixing up the byte count (32) and the hex string's length (64). Option A ignores the effect of the salt, and option B assumes hashing is random."
+    },
+    "mad1-w9-q4": {
+      "question": "A banking app's `/transfer` endpoint identifies the user by a session cookie. Which of these measures does **not on its own** stop a CSRF attack?",
+      "options": [
+        "Changing the endpoint from GET to accept only POST",
+        "A random CSRF token in every state-changing form that must match the token in the server session",
+        "`SameSite=Lax` or `SameSite=Strict` on the session cookie",
+        "Checking the `Origin` header on the server and accepting only requests from your own site"
+      ],
+      "explanation": "A hidden `<form method=\"post\">` on the attacker's site can be auto-submitted with JavaScript, and the browser sends the user's cookie with it; so switching to POST alone is not enough (though not changing state with GET is still essential). Option B's token is unknown to the attacker, option C stops the cookie being sent on a cross-site request, and option D catches the other site's origin. Trap: taking option A as a 'secure method'."
+    },
+    "mad1-w9-q5": {
+      "question": "Autoescaping is on in a Flask app. Which template line on the comments page opens the way to stored XSS, if `c.text` is a comment written by a user?",
+      "options": [
+        "`<p>{{ c.text }}</p>`",
+        "`<p>{{ c.text|e }}</p>`",
+        "`<p>{{ c.text|safe }}</p>`",
+        "`<p>{{ c.text|length }} characters</p>`"
+      ],
+      "explanation": "`|safe` tells Jinja that the string is trusted HTML, so escaping is switched off and a `<script>` written in the comment runs in everyone's browser. Option A's trap: being alarmed by a plain `{{ }}`; with autoescaping on it is safe. Option B (`|e`) escapes explicitly, and option D only prints a number."
+    },
+    "mad1-w9-q6": {
+      "question": "The `users` table has three rows: ('asha', '1234'), ('bilal', '0000'), ('chen', '9999'). A vulnerable login builds this query, and an attacker types `x' OR '1'='1` in the username field and `0000` as the pin. What does the query return?",
+      "options": [
+        "All three users (asha, bilal, chen), because `'1'='1'` is always true",
+        "No rows, because there is no user named 'x'",
+        "Only `bilal`",
+        "An SQL syntax error"
+      ],
+      "explanation": "The resulting query is `WHERE name = 'x' OR '1'='1' AND pin = '0000'`. `AND` has higher precedence than `OR`, so it means `name = 'x' OR ('1'='1' AND pin = '0000')`, which is true only for the row with pin 0000 (bilal). Option A's trap: seeing `'1'='1'` and assuming 'all rows', forgetting precedence. The quotes are balanced, so option D is wrong too. Fix: a parameterized query."
+    },
+    "mad1-w10-q1": {
+      "question": "A test opens a headless browser, types an email and password on the login page, clicks Submit, and checks that the user's name appears on the dashboard. What kind of test is this?",
+      "options": [
+        "End-to-end test",
+        "Unit test",
+        "Integration test (with the test client)",
+        "Static type check"
+      ],
+      "explanation": "A whole user flow (UI → server → database → back to the UI) is driven through a real browser, which is exactly an end-to-end test. Option C's trap: an integration test also runs several parts together, but a test-client test does not run a browser, HTML rendering or JavaScript. A unit test (option B) tests one function in isolation, and option D doesn't run the code at all."
+    },
+    "mad1-w10-q2": {
+      "question": "`pytest` is run in the project folder with no arguments (default settings). Which of these functions is collected as a test?",
+      "options": [
+        "`def total_test():` in the file `test_cart.py`",
+        "`def test_total():` in the file `cart.py`",
+        "`def check_total():` in the file `cart_test.py`",
+        "`def test_total():` in the file `test_cart.py`"
+      ],
+      "explanation": "By default pytest looks only at `test_*.py` or `*_test.py` files, and inside them at functions whose names start with `test`. Option D meets both conditions. Option A's trap: the file is right but the function name doesn't start with `test`. In option B the function is right but the file `cart.py` doesn't match the pattern, and in option C the file is right but the function is wrong."
+    },
+    "mad1-w10-q3": {
+      "question": "The tests currently check only `grade(95)` and `grade(70)`. Which one call must be added for 100% line coverage?",
+      "options": [
+        "`grade(90)`",
+        "`grade(50)`",
+        "`grade(30)`",
+        "`grade(100)`"
+      ],
+      "explanation": "95 has run the 'A' line and 70 the 'P' line; only `return 'F'` is left, which runs when m < 50, so `grade(30)`. Option B's trap: 50 is a boundary and worth testing, but `50 >= 50` is True, so it also gives 'P' and runs no new line. Options A and D just run the 'A' line again."
+    },
+    "mad1-w10-q4": {
+      "question": "A test file has this fixture and four tests. When `pytest -s` is run, how many times is 'setup' printed?",
+      "options": [
+        "1 time",
+        "3 times",
+        "4 times",
+        "2 times"
+      ],
+      "explanation": "The fixture's default scope is function, so setup runs separately for every test that requests it: `test_home`, `test_login`, `test_logout` = 3 times. `test_utils` doesn't request the fixture, so there is no setup for it. Option A's trap: thinking a fixture runs 'once per file'; that would be `scope='module'`. Option C assumes the fixture runs for every test, whether the test requests it or not."
+    },
+    "mad1-w10-q5": {
+      "question": "To test a dice-roll feature deterministically, `random.randint` is patched. What is the output of the code?",
+      "options": [
+        "4 4 2",
+        "4 4 1",
+        "4 4 0",
+        "Two random numbers and 2"
+      ],
+      "explanation": "On every call `roll()` looks up `random.randint` on the module, and inside the `with` block that is the mock, which always returns 4. The mock counts every call: two `roll()` calls = `call_count` 2. Option B's trap: thinking `return_value` is used only once or that the mock counts only the first call. Option D assumes the patch doesn't reach inside `roll`, but the lookup happens at call time."
+    },
+    "mad1-w10-q6": {
+      "question": "This function has only one test: `assert shipping(600, True) == 0`. Which statement about coverage is correct?",
+      "options": [
+        "Both line and branch coverage are 100%, because every line ran",
+        "Branch coverage is 100% but line coverage is not",
+        "Line coverage is 100%, but branch coverage is not, because the False path of both `if`s never ran",
+        "Line coverage is not 100%, because `fee = 0` is written twice"
+      ],
+      "explanation": "In `shipping(600, True)` both conditions are True, so every line runs: line coverage is 100%. But branch coverage needs both paths, and the case where `is_member` is False or `total ≤ 500` was never tested; a non-member's small order (fee 50) is completely untested. Option A's trap: treating line coverage as full coverage. Option B is backwards (if all branches run, all lines have run too), and option D's duplicate line is irrelevant."
+    },
+    "mad1-w11-q1": {
+      "question": "Which of these names can be registered as a valid custom element with `customElements.define(name, SomeClass)`?",
+      "options": [
+        "`usercard`",
+        "`user-card`",
+        "`9-card`",
+        "`user_card`"
+      ],
+      "explanation": "A custom element's name must contain at least one hyphen and start with a lowercase letter, so `user-card` is valid. The hyphen rule prevents clashes with future built-in HTML tags (which have no hyphen). Option D's trap: treating an underscore as a separator like the hyphen. Option A has no hyphen, and option C has a hyphen but starts with a digit."
+    },
+    "mad1-w11-q2": {
+      "question": "A signup form now has `<input type=\"email\" name=\"email\" required>`. What is true about server-side validation?",
+      "options": [
+        "Validating on the server is still necessary, because browser validation can be bypassed with devtools, curl or a script",
+        "Server validation is no longer needed; the browser will never send an invalid email",
+        "The `required` attribute is automatically checked on the server too",
+        "`type=\"email\"` also verifies that the email address really exists"
+      ],
+      "explanation": "HTML validation runs only in the browser, for the user's convenience; anyone can build an HTTP request directly and send an empty or invalid field. Option B's trap: judging by a normal user's experience and assuming every request comes from the browser. Option C is wrong because the server never sees HTML attributes, and option D only checks the format, not that the mailbox exists."
+    },
+    "mad1-w11-q3": {
+      "question": "This code is run in the browser console. What is the output?",
+      "options": [
+        "6 number",
+        "51 number",
+        "NaN string",
+        "51 string"
+      ],
+      "explanation": "Web Storage keeps only strings, so the number 5 is stored as the string '5' and `getItem` returns '5'. String + 1 is concatenation: '51', and `typeof v` is 'string'. Option A's trap: assuming storage remembers the type. Option B reads the output right but the type wrong, and option C assumes adding a string and a number gives NaN; in JS `+` concatenates as soon as one side is a string, it does not give NaN."
+    },
+    "mad1-w11-q4": {
+      "question": "Which of these client-side storage options does the browser send to the server **automatically with every matching HTTP request**?",
+      "options": [
+        "`localStorage`",
+        "`sessionStorage`",
+        "Cookies (those matching the domain and path)",
+        "IndexedDB"
+      ],
+      "explanation": "The browser itself attaches cookies to the `Cookie` header of every matching request; that is why sessions work and also why CSRF is possible. Option A's trap: localStorage is also known as 'a place to keep login data', but it reaches the server only when JavaScript explicitly puts it into a request. Options B and D also stay inside the browser."
+    },
+    "mad1-w11-q5": {
+      "question": "A page builds its Save button like this: `<div class=\"btn\" onclick=\"save()\">Save</div>`. Clicking with a mouse works fine. What is the biggest problem?",
+      "options": [
+        "It can't be focused with the keyboard or activated with Enter/Space, and screen readers don't announce it as a button; a native `<button type=\"button\">` should be used",
+        "No problem, because the mouse click works",
+        "It's only a styling issue; make it look like a button with CSS and all is well",
+        "A `div` is bad for SEO, so the page ranking will drop"
+      ],
+      "explanation": "A native `<button>` gives focus, activation with Enter/Space and the 'button' role for free; a `div` has none of these, so keyboard and screen-reader users cannot Save. Option C's trap: treating accessibility as a matter of looks; CSS provides neither the role nor keyboard behaviour. Option B considers only mouse users, and option D misses the real problem (accessibility) for the wrong one."
+    },
+    "mad1-w11-q6": {
+      "question": "An HTTPS site calls `navigator.serviceWorker.register('/static/js/sw.js')` from its `/dashboard` page (no `scope` option, no `Service-Worker-Allowed` header). Which pages will this service worker control?",
+      "options": [
+        "The whole site, i.e. every page starting with `/`",
+        "Only `/dashboard`, because that page registered it",
+        "No pages, because service workers are forbidden on both localhost and HTTPS",
+        "Only URLs inside `/static/js/`; `/dashboard` will not be controlled. For the whole site, serve `sw.js` at `/sw.js`"
+      ],
+      "explanation": "A service worker's default scope is its script's directory: `/static/js/sw.js` has the scope `/static/js/`, and without the header it can't even take a scope above that (such as `/`). So `/dashboard` is not under its control. Option A's trap: assuming every page of the registering site is controlled automatically. Option B ties the scope to the registering page, which is wrong, and option C is backwards: service workers need a secure context, which includes both HTTPS and localhost."
+    },
+    "mad1-w12-q1": {
+      "question": "Why is it dangerous to run a Flask app with `debug=True` on a production server?",
+      "options": [
+        "Because it makes the app a little slower, and that's all",
+        "Because errors open the interactive debugger and full tracebacks, which leak code and config, and the debugger can be used to run arbitrary Python on the server",
+        "Because templates don't load in debug mode",
+        "Because debug mode switches off HTTPS"
+      ],
+      "explanation": "The debug-mode debugger gives a Python console in the browser; in production that is a path to remote code execution, and tracebacks reveal secrets and code structure. Option A's trap: seeing debug as only a performance issue, while the real danger is security. Options C and D don't match how debug mode behaves; it has no such effect on templates or on HTTPS (which the proxy handles)."
+    },
+    "mad1-w12-q2": {
+      "question": "In this shell neither `DATABASE_URL` nor `FLASK_DEBUG` is set. What is the output of the code?",
+      "options": [
+        "sqlite:///dev.db False",
+        "None False",
+        "A KeyError is raised",
+        "sqlite:///dev.db 0"
+      ],
+      "explanation": "`os.environ.get(key, default)` returns the default when the key is missing, so `db_url` is the dev SQLite URL. `FLASK_DEBUG` is missing too, so `'0' == '1'` is False. Option C's trap: treating `get` like `os.environ['DATABASE_URL']`, which raises KeyError for a missing key. Option B ignores the default, and option D prints the raw default '0' instead of the comparison."
+    },
+    "mad1-w12-q3": {
+      "question": "A server has 4 CPU cores and the number of Gunicorn sync workers is set to (2 × cores) + 1. Each request keeps a worker busy for 200 ms on average (mostly waiting on the DB). Each sync worker handles one request at a time. What is the approximate maximum throughput?",
+      "options": [
+        "9 requests/s",
+        "20 requests/s",
+        "45 requests/s",
+        "5 requests/s"
+      ],
+      "explanation": "Workers = 2 × 4 + 1 = 9. One worker handles one request per 200 ms, i.e. 1 ÷ 0.2 = 5 requests/s. Total ≈ 9 × 5 = 45 requests/s. Option B's trap: multiplying by cores (4 × 5) instead of workers; a sync worker stays busy even while waiting on the DB, and there are 9 workers here. Option A just counts the workers, and option D is one worker's throughput."
+    },
+    "mad1-w12-q4": {
+      "question": "What is the output of this code?",
+      "options": [
+        "All four messages, each with its level",
+        "Only `WARNING:stock low`",
+        "Only `ERROR:payment failed`",
+        "Two lines: `WARNING:stock low` and `ERROR:payment failed`"
+      ],
+      "explanation": "The threshold is WARNING: messages at this level and above (ERROR, CRITICAL) are printed, while DEBUG and INFO are dropped. The `shop` logger has no level of its own, so it uses the root's WARNING level. Option B's trap: reading the level as 'only this level', while it is a minimum. Option A ignores the level, and option C assumes only errors are logged."
+    },
+    "mad1-w12-q5": {
+      "question": "Production setup: Internet → Nginx → Gunicorn (Flask app). Which of these jobs is usually **not Nginx's**?",
+      "options": [
+        "Terminating HTTPS (TLS)",
+        "Serving the CSS/JS files under `/static/` straight from disk",
+        "Running Flask's view functions and rendering Jinja templates",
+        "Load-balancing requests across several Gunicorn instances"
+      ],
+      "explanation": "Nginx doesn't run Python code; Flask runs the views and templates inside Gunicorn's worker processes, and Nginx proxies requests to them. Option B's trap: static files feel like 'part of the app', but serving them from Nginx is the best practice (faster, and Python workers stay free). Options A and D are classic reverse-proxy jobs."
+    },
+    "mad1-w12-q6": {
+      "question": "The latencies (ms) of 10 requests to an endpoint are: 80, 85, 90, 95, 100, 105, 110, 120, 130, 2000. Using the nearest-rank method (p-th percentile = the value at rank ⌈p/100 × n⌉ in the sorted list), what are the mean and p90?",
+      "options": [
+        "mean 291.5 ms, p90 130 ms",
+        "mean 102.5 ms, p90 130 ms",
+        "mean 291.5 ms, p90 2000 ms",
+        "mean 291.5 ms, p90 120 ms"
+      ],
+      "explanation": "Sum = 2915, so the mean = 2915 ÷ 10 = 291.5 ms; one 2000 ms request pushed the average to nearly three times the average of the other 9 requests (about 102 ms). p90: rank ⌈0.9 × 10⌉ = 9, and the 9th value is 130 ms. Option C's trap: taking p90 as 'the largest' (here p100/max). Option B uses the median (102.5) instead of the mean, and option D reads the value at rank 8. This is why dashboards show percentiles: 90% of requests finished in 130 ms or less."
+    }
+  }
+}

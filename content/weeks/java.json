@@ -1,0 +1,1503 @@
+{
+  "subjectId": "java",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Classes, Objects and the Static World",
+      "summary": "Is week aap Java mein class aur object ka farq, constructors aur `this`, static vs instance members, access modifiers, aur references ke saath pass-by-value ka asli matlab seekhoge.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Class vs object**: class ek blueprint hai (fields + methods), object uska runtime instance jo heap par `new` se banta hai. `Student s;` likhne se object nahi banta, sirf ek **reference** variable banta hai; `s = new Student()` ke baad hi woh kisi object ko point karta hai, warna field ke roop mein uski value `null` hoti hai.",
+        "**Default values**: fields ko automatic default milta hai (`int` → 0, `boolean` → false, `double` → 0.0, object reference → null). Local variables ko koi default nahi milta: initialise kiye bina padhoge to compile error ('variable might not have been initialized').",
+        "**Constructor**: class ke naam wala special block, koi return type nahi (`void` bhi nahi). Agar aapne ek bhi constructor nahi likha to compiler ek no-arg **default constructor** de deta hai; ek bhi likh diya to woh free wala nahi milta. `this.x = x` field ko parameter se alag karta hai, aur ek constructor doosre ko pehli line mein `this(...)` se call kar sakta hai.",
+        "**static vs instance**: `static` field poori class ki ek hi copy hoti hai (jaise banaye gaye objects ka counter), instance field har object ki apni. `static` method kisi object ke bina chalta hai, isliye uske andar `this` nahi hota aur instance fields/methods seedhe (bina object reference ke) use karna compile error hai. Static member ko `ClassName.member` se access karna clean style hai.",
+        "**Access modifiers**: `private` (sirf usi class mein), default/package-private (koi keyword nahi; same package), `protected` (same package + subclasses), `public` (sab jagah). **Encapsulation**: fields `private` rakho aur validation wale methods do, taaki object kabhi invalid state (jaise negative balance) mein na jaaye.",
+        "**References aur aliasing**: `b = a` object copy nahi karta, sirf reference copy karta hai; ab dono ek hi object dekhte hain aur ek se kiya badlav doosre se dikhega. `==` references compare karta hai (kya dono same object hain?), content nahi.",
+        "**Pass by value**: Java hamesha value pass karta hai. Object ke case mein value ek reference hai, isliye method object ke fields badal sakta hai, lekin parameter ko naya object assign karne se caller ka variable nahi badalta."
+      ],
+      "example": {
+        "problem": "Ek fictional bank app ke liye `Account` class banao jo har naye account ko 1001 se shuru hone wala unique number de aur negative opening balance reject kare. Teen accounts (500, 0, 1200) banne ke baad teesre account ka number aur total accounts kitne honge?",
+        "steps": [
+          "`created` static hai: saare `Account` objects ek hi counter share karte hain; `number` aur `balance` har object ke apne hain.",
+          "Pehla `new Account(500)`: check pass, created 0 → 1, number = 1001.",
+          "Doosra (0): created 2, number 1002. Teesra (1200): created 3, number 1003.",
+          "`number` `final` hai: constructor mein ek baar set hua, baad mein badla nahi ja sakta. Fields `private` hain, isliye bahar se sirf getters se padhe ja sakte hain.",
+          "`getCreated()` static hai, isliye `Account.getCreated()` se bina object ke call hota hai.",
+          "Answer: output **1003 3**."
+        ],
+        "code": "class Account {\n    private static int created = 0;   // ek copy, poori class ki\n    private final int number;         // har object ka apna\n    private double balance;\n\n    Account(double opening) {\n        if (opening < 0) throw new IllegalArgumentException(\"negative\");\n        created++;\n        number = 1000 + created;\n        balance = opening;\n    }\n\n    int getNumber() { return number; }\n    static int getCreated() { return created; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Account a1 = new Account(500);\n        Account a2 = new Account(0);\n        Account a3 = new Account(1200);\n        System.out.println(a3.getNumber() + \" \" + Account.getCreated());\n    }\n}"
+      },
+      "mistakes": [
+        "Ek parameterised constructor likh kar `new Point()` call karna. Free default constructor tabhi milta hai jab class mein koi constructor na ho; zaroorat ho to no-arg constructor khud likho.",
+        "Constructor mein `balance = balance;` likhna jab parameter ka naam bhi `balance` ho. Ye parameter ko khud mein assign karta hai aur field default (0) hi rehta hai. `this.balance = balance;` likho.",
+        "`main` (static) se seedhe instance field ya method use karna. Pehle object banao (`new Main()`) aur uske through use karo, ya soch-samajh kar member ko static banao."
+      ],
+      "revision": [
+        "Reference variable object nahi hai; `new` se object banta hai.",
+        "Fields ko default value milti hai, local variables ko nahi.",
+        "Koi constructor na likho tabhi free no-arg constructor milta hai.",
+        "static = class ki ek copy; static method mein `this` nahi hota.",
+        "private < default < protected < public (visibility badhti hai).",
+        "Java pass-by-value hai; object ke liye reference ki copy jaati hai."
+      ],
+      "questions": [
+        {
+          "id": "java-w1-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Counter {\n    static int total = 0;\n    int mine = 0;\n\n    Counter() {\n        total++;\n        mine++;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Counter a = new Counter();\n        Counter b = new Counter();\n        Counter c = new Counter();\n        System.out.println(c.mine + \" \" + Counter.total);\n    }\n}",
+          "options": [
+            "3 3",
+            "1 3",
+            "1 1",
+            "3 1"
+          ],
+          "answer": 1,
+          "explanation": "`total` static hai, teeno constructors ne usi ek copy ko 3 tak badhaya. `mine` instance field hai: har naye object mein 0 se shuru hokar 1 hota hai, isliye `c.mine` = 1. Output \"1 3\" (option B). Trap: option A (\"3 3\"), `mine` ko bhi shared maan lena; sirf `static` field share hoti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w1-q2",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "class Point {\n    int x, y;\n\n    Point(int x, int y) {\n        this.x = x;\n        this.y = y;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Point p = new Point();\n        System.out.println(p.x + \",\" + p.y);\n    }\n}",
+          "options": [
+            "Compile ho jaayega aur output 0,0 hoga",
+            "Runtime par `NullPointerException` aayega",
+            "Compile hoga, par x aur y ki value garbage (undefined) hogi",
+            "Compile error: `Point()` jaisa koi constructor nahi hai"
+          ],
+          "answer": 3,
+          "explanation": "Class ne `Point(int, int)` likha hai, isliye compiler free no-arg constructor nahi banata. `new Point()` kisi constructor se match nahi karta: compile error (option D). Trap: option A, sochna ki default constructor hamesha milta hai; woh sirf tab milta hai jab class mein ek bhi constructor na ho. Java mein fields kabhi garbage nahi hote, isliye option C bhi galat hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w1-q3",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Box {\n    int v;\n    Box(int v) { this.v = v; }\n}\n\npublic class Main {\n    static void change(Box b) {\n        b.v = 20;\n        b = new Box(30);\n        b.v = 40;\n    }\n\n    public static void main(String[] args) {\n        Box x = new Box(10);\n        change(x);\n        System.out.println(x.v);\n    }\n}",
+          "options": [
+            "20",
+            "10",
+            "40",
+            "30"
+          ],
+          "answer": 0,
+          "explanation": "`change` ko `x` ke reference ki copy milti hai. `b.v = 20` usi object ko badalta hai jise `x` point karta hai. Phir `b = new Box(30)` sirf local copy `b` ko naye object par le jaata hai, aur `b.v = 40` us naye object ko badalta hai, `x` wale ko nahi. Output 20 (option A). Trap: option C (40), Java ko pass-by-reference maan lena; option B (10), sochna ki method object ko bilkul nahi badal sakta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w1-q4",
+          "question": "Kaunsi line(s) compile error dengi?",
+          "code": "public class Main {\n    static int a = 1;\n    int b = 2;\n\n    static void f() {\n        a++;               // line P\n        Main m = new Main();\n        m.b++;             // line Q\n        b++;               // line R\n    }\n}",
+          "options": [
+            "Sirf line P",
+            "Lines Q aur R dono",
+            "Koi nahi, code compile hota hai",
+            "Sirf line R"
+          ],
+          "answer": 3,
+          "explanation": "`f` static hai, isliye uske paas `this` nahi hota. Line P static field `a` use karti hai: theek. Line Q ek explicit object `m` ke through instance field badalti hai: theek. Line R bina kisi object ke instance field `b` use karti hai: 'non-static variable b cannot be referenced from a static context'. Isliye sirf line R (option D). Trap: option B, sochna ki static method mein instance field kisi bhi tarah use nahi ho sakta; object reference ke through bilkul ho sakta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w1-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Account {\n    private int balance;\n\n    Account(int balance) {\n        balance = balance;\n    }\n\n    int get() { return balance; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(new Account(500).get());\n    }\n}",
+          "options": [
+            "500",
+            "Compile error: variable apne aap ko assign nahi ho sakta",
+            "0",
+            "null"
+          ],
+          "answer": 2,
+          "explanation": "Constructor ke andar `balance` naam parameter ka hai, jo field ko **shadow** karta hai. `balance = balance;` parameter ko usi mein assign karta hai; field kabhi set nahi hota aur `int` ka default 0 rehta hai. Output 0 (option C). Trap: option A (500), maan lena ki compiler samajh jaayega ki field chahiye; `this.balance = balance;` likhna padta hai. Ye compile error nahi, sirf logic bug hai (option B galat), aur `int` kabhi `null` nahi hota (option D galat).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w1-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Item {\n    static int next = 100;\n    int id;\n\n    Item() {\n        id = next;\n        next += 10;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Item p = new Item();\n        Item q = new Item();\n        p.next = 5;\n        Item r = new Item();\n        System.out.println(p.id + \" \" + q.id + \" \" + r.id + \" \" + q.next);\n    }\n}",
+          "options": [
+            "100 110 5 15",
+            "100 110 120 130",
+            "100 110 5 130",
+            "100 110 120 15"
+          ],
+          "answer": 0,
+          "explanation": "`next` static hai, to `p.next = 5` asal mein `Item.next = 5` hai (instance reference se static access compile hota hai, bas style kharab hai). Trace: p.id = 100, next 110; q.id = 110, next 120; ab next = 5; r.id = 5, next 15. `q.next` bhi wahi shared value 15 hai. Output \"100 110 5 15\" (option A). Trap: option B, sochna ki `p.next = 5` sirf p ki apni copy badalta hai; static field ki ek hi copy hoti hai. Option C us copy ko q ke liye alag maan leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Inheritance, super and the Object Class",
+      "summary": "Is week aap `extends` se inheritance, `super` aur constructor chaining, overriding vs overloading ka farq, aur `Object` class ke `equals`, `hashCode`, `toString` ko sahi tarah override karna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Inheritance (`extends`)**: subclass superclass ke accessible fields aur methods le leta hai aur naye jod sakta hai. Java mein class sirf **ek** class extend kar sakti hai, aur har class aakhir mein `java.lang.Object` se aati hai. Rishta 'is-a' hona chahiye: `Manager extends Employee` theek hai, `Car extends Engine` nahi (wahan composition, yaani 'has-a', sahi design hai).",
+        "**Constructor chaining**: subclass ke har constructor ki pehli line ya to `this(...)` hoti hai ya `super(...)`; kuch na likho to compiler `super()` daal deta hai. Isliye object banate waqt constructors upar se neeche chalte hain: `Object` → parent → child. Agar parent mein no-arg constructor nahi hai to child ko explicitly `super(args)` likhna padega, warna compile error.",
+        "**Overriding**: subclass same signature (naam + parameter types) wala instance method dobara likhta hai. Rules: return type same ya covariant (subtype), access kam nahi kar sakte (`public` ko default ya `protected` nahi bana sakte), aur naye ya broader checked exceptions nahi phenk sakte. `@Override` lagao: signature galat hua to compiler pakad lega.",
+        "**Overloading**: same naam, alag parameter list. Kaunsa overload chalega ye **compile time** par arguments ke static (declared) types se tay hota hai. Sirf return type badalna overloading nahi hai, compile error hai.",
+        "**`super`**: `super.method()` parent ka version call karta hai aur `super.field` parent ka field. Dhyaan do: parent ke method ke andar se kisi overridden method ko call kiya to wahan bhi dynamic dispatch hota hai, yaani object agar child ka hai to child ka version chalega.",
+        "**`equals` aur `hashCode`**: `Object.equals` default mein `==` hai (same object?). Value-based equality chahiye to `public boolean equals(Object o)` override karo (parameter `Object` hi hona chahiye) aur saath mein `hashCode` bhi, taaki equal objects ka hash same ho; warna `HashMap`/`HashSet` mein objects 'kho' jaate hain.",
+        "**`toString`**: string concatenation aur `println` object par `toString()` call karte hain. Default output class ka naam aur ek hash jaisa hota hai, jo logs mein bekaar hai; isliye readable `toString` override karna professional practice hai."
+      ],
+      "example": {
+        "problem": "Fictional payroll system: `Employee(name, base)` aur `Manager extends Employee` jisme bonus bhi hai. `new Manager(\"Riya\", 50000, 10000)` banane par kya print hoga, aur us object ka `pay()` aur `toString()` kya denge?",
+        "steps": [
+          "`Manager` constructor ki pehli line `super(name, base)` hai, to pehle `Employee` constructor chalta hai aur \"Employee ready\" print hota hai.",
+          "Phir `bonus = 10000` set hota hai aur \"Manager ready\" print hota hai.",
+          "`pay()` Manager mein override hai: `super.pay()` (50000) + bonus (10000) = 60000.",
+          "`toString()` Employee mein likha hai, par uske andar `pay()` dynamic dispatch se Manager wala chalta hai.",
+          "`Employee` mein no-arg constructor nahi hai, isliye `super(name, base)` likhna zaroori tha.",
+          "Answer: do lines \"Employee ready\", \"Manager ready\"; `pay()` = **60000**; `toString()` = **Riya (60000)**."
+        ],
+        "code": "class Employee {\n    protected String name;\n    protected int base;\n\n    Employee(String name, int base) {\n        this.name = name;\n        this.base = base;\n        System.out.println(\"Employee ready\");\n    }\n\n    int pay() { return base; }\n\n    @Override\n    public String toString() { return name + \" (\" + pay() + \")\"; }\n}\n\nclass Manager extends Employee {\n    private int bonus;\n\n    Manager(String name, int base, int bonus) {\n        super(name, base);          // parent ka constructor pehle\n        this.bonus = bonus;\n        System.out.println(\"Manager ready\");\n    }\n\n    @Override\n    int pay() { return super.pay() + bonus; }\n}"
+      },
+      "mistakes": [
+        "Parent mein sirf parameterised constructor ho aur child constructor `super(...)` na likhe. Compiler `super()` daalta hai jo exist nahi karta: compile error. Pehli line mein sahi `super(args)` likho.",
+        "`public boolean equals(Employee e)` likhna. Ye override nahi, overload hai; collections `equals(Object)` call karte hain aur aapka method kabhi nahi chalega. Parameter `Object` rakho aur `@Override` lagao.",
+        "Override karte waqt access kam kar dena, jaise `toString()` bina `public` ke likhna. Compile error 'attempting to assign weaker access privileges'."
+      ],
+      "revision": [
+        "Constructors upar se neeche chalte hain: Object → parent → child.",
+        "Pehli line `this(...)` ya `super(...)`; kuch nahi to implicit `super()`.",
+        "Overriding = same signature, runtime par decide; overloading = alag parameters, compile time par decide.",
+        "Override mein access kam nahi; return type same ya covariant.",
+        "`equals(Object)` override karo to `hashCode()` bhi."
+      ],
+      "questions": [
+        {
+          "id": "java-w2-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "class A {\n    A() { System.out.print(\"A\"); }\n}\n\nclass B extends A {\n    B() { System.out.print(\"B\"); }\n}\n\nclass C extends B {\n    C() { System.out.print(\"C\"); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        new C();\n    }\n}",
+          "options": [
+            "CBA",
+            "C",
+            "ABC",
+            "CAB"
+          ],
+          "answer": 2,
+          "explanation": "`C()` ki pehli line implicit `super()` hai, jo `B()` call karta hai, aur `B()` pehle `A()` call karta hai. Isliye constructor bodies sabse upar wale parent se chalna shuru hoti hain: \"ABC\" (option C). Trap: option A (\"CBA\"), sochna ki pehle child ka constructor poora chalta hai; asal mein parent ka hissa pehle ready hota hai. Option B sochta hai ki parent constructors chalte hi nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w2-q2",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        String s1 = new String(\"java\");\n        String s2 = new String(\"java\");\n        System.out.println((s1 == s2) + \" \" + s1.equals(s2));\n    }\n}",
+          "options": [
+            "false true",
+            "true true",
+            "false false",
+            "true false"
+          ],
+          "answer": 0,
+          "explanation": "`new String(...)` har baar naya object banata hai, isliye `s1 == s2` (kya same object hai?) false hai. `String` ne `equals` override kiya hai jo characters compare karta hai, to true. Output \"false true\" (option A). Trap: option B, `==` ko content comparison samajhna; option C, sochna ki `equals` bhi default `==` jaisa hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w2-q3",
+          "question": "Is code ke baare mein kya sahi hai?",
+          "code": "class Vehicle {\n    int wheels;\n    Vehicle(int w) { wheels = w; }\n}\n\nclass Bike extends Vehicle {\n    Bike() {\n        wheels = 2;\n    }\n}",
+          "options": [
+            "Compile hota hai aur `wheels` 2 hota hai",
+            "Compile hota hai; pehle `wheels` 0, phir 2",
+            "Runtime error: Vehicle ka no-arg constructor nahi mila",
+            "Compile error: `Bike()` implicitly `super()` call karta hai, aur `Vehicle` mein no-arg constructor nahi hai"
+          ],
+          "answer": 3,
+          "explanation": "`Bike()` mein na `this(...)` hai na `super(...)`, isliye compiler pehli line mein `super()` daalta hai. `Vehicle` ne `Vehicle(int)` likha hai, to free no-arg constructor nahi bana, aur `super()` kisi se match nahi karta: compile error (option D). Fix: `Bike() { super(2); }`. Trap: option A, sochna ki field set kar dena kaafi hai; constructor chaining compile time par check hoti hai, isliye option C (runtime) bhi galat hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w2-q4",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Base {\n    String name() { return \"Base\"; }\n    String show() { return \"[\" + name() + \"]\"; }\n}\n\nclass Derived extends Base {\n    @Override\n    String name() { return \"Derived\"; }\n\n    @Override\n    String show() { return super.show() + name(); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(new Derived().show());\n    }\n}",
+          "options": [
+            "[Base]Derived",
+            "[Derived]Derived",
+            "[Base]Base",
+            "[Derived]Base"
+          ],
+          "answer": 1,
+          "explanation": "`super.show()` Base ka `show` chalata hai, lekin object abhi bhi `Derived` hai. Base ke `show` ke andar `name()` ek normal (virtual) call hai, isliye Derived ka `name()` chalta hai: \"[Derived]\". Phir `+ name()` se \"Derived\" judta hai. Output \"[Derived]Derived\" (option B). Trap: option A, maan lena ki `super.show()` ke andar sab kuch Base ka hi chalega; `super` sirf usi ek call ko Base ke version par bhejta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w2-q5",
+          "question": "Class `Ticket` seedhe `Object` ko extend karti hai. Uske andar in mein se kaunsa method compile error dega?",
+          "options": [
+            "`public String toString() { return \"T\"; }`",
+            "`public String toString(int n) { return \"T\" + n; }`",
+            "`String toString() { return \"T\"; }`",
+            "`public boolean equals(Object o) { return o == this; }`"
+          ],
+          "answer": 2,
+          "explanation": "`Object.toString()` public hai. Option C same signature se override karta hai par access ko package-private (default) kar deta hai, jo weaker access hai: compile error. Option B ki parameter list alag hai, yaani ye naya overload hai, bilkul valid. Options A aur D sahi overrides hain. Trap: option B, kyunki naam same dekh kar lagta hai ki override ke rules toot rahe hain; parameter list alag ho to woh override hai hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w2-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "class P {\n    int x;\n    P(int x) { this.x = x; }\n\n    public boolean equals(P other) {\n        return other != null && x == other.x;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        P a = new P(1);\n        P b = new P(1);\n        Object o = b;\n        System.out.println(a.equals(b) + \" \" + a.equals(o));\n    }\n}",
+          "options": [
+            "true true",
+            "false false",
+            "false true",
+            "true false"
+          ],
+          "answer": 3,
+          "explanation": "`equals(P)` naya **overload** hai, `Object.equals(Object)` ka override nahi. Overload compile time par argument ke static type se chuna jaata hai. `a.equals(b)`: argument type `P`, to `equals(P)` chalta hai, x barabar hai: true. `a.equals(o)`: argument type `Object`, sirf `Object.equals` match karta hai, jo references compare karta hai; a aur b alag objects hain: false. Output \"true false\" (option D). Trap: option A, sochna ki runtime par object `P` hai to `equals(P)` hi chalega; overload choice runtime type nahi dekhti. Isi wajah se `List.contains` aur `HashSet` bhi aisi class ke saath fail hote hain.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Polymorphism, Dynamic Dispatch and Casting",
+      "summary": "Is week aap dekhoge ki superclass reference se method call karne par runtime object ka method kaise chalta hai, upcasting/downcasting, `instanceof` aur pattern matching, aur kyun fields aur static methods polymorphic nahi hote.",
+      "readMinutes": 13,
+      "concepts": [
+        "**Static type vs runtime type**: `Shape s = new Circle();` mein `s` ka static (declared) type `Shape` hai aur runtime type `Circle`. Compiler sirf static type dekhta hai: `s` par wahi methods call ho sakte hain jo `Shape` mein declared hain, chahe object kuch bhi ho.",
+        "**Dynamic dispatch**: overridden instance method ka kaunsa version chalega, ye runtime object tay karta hai. Isi se ek `Shape[]` par loop karke har shape ka sahi `area()` chal jaata hai, bina `if-else` ke. Naya shape jodna ho to sirf nayi class likho, purana loop wahi rahega (open–closed principle).",
+        "**Overload compile time, override runtime**: pehle compiler arguments ke static types se method signature chunta hai (overload resolution), phir runtime par us signature ka sabse specific override chalta hai. Ye do alag steps hain; tricky exam questions aksar isi se bante hain.",
+        "**Upcasting aur downcasting**: subclass se superclass reference (upcast) hamesha safe aur implicit hai. Ulta (downcast) ke liye explicit `(Dog) a` likhna padta hai; compile tabhi hota hai jab types ek hi hierarchy mein hon, aur runtime par object sach mein us type ka na ho to `ClassCastException`.",
+        "**`instanceof` aur pattern matching**: downcast se pehle check karo: `if (a instanceof Dog)`. Java 16+ mein `if (a instanceof Dog d) d.bark();` check aur cast ek saath kar deta hai. `null instanceof X` hamesha false hota hai.",
+        "**Fields aur static methods polymorphic nahi**: field access static type se resolve hota hai, isliye subclass mein same naam ka field parent wale ko sirf **hide** karta hai, override nahi. Static methods bhi hide hote hain; call reference ke static type se tay hota hai. Isliye fields `private` rakho aur overridable getters se padho."
+      ],
+      "example": {
+        "problem": "Fictional delivery app: `Vehicle` ke subclasses `Bike` aur `Truck` ke `costPerKm()` alag hain. Fleet ke har vehicle ke liye 10 km ka cost nikaalo, aur sirf `Truck` ke liye extra `loadCharge()` jodo.",
+        "steps": [
+          "`fleet` ka element type `Vehicle` hai, par har element ka runtime type alag hai.",
+          "`Bike`: dynamic dispatch se `costPerKm()` = 6, cost = 60.",
+          "`Truck`: 25 × 10 = 250; `v instanceof Truck t` true hai, to `t.loadCharge()` (200) bhi judta hai: 450.",
+          "`v.loadCharge()` seedhe nahi likh sakte: `Vehicle` mein ye method nahi hai, compile error. Isliye pehle pattern-matching se cast kiya.",
+          "Plain `Vehicle`: 10 × 10 = 100.",
+          "Answer: teen lines **60**, **450**, **100**."
+        ],
+        "code": "class Vehicle {\n    int costPerKm() { return 10; }\n}\n\nclass Bike extends Vehicle {\n    @Override\n    int costPerKm() { return 6; }\n}\n\nclass Truck extends Vehicle {\n    @Override\n    int costPerKm() { return 25; }\n\n    int loadCharge() { return 200; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Vehicle[] fleet = { new Bike(), new Truck(), new Vehicle() };\n        for (Vehicle v : fleet) {\n            int cost = v.costPerKm() * 10;\n            if (v instanceof Truck t) {\n                cost += t.loadCharge();\n            }\n            System.out.println(cost);\n        }\n    }\n}"
+      },
+      "mistakes": [
+        "Bina check ke downcast karna (`(Truck) v`). Compile ho jaata hai par galat object par `ClassCastException`. Pehle `instanceof` (ya pattern matching) use karo.",
+        "Sochna ki subclass ka same-naam field parent reference se bhi dikhega. Fields static type se resolve hote hain; polymorphic behaviour ke liye methods use karo.",
+        "Overloaded method chunte waqt runtime type dekhna. Compiler argument ka declared type dekh kar signature chunta hai; sirf override runtime par decide hota hai."
+      ],
+      "revision": [
+        "Compiler static type dekhta hai, JVM runtime type.",
+        "Override → dynamic dispatch; overload, fields, static methods → compile time.",
+        "Upcast implicit aur safe; downcast explicit, galat ho to `ClassCastException`.",
+        "`x instanceof T t` check aur cast ek saath karta hai.",
+        "`null instanceof T` hamesha false."
+      ],
+      "questions": [
+        {
+          "id": "java-w3-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Animal { String sound() { return \"-\"; } }\nclass Dog extends Animal { String sound() { return \"Woof\"; } }\nclass Cat extends Animal { String sound() { return \"Meow\"; } }\n\npublic class Main {\n    public static void main(String[] args) {\n        Animal[] zoo = { new Dog(), new Cat(), new Animal() };\n        for (Animal a : zoo) {\n            System.out.print(a.sound() + \",\");\n        }\n    }\n}",
+          "options": [
+            "-,-,-,",
+            "Woof,Meow,Woof,",
+            "Compile error",
+            "Woof,Meow,-,"
+          ],
+          "answer": 3,
+          "explanation": "Array ka static type `Animal[]` hai, par `sound()` overridden hai, isliye har element ka runtime type decide karta hai ki kaunsa version chale: Dog → \"Woof\", Cat → \"Meow\", Animal → \"-\". Output \"Woof,Meow,-,\" (option D). Trap: option A, sochna ki reference type `Animal` hai to Animal ka hi method chalega; ye fields ke liye sach hai, overridden methods ke liye nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w3-q2",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "class Shape {\n    double area() { return 0; }\n}\n\nclass Circle extends Shape {\n    double r = 1;\n\n    @Override\n    double area() { return 3.0 * r * r; }\n\n    double perimeter() { return 6.0 * r; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Shape s = new Circle();\n        System.out.println(s.perimeter());\n    }\n}",
+          "options": [
+            "6.0 print hota hai",
+            "Compile error: `Shape` mein `perimeter()` nahi hai",
+            "Runtime par `ClassCastException`",
+            "0.0 print hota hai"
+          ],
+          "answer": 1,
+          "explanation": "Compiler method call ko `s` ke static type `Shape` se check karta hai, aur `Shape` mein `perimeter()` declared nahi hai, to compile error (option B). Runtime object Circle hai, par compiler use nahi dekhta. Fix: `if (s instanceof Circle c)` ke andar `c.perimeter()`. Trap: option A, sochna ki object Circle hai to call chal jaayegi; dynamic dispatch sirf un methods par hota hai jo static type mein maujood hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w3-q3",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Parent {\n    String tag = \"P\";\n    String getTag() { return tag; }\n}\n\nclass Child extends Parent {\n    String tag = \"C\";\n\n    @Override\n    String getTag() { return tag; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Parent p = new Child();\n        System.out.println(p.tag + p.getTag());\n    }\n}",
+          "options": [
+            "PC",
+            "CC",
+            "PP",
+            "CP"
+          ],
+          "answer": 0,
+          "explanation": "`p.tag` field access hai, jo static type `Parent` se resolve hota hai: \"P\". `p.getTag()` overridden method hai, runtime type `Child` ka version chalta hai, aur uske andar `tag` Child ka field hai: \"C\". Output \"PC\" (option A). Trap: option B (\"CC\"), fields ko bhi methods ki tarah polymorphic maan lena; Child ka field parent wale ko sirf hide karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w3-q4",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "class Animal {}\nclass Dog extends Animal {}\nclass Cat extends Animal {}\n\npublic class Main {\n    public static void main(String[] args) {\n        Animal a = new Cat();\n        Dog d = (Dog) a;\n        System.out.println(\"done\");\n    }\n}",
+          "options": [
+            "\"done\" print hota hai, kyunki Cat aur Dog dono Animal hain",
+            "Compile error: incompatible types",
+            "Runtime par `ClassCastException`; \"done\" print nahi hota",
+            "\"done\" print hota hai aur `d` `null` ban jaata hai"
+          ],
+          "answer": 2,
+          "explanation": "Compiler ke liye `a` ka type `Animal` hai aur `Dog` uska subclass hai, to downcast `(Dog) a` sahi ho sakta hai: code compile hota hai (option B galat). Runtime par JVM asli object check karta hai: woh `Cat` hai, `Dog` nahi, isliye `ClassCastException` aur \"done\" tak pahunchte hi nahi (option C). Trap: option D, cast ko aisa samajhna jo fail hone par `null` de de; Java ka cast exception phenkta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w3-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    static String kind(Object o) {\n        if (o instanceof Number) return \"num\";\n        if (o instanceof CharSequence) return \"text\";\n        return \"other\";\n    }\n\n    public static void main(String[] args) {\n        System.out.println(kind(42) + \" \" + kind(\"hi\") + \" \" + kind('c') + \" \" + kind(3.5));\n    }\n}",
+          "options": [
+            "num text text num",
+            "num text other num",
+            "num text num num",
+            "other text other other"
+          ],
+          "answer": 1,
+          "explanation": "Primitive arguments `Object` parameter mein jaane ke liye autobox hote hain: 42 → `Integer`, 'c' → `Character`, 3.5 → `Double`. `Integer` aur `Double` dono `Number` ke subclasses hain: \"num\". `String` `CharSequence` implement karta hai: \"text\". `Character` na `Number` hai na `CharSequence`, to \"other\". Output \"num text other num\" (option B). Trap: option A, char ko ek-character ki string maan lena; option C, char ko number maan lena (arithmetic mein woh int ban jaata hai, par boxed `Character` `Number` nahi hai).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w3-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "class A {\n    String show(A x) { return \"A.A\"; }\n    String show(B x) { return \"A.B\"; }\n}\n\nclass B extends A {\n    @Override\n    String show(A x) { return \"B.A\"; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        A p = new B();\n        A q = new B();\n        B r = new B();\n        System.out.println(p.show(q) + \" \" + p.show(r));\n    }\n}",
+          "options": [
+            "B.A B.A",
+            "A.A A.B",
+            "B.A A.B",
+            "Compile error: ambiguous method call"
+          ],
+          "answer": 2,
+          "explanation": "Do steps: (1) compile time par argument ke static type se signature chuna jaata hai, (2) runtime par us signature ka override chalta hai. `p.show(q)`: q ka static type `A`, to signature `show(A)`; object B hai aur B ne `show(A)` override kiya hai: \"B.A\". `p.show(r)`: r ka type `B`, aur `show(B)` zyada specific hai; B ne use override nahi kiya, to A ka version: \"A.B\". Output \"B.A A.B\" (option C). Trap: option A, runtime type se overload chunna (q bhi B hai to `show(B)`); overload static type se chuna jaata hai. Ambiguity nahi hai kyunki `show(B)` `show(A)` se more specific hai (option D galat).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Abstract Classes and Interfaces",
+      "summary": "Is week aap abstract classes aur interfaces se contracts design karna, default aur static interface methods, ek class mein kai interfaces implement karna, aur dono mein se kab kya chunna hai, ye seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Abstract class**: `abstract` class ka object `new` se nahi ban sakta. Isme abstract methods (sirf signature, body nahi) ke saath normal methods, fields aur constructors sab ho sakte hain. Abstract class ka constructor tab chalta hai jab uske kisi concrete subclass ka object banta hai.",
+        "**Abstract method ka rule**: jo class kisi inherited abstract method ko implement nahi karti, use khud `abstract` declare karna padta hai, warna compile error. Concrete (non-abstract) class mein ek bhi unimplemented abstract method nahi reh sakta.",
+        "**Interface**: ek contract ki 'ye type kya kar sakta hai'. Interface ke abstract methods implicitly `public abstract` hote hain aur fields implicitly `public static final` (constants). Isliye implement karne wala method `public` hi hona chahiye, warna weaker access ka compile error.",
+        "**Multiple interfaces**: class sirf ek class extend kar sakti hai par kai interfaces implement kar sakti hai: `class Drone extends Device implements Flyable, Recordable`. Isse ek type ke kai 'roles' ban jaate hain, bina state ki multiple inheritance ki problems ke.",
+        "**Default, static aur private methods** (Java 8/9+): `default` method body ke saath aata hai, taaki interface mein naya method jodne par purani implementing classes na tootein. Do interfaces same default method dein to class ko use override karna hi padega, aur `A.super.m()` se kisi ek ka version call kar sakte ho. Rule: class (ya superclass) ka method hamesha interface default se jeet-ta hai. Interface ke `static` methods `Name.m()` se hi call hote hain.",
+        "**Template method pattern**: abstract class algorithm ka skeleton ek `final` method mein rakhti hai aur badalne wale steps abstract chhodti hai. Data pipelines aur frameworks yahi karte hain: order fixed, steps pluggable.",
+        "**Kab kya**: shared state/code wali 'is-a' family ho to abstract class; alag-alag unrelated classes ko ek capability deni ho (`Comparable`, `Runnable`, `AutoCloseable`) to interface. 'Program to an interface': variable ka type interface rakho (`List<String> xs = new ArrayList<>()`), taaki implementation badalna aasaan rahe."
+      ],
+      "example": {
+        "problem": "Fictional analytics tool: har data source ko `DataSource` interface follow karna hai, aur abstract `Pipeline` class har source ke liye load → clean ka fixed order chalati hai. Program ka output kya hoga?",
+        "steps": [
+          "`CsvSource` ne interface ka abstract `rows()` `public` ke saath implement kiya; `describe()` default method use free mein mila.",
+          "`Pipeline` abstract hai aur uska `run` `final` hai: subclass order badal nahi sakti, sirf `clean` step bharti hai.",
+          "`p.run(...)`: pehli line mein `describe()` → \"source with 120 rows\".",
+          "Doosri line: `clean(120)` dynamic dispatch se DropNulls ka chalta hai → 120 − 15 = 105.",
+          "Answer: \"load: source with 120 rows\" aur \"clean: **105**\"."
+        ],
+        "code": "interface DataSource {\n    int rows();\n\n    default String describe() { return \"source with \" + rows() + \" rows\"; }\n}\n\nclass CsvSource implements DataSource {\n    public int rows() { return 120; }\n}\n\nabstract class Pipeline {\n    final void run(DataSource src) {\n        System.out.println(\"load: \" + src.describe());\n        System.out.println(\"clean: \" + clean(src.rows()));\n    }\n\n    abstract int clean(int rows);\n}\n\nclass DropNulls extends Pipeline {\n    int clean(int rows) { return rows - 15; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Pipeline p = new DropNulls();\n        p.run(new CsvSource());\n    }\n}"
+      },
+      "mistakes": [
+        "Interface method implement karte waqt `public` bhool jaana. Interface method implicitly public hai, to class mein default access weaker hai: compile error.",
+        "Abstract class ka object banana (`new Pipeline()`). Sirf concrete subclass ka object banta hai; abstract class reference type ke roop mein use hoti hai.",
+        "Do interfaces se same default method aaye aur class override na kare. Compiler conflict ka error deta hai; override karke `A.super.m()` ya apna logic likho."
+      ],
+      "revision": [
+        "Abstract class: constructor, state, abstract + concrete methods; `new` nahi.",
+        "Interface methods implicitly `public abstract`, fields `public static final`.",
+        "Ek class extend, kai interfaces implement.",
+        "Class ka method > interface default; do defaults takraayein to override zaroori.",
+        "Variable ka type interface rakho, object concrete class ka."
+      ],
+      "questions": [
+        {
+          "id": "java-w4-q1",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "abstract class Shape {\n    abstract double area();\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Shape s = new Shape();\n        System.out.println(s.area());\n    }\n}",
+          "options": [
+            "0.0 print hota hai",
+            "Runtime par `InstantiationException`",
+            "Compile error: `Shape` abstract hai, uska object nahi ban sakta",
+            "Compile error: abstract method ki body nahi hai"
+          ],
+          "answer": 2,
+          "explanation": "`new` sirf concrete class par chal sakta hai; abstract class ka object compile time par hi mana hai (option C). Abstract method bina body ke hi likha jaata hai, isliye option D galat hai. Trap: option B, kyunki reflection se object banane par aisi exception aa sakti hai; normal `new` ko compiler hi rok deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w4-q2",
+          "question": "Is program ka output kya hoga?",
+          "code": "interface Logger {\n    void log(String m);\n\n    default void info(String m) { log(\"INFO \" + m); }\n}\n\nclass ConsoleLogger implements Logger {\n    public void log(String m) { System.out.println(m); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Logger lg = new ConsoleLogger();\n        lg.info(\"start\");\n    }\n}",
+          "options": [
+            "INFO start",
+            "start",
+            "Compile error: `ConsoleLogger` ne `info` implement nahi kiya",
+            "INFO"
+          ],
+          "answer": 0,
+          "explanation": "`info` ek default method hai jiski body interface mein hi hai, to `ConsoleLogger` ko sirf abstract `log` implement karna tha. `info(\"start\")` andar `log(\"INFO start\")` call karta hai, jo ConsoleLogger ka `log` hai. Output \"INFO start\" (option A). Trap: option C, sochna ki interface ke saare methods implement karne padte hain; default methods ke liye nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w4-q3",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "interface Greeter {\n    String greet(String name);\n}\n\nclass HindiGreeter implements Greeter {\n    String greet(String name) { return \"Namaste \" + name; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Greeter g = new HindiGreeter();\n        System.out.println(g.greet(\"Ravi\"));\n    }\n}",
+          "options": [
+            "\"Namaste Ravi\" print hota hai",
+            "Compile error: interface methods parameters nahi le sakte",
+            "Runtime par `AbstractMethodError`",
+            "Compile error: `greet` ko `public` hona chahiye (weaker access)"
+          ],
+          "answer": 3,
+          "explanation": "Interface ka `greet` implicitly `public abstract` hai. `HindiGreeter` mein `greet` bina modifier ke hai, yaani package-private, jo public se weaker hai; override ke rule ke hisaab se compile error (option D). Trap: option A, kyunki class aur interface same package mein hain to lagta hai access chal jaayega; par override mein access kam karna hi mana hai, package chahe jo ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w4-q4",
+          "question": "Is program ka output kya hoga?",
+          "code": "interface A {\n    default String hi() { return \"A\"; }\n}\n\ninterface B {\n    default String hi() { return \"B\"; }\n}\n\nclass C implements A, B {\n    @Override\n    public String hi() { return A.super.hi() + B.super.hi(); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(new C().hi());\n    }\n}",
+          "options": [
+            "A",
+            "AB",
+            "B",
+            "Compile error: do interfaces mein same default method nahi ho sakta"
+          ],
+          "answer": 1,
+          "explanation": "Do interfaces same signature ka default method dete hain, isliye `C` ko `hi()` override karna zaroori tha, aur usne kiya. `A.super.hi()` A ka default (\"A\") aur `B.super.hi()` B ka (\"B\") call karta hai. Output \"AB\" (option B). Trap: option D: conflict tab compile error deta jab `C` override **na** karta; override karne par code bilkul valid hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w4-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "abstract class Report {\n    Report() { System.out.print(\"R\"); }\n\n    final void print() { System.out.print(header() + body()); }\n\n    abstract String header();\n\n    String body() { return \"-body\"; }\n}\n\nclass Sales extends Report {\n    Sales() { System.out.print(\"S\"); }\n\n    @Override\n    String header() { return \":sales\"; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        new Sales().print();\n    }\n}",
+          "options": [
+            "SR:sales-body",
+            "S:sales-body",
+            "Compile error: abstract class ka constructor nahi ho sakta",
+            "RS:sales-body"
+          ],
+          "answer": 3,
+          "explanation": "Abstract class ka constructor ho sakta hai aur woh subclass ka object banne par chalta hai. `new Sales()`: pehle implicit `super()` se \"R\", phir \"S\". Phir `print()`: `header()` Sales ka \":sales\" aur `body()` Report ka \"-body\". Output \"RS:sales-body\" (option D). Trap: option B, sochna ki abstract class ka constructor kabhi nahi chalta; option C bhi isi galatfehmi se aata hai. Option A constructor chaining ka order ulta kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w4-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "interface Shape {\n    double area();\n\n    default String describe() { return \"Shape \" + area(); }\n}\n\nabstract class Poly implements Shape {\n    @Override\n    public String describe() { return \"Poly \" + area(); }\n}\n\nclass Square extends Poly {\n    double s;\n\n    Square(double s) { this.s = s; }\n\n    @Override\n    public double area() { return s * s; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Shape x = new Square(3);\n        System.out.println(x.describe());\n    }\n}",
+          "options": [
+            "Poly 9.0",
+            "Shape 9.0",
+            "Poly 9",
+            "Compile error: `Poly` ne `area()` implement nahi kiya"
+          ],
+          "answer": 0,
+          "explanation": "`Poly` abstract hai, isliye `area()` implement na karna theek hai (option D galat); `Square` use implement karta hai. `describe()` ke do versions hain: interface ka default aur `Poly` ka class method. Rule: class hierarchy ka method interface default se jeet-ta hai, to \"Poly \" + `area()` chalega. `area()` = 3.0 × 3.0 = 9.0, aur double string mein \"9.0\" banta hai. Output \"Poly 9.0\" (option A). Trap: option B, sochna ki reference type `Shape` hai to interface ka default chalega; ye bhi normal dynamic dispatch hai. Option C double ko int ki tarah print karna hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Collections, Iterators and Ordering",
+      "summary": "Is week aap Java Collections Framework ke `List`, `Set`, `Map` interfaces, ArrayList vs LinkedList ka cost, Iterator se safe removal aur `ConcurrentModificationException`, aur `Comparable`/`Comparator` se sorting seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Interface-first design**: `Collection` ke neeche `List` (order + duplicates allowed, index se access), `Set` (duplicates nahi) aur `Queue`/`Deque` hain; `Map` alag hierarchy hai (key → value, keys unique). Variable ka type interface rakho: `List<String> names = new ArrayList<>();` taaki implementation baad mein badal sako.",
+        "**ArrayList vs LinkedList**: ArrayList andar ek resizable array hai: `get(i)` O(1), end par `add` amortised O(1), beech mein insert/remove O(n) (elements shift hote hain). LinkedList doubly-linked nodes hai: `get(i)` O(n), par iterator ki current position par insert/remove O(1). Practice mein zyaadatar ArrayList hi tez padta hai (memory mein contiguous, cache-friendly).",
+        "**Set aur Map implementations**: `HashSet`/`HashMap` average O(1) dete hain par koi order guarantee nahi. `LinkedHashSet`/`LinkedHashMap` insertion order rakhte hain. `TreeSet`/`TreeMap` sorted order (O(log n)) rakhte hain aur uniqueness `compareTo`/`Comparator` se decide karte hain, `equals` se nahi.",
+        "**Iterator**: `hasNext()`, `next()`, `remove()`. for-each loop andar se iterator hi use karta hai. Iterate karte waqt collection ko seedhe (`list.remove(x)`) badloge to ArrayList ka fail-fast iterator agle `next()` par `ConcurrentModificationException` phenkta hai. Safe tareeke: `it.remove()` ya `list.removeIf(...)`.",
+        "**`remove(int)` vs `remove(Object)`**: `List<Integer>` mein `list.remove(2)` index 2 hata deta hai, value 2 nahi. Value hatani ho to `list.remove(Integer.valueOf(2))` likho.",
+        "**Comparable vs Comparator**: `Comparable<T>` class ka 'natural order' hai (`compareTo`, jaise String ka lexicographic). `Comparator<T>` bahar se alag orderings deta hai: `Comparator.comparingInt(...)`, `.reversed()`, `.thenComparing(...)`. Contract: negative = pehla chhota, 0 = barabar, positive = pehla bada.",
+        "**Overflow-safe compare**: `a - b` se compare karna bade ya negative numbers par int overflow kar sakta hai aur galat sign de sakta hai; `Integer.compare(a, b)` use karo."
+      ],
+      "example": {
+        "problem": "Fictional HR data: employees ko department ke alphabetical order mein, aur same department mein salary ke ghatte order mein sort karo, phir har department ka total salary ek `Map` mein nikaalo.",
+        "steps": [
+          "`Comparator.comparing((Emp e) -> e.dept)` pehle department ka natural (alphabetical) order lagata hai: \"Data\" < \"Ops\".",
+          "`thenComparing(...)` sirf tie todta hai: same department mein `comparingInt(salary).reversed()` yaani salary bade se chhota.",
+          "Sorted list: Bala (Data, 70), Dev (Data, 60), Chitra (Ops, 65), Asha (Ops, 50).",
+          "`merge(key, value, Integer::sum)`: key nayi ho to value daalta hai, warna purani + nayi.",
+          "`TreeMap` keys ko sorted rakhta hai, isliye print order fixed hai (HashMap mein guarantee nahi hoti).",
+          "Answer: **{Data=130, Ops=115}**."
+        ],
+        "code": "import java.util.*;\n\nclass Emp {\n    String name; String dept; int salary;\n    Emp(String n, String d, int s) { name = n; dept = d; salary = s; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        List<Emp> staff = new ArrayList<>(List.of(\n            new Emp(\"Asha\", \"Ops\", 50),\n            new Emp(\"Bala\", \"Data\", 70),\n            new Emp(\"Chitra\", \"Ops\", 65),\n            new Emp(\"Dev\", \"Data\", 60)));\n\n        staff.sort(Comparator.comparing((Emp e) -> e.dept)\n            .thenComparing(Comparator.comparingInt((Emp e) -> e.salary).reversed()));\n\n        Map<String, Integer> total = new TreeMap<>();\n        for (Emp e : staff) {\n            total.merge(e.dept, e.salary, Integer::sum);\n        }\n        System.out.println(total);\n    }\n}"
+      },
+      "mistakes": [
+        "for-each ke andar `list.remove(x)` karna. Fail-fast iterator `ConcurrentModificationException` deta hai (aur kuch edge cases mein chupchaap ek element skip ho jaata hai). `Iterator.remove()` ya `removeIf` use karo.",
+        "`List<Integer>` par `list.remove(5)` likh kar value 5 hatane ki ummeed. Ye index 5 hatata hai (ya `IndexOutOfBoundsException`). `remove(Integer.valueOf(5))` likho.",
+        "`HashMap`/`HashSet` ke print ya iteration order par bharosa karna. Order chahiye to `LinkedHashMap` (insertion) ya `TreeMap` (sorted) lo."
+      ],
+      "revision": [
+        "List: order + duplicates; Set: unique; Map: unique keys.",
+        "ArrayList: fast index access; LinkedList: iterator position par fast insert/remove.",
+        "Iterate karte waqt sirf `it.remove()` ya `removeIf` se hatao.",
+        "TreeSet/TreeMap uniqueness `compareTo` se decide karte hain.",
+        "Multi-key sort: `comparing(...).thenComparing(...)`, ulta karne ke liye `.reversed()`.",
+        "Compare mein `a - b` nahi, `Integer.compare(a, b)`."
+      ],
+      "questions": [
+        {
+          "id": "java-w5-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<Integer> list = new ArrayList<>();\n        list.add(10);\n        list.add(20);\n        list.add(30);\n        list.add(1, 15);\n        list.remove(2);\n        System.out.println(list);\n    }\n}",
+          "options": [
+            "[10, 15, 20, 30]",
+            "[10, 20, 30]",
+            "[10, 15, 30]",
+            "[15, 20, 30]"
+          ],
+          "answer": 2,
+          "explanation": "`add(1, 15)` index 1 par daalta hai aur baaki elements aage shift hote hain: [10, 15, 20, 30]. `list.remove(2)` mein argument `int` hai, to `remove(int index)` chalta hai aur index 2 wala 20 hatta hai: [10, 15, 30] (option C). Trap: option A, sochna ki value 2 hatane ki koshish hui (jo list mein hai hi nahi); value ke liye `remove(Integer.valueOf(2))` chahiye. Option B `add(1, 15)` ko replace samajhna hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w5-q2",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Set<String> s = new HashSet<>();\n        s.add(\"a\");\n        s.add(\"b\");\n        s.add(\"a\");\n        s.add(\"A\");\n        System.out.println(s.size() + \" \" + s.add(\"b\"));\n    }\n}",
+          "options": [
+            "4 true",
+            "3 false",
+            "3 true",
+            "2 false"
+          ],
+          "answer": 1,
+          "explanation": "Set duplicate nahi rakhta: doosra \"a\" ignore hota hai, par \"A\" alag string hai (comparison case-sensitive hai), to size 3. `add` boolean return karta hai: element pehle se ho to false. Expression left se right evaluate hota hai, isliye pehle size 3, phir `add(\"b\")` false. Output \"3 false\" (option B). Trap: option D, \"A\" aur \"a\" ko same maan lena; option A, duplicates ko bhi gin lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w5-q3",
+          "question": "Is program ke run hone par kya hoga?",
+          "code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<String> names = new ArrayList<>(List.of(\"asha\", \"bala\", \"chitra\", \"dev\"));\n        for (String n : names) {\n            if (n.startsWith(\"b\")) {\n                names.remove(n);\n            }\n        }\n        System.out.println(names);\n    }\n}",
+          "options": [
+            "[asha, chitra, dev] print hota hai",
+            "Compile error: loop ke andar list badal nahi sakte",
+            "[asha, dev] print hota hai",
+            "`ConcurrentModificationException` phenka jaata hai"
+          ],
+          "answer": 3,
+          "explanation": "for-each andar se ArrayList ka iterator use karta hai. \"bala\" milne par `names.remove(n)` seedhe list badalta hai (modification count badhta hai, size 3 ho jaata hai). Loop abhi khatam nahi hua (iterator ka cursor 2, size 3), to agla `next()` is modification ko pakadta hai aur `ConcurrentModificationException` phenkta hai (option D). Ye runtime check hai, compile error nahi (option B galat). Trap: option A, sochna ki remove bas kaam kar jaayega; sahi tareeka `names.removeIf(n -> n.startsWith(\"b\"))` ya `Iterator.remove()` hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w5-q4",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<Integer> nums = new ArrayList<>(List.of(4, 7, 10, 13, 16));\n        Iterator<Integer> it = nums.iterator();\n        while (it.hasNext()) {\n            if (it.next() % 2 == 0) {\n                it.remove();\n            }\n        }\n        System.out.println(nums);\n    }\n}",
+          "options": [
+            "[7, 13]",
+            "[4, 10, 16]",
+            "`ConcurrentModificationException`",
+            "[7, 10, 13]"
+          ],
+          "answer": 0,
+          "explanation": "`it.remove()` iterator ka apna method hai: woh `next()` se aakhri lautaye element ko hatata hai aur iterator ki state update rakhta hai, isliye koi exception nahi aata. Even numbers 4, 10, 16 hat jaate hain: [7, 13] (option A). Trap: option C, sochna ki iteration ke dauran koi bhi removal exception dega; exception sirf collection ke apne `remove` se aata hai. Option B condition ko ulta padhna hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w5-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<String> w = new ArrayList<>(List.of(\"kiwi\", \"fig\", \"pear\", \"apple\", \"plum\"));\n        w.sort((a, b) -> a.length() != b.length()\n                ? Integer.compare(a.length(), b.length())\n                : b.compareTo(a));\n        System.out.println(w);\n    }\n}",
+          "options": [
+            "[fig, kiwi, pear, plum, apple]",
+            "[apple, fig, kiwi, pear, plum]",
+            "[apple, plum, pear, kiwi, fig]",
+            "[fig, plum, pear, kiwi, apple]"
+          ],
+          "answer": 3,
+          "explanation": "Comparator pehle length compare karta hai (chhoti pehle): fig (3), phir 4 letters wale, phir apple (5). Length barabar ho to `b.compareTo(a)` hai, yaani ulta alphabetical: plum, pear, kiwi. Output \"[fig, plum, pear, kiwi, apple]\" (option D). Trap: option A, tie ke liye `b.compareTo(a)` ko normal `a.compareTo(b)` padh lena. Option B length wala rule ignore karke sirf alphabetical sort karna hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w5-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\nclass Emp implements Comparable<Emp> {\n    String name;\n    int dept;\n\n    Emp(String name, int dept) { this.name = name; this.dept = dept; }\n\n    @Override\n    public int compareTo(Emp o) { return Integer.compare(dept, o.dept); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Set<Emp> set = new TreeSet<>();\n        set.add(new Emp(\"Asha\", 2));\n        set.add(new Emp(\"Bala\", 1));\n        set.add(new Emp(\"Chitra\", 2));\n        set.add(new Emp(\"Dev\", 3));\n        StringBuilder sb = new StringBuilder();\n        for (Emp e : set) {\n            sb.append(e.name).append(\" \");\n        }\n        System.out.println(sb.toString().trim());\n    }\n}",
+          "options": [
+            "Bala Asha Chitra Dev",
+            "Bala Asha Dev",
+            "Asha Bala Chitra Dev",
+            "Bala Chitra Dev"
+          ],
+          "answer": 1,
+          "explanation": "`TreeSet` duplicate `equals` se nahi, `compareTo` se pehchaanta hai. Chitra ka dept 2 hai, to `compareTo` Asha ke saath 0 deta hai: set use duplicate maan kar add hi nahi karta (pehle wali Asha rehti hai). Iteration sorted order (dept 1, 2, 3) mein hoti hai: \"Bala Asha Dev\" (option B). Trap: option A, sochna ki naam alag hain to dono rahenge; option D, sochna ki naya element purane ko replace kar deta hai. Isliye `compareTo` ko `equals` ke consistent rakho (jaise tie par naam bhi compare karo).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Generics, Wildcards and Callbacks",
+      "summary": "Is week aap generic classes aur methods likhna, bounded types, wildcards (`? extends`, `? super`), type erasure ki basic limits, aur interfaces aur lambdas se callbacks pass karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Generics kyun**: bina type ke `List` har cheez `Object` ki tarah rakhta tha, aur galat type ka pata runtime par `ClassCastException` se chalta. `List<String>` mein compiler hi galat `add` rok deta hai aur `get` par cast ki zaroorat nahi padti. Errors runtime se compile time par shift ho jaate hain.",
+        "**Generic class aur method**: `class Box<T> { T value; }` mein `T` type parameter hai. Generic method apna type parameter return type se pehle declare karta hai: `static <T> T first(List<T> xs)`. Call karte waqt compiler arguments (ya target type) se `T` infer kar leta hai.",
+        "**Bounded types**: `<T extends Comparable<T>>` ka matlab `T` aisa type hona chahiye jo khud se compare ho sake; tabhi method ke andar `x.compareTo(y)` likh sakte ho. Bound mein `extends` class aur interface dono ke liye likha jaata hai.",
+        "**Invariance**: `Integer` `Number` ka subtype hai, par `List<Integer>` `List<Number>` ka subtype **nahi**. Warna koi `List<Number>` reference se `Double` daal deta aur Integer list kharab ho jaati. Arrays covariant hain (`Object[] a = new String[2];` compile hota hai) aur galat store par runtime `ArrayStoreException` dete hain.",
+        "**Wildcards aur PECS**: `List<? extends Number>` se padh sakte ho (har element `Number` hai) par `null` ke alawa kuch add nahi kar sakte: ye producer hai. `List<? super Integer>` mein `Integer` add kar sakte ho, par padhne par sirf `Object` milta hai: ye consumer hai. Yaad rakho: Producer Extends, Consumer Super.",
+        "**Type erasure**: compile ke baad generic type arguments mita diye jaate hain; runtime par `List<String>` aur `List<Integer>` dono bas `ArrayList` hain. Isliye `new T()`, `new T[10]`, `x instanceof List<String>` allowed nahi, aur ek class mein `print(List<String>)` aur `print(List<Integer>)` dono nahi ho sakte (same erasure).",
+        "**Callbacks**: kisi method ko 'baad mein kya karna hai' woh code argument mein do. Java mein ye functional interface (sirf ek abstract method) se hota hai: `Comparator`, `Runnable`, `Function<T,R>`, `Predicate<T>`, `Supplier<T>`, ya apna interface. Lambda `(a, b) -> a + b` ya method reference `Integer::sum` us interface ka object ban jaata hai. Lambda bahar ke local variables tabhi use kar sakta hai jab woh **effectively final** hon."
+      ],
+      "example": {
+        "problem": "Ek generic `retry` helper likho jo koi bhi operation (callback) chalaye, fail hone par dobara try kare, aur jiska result type kuch bhi ho sake. Ek fictional flaky service pehli do calls mein fail hoti hai.",
+        "steps": [
+          "`<T>` return type se pehle declare hai, to `retry` kisi bhi type ka result de sakta hai; yahan target `String` hai, to `T` = String infer hota hai.",
+          "Callback ka type `Supplier<T>` hai: koi argument nahi, ek value return. Lambda isi interface ka object ban jaata hai.",
+          "Attempt 1: calls = 1 < 3, exception → \"attempt 1 failed\". Attempt 2: calls = 2, phir fail → \"attempt 2 failed\".",
+          "Attempt 3: calls = 3, lambda \"OK after 3\" return karta hai aur `retry` turant wahi value return kar deta hai.",
+          "Lambda `calls` ko badal paaya kyunki woh static field hai; agar `main` ka local variable hota to effectively-final rule ki wajah se compile error aata.",
+          "Answer: \"attempt 1 failed\", \"attempt 2 failed\", phir **OK after 3**."
+        ],
+        "code": "import java.util.function.Supplier;\n\npublic class Main {\n    static <T> T retry(int times, Supplier<T> op) {\n        RuntimeException last = null;\n        for (int i = 1; i <= times; i++) {\n            try {\n                return op.get();\n            } catch (RuntimeException e) {\n                last = e;\n                System.out.println(\"attempt \" + i + \" failed\");\n            }\n        }\n        throw last;\n    }\n\n    static int calls = 0;\n\n    public static void main(String[] args) {\n        String result = retry(5, () -> {\n            calls++;\n            if (calls < 3) throw new IllegalStateException(\"busy\");\n            return \"OK after \" + calls;\n        });\n        System.out.println(result);\n    }\n}"
+      },
+      "mistakes": [
+        "`List<Number> xs = new ArrayList<Integer>();` likhna. Generics invariant hain, ye compile error hai. Sirf padhna ho to `List<? extends Number>` lo.",
+        "`List<? extends T>` mein `add` karne ki koshish. Compiler ko exact element type nahi pata, isliye `null` ke alawa kuch add nahi hota. Likhna ho to `List<? super T>` lo.",
+        "Lambda ke andar local counter badhana (`count++`). Captured local effectively final hona chahiye; `AtomicInteger` ya field use karo, ya behtar, result ko loop/stream se return karo."
+      ],
+      "revision": [
+        "Generics = compile-time type safety, cast ki zaroorat nahi.",
+        "`<T extends X>` bound `T` par X ke methods use karne deta hai.",
+        "`List<Integer>` `List<Number>` nahi hai; arrays covariant hain.",
+        "PECS: padhne ke liye `? extends`, likhne ke liye `? super`.",
+        "Erasure: runtime par type argument nahi bachta; `new T()` nahi likh sakte.",
+        "Lambda = functional interface ka object; captured locals effectively final."
+      ],
+      "questions": [
+        {
+          "id": "java-w6-q1",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<String> names = new ArrayList<>();\n        names.add(\"Ravi\");\n        names.add(42);\n        System.out.println(names.size());\n    }\n}",
+          "options": [
+            "2 print hota hai",
+            "Runtime par `ClassCastException`",
+            "Compile error: `names.add(42)` par type mismatch",
+            "1 print hota hai, kyunki 42 chupchaap ignore ho jaata hai"
+          ],
+          "answer": 2,
+          "explanation": "`names` ka type `List<String>` hai, to `add` sirf `String` leta hai. 42 (int, jo `Integer` banta) String nahi hai, isliye compiler wahin rok deta hai (option C). Generics ka poora fayda yahi hai ki galti runtime tak nahi pahunchti. Trap: option B, raw types wale purane Java ki tarah sochna, jahan galat element baad mein cast par `ClassCastException` deta tha.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w6-q2",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    interface Op {\n        int apply(int a, int b);\n    }\n\n    static int run(Op op) {\n        return op.apply(6, 3);\n    }\n\n    public static void main(String[] args) {\n        System.out.println(run((a, b) -> a * b) + run((a, b) -> a - b));\n    }\n}",
+          "options": [
+            "183",
+            "21",
+            "18 3",
+            "9"
+          ],
+          "answer": 1,
+          "explanation": "Dono lambdas `Op` ke objects ban jaate hain aur `run` unhe 6 aur 3 ke saath call karta hai: pehla 6 × 3 = 18, doosra 6 − 3 = 3. Dono results `int` hain, isliye `+` numeric addition hai: 21 (option B). Trap: option A (\"183\"), `+` ko string concatenation samajhna; concatenation tab hota jab ek side `String` hoti.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w6-q3",
+          "question": "Kaunsi line(s) compile error dengi?",
+          "code": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        List<String> s = new ArrayList<>();\n        List<? extends Object> a = s;   // line 1\n        List<Object> b = s;             // line 2\n        Object[] arr = new String[2];   // line 3\n        Collection<String> c = s;       // line 4\n    }\n}",
+          "options": [
+            "Sirf line 2",
+            "Lines 1 aur 2",
+            "Lines 2 aur 3",
+            "Koi nahi, sab compile hoti hain"
+          ],
+          "answer": 0,
+          "explanation": "Line 2: `List<String>` `List<Object>` ka subtype nahi hai (generics invariant hain): compile error. Line 1: wildcard `? extends Object` kisi bhi `List<X>` ko accept karta hai: theek. Line 3: arrays covariant hain, compile hota hai (galat store par runtime `ArrayStoreException` aa sakta hai). Line 4: `List<String>` `Collection<String>` ka subtype hai: theek. Sirf line 2 (option A). Trap: option C, arrays ka rule generics par (ya generics ka arrays par) laga dena; option B, wildcard ko bhi invariant maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w6-q4",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\npublic class Main {\n    static <T extends Comparable<T>> T maxOf(List<T> xs) {\n        T best = xs.get(0);\n        for (T x : xs) {\n            if (x.compareTo(best) > 0) best = x;\n        }\n        return best;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(maxOf(List.of(\"banana\", \"Cherry\", \"apple\")));\n    }\n}",
+          "options": [
+            "Cherry",
+            "apple",
+            "Compile error: `T` par `compareTo` call nahi ho sakta",
+            "banana"
+          ],
+          "answer": 3,
+          "explanation": "Bound `T extends Comparable<T>` ki wajah se `compareTo` allowed hai (option C galat), aur `String` `Comparable<String>` hai. String ka natural order character codes (Unicode) se hota hai, aur saare uppercase letters lowercase se chhote hain: 'C' (67) < 'a' (97) < 'b' (98). Isliye sabse bada \"banana\" (option D). Trap: option A, dictionary ki tarah case ignore karke sochna; uske liye `String.CASE_INSENSITIVE_ORDER` comparator chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w6-q5",
+          "question": "Line X ke baare mein kya sahi hai?",
+          "code": "import java.util.*;\n\npublic class Main {\n    static double sum(List<? extends Number> xs) {\n        double t = 0;\n        for (Number n : xs) {\n            t += n.doubleValue();\n        }\n        xs.add(0);          // line X\n        return t;\n    }\n}",
+          "options": [
+            "Compile hota hai; list mein 0 jud jaata hai",
+            "Compile error: `? extends Number` wali list mein (`null` ke alawa) kuch add nahi ho sakta",
+            "Compile hota hai, par `List<Double>` pass karne par runtime error aata hai",
+            "Compile error: for-each loop `Number` variable use nahi kar sakta"
+          ],
+          "answer": 1,
+          "explanation": "`List<? extends Number>` ka matlab hai 'kisi unknown subtype ki list': ho sakta hai ye `List<Double>` ho. Compiler `Integer` 0 ko us list ke liye safe nahi maan sakta, isliye line X compile error hai (option B). Padhna safe hai (har element `Number` hai), isliye loop theek hai (option D galat). Trap: option C, sochna ki check runtime par hoga; generics ye check compile time par hi karte hain. Add karna ho to parameter `List<? super Integer>` rakho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w6-q6",
+          "question": "Is class ke baare mein kya sahi hai?",
+          "code": "import java.util.*;\n\nclass Printer {\n    void print(List<String> xs) { System.out.println(\"strings\"); }\n\n    void print(List<Integer> xs) { System.out.println(\"ints\"); }\n}",
+          "options": [
+            "Compile hoti hai; argument ke type se sahi overload chuna jaata hai",
+            "Compile hoti hai, par call karne par runtime ambiguity error aata hai",
+            "Doosra method pehle ko override kar deta hai, isliye hamesha \"ints\"",
+            "Compile error: dono methods ka erasure same hai (`print(List)`)"
+          ],
+          "answer": 3,
+          "explanation": "Type erasure ke baad dono signatures `print(List)` ban jaate hain, aur ek class mein same erasure wale do methods allowed nahi: 'name clash' compile error (option D). Trap: option A, sochna ki `List<String>` aur `List<Integer>` alag types hain to normal overloading chalegi; ye fark sirf compile time par hai, bytecode mein nahi bachta. Same class ke do methods ek doosre ko override bhi nahi karte (option C galat). Fix: naam alag rakho, jaise `printNames` aur `printIds`.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Copying Objects, Streams and Serialization",
+      "summary": "Is week aap reference copy, shallow copy aur deep copy ka farq, `Cloneable` aur `clone()` ke rules, byte vs character streams, aur `Serializable`/`transient` se objects ko bytes mein save karke wapas laana seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Teen tarah ki copy**: `b = a` sirf reference copy hai (ek hi object). **Shallow copy** naya object banata hai par andar ke reference fields (arrays, lists) wahi share karta hai. **Deep copy** andar ke mutable objects ki bhi nayi copies banata hai, taaki ek copy badalne se doosri na badle.",
+        "**`clone()` aur `Cloneable`**: `Object.clone()` protected hai aur field-by-field shallow copy deta hai. Class `Cloneable` (marker interface, koi method nahi) implement na kare to `super.clone()` runtime par `CloneNotSupportedException` phenkta hai. Common pattern: `public Team clone()` (covariant return type) override karo, `super.clone()` lo, phir mutable fields khud copy karo (`copy.scores = scores.clone()`).",
+        "**Alternatives**: copy constructor (`Team(Team other)`) ya static factory zyada clear aur type-safe hote hain, isliye kai teams `clone()` se bachti hain. Immutable fields (String, Integer) share karna safe hai; sirf mutable fields ko copy karna padta hai.",
+        "**Byte vs character streams**: `InputStream`/`OutputStream` raw bytes ke liye (images, binary files, network). `Reader`/`Writer` characters ke liye, jo charset (jaise UTF-8) se bytes ↔ chars convert karte hain. `InputStreamReader` byte stream ko character stream mein badalne wala bridge hai.",
+        "**Decorator layering**: streams ek doosre ko wrap karte hain: `new BufferedReader(new FileReader(f))` buffering aur `readLine()` jodta hai; `DataOutputStream` primitives likhta hai; `ObjectOutputStream` poore objects. Sabse bahar wala stream close karne se andar wale bhi close ho jaate hain.",
+        "**Serialization**: `Serializable` (marker interface) wali class ka object `ObjectOutputStream.writeObject` se byte stream ban jaata hai aur `readObject` se wapas aata hai. Har non-transient field ka type bhi serializable hona chahiye, warna `NotSerializableException`. Deserialization par us class ka constructor aur field initialisers nahi chalte; values stream se bhari jaati hain.",
+        "**`transient` aur `serialVersionUID`**: `transient` field (password, cache, connection) save nahi hota; wapas aane par uski default value (null/0/false) hoti hai. `private static final long serialVersionUID` class ka version batata hai; class badalne par mismatch se `InvalidClassException` aata hai, isliye ise explicitly declare karna achhi practice hai."
+      ],
+      "example": {
+        "problem": "Fictional quiz app: ek `Team` ko shallow aur deep dono tarah copy karo, phir dono copies badlo aur dekho ki original par kya asar hota hai.",
+        "steps": [
+          "`super.clone()` naya `Team` object banata hai aur fields copy karta hai: `name` aur `scores` dono ke references same rehte hain.",
+          "Isliye `shallow.scores` aur `orig.scores` ek hi array hai.",
+          "`deepCopy` array bhi clone karta hai, to `deep.scores` alag array hai (values [5, 8] ki copy).",
+          "`shallow.scores[0] = 50` shared array badalta hai: orig ki array bhi [50, 8] ho jaati hai.",
+          "`deep.scores[1] = 80` sirf deep ki apni array badalta hai, orig par koi asar nahi.",
+          "Answer: output **50 8**."
+        ],
+        "code": "class Team implements Cloneable {\n    String name;\n    int[] scores;\n\n    Team(String name, int[] scores) {\n        this.name = name;\n        this.scores = scores;\n    }\n\n    @Override\n    public Team clone() throws CloneNotSupportedException {\n        return (Team) super.clone();            // shallow\n    }\n\n    Team deepCopy() throws CloneNotSupportedException {\n        Team t = (Team) super.clone();\n        t.scores = scores.clone();              // new array\n        return t;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        Team orig = new Team(\"Red\", new int[]{5, 8});\n        Team shallow = orig.clone();\n        Team deep = orig.deepCopy();\n        shallow.scores[0] = 50;\n        deep.scores[1] = 80;\n        System.out.println(orig.scores[0] + \" \" + orig.scores[1]);\n    }\n}"
+      },
+      "mistakes": [
+        "`super.clone()` ko deep copy samajhna. Ye sirf top-level object copy karta hai; arrays aur lists ko khud clone/copy karo.",
+        "`Cloneable` implement kiye bina `clone()` use karna. Code compile ho jaata hai, par runtime par `CloneNotSupportedException` aata hai.",
+        "Serializable class mein non-serializable field (jaise ek DB connection) rakhna. `writeObject` `NotSerializableException` dega; us field ko `transient` banao aur deserialization ke baad dobara banao."
+      ],
+      "revision": [
+        "Assignment = same object; shallow = naya object, shared internals; deep = sab naya.",
+        "`Object.clone()` protected aur shallow; `Cloneable` ke bina exception.",
+        "Bytes: InputStream/OutputStream; text: Reader/Writer.",
+        "`BufferedReader.readLine()` file ke end par `null` deta hai.",
+        "`transient` fields deserialization ke baad default value par hote hain."
+      ],
+      "questions": [
+        {
+          "id": "java-w7-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        int[] a = {1, 2, 3};\n        int[] b = a;\n        int[] c = a.clone();\n        a[0] = 9;\n        System.out.println(b[0] + \" \" + c[0]);\n    }\n}",
+          "options": [
+            "1 1",
+            "9 9",
+            "1 9",
+            "9 1"
+          ],
+          "answer": 3,
+          "explanation": "`b = a` sirf reference copy hai, `b` aur `a` same array hain. `a.clone()` nayi array banata hai jisme values copy hoti hain. `a[0] = 9` ke baad `b[0]` 9 dikhata hai aur `c[0]` 1 hi rehta hai. Output \"9 1\" (option D). Trap: option B, clone ko bhi same array maan lena; option A, assignment ko copy maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w7-q2",
+          "question": "Ek text file (fictional `sales.csv`) ko line by line padhna hai. In mein se sabse sahi choice kaunsi hai?",
+          "options": [
+            "`new DataInputStream(new FileInputStream(\"sales.csv\"))`",
+            "`new BufferedReader(new FileReader(\"sales.csv\"))`",
+            "`new ObjectInputStream(new FileInputStream(\"sales.csv\"))`",
+            "`new ByteArrayOutputStream()`"
+          ],
+          "answer": 1,
+          "explanation": "Text ke liye character stream (`Reader`) chahiye, aur `BufferedReader` buffering ke saath `readLine()` deta hai jo har line return karta hai aur file khatam hone par `null` (option B). Option A raw bytes aur binary primitives ke liye hai, option C sirf serialized objects padh sakta hai (CSV par stream header galat hone ki exception), aur option D likhne ke liye hai. Trap: option A, kyunki `DataInputStream` mein bhi ek purana `readLine()` hai, par woh deprecated hai aur characters ko theek decode nahi karta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w7-q3",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\nclass Playlist implements Cloneable {\n    String title;\n    List<String> songs = new ArrayList<>();\n\n    @Override\n    public Playlist clone() throws CloneNotSupportedException {\n        return (Playlist) super.clone();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) throws CloneNotSupportedException {\n        Playlist p1 = new Playlist();\n        p1.title = \"Gym\";\n        p1.songs.add(\"s1\");\n        Playlist p2 = p1.clone();\n        p2.title = \"Run\";\n        p2.songs.add(\"s2\");\n        System.out.println(p1.title + \" \" + p1.songs.size());\n    }\n}",
+          "options": [
+            "Gym 1",
+            "Run 2",
+            "Gym 2",
+            "Run 1"
+          ],
+          "answer": 2,
+          "explanation": "`super.clone()` shallow copy hai: `p2` naya object hai par `p2.songs` aur `p1.songs` same `ArrayList` ko point karte hain. `p2.title = \"Run\"` sirf p2 ka apna field badalta hai (String immutable hai, share karna safe hai), to p1 ka title \"Gym\" rehta hai. `p2.songs.add(\"s2\")` shared list mein jaata hai, to p1 ki list mein bhi 2 songs. Output \"Gym 2\" (option C). Trap: option A, clone ko deep copy samajhna; option B, field assignment ko bhi shared maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w7-q4",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "class Point {\n    int x = 4;\n\n    Point copy() throws CloneNotSupportedException {\n        return (Point) clone();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        Point q = new Point().copy();\n        System.out.println(q.x);\n    }\n}",
+          "options": [
+            "Runtime par `CloneNotSupportedException`",
+            "4 print hota hai",
+            "Compile error: `clone()` protected hai",
+            "Compile error: `Cloneable` implement kiye bina `clone()` call nahi ho sakta"
+          ],
+          "answer": 0,
+          "explanation": "`Point` apne hi andar se inherited protected `clone()` call kar raha hai, jo allowed hai (option C galat), aur `Cloneable` ka check compile time par nahi hota (option D galat). Runtime par `Object.clone()` dekhta hai ki `Point` `Cloneable` implement nahi karta aur `CloneNotSupportedException` phenkta hai (option A). Trap: option B (4), sochna ki `clone()` har object par chal jaata hai; marker interface ke bina nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w7-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.io.*;\n\nclass User implements Serializable {\n    String name = \"asha\";\n    transient String password = \"secret\";\n    transient int visits = 7;\n}\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        ByteArrayOutputStream bytes = new ByteArrayOutputStream();\n        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {\n            out.writeObject(new User());\n        }\n        try (ObjectInputStream in = new ObjectInputStream(\n                new ByteArrayInputStream(bytes.toByteArray()))) {\n            User u = (User) in.readObject();\n            System.out.println(u.name + \" \" + u.password + \" \" + u.visits);\n        }\n    }\n}",
+          "options": [
+            "asha secret 7",
+            "asha null 0",
+            "null null 0",
+            "asha secret 0"
+          ],
+          "answer": 1,
+          "explanation": "`name` serialize hota hai aur wapas \"asha\" aata hai. `transient` fields stream mein likhe hi nahi jaate. Deserialization par `User` ka constructor aur field initialisers (`= \"secret\"`, `= 7`) dobara nahi chalte, isliye transient fields default value lete hain: `null` aur 0. Output \"asha null 0\" (option B). Trap: option A, sochna ki initialisers phir se chal kar values bhar denge; option D, String aur int ke liye alag rule maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w7-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\n\nclass Cart {\n    List<String> items;\n\n    Cart(List<String> items) { this.items = items; }\n\n    Cart(Cart other) { this.items = new ArrayList<>(other.items); }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        List<String> base = new ArrayList<>(List.of(\"pen\"));\n        Cart a = new Cart(base);\n        Cart b = new Cart(a);\n        base.add(\"ink\");\n        b.items.add(\"cap\");\n        a.items.add(\"tape\");\n        System.out.println(base.size() + \" \" + a.items.size() + \" \" + b.items.size());\n    }\n}",
+          "options": [
+            "2 2 2",
+            "4 4 4",
+            "3 3 2",
+            "3 3 3"
+          ],
+          "answer": 2,
+          "explanation": "Pehla constructor list ka reference hi rakh leta hai, to `a.items` aur `base` ek hi list hain. Copy constructor `new ArrayList<>(other.items)` us waqt ki nayi copy banata hai ([pen]). Ab \"ink\" aur \"tape\" dono shared list mein jaate hain: base = a.items = [pen, ink, tape] (size 3). `b.items` = [pen, cap] (size 2). Output \"3 3 2\" (option C). Trap: option A, sochna ki constructor ko di gayi list apne aap copy ho jaati hai (defensive copy tabhi hoti hai jab aap likho); option B, copy constructor ko bhi reference share karne wala maan lena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Packages, Access Across Packages and File I/O",
+      "summary": "Is week aap packages aur imports se code organise karna, alag packages ke beech `public`, `protected` aur default access ke exact rules, try-with-resources, aur files padhna-likhna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Package**: related classes ka namespace, jo file ki pehli statement hoti hai: `package com.shop.model;`. Folder structure package naam se match karti hai (`com/shop/model/Item.java`). Fully qualified naam (`com.shop.model.Item`) se alag packages ki same naam wali classes, jaise `java.util.Date` aur `java.sql.Date`, mein confusion nahi hota.",
+        "**import**: sirf naam chhota likhne ki suvidha hai, code copy nahi karta. `import java.util.List;` ek type laata hai, `import java.util.*;` us package ki saari types, par **subpackages nahi** (`java.util.function.Function` ke liye alag import). `java.lang` (String, Math, System) automatically imported hai. `import static java.lang.Math.max;` static members ke liye hai.",
+        "**Access across packages**: `public` sab jagah dikhta hai. Default (koi modifier nahi) sirf usi package mein; doosre package se use karna compile error hai. Packages hierarchical nahi hote: `com.shop` aur `com.shop.model` access ke liye bilkul alag packages hain. Top-level class sirf `public` ya default ho sakti hai, aur ek file mein ek hi public class jiska naam file ke naam jaisa ho.",
+        "**`protected` ka exact rule**: same package mein sab ke liye khula hai. Doosre package mein sirf subclass ke code ke andar, aur wahan bhi sirf subclass type ke reference ke through: `v` (yaani `this.v`) ya `Sub` reference se `s.v` theek hai, par `Base` type ke kisi aur reference par `other.v` compile error hai.",
+        "**try-with-resources**: `try (BufferedReader br = ...)` mein declared har `AutoCloseable` resource block khatam hote hi (normal ya exception, dono mein) automatically close hota hai, declaration ke **ulte** order mein, aur ye `catch`/`finally` chalne se pehle hota hai. Close ke dauran aayi exception main exception ke andar 'suppressed' ban kar judti hai.",
+        "**Files padhna/likhna**: `BufferedReader.readLine()` har call par ek line deta hai aur end par `null`. `new FileWriter(path)` file ko khaali karke likhta hai (overwrite), `new FileWriter(path, true)` end mein jodta hai (append). `PrintWriter` se `println` milta hai. NIO helpers: `Files.readAllLines(Path.of(\"a.txt\"))`, `Files.writeString(...)`, `Files.lines(path)` (ye stream bhi close karni padti hai).",
+        "**Checked I/O exceptions**: `FileReader` ka constructor `FileNotFoundException` aur `readLine` `IOException` phenk sakte hain. Ye checked hain, to ya `try/catch` karo ya method par `throws IOException` likho, warna compile error."
+      ],
+      "example": {
+        "problem": "Fictional log file `app.log` mein chaar lines hain: \"INFO start\", \"ERROR disk\", \"INFO ok\", \"ERROR net\". ERROR wali lines ko `errors.txt` mein likho aur unki ginti print karo.",
+        "steps": [
+          "Dono resources try ke header mein hain, to block ke baad (exception aaye tab bhi) dono automatically close honge: pehle `out`, phir `in`.",
+          "`readLine()` har baar ek line deta hai; file khatam hone par `null` aata hai aur loop ruk jaata hai.",
+          "\"ERROR disk\" aur \"ERROR net\" match karti hain aur `errors.txt` mein likhi jaati hain.",
+          "`FileWriter(\"errors.txt\")` mein append flag nahi hai, to har run par file nayi likhi jaati hai.",
+          "`main` par `throws IOException` hai, isliye checked exceptions ko alag se pakadna zaroori nahi.",
+          "Answer: \"**2 errors copied**\", aur `errors.txt` mein 2 lines."
+        ],
+        "code": "import java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        int count = 0;\n        try (BufferedReader in = new BufferedReader(new FileReader(\"app.log\"));\n             PrintWriter out = new PrintWriter(new FileWriter(\"errors.txt\"))) {\n            String line;\n            while ((line = in.readLine()) != null) {\n                if (line.startsWith(\"ERROR\")) {\n                    out.println(line);\n                    count++;\n                }\n            }\n        }\n        System.out.println(count + \" errors copied\");\n    }\n}"
+      },
+      "mistakes": [
+        "`import java.util.*;` ko subpackages ke liye bhi kaafi samajhna. `java.util.function` ya `java.util.concurrent` ki types alag se import karo.",
+        "Doosre package se default-access field ya method use karna. Woh sirf apne package mein dikhta hai; zaroorat ho to `public` method do.",
+        "Reader/stream close karna bhool jaana, ya exception wale raste par close na hona. Hamesha try-with-resources use karo."
+      ],
+      "revision": [
+        "`package` pehli statement; folder path = package naam.",
+        "`import pkg.*` subpackages import nahi karta; `java.lang` free hai.",
+        "Default access = sirf same package.",
+        "Doosre package mein `protected` sirf subclass ke andar, subclass type ke reference se.",
+        "try-with-resources: ulte order mein close, `finally` se pehle.",
+        "`FileWriter(path, true)` append karta hai, bina `true` overwrite."
+      ],
+      "questions": [
+        {
+          "id": "java-w8-q1",
+          "question": "Do files neeche hain. `Main` compile karne par kya hoga?",
+          "code": "// File: com/shop/model/Item.java\npackage com.shop.model;\n\npublic class Item {\n    String sku = \"A1\";\n    public int qty = 5;\n}\n\n// File: com/shop/app/Main.java\npackage com.shop.app;\n\nimport com.shop.model.Item;\n\npublic class Main {\n    public static void main(String[] args) {\n        Item it = new Item();\n        System.out.println(it.qty);   // line 1\n        System.out.println(it.sku);   // line 2\n    }\n}",
+          "options": [
+            "Dono lines compile hongi; output 5 aur A1",
+            "Sirf line 1 par compile error",
+            "Sirf line 2 par compile error",
+            "Dono lines par compile error"
+          ],
+          "answer": 2,
+          "explanation": "`qty` public hai, kahin se bhi accessible. `sku` par koi modifier nahi, yaani default (package-private): sirf `com.shop.model` ke andar dikhega. `Main` doosre package `com.shop.app` mein hai, isliye line 2 compile error deti hai (option C). Trap: option A, sochna ki `com.shop.app` aur `com.shop.model` ek hi 'parent' package ke hisse hain; Java mein access ke liye har package bilkul alag hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w8-q2",
+          "question": "Ek file mein sirf `import java.util.*;` hai. Phir bhi ye line compile error kyun deti hai?",
+          "code": "Function<Integer, Integer> inc = x -> x + 1;",
+          "options": [
+            "`Function` `java.util.function` package mein hai, aur `java.util.*` subpackages import nahi karta",
+            "Lambda ko variable mein store nahi kar sakte",
+            "`Function` ek class hai, use `new` se banana padta hai",
+            "Wildcard imports Java 17 mein allowed nahi hain"
+          ],
+          "answer": 0,
+          "explanation": "Wildcard import sirf usi package ki types laata hai. `java.util.function` ek alag package hai (naam milta-julta hone ke bawajood), isliye `Function` ka naam resolve nahi hota: 'cannot find symbol'. Fix: `import java.util.function.Function;` (option A). Trap: option D: wildcard imports bilkul valid hain, bas subpackages tak nahi jaate. `Function` ek functional interface hai, to lambda se banana sahi hai (options B aur C galat).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w8-q3",
+          "question": "Is program ka output kya hoga?",
+          "code": "class Res implements AutoCloseable {\n    private final String n;\n\n    Res(String n) {\n        this.n = n;\n        System.out.print(\"open\" + n + \" \");\n    }\n\n    @Override\n    public void close() {\n        System.out.print(\"close\" + n + \" \");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try (Res a = new Res(\"A\"); Res b = new Res(\"B\")) {\n            System.out.print(\"body \");\n        } finally {\n            System.out.print(\"fin\");\n        }\n    }\n}",
+          "options": [
+            "openA openB body closeA closeB fin",
+            "openA openB body fin closeB closeA",
+            "openA body closeA openB body closeB fin",
+            "openA openB body closeB closeA fin"
+          ],
+          "answer": 3,
+          "explanation": "Resources declaration ke order mein bante hain (A, phir B), body chalti hai, phir **ulte** order mein close hote hain (B, phir A), taaki baad wala resource, jo pehle wale par depend kar sakta hai, pehle band ho. Ye sab `finally` se pehle hota hai. Output option D. Trap: option A, close ko bhi open wale order mein maan lena; option B, sochna ki `finally` resources close hone se pehle chalta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w8-q4",
+          "question": "Ye program teen baar chalaya jaata hai (pehle run se pehle `log.txt` exist nahi karti). Teesre run ke baad `log.txt` mein kitni lines hongi?",
+          "code": "import java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        try (PrintWriter w = new PrintWriter(new FileWriter(\"log.txt\"))) {\n            w.println(\"start\");\n        }\n        try (PrintWriter w = new PrintWriter(new FileWriter(\"log.txt\", true))) {\n            w.println(\"run\");\n        }\n    }\n}",
+          "options": [
+            "6",
+            "2",
+            "4",
+            "1"
+          ],
+          "answer": 1,
+          "explanation": "Har run mein pehla `FileWriter(\"log.txt\")` (append flag ke bina) file ko khaali karke \"start\" likhta hai; doosra `FileWriter(\"log.txt\", true)` end mein \"run\" jodta hai. Isliye har run ke baad file mein bilkul 2 lines hoti hain, aur pichhle runs ka content mit jaata hai: 2 (option B). Trap: option C (4), \"run\" ko har baar judta maanna aur \"start\" ko sirf ek baar; option A (6), dono writers ko append maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w8-q5",
+          "question": "`nums.txt` mein teen lines hain: \"4\", \"x\", \" 6 \" (6 ke dono taraf ek-ek space). Output kya hoga?",
+          "code": "import java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        int sum = 0;\n        try (BufferedReader br = new BufferedReader(new FileReader(\"nums.txt\"))) {\n            String line;\n            while ((line = br.readLine()) != null) {\n                try {\n                    sum += Integer.parseInt(line.trim());\n                } catch (NumberFormatException e) {\n                    sum += 100;\n                }\n            }\n        }\n        System.out.println(sum);\n    }\n}",
+          "options": [
+            "10",
+            "`NumberFormatException` aati hai aur program ruk jaata hai",
+            "110",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "\"4\" → 4. \"x\" par `parseInt` `NumberFormatException` phenkta hai, par woh loop ke andar wale try-catch mein pakdi jaati hai: +100, aur loop chalta rehta hai. \" 6 \" ko `trim()` \"6\" bana deta hai → +6. Total 4 + 100 + 6 = 110 (option C). Trap: option B, ye na dekhna ki catch loop ke andar hai; option A, catch block ke `sum += 100` ko ignore karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w8-q6",
+          "question": "Do files neeche hain. `Sub` mein kaunsi line(s) compile error dengi?",
+          "code": "// File: p1/Base.java\npackage p1;\n\npublic class Base {\n    protected int v = 1;\n}\n\n// File: p2/Sub.java\npackage p2;\n\nimport p1.Base;\n\npublic class Sub extends Base {\n    void test(Base other, Sub same) {\n        int x = v;          // line 1\n        int y = same.v;     // line 2\n        int z = other.v;    // line 3\n    }\n}",
+          "options": [
+            "Sirf line 3",
+            "Sirf lines 2 aur 3",
+            "Koi nahi, sab compile hoti hain",
+            "Teeno lines"
+          ],
+          "answer": 0,
+          "explanation": "`Sub` doosre package mein `Base` ka subclass hai. Wahan protected member sirf `Sub` type ke reference se access ho sakta hai: line 1 (`this.v`) aur line 2 (`same`, type `Sub`) theek hain. Line 3 mein reference ka type `Base` hai; woh object `Sub` ka na hokar plain Base ya koi aur subclass ho sakta hai, isliye compile error. Sirf line 3 (option A). Trap: option C, sochna ki subclass ke andar protected har jagah khula hai; option B, `same.v` ko 'doosra object' hone ki wajah se galat maan lena, jabki type `Sub` hone se ye allowed hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Exception Handling in Depth",
+      "summary": "Is week aap exception hierarchy (checked vs unchecked), try/catch/finally ka exact flow, `throw` vs `throws`, apni custom exceptions, multi-catch, aur `finally` ke saath `return` ke tricky cases seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Hierarchy**: `Throwable` ke do bachche hain: `Error` (JVM-level problems jaise `OutOfMemoryError`, `StackOverflowError`; inhe normally pakadte nahi) aur `Exception`. `RuntimeException` aur uske subclasses (`NullPointerException`, `ArithmeticException`, `IllegalArgumentException`, `IndexOutOfBoundsException`) **unchecked** hain; baaki exceptions (`IOException`, `SQLException`, `InterruptedException`) **checked** hain.",
+        "**Checked ka rule**: jo code checked exception phenk sakta hai, use ya to `try/catch` mein handle karo ya method signature mein `throws` declare karo; compiler isko enforce karta hai. Unchecked ke liye ye zaroori nahi; woh aksar programming bugs ya broken preconditions dikhate hain.",
+        "**Flow**: try mein exception aate hi try ka baaki hissa skip hota hai, upar se neeche pehla matching `catch` chalta hai (sirf ek), phir `finally`. Koi catch match na kare to `finally` chal kar exception caller ko propagate hoti hai. `finally` lagbhag hamesha chalta hai (exception, `return`, `break` sab ke baad); `System.exit` jaise rare cases chhod kar.",
+        "**catch ka order**: specific pehle, general baad mein. `catch (Exception e)` ke baad `catch (IOException e)` likhna compile error hai (wo catch kabhi pahuncha hi nahi ja sakta). Multi-catch `catch (IOException | SQLException e)` tab use karo jab handling same ho; dono types ek doosre ke subclass nahi hone chahiye.",
+        "**`throw` vs `throws`**: `throw new X(...)` ek exception object abhi phenkta hai (statement). `throws X` method signature mein batata hai ki ye method X phenk sakta hai (declaration).",
+        "**Custom exceptions**: domain errors ke liye `class InsufficientFunds extends Exception` (checked, jab caller ko recover karna chahiye) ya `extends RuntimeException` (unchecked, bug ya precondition violation). Constructor mein `super(message)` pass karo taaki `getMessage()` kaam kare; root cause ke liye `super(message, cause)` se chain karo.",
+        "**finally aur return**: try mein `return x;` ki value `finally` chalne se **pehle** evaluate karke rakh li jaati hai, isliye finally mein local variable badalne se returned value nahi badalti. Lekin agar `finally` khud `return` kare to woh try ki return value (aur koi bhi pending exception) ko overwrite kar deta hai; ye bad practice hai."
+      ],
+      "example": {
+        "problem": "Fictional wallet service: `withdraw` balance se zyada maange to checked `InsufficientFunds` phenke, aur amount 0 ya negative ho to unchecked `IllegalArgumentException`. Requests 300, 900 aur −5 ke baad kya print hoga?",
+        "steps": [
+          "`InsufficientFunds` `Exception` extend karti hai, to checked hai: `withdraw` par `throws` likhna pada aur caller ko use catch karna pada.",
+          "300: dono checks pass, balance 700; \"paid 300\", phir finally se \"balance 700\".",
+          "900: 900 > 700, to exception \"short by 200\"; \"paid\" wali line skip hoti hai, catch se \"declined: short by 200\", phir finally.",
+          "−5: unchecked `IllegalArgumentException`, doosra catch chalta hai: \"invalid: bad amount\", phir finally.",
+          "Har iteration mein finally chala, chahe exception aayi ho ya nahi.",
+          "Answer: final balance **700**, aur teeno baar \"balance 700\" print hota hai."
+        ],
+        "code": "class InsufficientFunds extends Exception {\n    InsufficientFunds(String msg) { super(msg); }\n}\n\nclass Wallet {\n    private int balance = 1000;\n\n    void withdraw(int amt) throws InsufficientFunds {\n        if (amt <= 0) throw new IllegalArgumentException(\"bad amount\");\n        if (amt > balance) throw new InsufficientFunds(\"short by \" + (amt - balance));\n        balance -= amt;\n    }\n\n    int balance() { return balance; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Wallet w = new Wallet();\n        int[] requests = {300, 900, -5};\n        for (int r : requests) {\n            try {\n                w.withdraw(r);\n                System.out.println(\"paid \" + r);\n            } catch (InsufficientFunds e) {\n                System.out.println(\"declined: \" + e.getMessage());\n            } catch (IllegalArgumentException e) {\n                System.out.println(\"invalid: \" + e.getMessage());\n            } finally {\n                System.out.println(\"balance \" + w.balance());\n            }\n        }\n    }\n}"
+      },
+      "mistakes": [
+        "`catch (Exception e)` sabse upar likhna. Neeche ke specific catches unreachable ho jaate hain (compile error) aur har error ek jaise handle hota hai.",
+        "Exception pakad kar chupchaap nigal jaana (`catch (Exception e) {}`). Bug chhup jaata hai; kam se kam log karo, ya cause ke saath ek meaningful exception dobara phenko.",
+        "`finally` mein `return` likhna. Ye try ki return value aur exception dono ko gayab kar deta hai; finally ko sirf cleanup ke liye rakho."
+      ],
+      "revision": [
+        "`RuntimeException` aur uske subclasses unchecked; baaki `Exception` checked.",
+        "Checked: handle karo ya `throws` se declare karo.",
+        "Pehla matching catch hi chalta hai; specific catch pehle likho.",
+        "`finally` lagbhag hamesha chalta hai.",
+        "try ki return value finally se pehle tay hoti hai; finally ka `return` sab overwrite karta hai.",
+        "`throw` = phenkna, `throws` = declare karna."
+      ],
+      "questions": [
+        {
+          "id": "java-w9-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        int d = 0;\n        try {\n            System.out.print(\"1\");\n            int x = 5 / d;\n            System.out.print(\"2\");\n        } catch (ArithmeticException e) {\n            System.out.print(\"3\");\n        } finally {\n            System.out.print(\"4\");\n        }\n        System.out.print(\"5\");\n    }\n}",
+          "options": [
+            "12345",
+            "1345",
+            "134",
+            "1245"
+          ],
+          "answer": 1,
+          "explanation": "\"1\" print hota hai, phir `5 / d` (d = 0) integer division by zero par `ArithmeticException` aati hai, aur try ka baaki hissa (\"2\") skip hota hai. Matching catch se \"3\", phir finally se \"4\". Exception handle ho chuki hai, isliye program aage chalta hai: \"5\". Output \"1345\" (option B). Trap: option C, sochna ki exception ke baad try-catch ke neeche ka code nahi chalega; handle hone ke baad normal flow wapas aa jaata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w9-q2",
+          "question": "In mein se kaunsi **checked** exception hai (jise handle ya declare karna compiler ke liye zaroori hai)?",
+          "options": [
+            "`NullPointerException`",
+            "`ArrayIndexOutOfBoundsException`",
+            "`IllegalArgumentException`",
+            "`IOException`"
+          ],
+          "answer": 3,
+          "explanation": "`IOException` seedhe `Exception` se aati hai, `RuntimeException` se nahi, isliye checked hai (option D). Baaki teeno `RuntimeException` ke subclasses hain, to unchecked hain. Trap: option C, kyunki 'illegal argument' serious lagta hai; par checked ya unchecked hona hierarchy se tay hota hai, severity se nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w9-q3",
+          "question": "Is program ke baare mein kya sahi hai?",
+          "code": "import java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            new FileReader(\"data.txt\").close();\n        } catch (Exception e) {\n            System.out.println(\"general\");\n        } catch (IOException e) {\n            System.out.println(\"io\");\n        }\n    }\n}",
+          "options": [
+            "Compile error: `IOException` pehle hi `Exception` wale catch se pakdi ja chuki hai",
+            "File na ho to \"io\" print hota hai",
+            "File na ho to \"general\" print hota hai",
+            "Warning ke saath compile hota hai; runtime par sabse specific catch chuna jaata hai"
+          ],
+          "answer": 0,
+          "explanation": "Catch blocks upar se neeche match hote hain. `IOException` `Exception` ka subclass hai, to doosre catch tak kabhi pahuncha hi nahi ja sakta; Java ise compile error maanta hai ('exception IOException has already been caught') (option A). Trap: option C, sochna ki code chalega aur pehla catch sab pakad lega; compiler pehle hi rok deta hai. Option D galat hai kyunki Java 'most specific' nahi, 'pehla matching' catch chunta hai. Fix: `IOException` wala catch upar rakho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w9-q4",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    static int f() {\n        int x = 1;\n        try {\n            x = 2;\n            return x;\n        } finally {\n            x = 3;\n        }\n    }\n\n    static int g() {\n        try {\n            return 1;\n        } finally {\n            return 2;\n        }\n    }\n\n    public static void main(String[] args) {\n        System.out.println(f() + \" \" + g());\n    }\n}",
+          "options": [
+            "3 2",
+            "2 1",
+            "2 2",
+            "3 1"
+          ],
+          "answer": 2,
+          "explanation": "`f()`: `return x;` chalte waqt value 2 tay ho jaati hai, phir finally `x = 3` karta hai, par local variable badalne se tay ki hui return value nahi badalti: 2. `g()`: try 1 return karna chahta hai, lekin finally khud `return 2` karta hai, jo pehle wale return ko overwrite kar deta hai: 2. Output \"2 2\" (option C). Trap: option A, sochna ki finally ka `x = 3` return value badal dega; option B, sochna ki try ka return finally ke return se jeet-ta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w9-q5",
+          "question": "Is program ka output kya hoga?",
+          "code": "class LowBalance extends Exception {\n    LowBalance(String m) { super(m); }\n}\n\npublic class Main {\n    static void withdraw(int bal, int amt) throws LowBalance {\n        if (amt > bal) throw new LowBalance(\"need \" + (amt - bal));\n        System.out.print(\"ok \");\n    }\n\n    public static void main(String[] args) {\n        try {\n            withdraw(500, 200);\n            withdraw(500, 800);\n            withdraw(500, 100);\n        } catch (LowBalance e) {\n            System.out.print(e.getMessage());\n        }\n    }\n}",
+          "options": [
+            "ok need 300",
+            "ok ok need 300",
+            "need 300",
+            "ok need 300 ok"
+          ],
+          "answer": 0,
+          "explanation": "Pehli call: 200 ≤ 500, \"ok \" print hota hai. Doosri: 800 > 500, to `LowBalance(\"need 300\")` phenki jaati hai; try ka baaki hissa (teesri call) skip hokar control seedha catch par jaata hai, jo message \"need 300\" print karta hai. Output \"ok need 300\" (option A). Trap: option D, sochna ki exception ke baad try ki agli line bhi chalegi; try mein exception aate hi control catch par kood jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w9-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    static String test() {\n        StringBuilder sb = new StringBuilder();\n        try {\n            try {\n                sb.append(\"a\");\n                throw new IllegalStateException();\n            } catch (IllegalArgumentException e) {\n                sb.append(\"b\");\n            } finally {\n                sb.append(\"c\");\n            }\n            sb.append(\"d\");\n        } catch (RuntimeException e) {\n            sb.append(\"e\");\n        } finally {\n            sb.append(\"f\");\n        }\n        return sb.toString();\n    }\n\n    public static void main(String[] args) {\n        System.out.println(test());\n    }\n}",
+          "options": [
+            "abcdf",
+            "acf",
+            "acdf",
+            "acef"
+          ],
+          "answer": 3,
+          "explanation": "`IllegalStateException` `IllegalArgumentException` nahi hai (dono alag-alag `RuntimeException` subclasses hain), to andar wala catch match nahi karta: \"b\" nahi aata. Andar ka finally phir bhi chalta hai: \"c\". Exception aage propagate hoti hai, isliye \"d\" skip. Bahar ka `catch (RuntimeException e)` match karta hai: \"e\", phir bahar ka finally \"f\". Output \"acef\" (option D). Trap: option C, sochna ki andar ka finally exception ko handle kar deta hai aur \"d\" chal jaayega; finally exception ko rokta nahi. Option A IllegalState aur IllegalArgument ko ek maan leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Threads, Race Conditions and synchronized",
+      "summary": "Is week aap Java mein threads banana (Thread vs Runnable), `start()` vs `run()`, `join()`, race conditions kyun hoti hain, `synchronized` se mutual exclusion, aur `volatile` se visibility ki guarantee seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Thread banana**: `Runnable` implement karo (ya lambda do) aur use `new Thread(r)` mein pass karo, ya `Thread` extend karke `run()` override karo. `Runnable` wala tareeka behtar hai: class kisi aur class ko extend kar sakti hai, aur task (kya karna hai) thread (kaise chalana hai) se alag rehta hai.",
+        "**`start()` vs `run()`**: `start()` naya thread banata hai jo `run()` ko apne alag call stack par chalata hai. Seedha `t.run()` sirf ek normal method call hai jo calling thread (jaise `main`) mein hi chalta hai. Ek hi thread object par `start()` doosri baar call karna `IllegalThreadStateException` deta hai.",
+        "**Scheduling aur `join()`**: threads ka interleaving OS aur JVM decide karte hain; jab tak aap synchronize na karo, output order ki koi guarantee nahi. `t.join()` current thread ko tab tak rokta hai jab tak `t` khatam na ho, aur `t` ke saare writes join ke baad dikhne ki guarantee bhi deta hai.",
+        "**Race condition**: `count++` ek atomic step nahi hai: read, add, write. Do threads same value padh kar dono +1 likhein to ek update kho jaata hai (lost update). Result run-to-run badalta hai, isliye aise bugs testing mein aksar chhup jaate hain.",
+        "**`synchronized`**: har object ke paas ek intrinsic lock (monitor) hota hai. `synchronized` instance method `this` ka lock leta hai, `static synchronized` method class object (`Counter.class`) ka, aur `synchronized (obj) { ... }` block `obj` ka. Ek lock ek waqt mein ek hi thread ke paas hota hai, isliye critical section mutually exclusive ban jaata hai. Ye lock reentrant hai: jis thread ke paas lock hai woh use dobara le sakta hai.",
+        "**Visibility aur `volatile`**: bina synchronization ke, ek thread ka write doosre thread ko kabhi na dikhe, ye bhi allowed hai (CPU caches, compiler/JIT reordering). `volatile` field ka har write uske baad hone wale reads ko dikhne ki guarantee deta hai, isliye stop-flag jaise cases ke liye sahi hai. Par `volatile` `count++` ko atomic **nahi** banata.",
+        "**Same lock zaroori**: mutual exclusion tabhi milta hai jab saare threads **ek hi** object ka lock lein. Alag objects par synchronized methods ek doosre ko nahi rokte; shared static data ke liye class-level lock ya ek common lock object chahiye."
+      ],
+      "example": {
+        "problem": "Fictional ticket counter: do threads 5000-5000 tickets bechte hain aur dono same counter object share karte hain. Synchronized version mein final count ki kya guarantee hai, aur unsafe version mein kya hoti?",
+        "steps": [
+          "`task` ek `Runnable` lambda hai; dono threads same `tc` object share karte hain.",
+          "`start()` se dono threads parallel chalte hain; `join()` se `main` dono ke khatam hone ka intezaar karta hai.",
+          "`sellSafe` synchronized hai: dono threads `tc` ka hi lock lete hain, isliye `sold++` ka read-add-write kabhi interleave nahi hota.",
+          "Agar loop mein `sellUnsafe()` hota to lost updates ki wajah se result 10000 ya usse kam koi bhi value ho sakti thi.",
+          "`sold()` bhi synchronized hai taaki padhte waqt latest value dikhe (yahan `join` bhi ye visibility guarantee deta hai).",
+          "Answer: synchronized version mein hamesha **10000**; unsafe version mein koi guarantee nahi (≤ 10000)."
+        ],
+        "code": "class TicketCounter {\n    private int sold = 0;\n\n    void sellUnsafe() { sold++; }\n\n    synchronized void sellSafe() { sold++; }\n\n    synchronized int sold() { return sold; }\n}\n\npublic class Main {\n    public static void main(String[] args) throws InterruptedException {\n        TicketCounter tc = new TicketCounter();\n        Runnable task = () -> {\n            for (int i = 0; i < 5000; i++) {\n                tc.sellSafe();\n            }\n        };\n        Thread t1 = new Thread(task);\n        Thread t2 = new Thread(task);\n        t1.start();\n        t2.start();\n        t1.join();\n        t2.join();\n        System.out.println(tc.sold());\n    }\n}"
+      },
+      "mistakes": [
+        "Thread chalane ke liye `t.run()` call karna. Koi naya thread nahi banta, code `main` mein sequentially chalta hai. `t.start()` likho.",
+        "`volatile int count` ko thread-safe counter samajhna. `count++` phir bhi teen alag steps hai; `synchronized` ya `AtomicInteger` chahiye.",
+        "Har thread ke liye alag object par `synchronized` method call karna jabki data static/shared hai. Locks alag hain to koi protection nahi; ek common lock ya `static synchronized` use karo."
+      ],
+      "revision": [
+        "`start()` = naya thread; `run()` = normal method call.",
+        "`join()` = thread khatam hone tak wait.",
+        "`count++` atomic nahi: read-modify-write.",
+        "`synchronized` = ek lock, ek thread; sabko same object ka lock lena chahiye.",
+        "`volatile` = visibility, atomicity nahi."
+      ],
+      "questions": [
+        {
+          "id": "java-w10-q1",
+          "question": "Is program ka output kya hoga?",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        Thread t = new Thread(() ->\n            System.out.println(Thread.currentThread().getName()));\n        t.run();\n    }\n}",
+          "options": [
+            "Thread-0",
+            "main",
+            "Kuch print nahi hota, kyunki thread start nahi hua",
+            "Har run mein alag naam"
+          ],
+          "answer": 1,
+          "explanation": "`t.run()` ek normal method call hai: Runnable ka code `main` thread ke andar hi chalta hai, isliye current thread ka naam \"main\" hai (option B). Trap: option A, sochna ki `run()` bhi naya thread banata hai; naya thread sirf `start()` se banta (aur tab naam \"Thread-0\" jaisa hota). Option C galat hai kyunki `run()` code chalata zaroor hai, bas naye thread mein nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w10-q2",
+          "question": "Is program ke run hone par kya hoga?",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        Thread t = new Thread(() -> System.out.println(\"work\"));\n        t.start();\n        t.start();\n    }\n}",
+          "options": [
+            "\"work\" do baar print hota hai",
+            "Compile error",
+            "Doosra `start()` chupchaap ignore ho jaata hai",
+            "Doosra `start()` `IllegalThreadStateException` phenkta hai"
+          ],
+          "answer": 3,
+          "explanation": "Ek `Thread` object sirf ek baar start ho sakta hai. Doosri `start()` call (thread chal raha ho ya khatam ho chuka ho) `IllegalThreadStateException` phenkti hai (option D); pehla thread \"work\" ek baar print kar sakta hai. Trap: option A, thread object ko reusable maan lena; kaam dobara chahiye to naya `Thread` banao ya executor (week 12) use karo. Ye runtime check hai, compile error nahi (option B galat).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w10-q3",
+          "question": "Is program ke output ke baare mein kya guarantee hai?",
+          "code": "class Counter {\n    int c = 0;\n    void inc() { c++; }\n}\n\npublic class Main {\n    public static void main(String[] args) throws InterruptedException {\n        Counter k = new Counter();\n        Runnable r = () -> {\n            for (int i = 0; i < 10000; i++) k.inc();\n        };\n        Thread a = new Thread(r);\n        Thread b = new Thread(r);\n        a.start();\n        b.start();\n        a.join();\n        b.join();\n        System.out.println(k.c);\n    }\n}",
+          "options": [
+            "Hamesha 20000, kyunki `join()` dono threads ka intezaar karta hai",
+            "Hamesha 10000",
+            "20000 aa sakta hai, par lost updates ki wajah se kam bhi aa sakta hai; koi guarantee nahi",
+            "20000 se zyada bhi aa sakta hai"
+          ],
+          "answer": 2,
+          "explanation": "`c++` read-add-write hai aur `inc()` synchronized nahi, to do threads same value padh kar dono +1 likh sakte hain aur ek update kho jaata hai. Har lost update result ko kam karta hai, isliye output 20000 ya usse kam hota hai aur run-to-run badal sakta hai (option C). Trap: option A: `join()` sirf ye pakka karta hai ki dono threads khatam ho gaye aur unke writes dikhein; ye beech ke race ko nahi rokta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w10-q4",
+          "question": "Ek `Counter` class ka `inc()` method `c++` karta hai. Do threads same object par har thread 10000 baar `inc()` call karta hai (dono `start()`, phir dono `join()`). Kaunsa ek change final value ko hamesha 20000 banata hai, threads ko parallel chalate hue?",
+          "options": [
+            "`inc()` ko `synchronized` bana do",
+            "`c` ko `volatile int` bana do",
+            "Dono threads ko `setPriority(Thread.MAX_PRIORITY)` de do",
+            "`join()` calls hata do"
+          ],
+          "answer": 0,
+          "explanation": "`synchronized` `inc()` dono threads ko same object (`this`) ke lock par line mein khada karta hai, to read-add-write beech mein toot nahi sakta: hamesha 20000 (option A). Trap: option B: `volatile` sirf visibility deta hai, `c++` phir bhi teen alag steps hai aur updates kho sakte hain. Priority scheduler ko sirf ek hint hai (option C), aur `join()` hatane se `main` threads khatam hone se pehle hi print kar sakta hai (option D).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w10-q5",
+          "question": "Java Memory Model ke hisaab se is program ke baare mein kya sahi hai?",
+          "code": "class Worker extends Thread {\n    boolean running = true;\n\n    @Override\n    public void run() {\n        long spins = 0;\n        while (running) {\n            spins++;\n        }\n        System.out.println(\"stopped\");\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) throws InterruptedException {\n        Worker w = new Worker();\n        w.start();\n        Thread.sleep(100);\n        w.running = false;\n    }\n}",
+          "options": [
+            "Worker hamesha lagbhag 100 ms baad \"stopped\" print karega",
+            "Koi guarantee nahi ki worker `running = false` dekhe; woh hamesha loop karta reh sakta hai. `running` ko `volatile` banana ise theek karta hai",
+            "Compile error: doosre thread ka field set nahi kar sakte",
+            "`Thread.sleep` ki wajah se hamesha `InterruptedException` aati hai"
+          ],
+          "answer": 1,
+          "explanation": "`running` ek normal field hai aur loop mein koi synchronization nahi, to JIT ise ek baar padh kar loop ke bahar rakh sakta hai; main thread ka write worker ko kabhi na dikhe, ye allowed hai. Isliye koi guarantee nahi (option B); `volatile boolean running` har read ko latest write dikhata hai. Trap: option A, kyunki kai machines par ye chal bhi jaata hai; 'mere laptop par chal gaya' guarantee nahi hai. `sleep` ka checked exception `main` ke `throws` se declare hai aur yahan koi interrupt nahi karta (option D galat).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w10-q6",
+          "question": "Is program ke output ke baare mein kya sahi hai?",
+          "code": "class Acc {\n    static int total = 0;\n\n    synchronized void add() { total++; }\n}\n\npublic class Main {\n    public static void main(String[] args) throws InterruptedException {\n        Acc x = new Acc();\n        Acc y = new Acc();\n        Thread t1 = new Thread(() -> { for (int i = 0; i < 1000; i++) x.add(); });\n        Thread t2 = new Thread(() -> { for (int i = 0; i < 1000; i++) y.add(); });\n        t1.start();\n        t2.start();\n        t1.join();\n        t2.join();\n        System.out.println(Acc.total);\n    }\n}",
+          "options": [
+            "Hamesha 1000, kyunki har object ka total alag hai",
+            "Hamesha 2000, kyunki `add()` synchronized hai",
+            "Deadlock ho sakta hai",
+            "2000 ki guarantee nahi: `x` aur `y` alag locks hain, jabki `total` shared static hai"
+          ],
+          "answer": 3,
+          "explanation": "Synchronized instance method `this` ka lock leta hai: t1 `x` ka lock leta hai aur t2 `y` ka. Do alag locks ek doosre ko nahi rokte, jabki dono same static `total` badal rahe hain, to race aur lost updates possible hain: 2000 ki guarantee nahi (option D). Trap: option B, `synchronized` dekh kar safe maan lena; dekhna padta hai ki lock kis object ka hai. Fix: `static synchronized void add()` (class ka lock) ya `AtomicInteger`. Option A galat hai kyunki static field ki ek hi copy hoti hai, aur har thread sirf ek lock leta hai to deadlock bhi nahi (option C galat).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Coordination: wait/notify, Deadlock and Concurrent Collections",
+      "summary": "Is week aap threads ke beech coordination (`wait`, `notify`, `notifyAll`), producer–consumer pattern, deadlock ki chaar conditions aur unhe todna, aur thread-safe collections (`ConcurrentHashMap`, `BlockingQueue`) seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Coordination kyun**: kabhi ek thread ko doosre ka intezaar karna hota hai (consumer ko item aane ka, producer ko jagah khaali hone ka). Busy-waiting (`while (empty) {}`) bekaar mein CPU jalata hai; Java ka monitor iske liye `wait()`/`notify()` deta hai.",
+        "**`wait()`**: sirf us object ka lock pakde hue (uske `synchronized` block/method ke andar) call ho sakta hai, warna `IllegalMonitorStateException`. `wait()` lock **chhod deta hai** aur thread ko us object ke wait set mein sula deta hai; jagne ke baad lock dobara milne par hi thread aage badhta hai.",
+        "**`notify()` vs `notifyAll()`**: `notify()` wait set se koi ek thread jagata hai (kaunsa, iski guarantee nahi), `notifyAll()` sabko. Jab alag-alag conditions ke liye threads same object par wait karte hon (producers aur consumers dono), `notifyAll()` safe choice hai; `notify()` galat type ka thread jaga kar 'lost wakeup' de sakta hai.",
+        "**Hamesha `while` loop mein wait**: `while (queue.isEmpty()) lock.wait();`. Spurious wakeup ho sakta hai, aur jaagne tak koi aur thread condition phir se badal sakta hai. `if` se check karoge to jaag kar galat state mein aage badh jaoge.",
+        "**Producer–consumer**: ek bounded buffer jahan producer full hone par wait karta hai, consumer empty hone par, aur har change ke baad `notifyAll()`. Production code mein ise khud likhne ke bajaye `BlockingQueue` (`ArrayBlockingQueue`, `LinkedBlockingQueue`) use karo: `put()` full queue par block karta hai, `take()` empty par; `offer()` aur `poll()` block nahi karte, turant `false`/`null` dete hain.",
+        "**Deadlock**: chaar conditions ek saath hon tab hota hai: mutual exclusion, hold and wait, no preemption, circular wait. Sabse practical fix circular wait todna hai: saare threads locks ek hi global order mein lein (jaise hamesha chhoti account id wala lock pehle). `ReentrantLock.tryLock` with timeout bhi ek option hai.",
+        "**Thread-safe collections**: `ArrayList`/`HashMap` thread-safe nahi hain. `Collections.synchronizedList` har method ko lock karta hai, par iterate karte waqt bahar se `synchronized (list)` chahiye. `ConcurrentHashMap` concurrent access aur atomic compound operations (`merge`, `compute`, `putIfAbsent`) deta hai; par `get` ke baad `put` do alag calls hain, unka combination atomic nahi. Read-heavy lists ke liye `CopyOnWriteArrayList`."
+      ],
+      "example": {
+        "problem": "Ek fictional order system ke liye capacity 2 wala bounded buffer `wait`/`notifyAll` se likho, jise producer aur consumer threads share karte hain.",
+        "steps": [
+          "Dono methods `synchronized` hain, isliye `wait()` aur `notifyAll()` `this` ka lock pakde hue call hote hain (warna `IllegalMonitorStateException`).",
+          "Producer teesra item daalne aaye aur buffer full ho (size 2), to `wait()` lock chhod kar so jaata hai, taaki consumer andar aa sake.",
+          "Consumer `take()` mein ek item nikaalta hai aur `notifyAll()` karta hai; producer jaagta hai, lock wapas leta hai, aur `while` condition dobara check karta hai.",
+          "`while` isliye ki jaagne tak koi aur producer jagah bhar sakta hai, ya spurious wakeup ho sakta hai.",
+          "Items FIFO order (`addLast`/`removeFirst`) mein nikalte hain.",
+          "Answer: buffer kabhi **2 se zyada** items nahi rakhta aur empty buffer se kabhi remove nahi karta; real code mein yahi kaam `new ArrayBlockingQueue<>(2)` deta hai."
+        ],
+        "code": "import java.util.ArrayDeque;\nimport java.util.Deque;\n\nclass Buffer {\n    private final Deque<Integer> items = new ArrayDeque<>();\n    private final int capacity = 2;\n\n    synchronized void put(int x) throws InterruptedException {\n        while (items.size() == capacity) {\n            wait();                 // full: release the lock and wait\n        }\n        items.addLast(x);\n        notifyAll();                // wake waiting consumers\n    }\n\n    synchronized int take() throws InterruptedException {\n        while (items.isEmpty()) {\n            wait();                 // empty: wait for a producer\n        }\n        int x = items.removeFirst();\n        notifyAll();                // wake waiting producers\n        return x;\n    }\n}"
+      },
+      "mistakes": [
+        "`synchronized` ke bahar `wait()`/`notify()` call karna. Runtime par `IllegalMonitorStateException` aata hai. Jis object par wait karna hai, pehle uska lock lo.",
+        "`if (empty) wait();` likhna. Spurious wakeup ya doosre consumer ki wajah se thread jaag kar empty queue se remove karne lagega. Hamesha `while` loop lagao.",
+        "Do threads ka locks ulte order mein lena (T1: A phir B, T2: B phir A). Ye circular wait se deadlock ka classic recipe hai; ek global lock order tay karo."
+      ],
+      "revision": [
+        "`wait()` lock chhodta hai; sirf synchronized code ke andar call hota hai.",
+        "Condition hamesha `while` loop mein check karo.",
+        "Mixed waiters hon to `notifyAll()`.",
+        "Deadlock: mutual exclusion, hold-and-wait, no preemption, circular wait.",
+        "`put`/`take` block karte hain; `offer`/`poll` turant return karte hain.",
+        "`ConcurrentHashMap.merge` atomic hai; `get` + `put` atomic nahi."
+      ],
+      "questions": [
+        {
+          "id": "java-w11-q1",
+          "question": "Is program ke run hone par kya hoga?",
+          "code": "public class Main {\n    public static void main(String[] args) throws InterruptedException {\n        Object lock = new Object();\n        lock.wait();\n        System.out.println(\"woke\");\n    }\n}",
+          "options": [
+            "Program hamesha ke liye wait karta rehta hai",
+            "Compile error: `wait()` sirf `Thread` object par call hota hai",
+            "Runtime par `IllegalMonitorStateException`",
+            "\"woke\" turant print hota hai"
+          ],
+          "answer": 2,
+          "explanation": "`wait()` `Object` ka method hai, isliye har object par compile hota hai (option B galat), par call karne wale thread ke paas us object ka monitor (lock) hona chahiye. Yahan `synchronized (lock)` nahi hai, isliye turant `IllegalMonitorStateException` aata hai (option C). Trap: option A, sochna ki ye bas notify ka intezaar karega; lock ke bina wait shuru hi nahi hota.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w11-q2",
+          "question": "In mein se kaunsi deadlock ki chaar zaroori (Coffman) conditions mein se **nahi** hai?",
+          "options": [
+            "Starvation",
+            "Hold and wait",
+            "Circular wait",
+            "No preemption"
+          ],
+          "answer": 0,
+          "explanation": "Deadlock ki chaar conditions hain: mutual exclusion, hold and wait, no preemption aur circular wait (options B, C, D inme se hain). Starvation alag problem hai: kisi thread ko lambe samay tak resource na milna (jaise unfair scheduling se), jabki baaki system chal raha ho. Isliye option A. Trap: starvation aur deadlock dono mein thread 'atka' dikhta hai, par deadlock mein cycle ke saare threads ruk jaate hain aur koi aage nahi badh sakta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w11-q3",
+          "question": "Do consumer threads `take()` call karte hain aur ek producer kabhi-kabhi `put()`. Is code mein kya bug hai?",
+          "code": "import java.util.*;\n\nclass JobQueue {\n    private final LinkedList<String> q = new LinkedList<>();\n\n    synchronized void put(String s) {\n        q.add(s);\n        notifyAll();\n    }\n\n    synchronized String take() throws InterruptedException {\n        if (q.isEmpty()) {\n            wait();\n        }\n        return q.removeFirst();\n    }\n}",
+          "options": [
+            "Koi bug nahi; `synchronized` sab kuch safe bana deta hai",
+            "Jaaga hua consumer queue ko phir se khaali paa sakta hai (doosre consumer ne item le liya ya spurious wakeup), aur `removeFirst()` `NoSuchElementException` dega; `if` ko `while` karo",
+            "`notifyAll()` deadlock karega; `notify()` use karna chahiye",
+            "`wait()` lock nahi chhodta, isliye producer kabhi `put()` mein ghus nahi paayega"
+          ],
+          "answer": 1,
+          "explanation": "Dono consumers empty queue dekh kar wait karte hain. Producer ek item daal kar `notifyAll()` karta hai aur dono jaagte hain. Pehla lock lekar item le leta hai; doosra lock milne par `if` dobara check nahi karta aur khaali list par `removeFirst()` karta hai: `NoSuchElementException` (option B). `while` loop jaagne ke baad condition phir se check karta hai. Trap: option A, `synchronized` ko kaafi maan lena; option D galat hai kyunki `wait()` lock chhod deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w11-q4",
+          "question": "Ye do threads kabhi-kabhi hamesha ke liye atak jaate hain. Kaunsa change deadlock ki possibility khatam karta hai?",
+          "code": "// Thread T1\nsynchronized (a) {\n    synchronized (b) { transfer(); }\n}\n\n// Thread T2\nsynchronized (b) {\n    synchronized (a) { transfer(); }\n}",
+          "options": [
+            "Inner `synchronized` se pehle `Thread.sleep(10)` daal do",
+            "`a` aur `b` ko `volatile` bana do",
+            "`transfer()` ke baad `notifyAll()` call karo",
+            "Dono threads locks ek hi order mein lein: pehle `a`, phir `b`"
+          ],
+          "answer": 3,
+          "explanation": "Deadlock tab hota hai jab T1 `a` pakad kar `b` ka intezaar kare aur T2 `b` pakad kar `a` ka: circular wait. Agar dono hamesha pehle `a` phir `b` lein, to jo thread `a` le leta hai wahi `b` tak pahunchta hai, aur cycle ban hi nahi sakti (option D). Trap: option A: sleep sirf timing badalta hai, deadlock ki possibility nahi hatata (balki aksar use aur jaldi dikhata hai). `volatile` aur `notifyAll()` locking order ko nahi chhoote (options B, C).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w11-q5",
+          "question": "Do threads ek shared map mein key \"k\" ka count badhate hain; har thread 1000 baar badhata hai, aur shuru mein `map.put(\"k\", 0)` hai. Kaunsa version final value 2000 ki guarantee deta hai?",
+          "options": [
+            "`HashMap` ke saath `map.put(\"k\", map.get(\"k\") + 1)`",
+            "`ConcurrentHashMap` ke saath `map.put(\"k\", map.get(\"k\") + 1)`",
+            "`ConcurrentHashMap` ke saath `map.merge(\"k\", 1, Integer::sum)`",
+            "`Hashtable` ke saath `map.put(\"k\", map.get(\"k\") + 1)`"
+          ],
+          "answer": 2,
+          "explanation": "`ConcurrentHashMap` par `merge` ek atomic operation hai: read aur update ek saath hote hain, beech mein koi doosra thread nahi ghus sakta, isliye hamesha 2000 (option C). Options B aur D mein `get` aur `put` do alag calls hain: har call apne aap mein thread-safe hai, par dono threads same purani value padh kar same nayi value likh sakte hain (check-then-act race). Trap: option B, sochna ki thread-safe map par likha har code thread-safe ho jaata hai. Option A mein `HashMap` khud bhi thread-safe nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w11-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.concurrent.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        BlockingQueue<Integer> q = new ArrayBlockingQueue<>(2);\n        System.out.print(q.offer(1) + \" \");\n        System.out.print(q.offer(2) + \" \");\n        System.out.print(q.offer(3) + \" \");\n        System.out.print(q.poll() + \" \");\n        System.out.print(q.offer(4) + \" \");\n        System.out.println(q.size());\n    }\n}",
+          "options": [
+            "true true false 1 true 2",
+            "true true true 1 true 3",
+            "true true false 2 true 2",
+            "true true, phir program hamesha ke liye ruk jaata hai"
+          ],
+          "answer": 0,
+          "explanation": "Capacity 2 hai. `offer(1)` aur `offer(2)` true; teesra `offer(3)` queue full dekh kar block nahi karta, turant false deta hai. `poll()` FIFO hai, sabse pehle aaya 1 nikaalta hai. Ab jagah hai, to `offer(4)` true, aur size 2. Output \"true true false 1 true 2\" (option A). Trap: option D: block `put()` karta hai, `offer()` nahi; option C, queue ko stack (LIFO) maan lena; option B, capacity ko ignore karna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Executors, Futures, Atomics and Immutability",
+      "summary": "Is week aap raw threads ki jagah thread pools (`ExecutorService`), `Callable` aur `Future` se results lena, atomic variables, immutable objects se thread safety, aur poore course ka ek design-level recap seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Raw threads ki problem**: har task ke liye `new Thread` banana mehenga hai, threads ki ginti control nahi hoti, aur result ya exception wapas lene ka koi seedha tareeka nahi. **Executor framework** task (kya karna hai) ko execution policy (kitne threads, kis order mein) se alag karta hai.",
+        "**Thread pools**: `Executors.newFixedThreadPool(n)` n reusable worker threads aur ek task queue deta hai; `newSingleThreadExecutor()` ek thread jo tasks submission order mein chalata hai. `execute(Runnable)` fire-and-forget hai, `submit(...)` ek `Future` deta hai. Kaam khatam hone par `shutdown()` (naye tasks band, queue wale poore) aur `awaitTermination(...)`; `shutdown` ke baad submit karne par `RejectedExecutionException`.",
+        "**`Callable` vs `Runnable`**: `Runnable.run()` kuch return nahi karta aur checked exception nahi phenk sakta. `Callable<V>.call()` `V` return karta hai aur `throws Exception` declare karta hai. Task ke andar aayi exception `Future.get()` par `ExecutionException` mein wrap hokar milti hai.",
+        "**`Future`**: pending result ka handle. `get()` result aane tak block karta hai, `get(timeout, unit)` time limit ke saath; `isDone()` aur `cancel(...)` bhi hain. `invokeAll(tasks)` sab tasks chala kar unke futures **usi order** mein deta hai jis order mein tasks diye the, completion order mein nahi. Non-blocking chaining ke liye `CompletableFuture` hai.",
+        "**Atomic variables**: `AtomicInteger`, `AtomicLong`, `AtomicReference` lock ke bina compare-and-set (CAS) instruction se `incrementAndGet()`, `addAndGet()`, `compareAndSet(expected, update)` jaise operations atomic banate hain. Ek variable ke counter ke liye ye `synchronized` se halka hai; par kai variables ko saath mein consistent rakhna ho to lock phir bhi chahiye.",
+        "**Immutability**: jo object banne ke baad kabhi badalta hi nahi, use bina lock ke threads share kar sakte hain. Recipe: class `final`, saare fields `private final`, koi setter nahi, mutable inputs ki **defensive copy** (`List.copyOf`), aur getters se mutable internals bahar na do. `String`, `Integer`, `LocalDate` immutable hain, aur Java 16+ ka `record` shallowly immutable hai.",
+        "**Course recap**: encapsulation (private state + methods), inheritance aur interfaces se abstraction, dynamic dispatch se polymorphism, generics se type safety, collections aur comparators se data handling, exceptions se error contracts, aur concurrency mein shared mutable state ko kam karna: immutable data, thread-safe collections, aur executors."
+      ],
+      "example": {
+        "problem": "Fictional data job: teen files ki line counts parallel mein nikaalni hain (yahan counts ek map se simulate kiye hain). Pool par `Callable` tasks chalao aur total jodo.",
+        "steps": [
+          "Har file ke liye ek `Callable<Integer>` banta hai jo ek value return karta hai (`Runnable` ye nahi kar sakta).",
+          "Lambda `file` aur `fake` capture karta hai; dono effectively final hain, isliye ye allowed hai.",
+          "`invokeAll` saare jobs pool ke 3 threads par chalata hai aur sab khatam hone tak wait karta hai.",
+          "Futures usi order mein milte hain jisme jobs diye the; `f.get()` har result deta hai: 120, 75, 305.",
+          "`total` sirf `main` thread badalta hai, isliye yahan koi race nahi; `finally` mein `shutdown()` pool ke threads band karta hai.",
+          "Answer: \"total lines = **500**\"."
+        ],
+        "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        Map<String, Integer> fake = Map.of(\"a.csv\", 120, \"b.csv\", 75, \"c.csv\", 305);\n        ExecutorService pool = Executors.newFixedThreadPool(3);\n        try {\n            List<Callable<Integer>> jobs = new ArrayList<>();\n            for (String file : List.of(\"a.csv\", \"b.csv\", \"c.csv\")) {\n                jobs.add(() -> fake.get(file));      // pretend: count lines\n            }\n            int total = 0;\n            for (Future<Integer> f : pool.invokeAll(jobs)) {\n                total += f.get();\n            }\n            System.out.println(\"total lines = \" + total);\n        } finally {\n            pool.shutdown();\n        }\n    }\n}"
+      },
+      "mistakes": [
+        "Executor ko `shutdown()` na karna. Pool ke non-daemon threads JVM ko band hone se rok sakte hain; `try/finally` mein shutdown karo (Java 19+ mein `ExecutorService` try-with-resources mein bhi chal jaata hai).",
+        "Har task ke liye submit ke turant baad `get()` call karna (submit → get → submit → get). Isse parallelism khatam ho jaata hai; pehle saare tasks submit karo, phir results lo.",
+        "Sochna ki `final` fields wali class apne aap immutable hai. Agar field ek mutable `List` hai aur bahar wala reference share hai, to content badal sakta hai; defensive copy lo."
+      ],
+      "revision": [
+        "Pool: `newFixedThreadPool(n)`, kaam ke baad `shutdown()`.",
+        "`Callable` value return karta hai aur checked exception phenk sakta hai; `Runnable` dono nahi.",
+        "`Future.get()` block karta hai; task ki exception `ExecutionException` mein aati hai.",
+        "`invokeAll` futures submission order mein deta hai.",
+        "`AtomicInteger.incrementAndGet()` lock-free aur atomic hai.",
+        "Immutable = final class, private final fields, defensive copies."
+      ],
+      "questions": [
+        {
+          "id": "java-w12-q1",
+          "question": "`Callable<V>` aur `Runnable` mein sahi farq kya hai?",
+          "options": [
+            "`Callable.call()` ek value return karta hai aur checked exception phenk sakta hai; `Runnable.run()` dono nahi kar sakta",
+            "`Runnable` sirf thread pools mein chalta hai, `Callable` sirf `Thread` ke saath",
+            "Dono same hain, bas naam alag hai",
+            "`Runnable` value return karta hai, `Callable` nahi"
+          ],
+          "answer": 0,
+          "explanation": "`Runnable` ka method `void run()` hai aur usme `throws` nahi; `Callable<V>` ka method `V call() throws Exception` hai (option A). Isliye result chahiye to `Callable` aur `Future` use karte hain. Trap: option B ulta hai: `Thread` ka constructor sirf `Runnable` leta hai, jabki executor dono le sakta hai. Option D roles ko ulta kar deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w12-q2",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.concurrent.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        ExecutorService ex = Executors.newFixedThreadPool(2);\n        Future<Integer> f = ex.submit(() -> 6 * 7);\n        System.out.println(f.get());\n        ex.shutdown();\n    }\n}",
+          "options": [
+            "null",
+            "`Future` object ka description (jaise FutureTask@...)",
+            "42",
+            "Compile error: lambda `int` return karta hai, `Integer` nahi"
+          ],
+          "answer": 2,
+          "explanation": "`() -> 6 * 7` ek value return karta hai, isliye `submit(Callable)` chuna jaata hai aur `int` 42 autobox hokar `Integer` ban jaata hai (option D galat). `f.get()` task khatam hone tak block karta hai aur result 42 deta hai (option C). Trap: option B, sochna ki `f` khud print ho raha hai; print `f.get()` ka result ho raha hai. Option A tab hota jab task `Runnable` hota (uske `Future.get()` se null milta hai).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "java-w12-q3",
+          "question": "Maan lo saare tasks timeout se pehle khatam ho jaate hain. Output kya hoga?",
+          "code": "import java.util.concurrent.*;\nimport java.util.concurrent.atomic.AtomicInteger;\n\npublic class Main {\n    public static void main(String[] args) throws InterruptedException {\n        AtomicInteger hits = new AtomicInteger();\n        ExecutorService pool = Executors.newFixedThreadPool(4);\n        for (int i = 0; i < 100; i++) {\n            pool.execute(() -> { hits.incrementAndGet(); });\n        }\n        pool.shutdown();\n        pool.awaitTermination(1, TimeUnit.MINUTES);\n        System.out.println(hits.get());\n    }\n}",
+          "options": [
+            "4",
+            "100 ya usse kam, kyunki 4 threads race karte hain",
+            "0, kyunki `main` tasks chalne se pehle print kar deta hai",
+            "100"
+          ],
+          "answer": 3,
+          "explanation": "`incrementAndGet()` CAS se atomic hai, to 4 threads ke parallel chalne par bhi koi update nahi khota. `shutdown()` naye tasks band karta hai par queue mein pade saare 100 tasks poore hone deta hai, aur `awaitTermination` unke khatam hone tak `main` ko rokta hai. Output 100 (option D). Trap: option B, plain `int` wala race `AtomicInteger` par bhi laga dena; option C, `shutdown()` ko 'turant sab band' samajhna (woh kaam `shutdownNow()` ke zyada kareeb hai) aur `awaitTermination` ko ignore karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w12-q4",
+          "question": "Is program ke run hone par kya hoga?",
+          "code": "import java.util.concurrent.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        ExecutorService ex = Executors.newSingleThreadExecutor();\n        ex.shutdown();\n        ex.submit(() -> System.out.println(\"late\"));\n        System.out.println(\"end\");\n    }\n}",
+          "options": [
+            "\"late\" aur \"end\" dono print hote hain",
+            "`submit` `RejectedExecutionException` phenkta hai; \"end\" print nahi hota",
+            "Sirf \"end\" print hota hai; task chupchaap drop ho jaata hai",
+            "Compile error: shutdown ke baad `ex` use nahi kar sakte"
+          ],
+          "answer": 1,
+          "explanation": "`shutdown()` ke baad executor naye tasks accept nahi karta. Default rejection policy (AbortPolicy) `submit` par `RejectedExecutionException` (unchecked) phenkti hai, jo `main` se bahar nikal jaati hai, isliye \"end\" tak pahunchte hi nahi (option B). Ye runtime state hai, compiler ise check nahi karta (option D galat). Trap: option C, sochna ki late task bas ignore ho jaata hai; default behaviour fail-fast hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w12-q5",
+          "question": "Is class ke baare mein kya sahi hai?",
+          "code": "import java.util.*;\n\nfinal class Order {\n    private final int amount;\n    private final List<String> tags;\n\n    Order(int amount, List<String> tags) {\n        this.amount = amount;\n        this.tags = tags;\n    }\n\n    int amount() { return amount; }\n    List<String> tags() { return tags; }\n}",
+          "options": [
+            "Ye poori tarah immutable hai, kyunki class aur saare fields `final` hain",
+            "Compile error: `final` class mein `List` field nahi ho sakta",
+            "Ye immutable nahi hai: constructor ko di gayi list ya `tags()` se mili list badal kar `Order` ka content badla ja sakta hai",
+            "Ye tabhi immutable hogi jab `amount` `static` ho"
+          ],
+          "answer": 2,
+          "explanation": "`final` field ka matlab sirf itna hai ki reference dobara assign nahi hoga; jis `List` ko woh point karta hai, uska content badal sakta hai. Caller ke paas wahi list hai jo constructor ko di thi, aur `tags()` bhi andar ki wahi list bahar de deta hai, to `order.tags().add(\"x\")` object ko badal dega (option C). Fix: constructor mein `this.tags = List.copyOf(tags);` (unmodifiable copy). Trap: option A, `final` ko 'deeply immutable' samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "java-w12-q6",
+          "question": "Is program ka output kya hoga?",
+          "code": "import java.util.*;\nimport java.util.concurrent.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        ExecutorService ex = Executors.newFixedThreadPool(3);\n        List<Callable<String>> jobs = List.of(\n            () -> { Thread.sleep(300); return \"A\"; },\n            () -> \"B\",\n            () -> { Thread.sleep(100); return \"C\"; });\n        StringBuilder sb = new StringBuilder();\n        for (Future<String> f : ex.invokeAll(jobs)) {\n            sb.append(f.get());\n        }\n        ex.shutdown();\n        System.out.println(sb);\n    }\n}",
+          "options": [
+            "BCA",
+            "ABC",
+            "CBA",
+            "Har run mein alag; completion order par depend karta hai"
+          ],
+          "answer": 1,
+          "explanation": "`invokeAll` saare tasks khatam hone tak wait karta hai aur futures ki list **usi order** mein deta hai jis order mein tasks diye gaye the, chahe kaunsa task pehle complete hua ho. Loop us list par chalta hai, to \"A\", \"B\", \"C\": output \"ABC\" (option B). Trap: option A (\"BCA\"), completion order (B turant, C lagbhag 100 ms, A lagbhag 300 ms) ko result order maan lena; option D bhi isi galatfehmi se aata hai. Completion order mein results chahiye to `ExecutorCompletionService` use hota hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

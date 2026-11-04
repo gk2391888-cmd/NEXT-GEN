@@ -1,0 +1,725 @@
+{
+  "subjectId": "mlp",
+  "questions": {
+    "mlp-w1-q1": {
+      "question": "A dataset has 1250 rows. After `train_test_split(X, y, test_size=0.2, random_state=0)`, how many rows will `X_train` have?",
+      "options": [
+        "250",
+        "1050",
+        "1000",
+        "1200"
+      ],
+      "explanation": "test_size=0.2 means 20% of the rows go to test: 0.2 × 1250 = 250. The remaining 1250 − 250 = 1000 rows go to training, so option C is correct. Option A is the test-set size (swapping train and test is the most common trap); options B and D come from a wrong subtraction."
+    },
+    "mlp-w1-q2": {
+      "question": "Outside a pipeline, a `StandardScaler` has been fitted on `X_train`. What is the correct call to scale the test data?",
+      "options": [
+        "`scaler.transform(X_test)`",
+        "`scaler.fit_transform(X_test)`",
+        "`scaler.fit(X_test)` then `scaler.transform(X_test)`",
+        "`scaler.fit_transform(X)` on the full data, then split again"
+      ],
+      "explanation": "Test data must be scaled with the same mean and std learned from the training data, so only `transform` (option A). Options B and C refit the scaler on the test data, which brings test statistics into the model and also creates a train-test scaling mismatch. Option D fits on the full data, which is plain leakage."
+    },
+    "mlp-w1-q3": {
+      "question": "`cross_val_score(model, X, y, cv=5)` is run for a regression model on 600 training rows. How many times is the model trained, and on how many rows each time?",
+      "options": [
+        "1 time, on 600 rows",
+        "5 times, on 120 rows each time",
+        "4 times, on 480 rows each time",
+        "5 times, on 480 rows each time"
+      ],
+      "explanation": "With cv=5 the data is split into 5 folds of 120 rows. Each fold is the validation fold once and the model is fitted on the other 4 folds (480 rows), so 5 fits of 480 rows each: option D. Option B is the size of the validation fold, not the training part. Option C confuses '4 training folds' with '4 fits'."
+    },
+    "mlp-w1-q4": {
+      "question": "`DummyRegressor(strategy='mean')` is fitted on training targets [10, 20, 30, 40]. The test targets are [25, 35]. What is this baseline's test RMSE?",
+      "options": [
+        "5.00",
+        "7.07",
+        "50.00",
+        "10.00"
+      ],
+      "explanation": "The baseline predicts the training mean: (10 + 20 + 30 + 40)/4 = 25. Test errors are 0 and 10, MSE = (0 + 100)/2 = 50, RMSE = √50 ≈ 7.07 (option B). Option C is the MSE (square root forgotten), option A is the MAE, and option D is just the larger error."
+    },
+    "mlp-w1-q5": {
+      "question": "`cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')` returned [-4, -9, -16, -1, -25]. If you compute each fold's RMSE, what is the mean of those 5 RMSE values?",
+      "options": [
+        "3.00",
+        "3.32",
+        "-11.00",
+        "11.00"
+      ],
+      "explanation": "The scores are negative MSEs. Drop the sign: 4, 9, 16, 1, 25. Per-fold RMSE: 2, 3, 4, 1, 5; their mean = 15/5 = 3.00 (option A). Option B is √(mean MSE) = √11 ≈ 3.32, a different quantity (the question asks for the mean of per-fold RMSEs). Options C and D are just the mean MSE without a square root."
+    },
+    "mlp-w1-q6": {
+      "question": "A feature has training values [2, 4, 6, 8]. The pipeline is `StandardScaler` → `LinearRegression`. After fitting, the model learned on the scaled feature z: ŷ = 20 + 3z. What does `pipe.predict` return for a new input x = 10 (to 2 decimals)?",
+      "options": [
+        "50.00",
+        "25.81",
+        "20.00",
+        "26.71"
+      ],
+      "explanation": "At predict time the Pipeline only runs the scaler's `transform`, with the training mean 5 and std. StandardScaler uses the population std (ddof = 0): variance = (9 + 1 + 1 + 9)/4 = 5, std = √5 ≈ 2.236. z = (10 − 5)/2.236 ≈ 2.236, ŷ = 20 + 3 × 2.236 ≈ 26.71 (option D). Option B comes from the sample std (√(20/3) ≈ 2.582), option A from forgetting to scale and using raw x = 10, and option C from refitting the scaler on the test point (z = 0)."
+    },
+    "mlp-w2-q1": {
+      "question": "A column has training values [4, NaN, 10, 6, 100]. What will `SimpleImputer(strategy='median')` fill in for the NaN?",
+      "options": [
+        "30",
+        "8",
+        "10",
+        "6"
+      ],
+      "explanation": "The median uses only the observed values: 4, 6, 10, 100 → the average of the middle two, 6 and 10, is 8 (option B). Option A is the mean, dragged up to 30 by the outlier 100; that is exactly why the median is chosen. Option C is the middle element of the unsorted list, not the sorted median."
+    },
+    "mlp-w2-q2": {
+      "question": "Which of these causes train-test leakage?",
+      "options": [
+        "Running `cross_val_score` with `StandardScaler` inside a Pipeline",
+        "Fitting `SimpleImputer` only on `X_train` and transforming `X_test`",
+        "Using `OneHotEncoder(handle_unknown='ignore')` for a categorical column",
+        "Fitting `StandardScaler` on the whole dataset and then calling `train_test_split`"
+      ],
+      "explanation": "In option D the scaler's mean and std were computed using the test rows too, so test information entered training: that is leakage. Option A is the correct approach (in each fold the scaler is fitted only on the training part), option B is also correct, and option C just handles unseen categories safely. Trap: thinking option A is risky, when the Pipeline is exactly what prevents leakage."
+    },
+    "mlp-w2-q3": {
+      "question": "X has 5 columns: age, income (numeric), city (4 categories in training), plan (3 categories) and customer_id. After fitting the ColumnTransformer below, how many columns will the output have?",
+      "options": [
+        "9",
+        "10",
+        "7",
+        "4"
+      ],
+      "explanation": "Numeric: 2 columns. One-hot (no category is dropped by default): 4 for city + 3 for plan = 7. Total 2 + 7 = 9 (option A). customer_id is not in any list, and the default `remainder='drop'` removes it, so option B (10) is wrong. Option C comes from assuming something like `drop='first'` and removing one column per feature."
+    },
+    "mlp-w2-q4": {
+      "question": "A `MinMaxScaler` (default settings) is fitted on a column whose training min is 20 and max is 70. A test row has the value 80. What is the scaled value?",
+      "options": [
+        "1.00",
+        "1.60",
+        "1.20",
+        "0.75"
+      ],
+      "explanation": "The transform uses the training min and max: (80 − 20)/(70 − 20) = 60/50 = 1.20 (option C). By default the output is not clipped, so a value outside the training range goes above 1. Option A assumes the output always stays in [0, 1]; option B forgets to subtract the min (80/50); option D is 60/80."
+    },
+    "mlp-w2-q5": {
+      "question": "A `StandardScaler` is fitted on the training column [10, 20, 30, 40, 50]. Roughly what is the scaled value of 45?",
+      "options": [
+        "0.95",
+        "1.06",
+        "1.50",
+        "0.50"
+      ],
+      "explanation": "Mean = 30. StandardScaler uses the population variance: (400 + 100 + 0 + 100 + 400)/5 = 200, std = √200 ≈ 14.14. z = (45 − 30)/14.14 ≈ 1.06 (option B). Option A comes from the sample std (√250 ≈ 15.81, dividing by n − 1), which StandardScaler does not use. Options C (15/10) and D (15/30) use wrong denominators."
+    },
+    "mlp-w2-q6": {
+      "question": "Pipeline: `SimpleImputer(strategy='mean')` → `StandardScaler`, fitted on the training column [2, NaN, 8, 4, NaN, 6]. Roughly what is the output for the test value 9?",
+      "options": [
+        "2.19",
+        "1.79",
+        "2.00",
+        "4.00"
+      ],
+      "explanation": "The imputer takes the mean of observed values: (2 + 8 + 4 + 6)/4 = 5, giving the column [2, 5, 8, 4, 5, 6]. The scaler is fitted on this imputed column: mean 5, population variance (9 + 0 + 9 + 1 + 0 + 1)/6 = 20/6, std ≈ 1.826. z = (9 − 5)/1.826 ≈ 2.19 (option A). Option B computes the std from only the 4 observed values (√5 ≈ 2.236), but the scaler receives imputed data; imputation shrinks the variance. Option C uses the n − 1 std (2.0), and option D forgets to scale."
+    },
+    "mlp-w3-q1": {
+      "question": "A training set has 10000 rows and mini-batch gradient descent runs with batch size 500. How many parameter updates happen in one epoch?",
+      "options": [
+        "500",
+        "10000",
+        "1",
+        "20"
+      ],
+      "explanation": "One epoch = one pass over the data. Each update uses one batch, so updates = 10000/500 = 20 (option D). Option A is the batch size, option B is the number of updates for SGD (batch size 1), and option C is batch GD's single update per epoch."
+    },
+    "mlp-w3-q2": {
+      "question": "While training linear regression with gradient descent, the training loss swings up and down every epoch and keeps growing. What is the most likely cause?",
+      "options": [
+        "The learning rate is too small",
+        "The learning rate is too large",
+        "There is more training data than needed",
+        "The model has no intercept term"
+      ],
+      "explanation": "A large learning rate overshoots the minimum on every step; swinging from side to side, the loss starts growing, i.e. divergence (option B). A small learning rate (option A) lowers the loss slowly but steadily; it does not make it grow. More data or a missing intercept does not make the loss diverge."
+    },
+    "mlp-w3-q3": {
+      "question": "Data (x, y): (1, 2), (2, 4). Model ŷ = wx + b, currently w = 1, b = 0. Cost J = (1/n)Σ(ŷ − y)², learning rate 0.1. What is w after one batch gradient descent step?",
+      "options": [
+        "1.50",
+        "1.25",
+        "0.50",
+        "2.00"
+      ],
+      "explanation": "Predictions are 1 and 2, errors (ŷ − y) = −1 and −2. ∂J/∂w = (2/2)(−1·1 + −2·2) = −5. New w = 1 − 0.1 × (−5) = 1.50 (option A). Option B comes from the 1/(2n) convention (gradient −2.5), which is not the one given; option C from flipping the sign (w + η·gradient); option D is the optimal w, which one step does not reach."
+    },
+    "mlp-w3-q4": {
+      "question": "On a test set the actual y = [3, 5, 7, 9] and predictions ŷ = [4, 5, 6, 9]. What is R²?",
+      "options": [
+        "0.10",
+        "0.50",
+        "0.90",
+        "0.95"
+      ],
+      "explanation": "ȳ = 6. SS_tot = 9 + 1 + 1 + 9 = 20, SS_res = 1 + 0 + 1 + 0 = 2. R² = 1 − 2/20 = 0.90 (option C). Option A is just SS_res/SS_tot (forgot the 1 −), and option B is the MSE (2/4), not R²."
+    },
+    "mlp-w3-q5": {
+      "question": "`LinearRegression()` is fitted on one feature: x = [1, 2, 3, 4], y = [2, 3, 5, 6]. What is the prediction for x = 5?",
+      "options": [
+        "7.50",
+        "7.00",
+        "7.33",
+        "8.50"
+      ],
+      "explanation": "x̄ = 2.5, ȳ = 4. Σ(x − x̄)(y − ȳ) = 3 + 0.5 + 0.5 + 3 = 7, Σ(x − x̄)² = 5, slope w = 1.4. Intercept b = 4 − 1.4 × 2.5 = 0.5. ŷ(5) = 1.4 × 5 + 0.5 = 7.50 (option A). Option B forgets the intercept (1.4 × 5), option C draws a line through the first and last points (not least squares), and option D uses a wrong intercept (1.5)."
+    },
+    "mlp-w3-q6": {
+      "question": "Model ŷ = wx (no bias), starting at w = 0. Data in order: (1, 2) then (2, 4). Stochastic gradient descent uses the gradient of the per-sample loss (ŷ − y)², learning rate 0.1. What is w after one epoch (both samples, in this order)?",
+      "options": [
+        "1.00",
+        "1.68",
+        "0.40",
+        "2.00"
+      ],
+      "explanation": "Sample 1: gradient = 2(0 − 2)(1) = −4, w = 0 + 0.4 = 0.4. Sample 2: ŷ = 0.8, gradient = 2(0.8 − 4)(2) = −12.8, w = 0.4 + 1.28 = 1.68 (option B). Option A is one batch GD step (average gradient −10, all samples at the old w = 0), whereas SGD uses the updated w for the second sample. Option C is only the first update, and option D is the optimum."
+    },
+    "mlp-w4-q1": {
+      "question": "`PolynomialFeatures(degree=2)` (everything else default) is applied to 2 features. How many columns will the output have?",
+      "options": [
+        "6",
+        "5",
+        "4",
+        "9"
+      ],
+      "explanation": "For features a, b all monomials up to degree 2: 1, a, b, a², ab, b² = 6 (option A); the formula C(2 + 2, 2) = 6. Option B forgets the constant column from the default `include_bias=True`, and option C also drops the interaction term ab."
+    },
+    "mlp-w4-q2": {
+      "question": "On a dataset with 50 features you want a linear model that sets the coefficients of some irrelevant features exactly to zero. Which model do you choose?",
+      "options": [
+        "Ridge",
+        "LinearRegression",
+        "Lasso",
+        "Ridge with a very large alpha"
+      ],
+      "explanation": "The geometry of Lasso's L1 penalty α Σ|w| puts the minimum at corners, so some coefficients become exactly zero (option C). Ridge (options A and D) shrinks weights with an L2 penalty but never to exactly zero, even with a large alpha; that is the most common trap. Plain LinearRegression applies no penalty at all."
+    },
+    "mlp-w4-q3": {
+      "question": "Learning curve of a degree-10 polynomial model: training RMSE 2.1 and validation RMSE 9.8, and the gap stays large as the training size grows. What is the best next step?",
+      "options": [
+        "Raise the degree to 15 so the model is more flexible",
+        "Increase the Ridge alpha (or lower the degree) and get more training data if possible",
+        "Make the training set smaller so the gap looks smaller",
+        "Drop the validation set and report only training RMSE"
+      ],
+      "explanation": "Low training error + high validation error + a big gap = high variance (overfitting). The cure is to simplify the model (more regularisation, lower degree) and more data: option B. Option A would raise the variance further. Trap: thinking the model is 'too weak' because validation error is high, when the low training error shows the problem is variance, not bias."
+    },
+    "mlp-w4-q4": {
+      "question": "One feature, no bias: x = [1, 2, 3], y = [1, 3, 4]. The Ridge objective is Σ(yᵢ − wxᵢ)² + αw², with α = 5. What is the optimal w?",
+      "options": [
+        "1.36",
+        "3.80",
+        "0.79",
+        "1.00"
+      ],
+      "explanation": "Setting the derivative to zero: w = Σxy/(Σx² + α). Σxy = 1 + 6 + 12 = 19, Σx² = 14, so w = 19/(14 + 5) = 1.00 (option D). Option A is the α = 0 least-squares answer (19/14). Option C comes from dropping the 2 on the data term of the derivative, giving Σxy/(Σx² + 2α) = 19/24, and option B forgets Σx² entirely (19/5)."
+    },
+    "mlp-w4-q5": {
+      "question": "For a model at some test point, bias = 2, variance = 3 and irreducible noise variance σ² = 1. What is the expected squared error?",
+      "options": [
+        "6",
+        "7",
+        "8",
+        "4"
+      ],
+      "explanation": "Expected MSE = bias² + variance + σ² = 4 + 3 + 1 = 8 (option C). Option A forgets to square the bias (2 + 3 + 1), option B drops the noise term (4 + 3), and option D is only bias²."
+    },
+    "mlp-w4-q6": {
+      "question": "`PolynomialFeatures(degree=3, include_bias=False)` is applied to 3 features. How many columns will the output have?",
+      "options": [
+        "20",
+        "19",
+        "9",
+        "27"
+      ],
+      "explanation": "All monomials of degree ≤ 3 (including the constant) = C(3 + 3, 3) = 20. `include_bias=False` removes the constant column: 20 − 1 = 19 (option B). Count: 3 of degree 1, 6 of degree 2, 10 of degree 3. Option A counts the bias column; option C counts only x, x², x³ per feature (forgetting interactions); option D is 3³."
+    },
+    "mlp-w5-q1": {
+      "question": "A one-feature logistic model: z = −4 + 2x. At the default 0.5 threshold, at what value of x is the decision boundary?",
+      "options": [
+        "4",
+        "0.5",
+        "2",
+        "−2"
+      ],
+      "explanation": "p = 0.5 exactly when z = 0: −4 + 2x = 0 ⇒ x = 2 (option C). Option B treats the probability threshold as the x value; option D is a sign error, and option A is just the size of the intercept."
+    },
+    "mlp-w5-q2": {
+      "question": "Two models: `LogisticRegression(C=0.01)` and `LogisticRegression(C=100)`. Which one is more strongly regularised, and why?",
+      "options": [
+        "The C=100 one, because C is the regularisation strength",
+        "The C=0.01 one, because C is the inverse of the regularisation strength",
+        "Both are equal; C only controls the solver's iterations",
+        "The C=0.01 one, because a small C lowers the learning rate"
+      ],
+      "explanation": "In scikit-learn C is the inverse regularisation strength, so C = 0.01 applies a very strong penalty and keeps the weights small (option B). Option A carries over the intuition of Ridge/Lasso's alpha the wrong way; a large alpha = more regularisation, but a large C = less. Option D has the wrong reason: C has nothing to do with a learning rate."
+    },
+    "mlp-w5-q3": {
+      "question": "Logistic model: z = 1.2 − 0.5·x₁ + 0.3·x₂. For the input x₁ = 4, x₂ = 2, what are P(y = 1) and the predicted class at the default threshold?",
+      "options": [
+        "0.55, class 1",
+        "0.45, class 1",
+        "−0.20, class 0",
+        "0.45, class 0"
+      ],
+      "explanation": "z = 1.2 − 2.0 + 0.6 = −0.2. p = σ(−0.2) = 1/(1 + e^0.2) ≈ 0.45 < 0.5, so class 0 (option D). Option A is σ(+0.2) (wrong sign), option B has the right probability but the wrong class, and option C treats z itself as the probability."
+    },
+    "mlp-w5-q4": {
+      "question": "Three samples: true labels y = [1, 0, 1], predicted P(y = 1) = [0.8, 0.3, 0.6]. What is the average log-loss (natural log)?",
+      "options": [
+        "0.364",
+        "0.158",
+        "0.646",
+        "0.300"
+      ],
+      "explanation": "Losses: y = 1, p = 0.8 → −ln 0.8 ≈ 0.223; y = 0, p = 0.3 → −ln(1 − 0.3) = −ln 0.7 ≈ 0.357; y = 1, p = 0.6 → −ln 0.6 ≈ 0.511. Mean ≈ 1.091/3 ≈ 0.364 (option A). Option C uses −ln p (−ln 0.3) even for the y = 0 sample; option B uses log base 10; option D is the mean |y − p|, not log-loss."
+    },
+    "mlp-w5-q5": {
+      "question": "The training data has 900 negative and 100 positive samples. What weight does `LogisticRegression(class_weight='balanced')` give the positive class?",
+      "options": [
+        "9.00",
+        "5.00",
+        "0.56",
+        "0.10"
+      ],
+      "explanation": "Balanced weight = n_samples/(n_classes × n_c) = 1000/(2 × 100) = 5.00 (option B). The negative class gets 1000/(2 × 900) ≈ 0.56 (option C, the other class's weight). Option A is just the ratio 900/100; the formula divides by n_classes = 2, so the ratio is not the weight itself."
+    },
+    "mlp-w5-q6": {
+      "question": "In a logistic model the coefficient of the feature 'study_hours' is 0.7. For one student P(pass) is currently 0.2. If study_hours goes up by 2 with everything else unchanged, roughly what is the new P(pass)?",
+      "options": [
+        "0.81",
+        "0.33",
+        "0.50",
+        "0.42"
+      ],
+      "explanation": "Odds = 0.2/0.8 = 0.25. The log-odds rise by 2 × 0.7 = 1.4, so the odds multiply by e^1.4 ≈ 4.055: 0.25 × 4.055 ≈ 1.014. p = 1.014/(1 + 1.014) ≈ 0.50 (option C). Option A multiplies the probability itself by e^1.4 (0.2 × 4.055); the multiplier applies to the odds, not the probability. Option B takes the effect of only one unit (e^0.7), and option D is the derivative-based linear approximation, which fails for such a large change."
+    },
+    "mlp-w6-q1": {
+      "question": "A test set has 990 negative and 10 positive samples. A model predicts every sample as negative. What are its accuracy and recall (for the positive class)?",
+      "options": [
+        "99% accuracy, recall 1.0",
+        "1% accuracy, recall 0",
+        "50% accuracy, recall 0.5",
+        "99% accuracy, recall 0"
+      ],
+      "explanation": "The 990 negatives are correct (TN), the 10 positives are missed (FN), TP = 0. Accuracy = 990/1000 = 99%, recall = 0/(0 + 10) = 0 (option D). This is the accuracy paradox. Option A assumes recall is as high as accuracy; the model did not catch a single positive."
+    },
+    "mlp-w6-q2": {
+      "question": "With labels 0 and 1, `confusion_matrix(y_true, y_pred)` returned [[50, 10], [5, 35]]. How many false negatives are there?",
+      "options": [
+        "5",
+        "10",
+        "35",
+        "50"
+      ],
+      "explanation": "In scikit-learn rows are the true class and columns the predicted class: [[TN, FP], [FN, TP]]. FN = row 1 (true = 1), column 0 (predicted = 0) = 5 (option A). Option B (10) is FP; reading the matrix transposed leads to exactly this mistake."
+    },
+    "mlp-w6-q3": {
+      "question": "For a classifier TP = 30, FP = 20, FN = 10. What is the F1 score?",
+      "options": [
+        "0.675",
+        "0.600",
+        "0.667",
+        "0.750"
+      ],
+      "explanation": "Precision = 30/50 = 0.6, recall = 30/40 = 0.75. F1 = 2 × 0.6 × 0.75/(0.6 + 0.75) = 0.9/1.35 ≈ 0.667 (option C); check: 2TP/(2TP + FP + FN) = 60/90. Option A is the arithmetic mean (0.6 + 0.75)/2; F1 is the harmonic mean, which is always at most the arithmetic mean. Options B and D are just precision and recall."
+    },
+    "mlp-w6-q4": {
+      "question": "Below are the true labels and predicted P(y = 1) for 8 samples. Rule: p ≥ threshold ⇒ positive. At threshold 0.3, what are precision (P) and recall (R)?",
+      "options": [
+        "P = 0.67, R = 0.50",
+        "P = 0.60, R = 0.75",
+        "P = 0.75, R = 0.60",
+        "P = 0.50, R = 0.75"
+      ],
+      "explanation": "At threshold 0.3 the positive predictions are 0.9, 0.6, 0.35 (all three true 1) and 0.55, 0.4 (both true 0). TP = 3, FP = 2, and the positive with 0.25 is missed, FN = 1. P = 3/5 = 0.60, R = 3/4 = 0.75 (option B). Option A is the result at threshold 0.5 (TP = 2, FP = 1, FN = 2), and option C swaps precision and recall."
+    },
+    "mlp-w6-q5": {
+      "question": "At some threshold TP = 80, FN = 20, FP = 100, TN = 900. At which point (FPR, TPR) does this threshold sit on the ROC curve?",
+      "options": [
+        "(0.8, 0.1)",
+        "(0.44, 0.8)",
+        "(0.1, 0.44)",
+        "(0.1, 0.8)"
+      ],
+      "explanation": "FPR = FP/(FP + TN) = 100/1000 = 0.1, TPR = TP/(TP + FN) = 80/100 = 0.8. The ROC x-axis is FPR and the y-axis is TPR, so the point is (0.1, 0.8) (option D). Option A swaps the axes. Option B puts precision (80/180 ≈ 0.44) on the x-axis; that belongs to the PR curve, not ROC."
+    },
+    "mlp-w6-q6": {
+      "question": "Three positive samples have scores [0.8, 0.6, 0.3] and two negative samples have scores [0.7, 0.2]. What is the ROC-AUC?",
+      "options": [
+        "0.667",
+        "0.600",
+        "0.500",
+        "0.583"
+      ],
+      "explanation": "AUC = the fraction of (positive, negative) pairs in which the positive has the higher score. 3 × 2 = 6 pairs: 0.8 > 0.7 ✓, 0.8 > 0.2 ✓, 0.6 > 0.7 ✗, 0.6 > 0.2 ✓, 0.3 > 0.7 ✗, 0.3 > 0.2 ✓ → 4/6 ≈ 0.667 (option A). Option B is the accuracy at threshold 0.5 (3/5). Option D comes from building a trapezoid from only the single threshold-0.5 point (FPR 0.5, TPR 0.667), i.e. the mistake of computing AUC from hard labels."
+    },
+    "mlp-w7-q1": {
+      "question": "For a problem with 5 classes, how many binary classifiers does the One-vs-One strategy train?",
+      "options": [
+        "5",
+        "10",
+        "20",
+        "25"
+      ],
+      "explanation": "One classifier per unordered pair of classes: K(K − 1)/2 = 5 × 4/2 = 10 (option B). Option A is the One-vs-Rest count. Option C counts ordered pairs (A-vs-B and B-vs-A separately), but one model per pair is enough."
+    },
+    "mlp-w7-q2": {
+      "question": "Which of these tasks is multilabel classification?",
+      "options": [
+        "Sorting emails into spam or not-spam",
+        "Giving a handwritten digit image one class out of 0–9",
+        "Tagging a movie with several genres (action, comedy, drama) at once",
+        "Predicting a house price"
+      ],
+      "explanation": "In multilabel, several labels can be true for one sample at the same time; a movie can be both action and comedy (option C). Option B is multiclass: 10 classes but exactly one class per image. That is the most common confusion: 'many classes' does not mean multilabel, 'several labels at once' does. Option A is binary and option D is regression."
+    },
+    "mlp-w7-q3": {
+      "question": "A multinomial (softmax) model gave scores z = [3, 1, 0] for 3 classes. Roughly what is the probability of class 0?",
+      "options": [
+        "0.84",
+        "0.75",
+        "0.88",
+        "0.95"
+      ],
+      "explanation": "Softmax: e³ ≈ 20.09, e¹ ≈ 2.72, e⁰ = 1; sum ≈ 23.80. p₀ = 20.09/23.80 ≈ 0.84 (option A). Option B normalises the raw scores (3/4), which is not softmax. Option C forgets class 2's term (e⁰), and option D is just σ(3), the binary sigmoid."
+    },
+    "mlp-w7-q4": {
+      "question": "The 3-class confusion matrix is below (rows true class, columns predicted class, order A, B, C). What is the macro-averaged precision?",
+      "options": [
+        "0.750",
+        "0.733",
+        "0.753",
+        "0.723"
+      ],
+      "explanation": "Precision from columns: A = 8/(8 + 2 + 1) = 8/11 ≈ 0.727, B = 6/(1 + 6 + 3) = 0.600, C = 16/(1 + 2 + 16) = 16/19 ≈ 0.842. Simple mean ≈ 0.723 (option D). Option B is the macro recall computed from rows (0.8, 0.6, 0.8), option A is the accuracy (30/40), i.e. the micro average, and option C is the support-weighted precision."
+    },
+    "mlp-w7-q5": {
+      "question": "The confusion matrix of a single-label 3-class problem is below (rows true, columns predicted). What does `f1_score(y_true, y_pred, average='micro')` return?",
+      "options": [
+        "0.812",
+        "0.850",
+        "0.842",
+        "0.800"
+      ],
+      "explanation": "Micro averaging pools TP, FP and FN over all classes. In single-label multiclass every wrong prediction is an FP for one class and an FN for another, so micro P = micro R = micro F1 = accuracy = (40 + 30 + 100)/200 = 0.850 (option B). Option A is the macro F1 (the mean of per-class F1 0.8, 0.706, 0.930); option C is the macro precision and option D the macro recall."
+    },
+    "mlp-w7-q6": {
+      "question": "A multilabel problem has 3 samples and 4 labels. What are the Hamming loss and the subset accuracy?",
+      "options": [
+        "0.333, 0.167",
+        "0.167, 0.833",
+        "0.167, 0.333",
+        "0.667, 0.333"
+      ],
+      "explanation": "Total label entries 3 × 4 = 12. Wrong entries: the 3rd label in row 1 and the 2nd label in row 3 = 2. Hamming loss = 2/12 ≈ 0.167. Subset accuracy needs a whole row to match exactly: only row 2, so 1/3 ≈ 0.333 (option C). Option B writes 1 − Hamming loss (per-label accuracy 10/12) instead of subset accuracy; option A swaps the two."
+    },
+    "mlp-w8-q1": {
+      "question": "A linear SVM has weight vector w = (6, 8). What is the distance between the two margin lines (w·x + b = +1 and w·x + b = −1)?",
+      "options": [
+        "0.2",
+        "0.1",
+        "10",
+        "2"
+      ],
+      "explanation": "‖w‖ = √(36 + 64) = 10. The distance between the two margin lines is 2/‖w‖ = 2/10 = 0.2 (option A). Option B is 1/‖w‖, only the distance from the boundary to one margin line. Option C is just ‖w‖; a larger ‖w‖ means a smaller margin, not a larger one."
+    },
+    "mlp-w8-q2": {
+      "question": "In an `SVC` with an RBF kernel, gamma is made very large with everything else unchanged. What is most likely to happen?",
+      "options": [
+        "Each support vector's influence will spread far and the boundary will become almost linear",
+        "Regularisation will increase and the model will underfit",
+        "No effect on the boundary, only the training time changes",
+        "Each point's influence becomes very local, the boundary gets very wiggly and the overfitting risk rises"
+      ],
+      "explanation": "In K = exp(−γ‖x − x′‖²) a large γ drives the kernel to zero very quickly with distance, so each training point affects only its close neighbourhood; the boundary wraps around individual points and overfits (option D). Option A is the effect of a small gamma, the opposite. Option B is like lowering C, not an effect of gamma."
+    },
+    "mlp-w8-q3": {
+      "question": "For three training points of a linear SVM, the score f(x) = w·x + b and label y are: (y = +1, f = 2.5), (y = +1, f = 0.4), (y = −1, f = 0.3). What is the total hinge loss Σ max(0, 1 − y·f)?",
+      "options": [
+        "1.3",
+        "1.9",
+        "0.6",
+        "0.0"
+      ],
+      "explanation": "Point 1: max(0, 1 − 2.5) = 0 (correct side, outside the margin). Point 2: max(0, 1 − 0.4) = 0.6 (correct side but inside the margin). Point 3: y·f = −0.3, max(0, 1 + 0.3) = 1.3 (wrong side). Total = 1.9 (option B). Option A ignores the third point's label and takes 1 − 0.3 = 0.7 (0.6 + 0.7); option C counts only the margin violation and forgets the misclassified point."
+    },
+    "mlp-w8-q4": {
+      "question": "RBF kernel K(x, x′) = exp(−γ‖x − x′‖²), γ = 0.5. Roughly what is K for the points x = (1, 2) and x′ = (2, 0)?",
+      "options": [
+        "0.327",
+        "0.0067",
+        "0.082",
+        "0.607"
+      ],
+      "explanation": "‖x − x′‖² = (1 − 2)² + (2 − 0)² = 1 + 4 = 5. K = exp(−0.5 × 5) = exp(−2.5) ≈ 0.082 (option C). Option A uses the distance √5 instead of the squared distance (exp(−0.5 × 2.236)); option B forgets γ (exp(−5)); option D is just exp(−γ)."
+    },
+    "mlp-w8-q5": {
+      "question": "An RBF `SVC` has the features annual salary (2 lakh to 20 lakh rupees) and age (18 to 60). The model performs poorly. What is the best first step?",
+      "options": [
+        "Put `StandardScaler` before `SVC` in a Pipeline",
+        "Just make `C` very large",
+        "Drop the salary column because its values are large",
+        "Make `gamma` very large"
+      ],
+      "explanation": "In the RBF distance ‖x − x′‖² salary differences are in lakhs and age differences in tens, so age has almost no effect. Standardisation puts both on the same scale (option A). Options B and D are hyperparameter tweaks that do not fix the bad scaling; option C throws away a useful feature."
+    },
+    "mlp-w8-q6": {
+      "question": "A hard-margin linear SVM learned w = (1, 1), b = −2. Training points: P = (2, 1) class +1, Q = (3, 3) class +1, R = (0, 0) class −1, S = (1, 0) class −1. Which are the support vectors?",
+      "options": [
+        "Only P",
+        "P, Q and S",
+        "R and S",
+        "P and S"
+      ],
+      "explanation": "f = x₁ + x₂ − 2. y·f: P = 1·(3 − 2) = 1, Q = 1·(6 − 2) = 4, R = −1·(0 − 2) = 2, S = −1·(1 − 2) = 1. With a hard margin the support vectors are exactly the points on the margin (y·f = 1): P and S (option D). Option C assumes all class −1 points are support vectors, but R (y·f = 2) is outside the margin. Option B also includes Q, which is the farthest from the boundary."
+    },
+    "mlp-w9-q1": {
+      "question": "A node has 5 samples of class A and 5 of class B. What is the Gini impurity of this node?",
+      "options": [
+        "1.0",
+        "0.25",
+        "0.5",
+        "0"
+      ],
+      "explanation": "Gini = 1 − (0.5² + 0.5²) = 1 − 0.5 = 0.5 (option C), the maximum for two classes. Option A is this node's entropy (with log₂), not its Gini. Option D is the value for a pure node."
+    },
+    "mlp-w9-q2": {
+      "question": "A `DecisionTreeClassifier` with default settings gives 100% accuracy on training data and 72% on test data. What is the best fix?",
+      "options": [
+        "Put no limit on `max_depth` so the tree grows deeper",
+        "Scale the features with `StandardScaler`",
+        "Set `min_samples_leaf=1`",
+        "Limit the tree with `max_depth` or `min_samples_leaf`, or prune with `ccp_alpha`, choosing the value by CV"
+      ],
+      "explanation": "A big gap of 100% train vs 72% test is overfitting; you need hyperparameters that simplify the tree (depth, leaf size, pruning): option D. Options A and C are already the defaults (no depth limit and `min_samples_leaf=1` by default), so nothing changes. Option B has no effect on a tree, because splits are thresholds and scaling does not change their order."
+    },
+    "mlp-w9-q3": {
+      "question": "A node has 6 samples of class 1 and 2 of class 0. Roughly what is this node's entropy (log base 2)?",
+      "options": [
+        "0.375",
+        "0.811",
+        "0.562",
+        "1.000"
+      ],
+      "explanation": "p = 0.75 and 0.25. Entropy = −(0.75 log₂ 0.75 + 0.25 log₂ 0.25) = 0.75 × 0.415 + 0.25 × 2 ≈ 0.311 + 0.5 = 0.811 (option B). Option A is this node's Gini; option C is the entropy computed with the natural log (ln); option D is the entropy of a 50/50 node."
+    },
+    "mlp-w9-q4": {
+      "question": "A leaf of a `DecisionTreeRegressor` (squared error criterion) has three training targets [10, 12, 20]. What does this leaf predict, and what is the leaf's MSE (mean of squared errors)?",
+      "options": [
+        "14, 18.67",
+        "12, 22.67",
+        "14, 56.00",
+        "12, 18.67"
+      ],
+      "explanation": "The constant that minimises squared error is the mean: (10 + 12 + 20)/3 = 14. MSE = ((−4)² + (−2)² + 6²)/3 = (16 + 4 + 36)/3 ≈ 18.67 (option A). Option B uses the median (12), which is the answer for an absolute-error criterion. Option C is the sum of squared errors (56), not the mean."
+    },
+    "mlp-w9-q5": {
+      "question": "A parent node has 20 samples: 10 yes, 10 no. Two candidate splits: Split A → left [8 yes, 2 no], right [2 yes, 8 no]. Split B → left [10 yes, 4 no], right [0 yes, 6 no]. Which split does the Gini criterion choose, and what is its weighted child Gini?",
+      "options": [
+        "Split A, 0.320",
+        "Split A, 0.180",
+        "Split B, 0.286",
+        "Split B, 0.408"
+      ],
+      "explanation": "Split A: both children have Gini 1 − 0.64 − 0.04 = 0.32, weighted = 0.32. Split B: left Gini = 1 − (10/14)² − (4/14)² ≈ 0.408, right is pure (0); weighted = (14/20) × 0.408 + (6/20) × 0 ≈ 0.286. Split B, with the lower weighted Gini (bigger decrease), is chosen (option C). Option A assumes the symmetric-looking split is better; option D forgets the weights and writes only the left child's Gini."
+    },
+    "mlp-w9-q6": {
+      "question": "A classification tree (Gini) on 100 training samples: the root [50, 50] is split by feature f1 into left [45, 15] and right [5, 35]. Then the left node [45, 15] is split by feature f2 into [40, 0] and [5, 15]. No other splits. Roughly what is f1's value in `feature_importances_`?",
+      "options": [
+        "0.444",
+        "0.556",
+        "0.500",
+        "0.429"
+      ],
+      "explanation": "Gini: root 0.5, [45, 15] = 0.375, [5, 35] ≈ 0.219, [40, 0] = 0, [5, 15] = 0.375. f1's weighted decrease = 1.0 × 0.5 − 0.6 × 0.375 − 0.4 × 0.219 = 0.1875. f2's = 0.6 × 0.375 − 0.4 × 0 − 0.2 × 0.375 = 0.15. Normalise: 0.1875/(0.1875 + 0.15) ≈ 0.556 (option B). Option D forgets to weight a node's decrease by N_t/N (taking 0.25 for f2 gives 0.429), option A is f2's importance, and option C treats every split as equal."
+    },
+    "mlp-w10-q1": {
+      "question": "A bootstrap sample of size 1000 (with replacement) is drawn from a training set of 1000 rows. Roughly what is the probability that one particular row does NOT appear in the sample even once?",
+      "options": [
+        "0.632",
+        "0.368",
+        "0.500",
+        "0.000"
+      ],
+      "explanation": "On each draw the row is missed with probability 1 − 1/1000; over 1000 independent draws (1 − 1/1000)^1000 ≈ e^(−1) ≈ 0.368 (option B). This is the out-of-bag fraction. Option A is the reverse: 0.632 is the probability that the row appears at least once."
+    },
+    "mlp-w10-q2": {
+      "question": "What is the main difference between plain bagging of decision trees and a random forest?",
+      "options": [
+        "A random forest considers a random subset of features at each split, so the trees are less correlated",
+        "A random forest does not use bootstrap sampling at all",
+        "A random forest trains trees sequentially, each fixing the previous one's mistakes",
+        "A random forest is only for regression"
+      ],
+      "explanation": "Both build trees on bootstrap samples; a random forest picks the best split among only `max_features` random features at each split, which decorrelates the trees and lowers the variance of the average further (option A). Option C describes boosting, not a random forest; that is the most common mix-up. Option B is wrong because a random forest uses bootstrap by default."
+    },
+    "mlp-w10-q3": {
+      "question": "Three classifiers give P(class 1) = 0.45, 0.45 and 0.90 for a sample (threshold 0.5). What do hard voting and soft voting predict?",
+      "options": [
+        "Hard: 1, soft: 1",
+        "Hard: 0, soft: 0",
+        "Hard: 1, soft: 0",
+        "Hard: 0, soft: 1"
+      ],
+      "explanation": "Hard voting: labels 0, 0, 1 → majority 0. Soft voting: average probability (0.45 + 0.45 + 0.90)/3 = 0.60 > 0.5 → class 1 (option D). Trap: assuming both always agree; soft voting counts the third model's strong confidence, whereas hard voting gives the two weak 'no' votes equal weight."
+    },
+    "mlp-w10-q4": {
+      "question": "When `fit` is called on the `GridSearchCV` below (default `refit=True`), how many model fits happen in total, including the final refit?",
+      "options": [
+        "90",
+        "18",
+        "91",
+        "23"
+      ],
+      "explanation": "Combinations = 3 × 3 × 2 = 18. Each combination on 5 folds: 18 × 5 = 90 fits. `refit=True` fits the best combination once more on the full training data: 90 + 1 = 91 (option C). Option A forgets the refit, option B counts only combinations, and option D adds combinations and folds instead of multiplying."
+    },
+    "mlp-w10-q5": {
+      "question": "Gradient boosting regressor (squared error), targets y = [12, 18, 30]. The initial prediction F₀ = the training mean. The first tree puts samples 1 and 2 in one leaf and sample 3 in another; a leaf's value is the mean of the residuals in that leaf. Learning rate 0.1. What is sample 1's prediction after the first round?",
+      "options": [
+        "19.2",
+        "15.0",
+        "12.0",
+        "19.5"
+      ],
+      "explanation": "F₀ = (12 + 18 + 30)/3 = 20. Residuals: −8, −2, 10. The leaf (samples 1, 2) has value (−8 − 2)/2 = −5. F₁(sample 1) = 20 + 0.1 × (−5) = 19.5 (option D). Option A uses sample 1's own residual (−8), but a leaf has a single value; option B forgets the learning rate (20 − 5); option C assumes one round reaches the target."
+    },
+    "mlp-w10-q6": {
+      "question": "An ensemble has 100 models. Each model's prediction has variance 4 and any two models have correlation 0.25. What is the variance of the average of the 100 models?",
+      "options": [
+        "1.03",
+        "0.04",
+        "4.00",
+        "3.01"
+      ],
+      "explanation": "Var = ρσ² + (1 − ρ)σ²/B = 0.25 × 4 + 0.75 × 4/100 = 1 + 0.03 = 1.03 (option A). Option B treats the models as independent (σ²/B = 0.04); because of the correlation the variance cannot go below 1, however many models you add. Option D swaps ρ and 1 − ρ in the formula."
+    },
+    "mlp-w11-q1": {
+      "question": "A hidden layer's pre-activation values are z = [−1.5, 0, 2.3] and the activation is 'relu'. What is the layer's output?",
+      "options": [
+        "[−1.5, 0, 2.3]",
+        "[0.18, 0.5, 0.91]",
+        "[1.5, 0, 2.3]",
+        "[0, 0, 2.3]"
+      ],
+      "explanation": "ReLU = max(0, z): −1.5 → 0, 0 → 0, 2.3 → 2.3, i.e. [0, 0, 2.3] (option D). Option B is the output of the 'logistic' (sigmoid) activation, option C is the absolute value, and option A is the identity activation."
+    },
+    "mlp-w11-q2": {
+      "question": "What is the main reason to put `StandardScaler` before `MLPClassifier`?",
+      "options": [
+        "An MLP can only take integer inputs",
+        "Scaling reduces the number of hidden layers needed",
+        "In gradient-based training, features on different scales give unbalanced gradients and activations can saturate, so convergence is slow or poor",
+        "After scaling, the MLP starts making splits like a decision tree"
+      ],
+      "explanation": "An MLP's weights are updated by gradient descent (adam/sgd); a feature with a large range gives large gradients, no single learning rate suits all weights, and activations like sigmoid/tanh saturate. So scaling makes training stable and faster (option C). Option B is wrong: scaling does not change the network's size. Options A and D are simply false statements about MLPs."
+    },
+    "mlp-w11-q3": {
+      "question": "An `MLPClassifier(hidden_layer_sizes=(10,))` is built for 4 input features and 3 classes. How many trainable parameters (weights + biases) does the network have?",
+      "options": [
+        "83",
+        "70",
+        "17",
+        "80"
+      ],
+      "explanation": "Input → hidden: 4 × 10 weights + 10 biases = 50. Hidden → output (3 softmax units for 3 classes): 10 × 3 + 3 = 33. Total 83 (option A). Option B forgets all biases (40 + 30), option D forgets only the output-layer biases, and option C counts neurons (4 + 10 + 3), not parameters."
+    },
+    "mlp-w11-q4": {
+      "question": "A regression network: input x = (2, 1). Hidden layer with 2 ReLU units: h₁ = ReLU(1·x₁ − 1·x₂), h₂ = ReLU(−1·x₁ + 0.5·x₂). Output (identity): ŷ = 3h₁ + 2h₂ + 0.5. What is ŷ?",
+      "options": [
+        "0.5",
+        "3.5",
+        "6.5",
+        "3.0"
+      ],
+      "explanation": "h₁ = ReLU(2 − 1) = 1. h₂ = ReLU(−2 + 0.5) = ReLU(−1.5) = 0. ŷ = 3 × 1 + 2 × 0 + 0.5 = 3.5 (option B). Option A forgets to apply ReLU (keeping h₂ = −1.5 gives 3 − 3 + 0.5); option C flips h₂'s sign to +1.5; option D forgets the output bias 0.5."
+    },
+    "mlp-w11-q5": {
+      "question": "`MLPClassifier(early_stopping=True, validation_fraction=0.2)` is fitted on 5000 training rows. On how many rows are the gradient updates made?",
+      "options": [
+        "5000",
+        "1000",
+        "4000",
+        "4500"
+      ],
+      "explanation": "With early_stopping=True the validation_fraction part of the training data (0.2 × 5000 = 1000 rows) is held out and used only for the validation score. The weights are updated on the remaining 5000 − 1000 = 4000 rows (option C). Option A assumes the validation rows are also trained on; option B is the size of the validation set."
+    },
+    "mlp-w11-q6": {
+      "question": "`MLPClassifier(hidden_layer_sizes=(64, 32))` is fitted on a binary classification problem with 20 features. In the binary case the output layer is a single logistic unit. How many trainable parameters are there in total?",
+      "options": [
+        "3457",
+        "3490",
+        "3360",
+        "3424"
+      ],
+      "explanation": "Layer 1: 20 × 64 + 64 = 1344. Layer 2: 64 × 32 + 32 = 2080. Output: 32 × 1 + 1 = 33. Total 1344 + 2080 + 33 = 3457 (option A). Option B assumes two output units (softmax-like) (32 × 2 + 2 = 66); option C drops all biases; option D forgets the output layer (1344 + 2080)."
+    },
+    "mlp-w12-q1": {
+      "question": "PCA's `explained_variance_ratio_` = [0.50, 0.25, 0.15, 0.06, 0.04]. What is the minimum number of components needed to keep at least 85% of the variance?",
+      "options": [
+        "3",
+        "2",
+        "4",
+        "1"
+      ],
+      "explanation": "Cumulative: 0.50, 0.75, 0.90, 0.96, 1.00. It first exceeds 0.85 at 3 components (0.90), so 3 (option A). Option B (0.75) does not reach 85%; the trap is stopping after looking at only the first two large components. Option C is one more than needed."
+    },
+    "mlp-w12-q2": {
+      "question": "For a point, the mean distance to the other points in its own cluster is a = 2 and the mean distance to the nearest other cluster is b = 5. What is this point's silhouette value?",
+      "options": [
+        "−0.6",
+        "0.6",
+        "0.4",
+        "2.5"
+      ],
+      "explanation": "s = (b − a)/max(a, b) = (5 − 2)/5 = 0.6 (option B); positive and towards 1, so the point is in the right cluster. Option C is a/b, option D is b/a (a silhouette can never exceed 1), and option A flips the sign."
+    },
+    "mlp-w12-q3": {
+      "question": "1D points [1, 2, 4, 7, 8, 10], k = 2, initial centroids 2 and 8. After one k-means iteration (assign then update), what are the new centroids?",
+      "options": [
+        "2 and 8",
+        "1.5 and 7.25",
+        "5.33 and 5.33",
+        "2.33 and 8.33"
+      ],
+      "explanation": "Assign: 1, 2, 4 go to centroid 2 (for 4 the distances are 2 vs 4); 7, 8, 10 go to centroid 8. Update: (1 + 2 + 4)/3 ≈ 2.33 and (7 + 8 + 10)/3 ≈ 8.33 (option D). Option B wrongly puts point 4 in the other cluster; option A forgets the update step; option C is the overall mean of all points."
+    },
+    "mlp-w12-q4": {
+      "question": "k-means inertia for k = 1 to 6: [1000, 420, 180, 160, 145, 135]. Which k is most appropriate by the elbow method?",
+      "options": [
+        "k = 1",
+        "k = 2",
+        "k = 3",
+        "k = 6"
+      ],
+      "explanation": "Drops: 580 from 1→2, 240 from 2→3, then only 20, 15, 10. After k = 3 an extra cluster gains very little, so the elbow is k = 3 (option C). Option D has the lowest inertia, but inertia always falls as k grows, so minimum inertia is not the criterion for choosing k."
+    },
+    "mlp-w12-q5": {
+      "question": "Two clusters in 1D: P = {1, 2} and Q = {6, 10} (distance = |x − y|). What is the distance between P and Q under single linkage and under complete linkage (in that order)?",
+      "options": [
+        "9 and 4",
+        "4 and 9",
+        "6.5 and 6.5",
+        "4 and 6.5"
+      ],
+      "explanation": "All pair distances: |1 − 6| = 5, |1 − 10| = 9, |2 − 6| = 4, |2 − 10| = 8. Single linkage = minimum = 4, complete linkage = maximum = 9, so '4 and 9' (option B). Option A reverses the order. The 6.5 in option D is the average linkage (5 + 9 + 4 + 8)/4, not complete."
+    },
+    "mlp-w12-q6": {
+      "question": "1D clustering: cluster A = {1, 2, 4}, cluster B = {7, 8, 10}. Roughly what is the silhouette value of point 2?",
+      "options": [
+        "0.842",
+        "0.947",
+        "0.237",
+        "0.763"
+      ],
+      "explanation": "a = point 2's mean distance to the other points of its cluster = (|2 − 1| + |2 − 4|)/2 = 1.5. b = mean distance to the points of cluster B = (5 + 6 + 8)/3 ≈ 6.333. s = (6.333 − 1.5)/6.333 ≈ 0.763 (option D). Option A counts the point itself in a ((0 + 1 + 2)/3 = 1); option B uses the distance to the centroid instead of to the points (a = |2 − 2.333|); option C is 1 − s."
+    }
+  }
+}

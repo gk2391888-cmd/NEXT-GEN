@@ -1,0 +1,1452 @@
+{
+  "subjectId": "ba",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "KPIs and dashboards that drive decisions",
+      "summary": "Is week aap seekhoge ki business goal se sahi KPI kaise chunte hain, metric ko numerator, denominator aur time window ke saath precisely kaise define karte hain, KPI tree se revenue ko drivers me kaise todte hain, aur achha dashboard misleading dashboard se kaise alag hota hai.",
+      "readMinutes": 16,
+      "concepts": [
+        "**KPI vs metric**: har number KPI nahi hota. Metric koi bhi measurement hai (page views, calls, SKUs). **KPI (key performance indicator)** woh chhota set hai jo seedha business goal se juda ho, jiska ek owner ho, ek target ho, aur jiske hilne pe koi decision liya jaaye. Agar kisi number ke upar-neeche hone se koi action nahi badalta, toh woh dashboard ke top pe nahi hona chahiye.",
+        "**Leading vs lagging indicators**: lagging indicator result batata hai jab sab ho chuka (quarterly revenue, annual profit, last month ka churn). Leading indicator pehle hilta hai aur future result predict karta hai (free-trial sign-ups, sales pipeline value, cart additions, support ticket backlog). Achhe dashboard me dono hote hain: lagging se score pata chalta hai, leading se time pe action le sakte ho.",
+        "**Metric definition**: ek KPI ki poori definition me chaar cheezein hoti hain: numerator, denominator, time window aur grain (kis level pe: order, customer, store, din). Jaise 'conversion rate = orders / sessions, daily, sirf web channel'. 'Active user' ka matlab 30-day login hai ya 7-day purchase, yeh likhe bina do teams ke numbers kabhi match nahi karenge.",
+        "**Ratio of totals vs average of ratios**: overall conversion = Σ orders / Σ sessions hota hai, stores ke conversion % ka simple average nahi. Chhote store ka 15% aur bade store ka 2.5% barabar weight paayenge toh overall number jhootha bada ya chhota dikhega. Ratio KPI ko hamesha numerator aur denominator alag se sum karke roll-up karo.",
+        "**KPI tree (driver decomposition)**: Revenue = Sessions × Conversion rate × AOV (average order value = revenue / orders). Kyunki yeh product hai, growth factors multiply hote hain: (1 + g_revenue) = (1 + g_sessions)(1 + g_conversion)(1 + g_AOV). Isse pata chalta hai ki revenue kis driver ki wajah se badla aur kis team (marketing, product, pricing) ko action lena hai.",
+        "**Guardrail (counter) metrics aur Goodhart's law**: jab ek metric target ban jaata hai, log use game karne lagte hain ('when a measure becomes a target, it ceases to be a good measure'). Isliye har primary KPI ke saath ek counter-metric rakho: tickets closed ke saath reopen rate, delivery speed ke saath damaged-order rate, sign-ups ke saath 30-day retention.",
+        "**Dashboard design**: pehle decision-question likho ('kya hum is hafte target pe hain?'), phir chart. Top pe 5–8 KPI tiles, har tile ke saath context: target, pichhla period, last year same period, aur ek chhoti trend line. RAG (red / amber / green) thresholds pehle se tay karo, drill-down (region → store) do, aur data kab refresh hua woh timestamp dikhao.",
+        "**Misleading dashboards**: bar chart ka y-axis 0 se na shuru karna (chhota farq bahut bada dikhta hai), do alag scales wala dual-axis chart (koi bhi correlation dikha sakte ho), cumulative chart (girti daily sales bhi upar jaati line lagti hai), 10 slices wala pie ya 3D chart, aur **vanity metrics** jaise 'total app downloads till date' jo hamesha badhte hain par engagement ke baare me kuch nahi batate."
+      ],
+      "example": {
+        "problem": "Kaveri Mart (fictional online grocery). September: 2,00,000 sessions, 6,400 orders, revenue ₹30,40,000. October: 2,40,000 sessions, 7,200 orders, revenue ₹36,00,000. Conversion aur AOV nikaalo, revenue growth ko drivers me todo, aur batao dashboard pe kya flag hona chahiye.",
+        "steps": [
+          "Conversion = orders / sessions. September: 6,400 / 2,00,000 = 3.2%. October: 7,200 / 2,40,000 = 3.0%.",
+          "AOV = revenue / orders. September: 30,40,000 / 6,400 = ₹475. October: 36,00,000 / 7,200 = ₹500.",
+          "Revenue growth = 36,00,000 / 30,40,000 − 1 = 0.184, yaani 18.4%.",
+          "Driver factors: sessions × 1.20 (+20%), conversion × 3.0 / 3.2 = 0.9375 (−6.25%), AOV × 500 / 475 = 1.0526 (+5.26%).",
+          "Check: 1.20 × 0.9375 × 1.0526 = 1.184, jo revenue growth se match karta hai. Percentages add karna (20 − 6.25 + 5.26 = 19.0%) galat hai kyunki tree multiplicative hai.",
+          "Interpretation: headline revenue green hai, par conversion gir raha hai; shayad naya traffic paid campaign se aaya jo kam convert karta hai. Conversion tile ko amber karo aur channel-wise drill-down dekho.",
+          "**Answer**: conversion **3.2% → 3.0%**, AOV **₹475 → ₹500**, revenue **+18.4%** = traffic aur AOV ki wajah se, jabki **conversion −6.25%** dashboard pe flag hona chahiye."
+        ]
+      },
+      "mistakes": [
+        "Stores ya channels ke conversion % ka simple average leke overall conversion bolna. Fix: numerators aur denominators alag sum karo, phir divide karo (ratio of totals).",
+        "Bar chart ka axis 90 ya 95 se shuru karke chhote farq ko dramatic dikhana. Fix: bar chart hamesha 0 se; chhote changes dikhane hon toh line chart ya 'change in percentage points' wala tile use karo.",
+        "Sirf ek KPI ko target bana dena (jaise 'tickets closed per day'). Fix: har primary KPI ke saath ek guardrail metric rakho jo gaming pakad le (reopen rate, CSAT)."
+      ],
+      "revision": [
+        "KPI = goal se juda, owner + target + decision wala metric.",
+        "Lagging = result (revenue, churn); leading = pehle hilta hai (sign-ups, pipeline).",
+        "Ratio KPI roll-up: Σ numerator / Σ denominator, average of ratios nahi.",
+        "Revenue = sessions × conversion × AOV; growth factors multiply hote hain.",
+        "Har KPI ke saath context (target, last period) aur guardrail metric.",
+        "Bar axis 0 se, dual-axis aur cumulative charts se savdhaan."
+      ],
+      "questions": [
+        {
+          "id": "ba-w1-q1",
+          "question": "Ek subscription video app ka main goal agle quarter ka subscription revenue badhana hai. Inme se kaunsa **leading** indicator hai?",
+          "options": [
+            "Pichhle quarter ka total subscription revenue",
+            "Is hafte shuru hue free trials ki sankhya",
+            "Pichhle mahine cancel hue subscribers ki sankhya",
+            "Pichhle financial year ka net profit"
+          ],
+          "answer": 1,
+          "explanation": "Free trials aaj shuru hote hain aur kuch hafton baad paid subscriptions me badalte hain, isliye yeh future revenue pehle se batate hain: option B leading indicator hai. Trap: option C (pichhle mahine ke cancellations) bhi 'customer behaviour' lagta hai, par woh ho chuka result hai, yaani lagging; options A aur D bhi lagging financial results hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w1-q2",
+          "question": "Ek D2C brand ki website pe ek mahine me 1,60,000 sessions, 4,000 orders aur ₹18,00,000 revenue aaya. Conversion rate (orders / sessions) aur AOV kya hain?",
+          "options": [
+            "Conversion 4%, AOV ₹450",
+            "Conversion 2.5%, AOV ₹11.25",
+            "Conversion 40%, AOV ₹4,500",
+            "Conversion 2.5%, AOV ₹450"
+          ],
+          "answer": 3,
+          "explanation": "Conversion = 4,000 / 1,60,000 = 0.025 = 2.5%. AOV = revenue / orders = 18,00,000 / 4,000 = ₹450, isliye option D sahi hai. Trap: option B me AOV = revenue / sessions liya gaya (₹11.25 revenue per session hai, AOV nahi); options A aur C me decimal ya zero galat jagah lag gaya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w1-q3",
+          "question": "Ek retail chain ke teen stores ka ek din ka data: Store P: 50 purchases / 1,000 visitors, Store Q: 30 / 200, Store R: 20 / 800. Chain ka overall visitor-to-purchase conversion kya hai?",
+          "options": [
+            "5.0%",
+            "7.5%",
+            "15.0%",
+            "2.5%"
+          ],
+          "answer": 0,
+          "explanation": "Overall = Σ purchases / Σ visitors = (50 + 30 + 20) / (1,000 + 200 + 800) = 100 / 2,000 = 5.0%, yaani option A. Trap: option B teen store rates (5%, 15%, 2.5%) ka simple average hai, jo chhote Store Q ko bade stores jitna weight de deta hai; options C aur D sirf ek store ka rate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w1-q4",
+          "question": "Ek dashboard bar chart me Brand X ka customer satisfaction score 92 aur Brand Y ka 94 dikhata hai, par y-axis 90 se shuru hota hai. Chart me Y ka bar X se kitna lamba dikhta hai, aur asli farq kitna hai?",
+          "options": [
+            "Dikhne me bhi aur asli me bhi lagbhag 2.2% lamba",
+            "Dikhne me 2.2% lamba, asli me 2 guna",
+            "Dikhne me 2 guna lamba, asli me sirf lagbhag 2.2% zyada",
+            "Dikhne me 4 guna lamba, asli me 2 points zyada"
+          ],
+          "answer": 2,
+          "explanation": "Axis 90 se shuru hai, toh bar heights 92 − 90 = 2 aur 94 − 90 = 4 units hain: Y ka bar 2 guna dikhta hai. Asli ratio 94 / 92 = 1.022, yaani sirf lagbhag 2.2% zyada, isliye option C. Trap: option D me 4 ko ratio maan liya (4 sirf Y ke bar ki height hai); option A tab sahi hota jab axis 0 se shuru hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w1-q5",
+          "question": "Ek customer-support team ka naya KPI 'tickets closed per agent per day' hai aur iske saath bonus juda hai. Do mahine me yeh KPI 40% badh gaya, par complaints bhi badh gayi. Is problem ko pakadne ke liye sabse achha guardrail metric kaunsa hai?",
+          "options": [
+            "7 din ke andar reopen hone wale tickets ka percentage",
+            "Har agent ke total login hours",
+            "Har din aane wale naye tickets ki sankhya",
+            "Ek ticket close karne ka average time"
+          ],
+          "answer": 0,
+          "explanation": "Bonus ki wajah se agents tickets bina solve kiye close kar sakte hain (Goodhart's law). Reopen rate (option A) seedha pakadta hai ki closed ticket sach me resolve hua ya nahi, isliye yeh sahi guardrail hai. Trap: option D (average handle time) bhi quality-related lagta hai, par jaldi-jaldi close karne se yeh aur 'achha' dikhega, gaming pakdega nahi; options B aur C effort aur demand naapte hain, quality nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w1-q6",
+          "question": "Ek e-commerce site ka revenue = sessions × conversion rate × AOV. Agle mahine sessions 4% girne ka anumaan hai aur AOV same rahega. Revenue 10% badhane ke liye conversion rate ko lagbhag kitna (relative %) badhna hoga?",
+          "options": [
+            "14.0%",
+            "6.0%",
+            "14.6%",
+            "10.0%"
+          ],
+          "answer": 2,
+          "explanation": "Factors multiply hote hain: 0.96 × (1 + g) × 1 = 1.10, toh 1 + g = 1.10 / 0.96 = 1.1458, yaani g ≈ 14.6%, option C. Trap: option A percentages ko add/subtract karke aata hai (10 + 4 = 14%), jo multiplicative tree me galat hai; option B (10 − 4) sign bhi ulta le leta hai, aur option D sessions ki giravat ignore karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Segmentation, pivots and Simpson's paradox",
+      "summary": "Is week aap seekhoge ki data ko segments aur pivot tables me kaise todte hain, sahi denominator kaise chunte hain, overall number me mix effect aur rate effect ko kaise alag karte hain, aur Simpson's paradox jaise cases me summary kaise dhokha deti hai.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Segmentation**: customers ya transactions ko aise groups me baantna jinka behaviour alag ho: geographic (metro / tier-2), demographic (age band), behavioural (**RFM**: recency, frequency, monetary value) ya channel (app / web). Achha segment measurable, kaafi bada, baaki segments se alag, aur actionable hota hai, yaani us par alag offer ya process chal sake.",
+        "**Pivot table / group-by**: rows (jaise city), columns (jaise channel), values (jaise order value) aur aggregation (sum, mean, count, distinct count) chunke ek hi raw table se alag-alag summary banti hai. Aggregation sawaal se tay hoti hai: 'kitna revenue?' → sum; 'typical order kitna bada?' → mean ya median; 'kitne customers?' → distinct count, kyunki ek customer ke kai orders ho sakte hain.",
+        "**Row % vs column % vs total %**: ek hi cell ka percentage teen denominators se ban sakta hai. 'North ke kitne % customers Premium hain' ka denominator North ka row total hai; 'Premium customers me se kitne % North se hain' ka denominator Premium ka column total hai. Report me denominator hamesha naam se likho.",
+        "**Percent vs percentage points**: return rate 8% se 10% hua toh change **2 percentage points (pp)** hai, aur relative change 2 / 8 = 25% hai. Dono sahi hain par alag cheezein hain; 'returns 2% badhe' likhna ambiguous hai.",
+        "**Mix effect vs rate effect**: overall average = Σ (segment ka share × segment ka rate). Overall number do wajah se badal sakta hai: segment ke andar rate badla (rate effect), ya segments ke shares badle (mix effect). Isliye har segment ka AOV badhe tab bhi overall AOV gir sakta hai, agar sasta segment tezi se bada ho gaya.",
+        "**Simpson's paradox**: har segment me A, B se behtar ho, phir bhi combine karne pe B behtar dikhe. Yeh tab hota hai jab ek lurking variable (segment) dono se juda ho: kis group me kitne units gaye, aur outcome kitna aasaan tha. Hal: pehle causal story socho; agar segment ek confounder hai toh segment-wise compare karo ya standardise karo.",
+        "**Direct standardisation**: dono groups ke segment-rates ko ek hi common mix (jaise combined population ka mix) pe apply karo. Isse 'kis group ko aasaan cases mile' ka farq hat jaata hai aur rates fair tareeke se compare hote hain.",
+        "**Summaries kab mislead karti hain**: chhote denominators (4 me se 3 = 75% wala store top rank pe), skewed data me mean (kuch bade orders mean ko kheench lete hain; median bhi dikhao), survivorship bias (sirf abhi active customers ka average), aur ecological fallacy (state-level correlation ko individual customers pe laga dena)."
+      ],
+      "example": {
+        "problem": "Do delivery partners (fictional): SwiftKart: metro 720 / 800 on-time, tier-2 140 / 200 on-time. DakDost: metro 184 / 200 on-time, tier-2 600 / 800 on-time. Overall kaun behtar dikhta hai, segment-wise kaun behtar hai, aur common 50-50 mix pe standardised rates kya hain?",
+        "steps": [
+          "SwiftKart: metro 720 / 800 = 90%, tier-2 140 / 200 = 70%, overall 860 / 1000 = 86%.",
+          "DakDost: metro 184 / 200 = 92%, tier-2 600 / 800 = 75%, overall 784 / 1000 = 78.4%.",
+          "Segment-wise DakDost dono jagah aage hai (92 > 90, 75 > 70), par overall SwiftKart aage dikhta hai (86 > 78.4): yeh Simpson's paradox hai.",
+          "Wajah: DakDost ke 80% orders tier-2 me hain jahan on-time delivery mushkil hai, jabki SwiftKart ke sirf 20% orders tier-2 me hain. Segment (city type) ek confounder hai.",
+          "Combined mix: metro 1000 / 2000 = 50%, tier-2 50%. SwiftKart standardised = 0.5 × 90 + 0.5 × 70 = 80%.",
+          "DakDost standardised = 0.5 × 92 + 0.5 × 75 = 83.5%.",
+          "**Answer**: crude overall me SwiftKart (**86% vs 78.4%**) aage dikhta hai, par same mix pe DakDost **83.5% vs 80%** se behtar hai; partner choose karne ke liye segment-wise ya standardised comparison use karo."
+        ]
+      },
+      "mistakes": [
+        "Do groups ke overall rates compare karke decision lena bina dekhe ki unka segment mix alag hai. Fix: pehle segment-wise table banao; mix bahut alag ho toh standardised rates compare karo.",
+        "Percentage points aur percent ko mix karna ('conversion 4% se 5% hua, yaani 1% badha'). Fix: absolute change pp me likho aur relative change % me, dono saaf-saaf.",
+        "Chhote denominator wale segment ko top performer bata dena. Fix: rate ke saath hamesha n bhi dikhao aur ranking ke liye minimum sample size rakho."
+      ],
+      "revision": [
+        "Pivot = rows × columns × values × aggregation; aggregation sawaal se tay hoti hai.",
+        "Row % aur column % ke denominators alag hote hain; naam se likho.",
+        "8% → 10% = +2 pp = +25% relative.",
+        "Overall = Σ share × rate; overall change = rate effect + mix effect.",
+        "Simpson's paradox: segment-wise trend combine karne pe ulta; confounder dhoondo.",
+        "Standardisation: dono groups ke rates ko ek common mix pe lagao."
+      ],
+      "questions": [
+        {
+          "id": "ba-w2-q1",
+          "question": "Ek fashion e-tailer ka return rate is quarter 8% se badhkar 10% ho gaya. Is change ko sahi tarah se kaise describe karenge?",
+          "options": [
+            "2 percentage points, jo 2% relative increase bhi hai",
+            "25 percentage points ka increase",
+            "2 percentage points ka increase, yaani 25% relative increase",
+            "10 percentage points ka increase, yaani 125% relative increase"
+          ],
+          "answer": 2,
+          "explanation": "Absolute change = 10 − 8 = 2 percentage points; relative change = 2 / 8 = 0.25 = 25%, isliye option C. Trap: option A pp aur relative % ko same maan leta hai (2 pp ka relative matlab 25% hai, 2% nahi); option B relative 25% ko galti se pp me likh deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w2-q2",
+          "question": "Ek loyalty programme me 300 Gold members ka average monthly spend ₹800 hai aur 700 Silver members ka ₹400. Saare 1,000 members ka average monthly spend kya hai?",
+          "options": [
+            "₹520",
+            "₹600",
+            "₹680",
+            "₹1,200"
+          ],
+          "answer": 0,
+          "explanation": "Weighted average = (300 × 800 + 700 × 400) / 1,000 = (2,40,000 + 2,80,000) / 1,000 = ₹520, yaani option A. Trap: option B do segment averages ka simple average hai, jo bade Silver segment ko kam weight deta hai; option C weights ulte laga deta hai (0.7 × 800 + 0.3 × 400); option D do averages ka sum hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w2-q3",
+          "question": "Do sales reps ke lead conversions (fictional data): Asha: warm leads 45 / 60, cold leads 12 / 140. Bilal: warm leads 120 / 180, cold leads 1 / 20. Kaunsa statement sahi hai?",
+          "options": [
+            "Bilal dono lead types me Asha se behtar hai, isliye overall bhi aage hai",
+            "Asha overall aur dono lead types me, teeno jagah aage hai",
+            "Dono ka overall conversion barabar hai, kyunki dono ke 200 leads hain",
+            "Asha har lead type me behtar hai, par Bilal overall aage hai kyunki uske 90% leads warm hain"
+          ],
+          "answer": 3,
+          "explanation": "Asha: warm 75%, cold 8.6%, overall 57 / 200 = 28.5%. Bilal: warm 66.7%, cold 5%, overall 121 / 200 = 60.5%. Asha har segment me aage, par Bilal ko 180 / 200 = 90% warm (aasaan) leads mile, isliye overall Bilal aage: option D (Simpson's paradox). Trap: option A sirf overall number dekh ke maan leta hai ki Bilal har jagah behtar hai; option C equal lead count ko equal conversion samajh leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w2-q4",
+          "question": "Ek food brand (fictional) ke orders: pichhle saal App 600 orders AOV ₹500, Web 400 orders AOV ₹900. Is saal App 1,500 orders AOV ₹520, Web 500 orders AOV ₹950. Is saal ka overall AOV kya hai, aur pichhle saal ke ₹660 se tulna me kya hua?",
+          "options": [
+            "₹692; dono channels ka AOV badha, isliye overall bhi badha",
+            "₹627.50; dono channels ka AOV badha, phir bhi mix sasta App ki taraf shift hone se overall gira",
+            "₹735; overall AOV badha",
+            "₹660; overall AOV same raha"
+          ],
+          "answer": 1,
+          "explanation": "Is saal overall = (1,500 × 520 + 500 × 950) / 2,000 = (7,80,000 + 4,75,000) / 2,000 = ₹627.50, jo ₹660 se kam hai. App ka share 60% se 75% ho gaya: mix effect ne rate effect ko dabaa diya, isliye option B. Trap: option A pichhle saal ka 60:40 mix use karta hai (0.6 × 520 + 0.4 × 950 = 692); option C do AOVs ka simple average hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w2-q5",
+          "question": "Ek SaaS company ke 1,000 customers: North me 120 Premium + 280 Basic, South me 80 Premium + 520 Basic. Board poochta hai: 'Premium customers me se kitne % North se hain?'",
+          "options": [
+            "60%",
+            "30%",
+            "12%",
+            "40%"
+          ],
+          "answer": 0,
+          "explanation": "Sawaal ka denominator Premium column total hai: 120 + 80 = 200. North Premium = 120, toh 120 / 200 = 60%, option A. Trap: option B row % hai (North ke 400 customers me se 120 = 30% Premium), jo ulta sawaal answer karta hai; option C total % hai (120 / 1,000); option D South ka share hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w2-q6",
+          "question": "Do discount strategies (fictional) alag stores me test hui. Strategy P: urban stores me 30% redemption (900 customers), rural me 10% (100 customers). Strategy Q: urban 32% (200 customers), rural 12% (800 customers). Combined customer mix (urban 1,100, rural 900) pe standardise karke kaunsi strategy kitne percentage points se behtar hai?",
+          "options": [
+            "P, 12 percentage points se",
+            "Q, 2 percentage points se",
+            "Dono barabar hain",
+            "Q, 4 percentage points se"
+          ],
+          "answer": 1,
+          "explanation": "Common mix: urban 1,100 / 2,000 = 0.55, rural 0.45. P = 0.55 × 30 + 0.45 × 10 = 21%; Q = 0.55 × 32 + 0.45 × 12 = 23%. Q 2 pp se behtar hai, option B. Trap: option A crude overall rates (P 28%, Q 16%) compare karta hai, jo P ke urban-heavy mix ki wajah se biased hain; option D do segment gaps (2 + 2) ko jod deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Brand preference across cities: the chi-square test of independence",
+      "summary": "Is week aap seekhoge ki do categorical variables (jaise city aur brand) ke beech association ko contingency table aur chi-square test of independence se kaise test karte hain, kaun se cells result ko drive kar rahe hain yeh residuals se kaise dekhte hain, aur Cramér's V se association ki strength kaise naapte hain.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Contingency table (cross-tab)**: do categorical variables ke combinations ke counts, jaise rows = city, columns = preferred brand. Business sawaal: 'kya brand preference city pe depend karti hai?' **H₀**: city aur brand independent hain (har city me brand shares same hain). **H₁**: dono associated hain (kam se kam ek city ka brand mix alag hai).",
+        "**Expected count**: agar H₀ sach hai toh P(row aur column) = P(row) × P(column), isliye E = (row total × column total) / N. Expected counts woh table hai jo 'koi association nahi' wali duniya me dikhti; test observed (O) ko is E se compare karta hai.",
+        "**Chi-square statistic**: χ² = Σ (O − E)² / E, saare cells pe. Har cell ka **contribution** (O − E)² / E hota hai. **df = (r − 1)(c − 1)**. Test hamesha right-tailed hai: χ² critical value se bada (ya p-value < α) ho toh H₀ reject. Jaise df = 4 pe 5% critical value 9.488 hai.",
+        "**Conditions**: observations independent hon aur har customer sirf ek cell me gine, table me **counts** hon (percentages ya averages nahi), aur expected counts kaafi bade hon: rule of thumb, saare E ≥ 5 (ya kam se kam 80% cells me E ≥ 5 aur koi E < 1 nahi). Warna chhoti categories merge karo, ya 2×2 me Fisher's exact test use karo.",
+        "**Standardised (Pearson) residual** = (O − E) / √E. Iska sign batata hai cell expected se zyada (+) hai ya kam (−), aur |residual| > 2 wale cells association ko drive karte hain. Sirf 'significant' bolna kaafi nahi; manager ko batana hai ki kaunsi city kis brand ko over-index karti hai.",
+        "**Cramér's V (effect size)** = √(χ² / (N × (k − 1))), jahan k = min(rows, columns); 2×2 me yeh φ ban jaata hai. χ² sample size ke saath badhta hai: same proportions aur 4 guna data ⇒ 4 guna χ². V size-free hai: lagbhag 0.1 weak, 0.3 moderate, 0.5 strong association (rough guide).",
+        "**Independence vs homogeneity vs goodness-of-fit**: ek random sample ko do variables pe classify kiya → independence test. Har city se alag fixed sample liya → homogeneity test (arithmetic same). Ek hi variable ko kisi claimed distribution se compare karna (jaise 'teen brands ka share 50 : 30 : 20') → goodness-of-fit, df = categories − 1.",
+        "**Business reading**: association ka matlab causation nahi. Pune ka ek brand ko zyada pasand karna income, distribution reach ya local taste ki wajah se ho sakta hai. Result se action nikaalo (regional campaign, shelf allocation), par cause ko alag test ya experiment se confirm karo."
+      ],
+      "example": {
+        "problem": "Ek tea company (fictional) ne 400 customers se poocha ki woh kaunsa brand pasand karte hain. Chennai (150): Neelgiri Gold 70, Brahmaputra Leaf 50, Sahyadri Chai 30. Kolkata (120): 40, 60, 20. Pune (130): 40, 40, 50. 5% level pe test karo ki brand preference city se independent hai ya nahi (df = 4 pe critical value 9.488), aur batao kaun se cells result ko drive karte hain.",
+        "steps": [
+          "Column totals: Neelgiri 150, Brahmaputra 150, Sahyadri 100; N = 400.",
+          "Expected counts (row × column / N): Chennai 56.25, 56.25, 37.5; Kolkata 45, 45, 30; Pune 48.75, 48.75, 32.5.",
+          "Contributions: Chennai 3.36, 0.69, 1.50; Kolkata 0.56, 5.00, 3.33; Pune 1.57, 1.57, 9.42.",
+          "χ² = sum ≈ 27.01, df = (3 − 1)(3 − 1) = 4. 27.01 > 9.488, toh H₀ reject: brand preference city ke saath associated hai.",
+          "Standardised residuals: Pune–Sahyadri = (50 − 32.5) / √32.5 ≈ +3.07 aur Kolkata–Brahmaputra = (60 − 45) / √45 ≈ +2.24 sabse bade hain.",
+          "Cramér's V = √(27.01 / (400 × 2)) ≈ 0.18, yaani association real hai par weak-to-moderate.",
+          "**Answer**: **χ² ≈ 27.0 > 9.488**, H₀ reject; association mainly **Pune ka Sahyadri Chai** aur **Kolkata ka Brahmaputra Leaf** ki taraf jhukaav se aata hai, aur **V ≈ 0.18**."
+        ]
+      },
+      "mistakes": [
+        "Counts ki jagah percentages ya averages pe χ² lagana. Fix: hamesha raw frequencies use karo; percentages se χ² ki value N ke hisaab se galat aati hai.",
+        "Sirf 'p < 0.05, significant' bolke ruk jaana. Fix: residuals se batao kaunse cells drive kar rahe hain, aur Cramér's V se strength; bade N me tiny association bhi significant hoti hai.",
+        "Expected counts 5 se kam hone pe bhi test chala dena. Fix: rare categories merge karo (jaise 'Others'), ya chhoti 2×2 tables me Fisher's exact test lo."
+      ],
+      "revision": [
+        "H₀: dono categorical variables independent.",
+        "E = row total × column total / N.",
+        "χ² = Σ (O − E)² / E, df = (r − 1)(c − 1), right-tailed.",
+        "Standardised residual (O − E) / √E; |r| > 2 drive karta hai.",
+        "Cramér's V = √(χ² / (N(k − 1))), k = min(r, c).",
+        "Same proportions, 4 guna N ⇒ 4 guna χ², V same."
+      ],
+      "questions": [
+        {
+          "id": "ba-w3-q1",
+          "question": "Ek beverage company 4 cities aur 3 brands ki contingency table pe chi-square test of independence chalaati hai. Degrees of freedom kitne honge?",
+          "options": [
+            "6",
+            "12",
+            "11",
+            "5"
+          ],
+          "answer": 0,
+          "explanation": "df = (r − 1)(c − 1) = (4 − 1)(3 − 1) = 3 × 2 = 6, option A. Trap: option B cells ki sankhya (4 × 3) hai, aur option C cells − 1 hai jo goodness-of-fit wala formula hai, independence ka nahi; option D (4 − 1) + (3 − 1) ko jod deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w3-q2",
+          "question": "3 cities × 4 brands wali survey table me N = 400 hai. Kolkata ka row total 120 hai aur Brand B ka column total 150 hai. Independence ke under (Kolkata, Brand B) cell ka expected count kya hai?",
+          "options": [
+            "30",
+            "37.5",
+            "45",
+            "56.25"
+          ],
+          "answer": 2,
+          "explanation": "E = row total × column total / N = 120 × 150 / 400 = 45, option C. Trap: option A (120 / 4) maan leta hai ki chaaron brands barabar popular hain, jo H₀ nahi kehta; H₀ sirf itna kehta hai ki Kolkata ka brand mix overall mix jaisa hai. Option B (150 / 4) aur option D (150 × 150 / 400) galat totals use karte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w3-q3",
+          "question": "100 Delhi customers me se 60 Brand X aur 40 Brand Y pasand karte hain; 100 Mumbai customers me se 45 X aur 55 Y. Bina continuity correction ke chi-square test of independence (α = 0.05; critical values: df = 1 pe 3.841, df = 2 pe 5.991) ka sahi result kaunsa hai?",
+          "options": [
+            "χ² ≈ 2.26, H₀ reject nahi hota",
+            "χ² ≈ 4.51, H₀ reject: brand preference aur city associated hain",
+            "χ² ≈ 4.51, H₀ reject nahi hota kyunki 4.51 < 5.991",
+            "χ² ≈ 4.51, aur yeh prove karta hai ki city brand preference ka cause hai"
+          ],
+          "answer": 1,
+          "explanation": "Column totals X = 105, Y = 95; har row 100, N = 200. E = 52.5 (X) aur 47.5 (Y) dono rows me. Har cell me |O − E| = 7.5, toh χ² = 7.5² × (1/52.5 + 1/47.5) × 2 ≈ 4.51. df = 1, 4.51 > 3.841 ⇒ reject, option B. Trap: option C df = 2 ka critical value lagata hai (2×2 table me df = 1); option A sirf ek row ke cells jodta hai; option D association ko causation bana deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w3-q4",
+          "question": "Ek significant chi-square test (3×4 table) ke chaar cells ke observed (O) aur expected (E) counts neeche hain. Kaunsa cell χ² me sabse zyada contribute karta hai?",
+          "options": [
+            "Mumbai–Brand P: O = 130, E = 115",
+            "Delhi–Brand R: O = 48, E = 40",
+            "Jaipur–Brand Q: O = 12, E = 20",
+            "Lucknow–Brand S: O = 25, E = 15"
+          ],
+          "answer": 3,
+          "explanation": "Contribution = (O − E)² / E: option A 225 / 115 ≈ 1.96, option B 64 / 40 = 1.6, option C 64 / 20 = 3.2, option D 100 / 15 ≈ 6.67. Sabse bada option D hai. Trap: option A me |O − E| = 15 sabse bada hai, par bade E se divide hone pe contribution chhota ho jaata hai; χ² absolute gap nahi, gap ko expected ke relative naapta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w3-q5",
+          "question": "300 customers ki 3 × 4 table (3 income bands × 4 brands) pe χ² = 24 aaya. Cramér's V kya hai?",
+          "options": [
+            "0.04",
+            "0.283",
+            "0.20",
+            "0.163"
+          ],
+          "answer": 2,
+          "explanation": "k = min(3, 4) = 3, toh V = √(χ² / (N(k − 1))) = √(24 / (300 × 2)) = √0.04 = 0.20, option C. Trap: option A √ lena bhool jaata hai; option B (k − 1) bhool ke √(24 / 300) leta hai; option D k − 1 ki jagah k = 3 use karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w3-q6",
+          "question": "Survey 1: Delhi (100) me 55 X / 45 Y, Mumbai (100) me 45 X / 55 Y. Survey 2 me har cell 4 guna hai: Delhi 220 / 180, Mumbai 180 / 220. df = 1 pe 5% critical value 3.841 hai. Kaunsa statement sahi hai?",
+          "options": [
+            "Survey 1 me χ² = 2.0 (not significant), Survey 2 me χ² = 8.0 (significant), par φ (Cramér's V) dono me 0.1 hi hai",
+            "Dono surveys me χ² = 2.0, kyunki proportions same hain",
+            "Survey 2 me χ² = 8.0 aur φ bhi 4 guna hoke 0.4 ho gaya, yaani strong association",
+            "Survey 2 me χ² = 4.0 (√4 = 2 guna), significant"
+          ],
+          "answer": 0,
+          "explanation": "Survey 1: E = 50 har cell, χ² = 4 × 5² / 50 = 2.0 < 3.841. Survey 2: E = 200, χ² = 4 × 20² / 200 = 8.0 > 3.841. φ = √(χ² / N) = √(2 / 200) = √(8 / 800) = 0.1 dono me, isliye option A. Trap: option C maan leta hai ki effect size bhi N ke saath badhta hai; χ² badha kyunki evidence badha, association ki strength wahi hai. Option B bhool jaata hai ki χ² counts pe depend karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Comparing groups: two-sample tests, A/B tests and one-way ANOVA",
+      "summary": "Is week aap seekhoge ki do groups ke means ko Welch t-test se, do conversion rates ko two-proportion z-test se, aur teen ya zyada groups ko one-way ANOVA se kaise compare karte hain, multiple testing ka risk kaise control karte hain, aur effect size se business importance kaise judge karte hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Design pehle, test baad me**: outcome numeric hai (delivery time, basket size) ya binary (converted / not)? Groups independent hain (alag customers, alag stores) ya same units do baar measure hue (paired, jo week 9 me aayega)? Do groups ke means → two-sample t; do proportions → two-proportion z; teen ya zyada groups ke means → one-way ANOVA.",
+        "**Welch two-sample t-test**: t = (x̄₁ − x̄₂) / √(s₁²/n₁ + s₂²/n₂). Yeh equal variances assume nahi karta, aur df Welch–Satterthwaite formula se aata hai: df = (v₁ + v₂)² / (v₁²/(n₁ − 1) + v₂²/(n₂ − 1)), jahan vᵢ = sᵢ²/nᵢ. **Pooled t** tabhi lo jab SDs aur sample sizes milte-julte hon; business data me Welch safe default hai.",
+        "**A/B test for conversion (two-proportion z-test)**: H₀: p_A = p_B. Pooled p̂ = (x_A + x_B) / (n_A + n_B), SE = √(p̂(1 − p̂)(1/n_A + 1/n_B)), z = (p̂_B − p̂_A) / SE. '25% relative lift' sunne me bada lagta hai, par chhote base rate aur chhote n pe yeh noise bhi ho sakta hai. Test one-sided hai ya two-sided, yeh data dekhne se pehle tay karo.",
+        "**One-way ANOVA**: H₀: μ₁ = μ₂ = … = μ_k; H₁: kam se kam ek mean alag. Total variation todo: SST = SSB (between groups) + SSW (within groups). MSB = SSB / (k − 1), MSW = SSW / (N − k), **F = MSB / MSW**. Agar groups me asli farq nahi toh F ≈ 1; F critical value se bada ho toh H₀ reject.",
+        "**Multiple t-tests kyun nahi**: har test α = 0.05 pe ho aur m independent tests hon toh kam se kam ek false positive ka chance (family-wise error rate) = 1 − (1 − α)^m. 3 groups ke 3 pairwise tests me yeh lagbhag 14.3% ho jaata hai. ANOVA ek hi F-test se overall sawaal 5% pe answer karta hai.",
+        "**Post-hoc comparisons**: significant F sirf batata hai ki koi farq hai, kaunsa pair alag hai yeh nahi. Phir Tukey HSD ya **Bonferroni** (har pair ko α / m pe test karo, m = k(k − 1)/2) use karo. 4 groups ⇒ 6 pairs ⇒ har test 0.05 / 6 ≈ 0.0083 pe.",
+        "**Assumptions**: groups ke andar observations independent, har group lagbhag normal (n bada ho toh CLT madad karta hai), aur variances roughly equal (Levene's test; rule of thumb: sabse badi SD / sabse chhoti SD < 2). Variances bahut alag hon toh Welch ANOVA, aur heavy outliers ya ordinal data ho toh Kruskal–Wallis.",
+        "**Effect size**: η² = SSB / SST = outcome ke variation ka kitna hissa group membership explain karti hai; do groups ke liye Cohen's d = (x̄₁ − x̄₂) / pooled SD. Bade sample me tiny farq bhi significant ho jaata hai; rollout ka decision effect size aur cost se lo, sirf p-value se nahi."
+      ],
+      "example": {
+        "problem": "QuickBasket (fictional) do dark-store models test karta hai. Model A: 25 stores, average delivery time 38 min, s = 6. Model B: 20 stores, average 32 min, s = 10. 5% two-sided level pe Welch t-test se batao kya farq significant hai (df = 29 pe t critical 2.045).",
+        "steps": [
+          "v_A = 6² / 25 = 1.44; v_B = 10² / 20 = 5.00.",
+          "SE = √(1.44 + 5.00) = √6.44 ≈ 2.538.",
+          "t = (38 − 32) / 2.538 ≈ 2.36.",
+          "Welch df = 6.44² / (1.44² / 24 + 5² / 19) ≈ 29.6; conservative rehne ke liye 29 lo.",
+          "|t| = 2.36 > 2.045, toh H₀ (equal means) reject.",
+          "Note: SDs 6 vs 10 kaafi alag hain, isliye pooled t (jo t ≈ 2.49 deta) ki jagah Welch sahi choice hai.",
+          "**Answer**: **t ≈ 2.36 > 2.045**, Model B ka delivery time significantly kam hai; average farq **6 minute** hai, jo ab cost ke saath tolna hai."
+        ]
+      },
+      "mistakes": [
+        "Teen ya zyada groups me saare pairs pe alag-alag t-test chala dena. Fix: pehle ANOVA F-test, phir Tukey ya Bonferroni-adjusted post-hoc comparisons.",
+        "Significant F ka matlab 'saare groups ek doosre se alag hain' samajhna. Fix: F sirf itna kehta hai ki kam se kam ek mean alag hai; kaunse pairs alag hain yeh post-hoc batata hai.",
+        "A/B test me bada relative lift dekh ke winner declare karna. Fix: z-test (ya confidence interval) se check karo, aur sample size test shuru hone se pehle tay karo."
+      ],
+      "revision": [
+        "Welch t: SE = √(s₁²/n₁ + s₂²/n₂); unequal variances me safe.",
+        "Two-proportion z: pooled p̂ se SE, z = (p̂_B − p̂_A) / SE.",
+        "ANOVA: F = [SSB / (k − 1)] / [SSW / (N − k)].",
+        "FWER = 1 − (1 − α)^m; Bonferroni: α / m.",
+        "Significant F ⇒ kam se kam ek mean alag; post-hoc se pair dhoondo.",
+        "η² = SSB / SST, effect size ke saath decision lo."
+      ],
+      "questions": [
+        {
+          "id": "ba-w4-q1",
+          "question": "Ek analyst 3 store formats ke average bill ko compare karne ke liye 3 pairwise t-tests chalaata hai, har ek α = 0.05 pe. Agar tests independent maane jaayein aur asal me koi farq na ho, toh kam se kam ek false positive aane ki probability kya hai?",
+          "options": [
+            "5%",
+            "15%",
+            "0.0125%",
+            "Lagbhag 14.3%"
+          ],
+          "answer": 3,
+          "explanation": "FWER = 1 − (1 − 0.05)³ = 1 − 0.857375 ≈ 0.143, yaani lagbhag 14.3%, option D. Trap: option B 3 × 0.05 jod deta hai; yeh sirf upper bound (Bonferroni inequality) hai, exact probability nahi. Option A maan leta hai ki har test ka 5% poore analysis pe bhi 5% hi rehta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w4-q2",
+          "question": "Ek company 4 ad campaigns ka sales lift compare karti hai; har campaign 5 alag stores me chala (total 20 stores). One-way ANOVA ke F-statistic ke degrees of freedom kya hain?",
+          "options": [
+            "(4, 20)",
+            "(3, 16)",
+            "(3, 19)",
+            "(4, 16)"
+          ],
+          "answer": 1,
+          "explanation": "Between-groups df = k − 1 = 4 − 1 = 3; within-groups df = N − k = 20 − 4 = 16, isliye F(3, 16), option B. Trap: option C total df (N − 1 = 19) ko within df maan leta hai; options A aur D groups ki sankhya ko hi df le lete hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w4-q3",
+          "question": "4 pricing plans, har plan me 10 customers (N = 40). ANOVA me SSB = 120 aur SSW = 360 aaye. F(3, 36) ka 5% critical value 2.866 hai. Sahi conclusion kya hai?",
+          "options": [
+            "F ≈ 0.33, H₀ reject nahi hota",
+            "F = 12.0, H₀ reject",
+            "F = 4.0, H₀ reject: kam se kam ek plan ka mean baaki se alag hai",
+            "F = 4.0, H₀ reject: chaaron plans ke means ek doosre se alag hain"
+          ],
+          "answer": 2,
+          "explanation": "MSB = 120 / 3 = 40, MSW = 360 / 36 = 10, F = 40 / 10 = 4.0 > 2.866, toh reject; ANOVA sirf itna kehta hai ki kam se kam ek mean alag hai, isliye option C. Trap: option D wahi F leta hai par conclusion zyada kheench deta hai; kaunse pairs alag hain yeh post-hoc test batayega. Option B SSB ko df se divide karna bhool jaata hai (120 / 10), aur option A SSB / SSW leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w4-q4",
+          "question": "Ek checkout page A/B test: version A me 2,000 visitors se 120 orders, version B me 2,000 visitors se 150 orders. Pooled two-proportion z-test (two-sided, α = 0.05, critical value 1.96) ka sahi result kya hai?",
+          "options": [
+            "z ≈ 1.89; 5% two-sided level pe significant nahi",
+            "z ≈ 1.89; significant, kyunki relative lift 25% hai",
+            "z ≈ 2.67; significant",
+            "z ≈ 1.89; significant, kyunki 1.89 > 1.645"
+          ],
+          "answer": 0,
+          "explanation": "p̂_A = 0.06, p̂_B = 0.075, pooled p̂ = 270 / 4,000 = 0.0675. SE = √(0.0675 × 0.9325 × (1/2,000 + 1/2,000)) ≈ 0.00793. z = 0.015 / 0.00793 ≈ 1.89 < 1.96, isliye option A. Trap: option D one-sided critical value (1.645) laga deta hai jabki test two-sided tay tha; option C SE me sirf ek 1/n leta hai; option B lift ke size ko significance samajh leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w4-q5",
+          "question": "4 delivery partners ke ANOVA me F significant aaya. Ab saare pairwise comparisons Bonferroni correction ke saath karne hain, family-wise α = 0.05. Har pairwise test kis significance level pe hoga?",
+          "options": [
+            "0.0125",
+            "Lagbhag 0.0083",
+            "0.05",
+            "Lagbhag 0.0167"
+          ],
+          "answer": 1,
+          "explanation": "4 groups me pairs m = 4 × 3 / 2 = 6, toh har test α / m = 0.05 / 6 ≈ 0.0083 pe, option B. Trap: option A groups ki sankhya (4) se divide karta hai, pairs ki sankhya se nahi; option D 3 comparisons maan leta hai; option C correction hi nahi lagata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w4-q6",
+          "code": "Layout A: 10, 12, 11, 13\nLayout B: 14, 15, 13, 16\nLayout C: 12, 11, 13, 12",
+          "question": "Ek supermarket chain (fictional) ne 3 shelf layouts 12 stores me test kiye (har layout 4 stores). Weekly sales (₹ lakh) neeche diye hain. One-way ANOVA ka F aur η² kya hai, aur 5% pe (F(2, 9) critical = 4.256) decision kya hai?",
+          "options": [
+            "F ≈ 1.72, H₀ reject nahi; η² ≈ 0.63",
+            "F ≈ 7.75, H₀ reject; η² ≈ 1.72",
+            "F ≈ 15.5, H₀ reject; η² ≈ 0.63",
+            "F ≈ 7.75, H₀ reject; η² ≈ 0.63"
+          ],
+          "answer": 3,
+          "explanation": "Means 11.5, 14.5, 12; grand mean 12.667. SSB = 4 × (1.167² + 1.833² + 0.667²) ≈ 20.67. SSW = 5 + 5 + 2 = 12. MSB = 20.67 / 2 = 10.33, MSW = 12 / 9 = 1.333, F ≈ 7.75 > 4.256 ⇒ reject. η² = 20.67 / 32.67 ≈ 0.63, isliye option D. Trap: option C SSB ko df = 2 se divide karna bhool jaata hai; option A SSB / SSW ko F maan leta hai; option B wahi ratio η² ke roop me leta hai, jabki η² ka denominator SST hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Explaining stock-like returns with simple and multiple regression",
+      "summary": "Is week aap seekhoge ki stock returns ko market model (beta) se kaise explain karte hain, multiple regression me har coefficient ko 'baaki sab constant' rakh ke kaise padhte hain, coefficients pe t-test aur confidence interval kaise lagate hain, adjusted R² kyun chahiye, aur ek variable chhod dene se baaki coefficients kaise biased ho jaate hain.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Prices nahi, returns**: return rₜ = (Pₜ − Pₜ₋₁) / Pₜ₋₁. Prices time ke saath trend karte hain, isliye do trending price series ko regress karne pe bina kisi asli rishte ke bhi bada R² aa jaata hai (**spurious regression**). Returns ka mean aur spread zyada stable hota hai, isliye analysis returns pe karte hain.",
+        "**Market model**: Rᵢ = α + β·R_m + ε. Slope **β = Cov(Rᵢ, R_m) / Var(R_m)** batata hai ki market 1 percentage point hile toh stock average kitna hilta hai: β > 1 aggressive, β < 1 defensive. R² = stock ke variance ka market-explained (systematic) hissa; 1 − R² company-specific (idiosyncratic) risk hai jo diversification se ghatta hai.",
+        "**Multiple regression**: ŷ = b₀ + b₁x₁ + … + b_k x_k, OLS SSE = Σ(y − ŷ)² minimise karta hai; matrix form me b = (XᵀX)⁻¹Xᵀy. Har bⱼ ek **partial effect** hai: xⱼ 1 unit badhe aur baaki predictors constant rahein toh predicted y me average change. Yeh simple regression ke slope se alag ho sakta hai, kyunki ab doosre variables ka asar alag kar diya gaya hai.",
+        "**Coefficients pe inference**: t = bⱼ / SE(bⱼ), df = n − k − 1 (k = predictors). 95% CI = bⱼ ± t* × SE(bⱼ). 'β = 1 hai kya?' jaise sawaal ke liye t = (b − 1) / SE lo; default regression output hamesha H₀: β = 0 test karta hai.",
+        "**R² vs adjusted R²**: naya variable jodne pe R² kabhi nahi ghatta, chahe variable bekaar ho. **Adjusted R² = 1 − (1 − R²)(n − 1) / (n − k − 1)** extra predictors ki penalty lagata hai, isliye alag size ke models compare karne ke liye yeh behtar hai. Overall F-test (H₀: saare slopes 0): F = (R² / k) / ((1 − R²) / (n − k − 1)).",
+        "**Omitted variable bias (OVB)**: agar asli model y = β₀ + β₁x₁ + β₂x₂ + ε hai par x₂ chhod diya, toh x₁ ka simple slope average me β₁ + β₂·δ deta hai, jahan δ = x₂ ko x₁ pe regress karne ka slope. Bias tab hota hai jab chhoda gaya variable y ko affect kare (β₂ ≠ 0) aur x₁ se correlated ho (δ ≠ 0).",
+        "**Explain vs predict**: in-sample R² ko prediction power mat samjho. Returns me out-of-sample R² aksar bahut chhota hota hai; model ko time-ordered train/test split pe check karo (pehle ke months pe fit, baad ke months pe test). Coefficients ke units hamesha likho: 'per 1 percentage point market return', 'per ₹1 crore ad spend'."
+      ],
+      "example": {
+        "problem": "Nilgiri Motors (fictional) aur market index ke 6 monthly returns (%): R_m = 2, −1, 3, 0, 4, −2; Rᵢ = 6, −3, 3, −3, 5, −2. Market model ka β, α aur R² nikaalo, aur market +2% hone pe expected stock return batao.",
+        "steps": [
+          "Means: R̄_m = 6 / 6 = 1, R̄ᵢ = 6 / 6 = 1.",
+          "Market deviations: 1, −2, 2, −1, 3, −3 ⇒ Sxx = 1 + 4 + 4 + 1 + 9 + 9 = 28.",
+          "Stock deviations: 5, −4, 2, −4, 4, −3 ⇒ Sxy = 5 + 8 + 4 + 4 + 12 + 9 = 42, Syy = 86.",
+          "β = Sxy / Sxx = 42 / 28 = 1.5; α = 1 − 1.5 × 1 = −0.5.",
+          "R² = Sxy² / (Sxx × Syy) = 1764 / 2408 ≈ 0.73: stock ke return variance ka lagbhag 73% market se explain hota hai (toy data; asli monthly data me aksar kaafi kam hota hai).",
+          "Market +2% ⇒ R̂ᵢ = −0.5 + 1.5 × 2 = 2.5%.",
+          "**Answer**: **β = 1.5** (aggressive stock), **α = −0.5%**, **R² ≈ 0.73**, aur market +2% pe expected return **2.5%**."
+        ],
+        "code": "rm = [2, -1, 3, 0, 4, -2]\nri = [6, -3, 3, -3, 5, -2]\nn = len(rm)\nmx, my = sum(rm) / n, sum(ri) / n\nsxx = sum((x - mx) ** 2 for x in rm)\nsxy = sum((x - mx) * (y - my) for x, y in zip(rm, ri))\nsyy = sum((y - my) ** 2 for y in ri)\nbeta = sxy / sxx\nalpha = my - beta * mx\nprint(beta, alpha, round(sxy ** 2 / (sxx * syy), 3))   # 1.5 -0.5 0.733"
+      },
+      "mistakes": [
+        "Multiple regression ke coefficient ko simple correlation ki tarah padhna. Fix: har coefficient 'baaki predictors constant' wala partial effect hai; doosre variable jodne pe uski value badal sakti hai.",
+        "R² badhne ko model behtar hone ka saboot maanna. Fix: adjusted R² aur out-of-sample error dekho; bekaar variable bhi R² thoda badha deta hai.",
+        "Default t-test (H₀: β = 0) ko 'β = 1' wale sawaal ke liye use karna. Fix: jis value ke against test karna hai woh numerator me ghatao: t = (b − 1) / SE."
+      ],
+      "revision": [
+        "Returns pe regression, prices pe nahi (spurious regression).",
+        "β = Cov(Rᵢ, R_m) / Var(R_m); R² = systematic risk ka share.",
+        "bⱼ = partial effect, baaki predictors constant.",
+        "t = b / SE, df = n − k − 1; CI = b ± t* × SE.",
+        "Adj R² = 1 − (1 − R²)(n − 1) / (n − k − 1).",
+        "OVB: simple slope ≈ β₁ + β₂·δ."
+      ],
+      "questions": [
+        {
+          "id": "ba-w5-q1",
+          "question": "Ek stock ka market model R̂ᵢ = 0.2 + 1.3·R_m hai (dono % me). Agar agle mahine market return 2% ho, toh stock ka expected return kya hai?",
+          "options": [
+            "2.6%",
+            "2.8%",
+            "3.5%",
+            "1.5%"
+          ],
+          "answer": 1,
+          "explanation": "R̂ᵢ = 0.2 + 1.3 × 2 = 0.2 + 2.6 = 2.8%, option B. Trap: option A intercept bhool jaata hai (sirf 1.3 × 2); option C β ko multiply karne ki jagah jod deta hai (0.2 + 1.3 + 2); option D market return lagana hi bhool jaata hai (0.2 + 1.3).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w5-q2",
+          "question": "Ek bank stock ke monthly returns pe model: R̂ = 0.5 + 1.1·Market − 0.4·RateChange, jahan Market = market return (%) aur RateChange = policy rate me change (percentage points). −0.4 ka sahi interpretation kya hai?",
+          "options": [
+            "Market return constant rehte hue, policy rate 1 percentage point badhne pe stock ka predicted return average 0.4 percentage point kam hota hai",
+            "Policy rate badhne se stock ka return hamesha 0.4% girta hai, market chahe kuch bhi kare",
+            "Stock return aur rate change ka correlation −0.4 hai",
+            "Policy rate 1 percentage point badhne pe stock ka return 40% girta hai"
+          ],
+          "answer": 0,
+          "explanation": "Multiple regression ka coefficient partial effect hai: Market ko fixed rakh ke RateChange me 1 unit (1 pp) badhne pe predicted return me average −0.4 pp change, isliye option A. Trap: option C coefficient ko correlation samajh leta hai (slope aur correlation alag cheezein hain); option B 'average' aur 'baaki constant' dono shart hata deta hai; option D units galat padhta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w5-q3",
+          "question": "30 months ke data pe 3 predictors wala return model fit hua aur R² = 0.64 aaya. Adjusted R² kya hai?",
+          "options": [
+            "0.64",
+            "0.613",
+            "0.585",
+            "0.598"
+          ],
+          "answer": 3,
+          "explanation": "Adj R² = 1 − (1 − 0.64)(30 − 1) / (30 − 3 − 1) = 1 − 0.36 × 29 / 26 = 1 − 0.4015 ≈ 0.598, option D. Trap: option B denominator me n − k = 27 leta hai (intercept ka df bhool gaye); option C numerator me n = 30 leta hai (n − 1 ki jagah); option A penalty lagata hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w5-q4",
+          "question": "40 observations aur 2 predictors wale model me ek coefficient b = 0.85, SE = 0.30 hai. df = 37 pe two-sided 5% t critical = 2.026. Kaunsa statement sahi hai?",
+          "options": [
+            "t ≈ 0.35; coefficient significant nahi",
+            "t ≈ 2.83; significant; 95% CI = 0.85 ± 0.30 = (0.55, 1.15)",
+            "t ≈ 2.83; significant (H₀: β = 0 reject); 95% CI ≈ (0.24, 1.46)",
+            "t ≈ 2.83; significant nahi, kyunki 95% CI me 1 aata hai"
+          ],
+          "answer": 2,
+          "explanation": "t = 0.85 / 0.30 ≈ 2.83 > 2.026 ⇒ H₀: β = 0 reject. CI = 0.85 ± 2.026 × 0.30 = 0.85 ± 0.608 ≈ (0.24, 1.46), option C. Trap: option D 'CI me 1' ko 'CI me 0' samajh leta hai; CI me 1 hone ka matlab sirf itna hai ki β = 1 reject nahi hota. Option B t* se multiply karna bhool jaata hai, aur option A SE / b leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w5-q5",
+          "question": "Ek stock ke monthly returns ke liye: Cov(Rᵢ, R_m) = 18, Var(R_m) = 12, Var(Rᵢ) = 45 (units: %²). Market model ka β aur R² kya hai?",
+          "options": [
+            "β = 0.4, R² = 0.6",
+            "β = 1.5, R² ≈ 0.77",
+            "β ≈ 0.67, R² = 0.6",
+            "β = 1.5, R² = 0.6"
+          ],
+          "answer": 3,
+          "explanation": "β = Cov / Var(R_m) = 18 / 12 = 1.5. r = 18 / √(12 × 45) = 18 / 23.24 ≈ 0.775, aur R² = r² = 324 / 540 = 0.6, isliye option D. Trap: option B r ko hi R² maan leta hai (square karna bhool gaye); option A stock ka variance divide karta hai (18 / 45); option C ratio ulta leta hai (12 / 18).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w5-q6",
+          "question": "Ek auto stock ka asli model hai: R = 0.2 + 0.5·Market + 1.5·Sector + ε, jahan Sector = auto-sector index ka return. Sector ko Market pe regress karne pe slope 0.4 aata hai. Agar analyst Sector ko chhod ke sirf R ko Market pe regress kare, toh Market ka slope average me kitna aayega?",
+          "options": [
+            "0.5",
+            "1.1",
+            "2.0",
+            "0.9"
+          ],
+          "answer": 1,
+          "explanation": "Omitted variable bias: simple slope = β_Market + β_Sector × δ = 0.5 + 1.5 × 0.4 = 1.1, option B. Market ka slope sector ka asar bhi 'utha' leta hai kyunki dono correlated hain. Trap: option A maan leta hai ki variable chhodne se kuch nahi badalta; option C dono coefficients jod deta hai; option D δ ko seedha jod deta hai (0.5 + 0.4), β_Sector se multiply kiye bina.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Regression diagnostics: residuals, collinearity and influential points",
+      "summary": "Is week aap seekhoge ki regression fit karne ke baad residual plots se non-linearity, heteroscedasticity aur autocorrelation kaise pakadte hain, VIF se multicollinearity kaise naapte hain, aur outliers, high-leverage points aur influential points (Cook's distance) me kya farq hai.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Residual vs fitted plot** pehla diagnostic hai. Achhe model me residuals zero ke aas-paas random cloud jaise hote hain. **Curve** (U ya ∩ shape) ⇒ relation non-linear hai: x², log(x) ya alag functional form try karo. **Funnel** (fitted value badhne ke saath spread badhta hai) ⇒ heteroscedasticity.",
+        "**Heteroscedasticity**: error variance constant nahi hai, jaise bade stores ki sales me error bhi bada. Coefficients unbiased rehte hain, par unke standard errors (aur isliye t-tests, CIs) galat ho jaate hain. Remedies: y ka log lena (multiplicative relation ke liye natural), weighted least squares, ya heteroscedasticity-robust (White) standard errors.",
+        "**Independence aur Durbin–Watson**: time-ordered data me residuals aksar correlated hote hain (ek mahine ki galti agle mahine bhi). DW = Σ(eₜ − eₜ₋₁)² / Σeₜ², range 0–4: lagbhag 2 ⇒ no first-order autocorrelation, 2 se kaafi kam ⇒ positive autocorrelation, 2 se kaafi zyada ⇒ negative. Normality ko normal Q-Q plot se check karo; bade n me yeh sabse kam critical assumption hai.",
+        "**Multicollinearity**: predictors aapas me strongly correlated (jaise TV spend aur total media spend). Symptoms: overall F aur R² high, par individual t-tests insignificant; coefficients ke sign ulte ya data thoda badalne pe bahut hilte hain. Predictions theek reh sakti hain; problem coefficients ke interpretation me hai.",
+        "**VIF (variance inflation factor)**: VIFⱼ = 1 / (1 − Rⱼ²), jahan Rⱼ² = xⱼ ko baaki predictors pe regress karne ka R². SE(bⱼ) √VIFⱼ guna inflate hota hai. Rule of thumb: VIF > 5 dhyan do, > 10 serious. Remedies: ek variable hatao, variables combine karo (index / ratio), ya zyada data lao.",
+        "**Outlier vs leverage**: outlier ka y apne predicted value se door hai (bada residual; standardised residual |r| > 2 ya 3). **Leverage** hᵢᵢ batata hai ki point x-space me kitna door hai; simple regression me hᵢᵢ = 1/n + (xᵢ − x̄)² / Sxx. Average leverage p / n hota hai (p = parameters including intercept); hᵢᵢ > 2p / n high maana jaata hai.",
+        "**Influence aur Cook's distance**: influential point woh hai jise hatane se fitted line kaafi badal jaaye. Cook's Dᵢ = (eᵢ² / (p·MSE)) × hᵢᵢ / (1 − hᵢᵢ)², yaani residual aur leverage dono milke. Ek high-leverage point line ko apni taraf kheench leta hai, isliye uska residual chhota dikh sakta hai; isliye sirf residuals dekh ke influential points nahi pakde jaate. Dᵢ > 1 (ya 4 / n se bahut bada) ho toh investigate karo: data error hai, ya alag regime (jaise long-distance flat pricing)?"
+      ],
+      "example": {
+        "problem": "Ek delivery startup (fictional) ka cost (₹) vs distance (km): x = 1, 2, 3, 4, 5, 15; y = 30, 38, 44, 52, 58, 75. Saare points ke saath aur 15 km wale point ke bina slope nikaalo, aur 15 km point ka leverage aur Cook's D batao.",
+        "steps": [
+          "Saare 6 points: x̄ = 5, ȳ = 49.5, Sxx = 130, Sxy = 376 ⇒ slope = 376 / 130 ≈ 2.89, intercept ≈ 35.04.",
+          "15 km point ka leverage: h = 1/6 + (15 − 5)² / 130 = 0.167 + 0.769 ≈ 0.94; threshold 2p / n = 2 × 2 / 6 ≈ 0.67, toh bahut high leverage.",
+          "Uska residual = 75 − (35.04 + 2.89 × 15) ≈ −3.42, jo baaki residuals (−7.9 se 8.5) se chhota hai: line khud is point ki taraf khinch gayi hai.",
+          "MSE = SSE / (n − 2) ≈ 46.0. Cook's D = (3.42² / (2 × 46.0)) × 0.936 / (1 − 0.936)² ≈ 29, jo 1 se bahut bada hai.",
+          "Point hatane pe (pehle 5 points): x̄ = 3, Sxx = 10, Sxy = 70 ⇒ slope = 7.0, intercept 23.4.",
+          "Interpretation: short distances pe cost ≈ ₹7 per km badhta hai, par 15 km order lagbhag flat-rate jaisa hai. Ek hi model dono regimes ko mix karke misleading slope de raha tha.",
+          "**Answer**: slope **2.89 (saare points) vs 7.0 (bina 15 km)**; 15 km point ka **h ≈ 0.94** aur **Cook's D ≈ 29**, yaani highly influential; ise alag pricing regime ki tarah model karo, chupchaap delete mat karo."
+        ]
+      },
+      "mistakes": [
+        "Sirf bade residuals dhoond ke influential points pakadne ki koshish. Fix: leverage aur Cook's D bhi dekho; high-leverage point ka residual chhota hi dikhta hai kyunki line uski taraf khinchi hoti hai.",
+        "Insignificant t-tests dekh ke 'in variables ka koi asar nahi' bolna jab VIF bahut high ho. Fix: collinear variables ka joint F-test karo ya unhe combine karo; individual t sirf unique contribution test karta hai.",
+        "Outlier ko automatically delete karna. Fix: pehle check karo ki data error hai ya asli alag behaviour; delete kiya toh report me likho aur dono results dikhao."
+      ],
+      "revision": [
+        "Curve ⇒ non-linear; funnel ⇒ heteroscedasticity (SEs galat).",
+        "DW ≈ 2 theek; < 2 positive autocorrelation.",
+        "VIF = 1 / (1 − Rⱼ²); SE √VIF guna badhta hai.",
+        "Leverage h = 1/n + (x − x̄)² / Sxx; high agar > 2p / n.",
+        "Cook's D = residual + leverage; D > 1 investigate."
+      ],
+      "questions": [
+        {
+          "id": "ba-w6-q1",
+          "question": "Store-level sales regression ke residual vs fitted plot me residuals zero ke aas-paas hain, par fitted value badhne ke saath unka spread funnel ki tarah failta jaata hai. Yeh kis problem ka sign hai?",
+          "options": [
+            "Multicollinearity",
+            "Non-linearity",
+            "Heteroscedasticity",
+            "Perfect fit"
+          ],
+          "answer": 2,
+          "explanation": "Spread ka fitted value ke saath badhna non-constant error variance, yaani heteroscedasticity hai, option C; isse SEs aur t-tests unreliable ho jaate hain (fix: log y, WLS ya robust SE). Trap: option B ka sign curve/U-shape hota hai, funnel nahi; option A predictors ke aapas ke correlation ki problem hai jo residual plot ki shape se nahi dikhti.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w6-q2",
+          "question": "Ek demand model me 'digital ad spend' ko baaki predictors pe regress karne pe R² = 0.8 aata hai. Digital ad spend ka VIF kya hai?",
+          "options": [
+            "0.2",
+            "1.25",
+            "0.8",
+            "5"
+          ],
+          "answer": 3,
+          "explanation": "VIF = 1 / (1 − Rⱼ²) = 1 / (1 − 0.8) = 1 / 0.2 = 5, option D. Trap: option A tolerance (1 − Rⱼ²) hai, VIF nahi; option B 1 / Rⱼ² le leta hai; option C sirf Rⱼ² hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w6-q3",
+          "question": "Simple regression me 5 cities ka data hai, x (population, lakh) = 2, 4, 6, 8, 30. x = 30 wali city ka leverage hᵢᵢ kya hai, aur 2p / n rule (p = 2) se kya woh high-leverage hai?",
+          "options": [
+            "h ≈ 0.97; haan, kyunki 0.97 > 0.8",
+            "h ≈ 0.77; nahi, kyunki 0.77 < 0.8",
+            "h = 0.2; nahi, saare points ka leverage barabar hai",
+            "h ≈ 0.97; nahi, leverage sirf y ke bade residual se aata hai"
+          ],
+          "answer": 0,
+          "explanation": "x̄ = 50 / 5 = 10, Sxx = 64 + 36 + 16 + 4 + 400 = 520. h = 1/5 + (30 − 10)² / 520 = 0.2 + 0.769 ≈ 0.97. Threshold 2p / n = 4 / 5 = 0.8, toh high leverage: option A. Trap: option B 1/n wala term bhool jaata hai; option C sirf 1/n leta hai; option D leverage ko residual se confuse karta hai, jabki leverage sirf x pe depend karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w6-q4",
+          "question": "Ek sales model me TV spend aur total media spend dono predictors hain (correlation 0.95). Overall F-test bahut significant hai aur R² = 0.85, par dono variables ke individual t-tests insignificant hain. Sabse sahi explanation kya hai?",
+          "options": [
+            "Dono variables ka sales pe koi asar nahi hai, inhe hata do",
+            "Multicollinearity: dono ka information overlap karta hai, isliye individual SEs inflate ho gaye, jabki milke woh sales explain karte hain",
+            "Heteroscedasticity ki wajah se F-test galat hai",
+            "Model overfit hai kyunki R² 0.85 se zyada nahi hona chahiye"
+          ],
+          "answer": 1,
+          "explanation": "Jab predictors highly correlated hon, model ko pata nahi chalta ki effect kis variable ko de; SEs (√VIF guna) badh jaate hain aur individual t chhote ho jaate hain, jabki joint F aur R² high rehte hain: option B. Trap: option A individual insignificance ko 'koi effect nahi' padhta hai; joint F-test saaf batata hai ki dono milke important hain. Option C ki koi evidence nahi di gayi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w6-q5",
+          "question": "Ek predictor ka VIF = 9 hai. Agar woh predictor baaki predictors se uncorrelated hota (VIF = 1), uski tulna me uske coefficient ka standard error kitne guna hai?",
+          "options": [
+            "3 guna",
+            "9 guna",
+            "81 guna",
+            "1/9 guna (chhota)"
+          ],
+          "answer": 0,
+          "explanation": "VIF variance ko inflate karta hai; SE variance ka square root hai, isliye SE √9 = 3 guna, option A. Trap: option B VIF ko seedha SE pe laga deta hai (9 variance ka factor hai); option C VIF ko square kar deta hai; option D direction ulti kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w6-q6",
+          "question": "Monthly sales regression ke 6 consecutive residuals hain: 2, 1, −1, −2, −1, 1. Durbin–Watson statistic kya hai aur woh kya batata hai?",
+          "options": [
+            "≈ 0.92; koi problem nahi, kyunki DW 0 aur 4 ke beech hai",
+            "≈ 0.92; negative autocorrelation",
+            "≈ 0.92; positive autocorrelation: residuals ke runs hain, independence assumption toot rahi hai",
+            "≈ 3.08; negative autocorrelation"
+          ],
+          "answer": 2,
+          "explanation": "Differences: −1, −2, −1, 1, 2 ⇒ squares ka sum = 1 + 4 + 1 + 1 + 4 = 11. Σe² = 4 + 1 + 1 + 4 + 1 + 1 = 12. DW = 11 / 12 ≈ 0.92, jo 2 se kaafi kam hai ⇒ positive autocorrelation (residuals pehle positive, phir negative runs me): option C. Trap: option A sochta hai ki 0–4 range me hona hi theek hai, jabki ideal ~2 hai; option D 4 − DW le leta hai; option B direction ulti padhta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Pay analytics: dummy variables, interactions and mediation",
+      "summary": "Is week aap ek faculty-salary case ke through seekhoge ki categorical predictors ko dummy variables se regression me kaise daalte hain, reference category aur dummy trap kya hain, interaction term se 'alag groups ke alag slopes' kaise model karte hain, aur mediation (X → M → Y) se direct aur indirect effect kaise alag karte hain.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Case framing**: ek business school (fictional) pay-equity audit karna chahta hai: salary (₹ lakh / year) ko experience (years), rank (Assistant / Associate / Full professor), field aur gender se explain karna. Numeric predictors seedha jaate hain; categorical predictors ko pehle numbers me badalna padta hai.",
+        "**Dummy coding**: k categories wale variable ke liye **k − 1** dummies (0/1) banao; jo category chhoot jaati hai woh **reference category** hai. Rank ke liye Assoc = 1 agar Associate, Full = 1 agar Full; Assistant reference. Coefficient of Full = Full aur Assistant professors ki average salary ka farq, baaki predictors constant. Graph pe yeh parallel lines hain: dummy sirf intercept shift karta hai.",
+        "**Dummy variable trap**: intercept ke saath saari k dummies daal di toh Assist + Assoc + Full = 1 har row me, jo intercept column ke barabar hai: **perfect multicollinearity**, XᵀX invert nahi hota aur coefficients unique nahi rehte. Fix: ek dummy chhodo (ya intercept hatao).",
+        "**Reference badalna**: reference category badalne se coefficients badalte hain par predictions aur model fit bilkul same rehte hain. Do non-reference categories ka farq = unke coefficients ka difference (jaise Full − Assoc). Poore categorical variable ka effect test karna ho toh uske saare dummies pe ek saath partial F-test karo, individual t-tests pe nahi.",
+        "**Interaction (continuous × dummy)**: Salary = b₀ + b₁·Exp + b₂·Eng + b₃·(Exp × Eng). Non-Eng ka slope b₁, Eng ka slope b₁ + b₃; lines ab parallel nahi hain. b₂ sirf Exp = 0 pe gap hai, isliye kisi aur experience pe gap = b₂ + b₃·Exp. Interpretation aasaan karne ke liye Exp ko center karo (Exp − mean), taaki b₂ 'average experience pe gap' ban jaaye.",
+        "**Mediation (path idea)**: X → M → Y, jaise experience → publications → salary. Path a: M ko X pe regress karo; path b aur c′: Y ko X aur M dono pe regress karo. **Indirect effect = a × b**, **direct effect = c′**, aur linear OLS me total effect c = c′ + a·b. c′ ≈ 0 ho toh full mediation, warna partial. Indirect effect ka CI aajkal bootstrap se nikaalte hain.",
+        "**Bad controls**: mediator ko control karna galat sawaal ka answer de sakta hai. Agar gender promotion (rank) ko affect karta hai aur aap rank control karte ho, toh gender coefficient sirf 'same rank ke andar' gap dikhata hai, promotion wala gap chhup jaata hai. Pay-equity report me dono models (rank ke saath aur bina) dikhao, aur causal claims ke liye confounders ke baare me saaf assumptions likho."
+      ],
+      "example": {
+        "problem": "Deccan School of Business (fictional) ka fitted model: Salary = 12 + 0.6·Exp + 4·Assoc + 9·Full + 2.5·Finance (₹ lakh), jahan Assistant professor aur non-Finance field reference hain. (a) 10 saal experience wale Finance ke Associate professor, (b) 20 saal experience wale Marketing ke Full professor ki predicted salary nikaalo, aur (c) Full aur Associate ka gap batao.",
+        "steps": [
+          "(a) Exp = 10, Assoc = 1, Full = 0, Finance = 1.",
+          "Salary = 12 + 0.6 × 10 + 4 + 0 + 2.5 = 12 + 6 + 4 + 2.5 = 24.5.",
+          "(b) Exp = 20, Assoc = 0, Full = 1, Finance = 0 (Marketing reference group me hai).",
+          "Salary = 12 + 0.6 × 20 + 9 = 12 + 12 + 9 = 33.",
+          "(c) Full − Associate = 9 − 4 = 5 lakh, same experience aur field pe; dono coefficients Assistant ke relative hain, isliye gap unka difference hai.",
+          "Dhyan do: Full professor ke liye Assoc = 0 hai; dummies cumulative nahi hote, ek row me rank ka sirf ek hi dummy (ya koi nahi) 1 hota hai.",
+          "**Answer**: (a) **₹24.5 lakh**, (b) **₹33 lakh**, (c) Full aur Associate ka gap **₹5 lakh**."
+        ]
+      },
+      "mistakes": [
+        "Saari k categories ke dummies intercept ke saath daal dena. Fix: k − 1 dummies, aur report me reference category ka naam likho.",
+        "Interaction model me dummy ke coefficient ko 'har experience pe gap' padhna. Fix: gap = b₂ + b₃·Exp; b₂ sirf Exp = 0 pe gap hai.",
+        "Mediator (jaise rank) ko control karke 'gender gap nahi hai' conclude karna. Fix: total effect (bina mediator) aur direct effect (mediator ke saath) dono dikhao; farq indirect path hai."
+      ],
+      "revision": [
+        "k categories ⇒ k − 1 dummies; coefficient = reference se farq.",
+        "Saari k dummies + intercept ⇒ perfect multicollinearity.",
+        "Reference badlo: coefficients badlenge, predictions nahi.",
+        "Interaction: Eng ka slope = b₁ + b₃; gap = b₂ + b₃·Exp.",
+        "Mediation: indirect = a × b, total = c′ + a·b.",
+        "Mediator ko control karna 'bad control' ban sakta hai."
+      ],
+      "questions": [
+        {
+          "id": "ba-w7-q1",
+          "question": "Ek salary regression me 'region' variable ki 4 categories hain (North, South, East, West), aur model me intercept hai. Region ke liye kitne dummy variables chahiye?",
+          "options": [
+            "3",
+            "4",
+            "1",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "k categories ke liye k − 1 = 4 − 1 = 3 dummies, aur chhooti hui region reference banti hai: option A. Trap: option B (4 dummies) intercept ke saath dummy variable trap (perfect multicollinearity) bana deta hai; option C region ko ek hi 1–4 coded number maan leta hai, jo regions ke beech fake ordering aur equal spacing thop deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w7-q2",
+          "question": "Faculty salary model (₹ lakh) me experience aur rank control karne ke baad Female dummy (1 = female, 0 = male) ka coefficient −1.2 hai. Iska sahi interpretation kya hai?",
+          "options": [
+            "Female faculty ki salary male faculty se 1.2% kam hai",
+            "Same experience aur rank wale female faculty ki predicted salary male faculty se average ₹1.2 lakh kam hai",
+            "Har female faculty ki salary male se exactly ₹1.2 lakh kam hai",
+            "Gender aur salary ka correlation −1.2 hai"
+          ],
+          "answer": 1,
+          "explanation": "Dummy coefficient reference group (male) ke relative average farq hai, model ke baaki predictors (experience, rank) constant rakh ke: option B. Trap: option A units galat padhta hai (y ₹ lakh me hai, log me nahi, isliye % nahi); option C 'average' hata ke har individual pe exact gap laga deta hai; option D coefficient ko correlation samajhta hai (correlation −1 se kam ho bhi nahi sakta).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w7-q3",
+          "question": "Model: Salary = 12 + 0.6·Exp + 4·Assoc + 9·Full + 2.5·Finance (₹ lakh); reference: Assistant professor, non-Finance field. 15 saal experience wale Finance ke Full professor ki predicted salary kya hai?",
+          "options": [
+            "₹20.5 lakh",
+            "₹36.5 lakh",
+            "₹32.5 lakh",
+            "₹30.0 lakh"
+          ],
+          "answer": 2,
+          "explanation": "Full professor ke liye Full = 1, Assoc = 0, Finance = 1: 12 + 0.6 × 15 + 9 + 2.5 = 12 + 9 + 9 + 2.5 = 32.5, option C. Trap: option B Assoc ka 4 bhi jod deta hai, jaise rank dummies cumulative hon; option A intercept bhool jaata hai; option D Finance ka 2.5 chhod deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w7-q4",
+          "question": "Interaction model: Salary = 10 + 0.5·Exp + 3·Eng + 0.4·(Exp × Eng) (₹ lakh), jahan Eng = 1 engineering faculty ke liye. 10 saal experience pe Eng aur non-Eng faculty ki predicted salary me kitna gap hai, aur Eng ka experience slope kya hai?",
+          "options": [
+            "Gap ₹3 lakh har experience level pe; Eng slope 0.5",
+            "Gap ₹3.4 lakh; Eng slope 0.4",
+            "Gap ₹7 lakh; dono groups ka slope 0.5",
+            "Gap ₹7 lakh; Eng ka slope 0.9 lakh per year"
+          ],
+          "answer": 3,
+          "explanation": "Gap = b₂ + b₃·Exp = 3 + 0.4 × 10 = 7; Eng slope = b₁ + b₃ = 0.5 + 0.4 = 0.9, option D. Trap: option A b₂ = 3 ko har level ka gap maan leta hai, jabki interaction ki wajah se 3 sirf Exp = 0 pe gap hai; option B b₂ + b₃ jod deta hai bina Exp se multiply kiye; option C interaction ka slope pe asar bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w7-q5",
+          "question": "Ek analyst intercept ke saath Assistant, Associate aur Full, teeno rank dummies model me daal deta hai. Software 'singular matrix' error deta hai. Iski wajah kya hai?",
+          "options": [
+            "Sample size bahut chhota hai",
+            "Teeno dummies ka sum har row me 1 hai, jo intercept column ke barabar hai: perfect multicollinearity (dummy variable trap)",
+            "Rank aur salary me heteroscedasticity hai",
+            "Dummy variables regression me use hi nahi ho sakte"
+          ],
+          "answer": 1,
+          "explanation": "Har faculty exactly ek rank me hai, toh Assist + Assoc + Full = 1 = intercept column. Ek column baaki columns ka exact linear combination hai, isliye XᵀX singular hai: option B. Fix: ek rank (jaise Assistant) chhodo. Trap: option A lagta hai, par bade sample me bhi yeh exact linear dependence wahi rahegi; option C ka matrix inversion se lena-dena nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w7-q6",
+          "question": "Mediation analysis (fictional data): Publications = 2 + 1.5·Exp (path a). Salary = 10 + 0.9·Exp + 0.6·Publications (path c′ aur b). Experience ka indirect effect, total effect, aur mediated proportion kya hai?",
+          "options": [
+            "Indirect 0.6, total 1.5",
+            "Indirect 2.1, total 3.0",
+            "Indirect 0.9, total 1.8, lagbhag 50% effect publications ke through",
+            "Indirect 0.9, total 0.9: full mediation"
+          ],
+          "answer": 2,
+          "explanation": "Indirect = a × b = 1.5 × 0.6 = 0.9 lakh per year; total = c′ + a·b = 0.9 + 0.9 = 1.8; mediated share = 0.9 / 1.8 = 50%, option C. Direct effect 0.9 abhi bhi non-zero hai, isliye yeh partial mediation hai. Trap: option D direct effect ko ignore karke full mediation bol deta hai; option B a aur b ko multiply karne ki jagah jod deta hai; option A sirf b ko indirect maan leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Logistic regression for business classification decisions",
+      "summary": "Is week aap seekhoge ki churn ya loan default jaise yes/no outcomes ke liye logistic regression kyun use karte hain, odds, log-odds aur odds ratio ko kaise padhte hain, probability ko decision me badalne ke liye threshold kaise chunte hain, aur confusion matrix ke metrics (precision, recall, specificity) ko business cost ke saath kaise jodte hain.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Linear regression kyun nahi**: outcome binary (churn = 1/0) ho toh linear model ki predictions 0 se kam ya 1 se zyada aa sakti hain, aur error variance p(1 − p) pe depend karta hai. Humein ek aisa model chahiye jo hamesha 0 aur 1 ke beech probability de.",
+        "**Logistic model**: log-odds linear hai: ln(p / (1 − p)) = β₀ + β₁x₁ + … + β_k x_k = z, aur p = 1 / (1 + e^(−z)). z = 0 ⇒ p = 0.5; z bada positive ⇒ p → 1; z bada negative ⇒ p → 0. Coefficients maximum likelihood se estimate hote hain (OLS se nahi); significance Wald z-test se, aur fit deviance / AIC se judge hota hai.",
+        "**Odds aur odds ratio**: odds = p / (1 − p); p = 0.2 ⇒ odds = 0.25 ('1 ke against 4'). xⱼ me 1 unit badhne pe odds **e^βⱼ** guna ho jaate hain (baaki constant). β = 0.693 ⇒ odds ratio ≈ 2, yaani odds double, probability double nahi. Probability pe asar baseline pe depend karta hai: p ≈ 0.5 ke paas sabse zyada (lagbhag β·p(1 − p) per unit), extremes pe kam.",
+        "**Probability se decision**: model probability deta hai; action ke liye threshold chahiye (p > t ⇒ 'churn hoga' predict karo). Default 0.5 sirf tab theek hai jab dono galtiyon ki cost barabar ho aur classes balanced hon.",
+        "**Confusion matrix**: TP (positive predict, sach me positive), FP (positive predict, asal me negative), FN (negative predict, asal me positive), TN. **Accuracy** = (TP + TN) / N; **precision** = TP / (TP + FP) ('jinhe flag kiya unme kitne sahi'); **recall / sensitivity** = TP / (TP + FN) ('asli positives me se kitne pakde'); **specificity** = TN / (TN + FP); F1 = precision aur recall ka harmonic mean.",
+        "**Class imbalance**: agar sirf 2% loans default hote hain, toh 'koi default nahi karega' bolne wala useless model bhi 98% accurate hai, par uska recall 0 hai. Rare-event problems me accuracy ki jagah precision, recall, aur cost-based evaluation dekho.",
+        "**Cost-based threshold**: agar FP ki cost C_FP aur FN ki cost C_FN hai, toh p > C_FP / (C_FP + C_FN) pe positive action lena expected cost minimise karta hai. **ROC curve** har threshold pe recall vs (1 − specificity) plot karta hai; **AUC** = random positive ko random negative se zyada score milne ki probability (0.5 = random, 1 = perfect ranking).",
+        "**Validation aur leakage**: model ko time-ordered holdout data pe check karo, aur probabilities calibrated hain ya nahi (predicted 20% wale group me sach me lagbhag 20% events). Outcome ke baad bani information (jaise 'collections team ka call hua') predictor me daal di toh test pe fake-good performance milegi: yeh **data leakage** hai."
+      ],
+      "example": {
+        "problem": "Sangam Telecom (fictional) ka churn model: ln(p / (1 − p)) = −2.0 + 0.8·Complaints − 0.05·Tenure, jahan Complaints = pichhle 3 mahine ki complaints, Tenure = months. Ek customer ki 3 complaints aur 12 months tenure hai. Churn probability, ek extra complaint ka odds ratio, aur kya ₹200 ka retention offer dena chahiye (customer value ₹3,000; offer churners me se 30% ko rok leta hai)?",
+        "steps": [
+          "z = −2.0 + 0.8 × 3 − 0.05 × 12 = −2.0 + 2.4 − 0.6 = −0.2.",
+          "p = 1 / (1 + e^0.2) = 1 / (1 + 1.2214) ≈ 0.450; odds = 0.450 / 0.550 ≈ 0.82.",
+          "Ek extra complaint ⇒ odds × e^0.8 ≈ 2.23. 4 complaints pe p ≈ 0.646 ho jaata hai: probability 0.45 se 0.65 hui, double nahi hui, par odds 2.23 guna hue.",
+          "Offer ka expected benefit = P(churn) × value × save rate = 0.450 × 3,000 × 0.30 ≈ ₹405.",
+          "Expected benefit ₹405 > offer cost ₹200, toh is customer ko offer dena profitable hai (yeh maan ke ki offer sirf churners pe asar karta hai).",
+          "**Answer**: churn probability **≈ 0.45**, complaint ka **odds ratio ≈ 2.23**, aur offer **dena chahiye** (expected benefit ≈ ₹405 > ₹200)."
+        ]
+      },
+      "mistakes": [
+        "Odds ratio ko probability ka multiplier samajhna ('OR = 2 ⇒ churn probability double'). Fix: OR odds ko multiply karta hai; probability ka change baseline pe depend karta hai.",
+        "Imbalanced data pe sirf accuracy report karna. Fix: confusion matrix, precision, recall aur business cost dikhao; ek trivial 'sab negative' baseline se compare karo.",
+        "Hamesha 0.5 threshold use karna. Fix: FP aur FN ki cost se threshold tay karo, ya capacity (jaise 'collections team roz 200 calls kar sakti hai') ke hisaab se top-scored customers chuno."
+      ],
+      "revision": [
+        "ln(p / (1 − p)) = z; p = 1 / (1 + e^(−z)).",
+        "Odds = p / (1 − p); odds ratio = e^β per unit.",
+        "Precision = TP / (TP + FP); recall = TP / (TP + FN).",
+        "Specificity = TN / (TN + FP); rare events me accuracy misleading.",
+        "Cost threshold: p > C_FP / (C_FP + C_FN).",
+        "AUC = ranking quality; leakage se bacho."
+      ],
+      "questions": [
+        {
+          "id": "ba-w8-q1",
+          "question": "Ek credit model kehta hai ki ek applicant ke default karne ki probability 0.2 hai. Default ke odds kya hain?",
+          "options": [
+            "0.2",
+            "0.8",
+            "4.0",
+            "0.25"
+          ],
+          "answer": 3,
+          "explanation": "Odds = p / (1 − p) = 0.2 / 0.8 = 0.25, option D. Trap: option A probability ko hi odds maan leta hai; option C ratio ulta le leta hai (0.8 / 0.2 = 4, jo non-default ke odds hain); option B sirf 1 − p hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w8-q2",
+          "question": "Ek loan-default logistic model me 'pichhle 6 mahine me EMI miss ki' (dummy) ka coefficient 0.693 hai. Iska sahi interpretation kya hai?",
+          "options": [
+            "Default ki probability 0.693 badh jaati hai",
+            "Default ki probability double ho jaati hai",
+            "Baaki variables constant rakh ke, default ke odds lagbhag 2 guna ho jaate hain",
+            "Default ke odds 69.3% badhte hain"
+          ],
+          "answer": 2,
+          "explanation": "Odds ratio = e^0.693 ≈ 2.0, yaani EMI miss karne wale applicants ke default odds lagbhag double hain (baaki same), option C. Trap: option B odds ratio ko probability ratio samajh leta hai; probability ka change baseline pe depend karta hai. Option D β ko seedha % change maan leta hai (e^β nahi liya); option A coefficient ko probability ka change samajhta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w8-q3",
+          "question": "Ek churn model: ln(p / (1 − p)) = −3 + 0.04·(monthly data usage in GB). 50 GB use karne wale customer ki churn probability kya hai?",
+          "options": [
+            "≈ 0.731",
+            "≈ 0.269",
+            "−1",
+            "≈ 0.368"
+          ],
+          "answer": 1,
+          "explanation": "z = −3 + 0.04 × 50 = −1. p = 1 / (1 + e^1) = 1 / (1 + 2.718) ≈ 0.269, option B. Trap: option A sign galat leta hai (1 / (1 + e^(−1)) = 0.731, yaani z = +1 ki probability); option C log-odds ko hi probability maan leta hai (probability negative nahi ho sakti); option D e^(−1) hai, jo odds (0.368) hain, probability nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w8-q4",
+          "question": "Ek fraud model ke 1,000 transactions ke test pe: TP = 80, FN = 20, FP = 120, TN = 780. Precision aur recall kya hain?",
+          "options": [
+            "Precision 0.40, recall 0.80",
+            "Precision 0.80, recall 0.40",
+            "Precision 0.86, recall 0.80",
+            "Precision 0.40, recall 0.87"
+          ],
+          "answer": 0,
+          "explanation": "Precision = TP / (TP + FP) = 80 / 200 = 0.40; recall = TP / (TP + FN) = 80 / 100 = 0.80, option A. Matlab model 80% frauds pakadta hai, par flag kiye gaye transactions me sirf 40% sach me fraud hain. Trap: option B dono formulas ulat deta hai; option C accuracy (860 / 1,000) ko precision maan leta hai; option D specificity (780 / 900 ≈ 0.87) ko recall maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w8-q5",
+          "question": "Ek NBFC ke portfolio me sirf 2% loans default hote hain. Ek 'model' har applicant ko 'default nahi karega' predict karta hai. Is model ke baare me kya sahi hai?",
+          "options": [
+            "Accuracy 98% hai, isliye yeh achha model hai",
+            "Accuracy 2% aur recall 100% hai",
+            "Accuracy 98% hai par recall 0 hai: ek bhi defaulter nahi pakda",
+            "Precision 98% aur recall 98% hai"
+          ],
+          "answer": 2,
+          "explanation": "Saare predictions negative hain: 98% sahi (TN), isliye accuracy 98%; par TP = 0, toh recall = 0 / (0 + FN) = 0, option C. Imbalanced data me accuracy dhokha deti hai. Trap: option A sirf accuracy dekhta hai; option B positive aur negative class ulat deta hai; option D precision define hi nahi hota jab koi positive prediction hi na ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w8-q6",
+          "question": "Ek lender ke liye ek defaulter ko loan de dena (FN) ₹50,000 ka nuksaan hai, aur ek achhe applicant ko reject karna (FP) ₹5,000 ka khoya hua profit hai. Expected cost minimise karne ke liye default probability ke kis threshold se upar application reject karni chahiye?",
+          "options": [
+            "≈ 0.09",
+            "0.5",
+            "≈ 0.91",
+            "0.10"
+          ],
+          "answer": 0,
+          "explanation": "Reject karne ki expected cost = (1 − p) × 5,000; approve karne ki = p × 50,000. Reject tab jab p × 50,000 > (1 − p) × 5,000, yaani p > 5,000 / (5,000 + 50,000) ≈ 0.091, option A. Trap: option B default 0.5 hai jo dono costs ko barabar maanta hai; option C ratio ulta le leta hai (50,000 / 55,000); option D denominator me sirf C_FN leta hai (5,000 / 50,000).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Repeated ad exposure: within-subject designs and repeated-measures ANOVA",
+      "summary": "Is week aap seekhoge ki jab same customers ko kai conditions (jaise ad ko 1, 2, 3 baar dekhna) me measure karte hain toh within-subject design kyun zyada powerful hai, paired t-test aur repeated-measures ANOVA kaise karte hain, aur order effects, carryover aur sphericity jaise issues ko kaise handle karte hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Between- vs within-subject design**: between-subject me har participant sirf ek condition dekhta hai (alag log, alag groups). **Within-subject (repeated measures)** me har participant saari conditions dekhta hai, jaise same 40 viewers ek ad ko 1, 2 aur 3 exposures ke baad rate karte hain. Har participant apna khud ka control ban jaata hai.",
+        "**Power kyun badhti hai**: log aapas me bahut alag hote hain (koi har ad ko 8/10 deta hai, koi 4/10). Between design me yeh person-to-person variation error me chala jaata hai. Within design me hum har person ka apna average level alag kar dete hain, isliye error chhota, F bada, aur kam participants me hi effect dikh jaata hai.",
+        "**Paired t-test** (2 conditions): har person ka difference dᵢ = after − before nikaalo, phir t = d̄ / (s_d / √n), df = n − 1. Yeh do 'independent' samples ka test nahi hai; same logon ke do measurements correlated hote hain, aur paired test isi correlation ka fayda uthata hai.",
+        "**Repeated-measures ANOVA** (k ≥ 2 conditions, n subjects): SST = SS_subjects + SS_conditions + SS_error. SS_conditions = n × Σ(condition mean − grand mean)², SS_subjects = k × Σ(subject mean − grand mean)², SS_error = baaki. **F = [SS_conditions / (k − 1)] / [SS_error / ((k − 1)(n − 1))]**. SS_subjects ko error se nikaal diya jaata hai, yahi fark hai.",
+        "**Sphericity**: RM-ANOVA assume karta hai ki har pair of conditions ke differences ka variance lagbhag barabar ho. Teen ya zyada conditions me yeh toote toh F-test zyada 'liberal' ho jaata hai; software Mauchly's test aur Greenhouse–Geisser correction (df ko ε < 1 se multiply karna) deta hai. 2 conditions me sphericity apne aap satisfy hoti hai.",
+        "**Order effects aur carryover**: same log baar-baar measure honge toh fatigue, learning ya pehli condition ka asar agli pe reh sakta hai. **Counterbalancing** (alag participants ko alag order, jaise Latin square), conditions ke beech gap (washout), aur jahan carryover unavoidable ho wahan between design behtar hai.",
+        "**Ad repetition ka business pattern (wear-in / wear-out)**: shuru me repetition se recall aur liking badhti hai (wear-in), par ek point ke baad irritation se liking girne lagti hai (wear-out), yaani aksar inverted-U shape. RM-ANOVA ke baad post-hoc / trend contrasts se dekhte hain ki peak kis exposure level pe hai, aur media plan me frequency cap wahi set karte hain."
+      ],
+      "example": {
+        "problem": "Megha Detergent (fictional) ka ad 4 participants ne 1, 2 aur 3 exposures ke baad liking scale (1–10) pe rate kiya. P1: 5, 7, 6; P2: 3, 5, 5; P3: 6, 8, 7; P4: 4, 6, 6. RM-ANOVA F nikaalo (F(2, 6) critical = 5.143), aur compare karo agar yahi data galti se 12 alag logon ka maan ke one-way ANOVA kiya jaata (F(2, 9) critical = 4.256).",
+        "steps": [
+          "Grand mean = 68 / 12 ≈ 5.667. Condition means: 4.5, 6.5, 6.0. Subject means: 6, 4.33, 7, 5.33.",
+          "SST = Σ(x − 5.667)² ≈ 20.67. SS_conditions = 4 × [(4.5 − 5.667)² + (6.5 − 5.667)² + (6 − 5.667)²] ≈ 8.67.",
+          "SS_subjects = 3 × [(6 − 5.667)² + (4.33 − 5.667)² + (7 − 5.667)² + (5.33 − 5.667)²] ≈ 11.33.",
+          "SS_error = 20.67 − 8.67 − 11.33 ≈ 0.67; df = (3 − 1)(4 − 1) = 6.",
+          "F = (8.67 / 2) / (0.67 / 6) = 4.33 / 0.111 ≈ 39.0 > 5.143 ⇒ exposure level ka effect significant.",
+          "Galat between-subject analysis: SSW = SS_subjects + SS_error = 12, df = 9, MSW = 1.333, F = 4.33 / 1.333 ≈ 3.25 < 4.256 ⇒ significant nahi dikhta.",
+          "**Answer**: RM-ANOVA **F ≈ 39.0** (significant); wahi data independent maan ke **F ≈ 3.25** (not significant). Person-to-person variation (SS_subjects = 11.33) hata dene se test kaafi zyada powerful ho gaya. Liking 2 exposures pe peak karke thodi girti hai: wear-out ka hint."
+        ]
+      },
+      "mistakes": [
+        "Same participants ke before/after data pe two-sample (independent) t-test chalaana. Fix: paired t-test ya RM-ANOVA lo; independent test correlation ignore karta hai aur power kho deta hai.",
+        "Saare participants ko conditions ek hi order me dikhana. Fix: counterbalance karo, warna order effect aur condition effect mix ho jaate hain.",
+        "Teen ya zyada conditions me sphericity check kiye bina uncorrected F report karna. Fix: Mauchly's test dekho aur zaroorat ho toh Greenhouse–Geisser corrected p-value report karo."
+      ],
+      "revision": [
+        "Within-subject: har person saari conditions; khud ka control.",
+        "Paired t = d̄ / (s_d / √n), df = n − 1.",
+        "SST = SS_subjects + SS_conditions + SS_error.",
+        "RM-ANOVA df = (k − 1, (k − 1)(n − 1)).",
+        "Sphericity toote ⇒ Greenhouse–Geisser correction.",
+        "Counterbalancing se order effects control; ad repetition aksar inverted-U."
+      ],
+      "questions": [
+        {
+          "id": "ba-w9-q1",
+          "question": "Ek FMCG company 40 customers ko teen packaging designs dikhati hai aur har customer teeno designs ko 1–10 pe rate karta hai. Yeh kis tarah ka design hai?",
+          "options": [
+            "Between-subject design, 3 independent groups",
+            "Within-subject (repeated-measures) design",
+            "Cross-sectional observational survey jisme koi condition nahi",
+            "Matched-pairs design with 2 groups"
+          ],
+          "answer": 1,
+          "explanation": "Har customer teeno conditions (designs) dekhta hai, toh har design ke ratings same logon se aate hain: within-subject (repeated-measures) design, option B. Trap: option A tab hota jab 40 customers ko teen alag groups me baant ke har group ko ek design dikhate; option D sirf 2 conditions aur alag-alag matched logon pe lagta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w9-q2",
+          "question": "10 participants ko ek ad 4 alag frequencies pe dikhaya gaya aur har frequency ke baad recall measure hua. Repeated-measures ANOVA ke F-statistic ke degrees of freedom kya hain?",
+          "options": [
+            "(3, 36)",
+            "(4, 40)",
+            "(3, 27)",
+            "(3, 9)"
+          ],
+          "answer": 2,
+          "explanation": "Conditions df = k − 1 = 3; error df = (k − 1)(n − 1) = 3 × 9 = 27, toh F(3, 27), option C. Trap: option A independent one-way ANOVA ka df (N − k = 40 − 4 = 36) leta hai, jo subjects ka variation error me hi rehne deta hai; option D sirf subjects ka df (n − 1) leta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w9-q3",
+          "question": "6 customers ka purchase intent (1–10) ad dekhne se pehle aur baad me measure hua. Har customer ke liye (after − before) differences: 2, 1, 3, 0, 2, 4. Paired t-test (two-sided, α = 0.05, df = 5 pe critical 2.571) ka result kya hai?",
+          "options": [
+            "t ≈ 3.46; ad ke baad intent significantly badha",
+            "t ≈ 1.41; significant nahi",
+            "t ≈ 8.49; significant",
+            "Paired test galat hai; before aur after ko do independent samples ki tarah test karna chahiye"
+          ],
+          "answer": 0,
+          "explanation": "d̄ = 12 / 6 = 2; s_d = √(Σ(d − 2)² / 5) = √(10 / 5) ≈ 1.414; SE = 1.414 / √6 ≈ 0.577; t = 2 / 0.577 ≈ 3.46 > 2.571, option A. Trap: option B d̄ / s_d leta hai (√n bhool gaye); option C √n ki jagah n se divide karta hai; option D galat hai kyunki same customers ke do measurements correlated hain, isliye paired test hi sahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w9-q4",
+          "question": "5 participants, 3 ad versions (sab participants ne teeno dekhe). RM-ANOVA me SS_conditions = 24, SS_subjects = 60, SS_error = 12. F-statistic kya hai?",
+          "options": [
+            "2.0",
+            "0.4",
+            "16.0",
+            "8.0"
+          ],
+          "answer": 3,
+          "explanation": "MS_conditions = 24 / (3 − 1) = 12; error df = (3 − 1)(5 − 1) = 8, MS_error = 12 / 8 = 1.5; F = 12 / 1.5 = 8.0, option D. Trap: option A subjects ka SS bhi error me daal deta hai (72 / 12 = 6, F = 12 / 6 = 2), jo independent ANOVA jaisa hai; option C SS_conditions ko df se divide karna bhool jaata hai (24 / 1.5); option B SS_conditions / SS_subjects leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w9-q5",
+          "question": "Ek ad-testing study me har participant pehle 15-second version aur phir 30-second version dekhta hai, aur 30-second version ko consistently zyada liking milti hai. Is result pe sabse bada sawaal kya hai, aur uska fix kya hai?",
+          "options": [
+            "Sample size chhota hai; participants double karo",
+            "Sphericity toot gayi hai; Greenhouse–Geisser correction lagao",
+            "Liking scale ordinal hai; chi-square test lagao",
+            "Order / carryover effect: dusre ad tak brand familiar ho chuka tha; counterbalancing karo (aadhe log pehle 30-second dekhein)"
+          ],
+          "answer": 3,
+          "explanation": "Saare participants ne same order dekha, toh 30-second version ka fayda asal me 'doosri baar brand dekhna' (familiarity / carryover) bhi ho sakta hai: condition aur order confounded hain. Counterbalancing (aadhe log ulta order) se yeh alag hota hai, option D. Trap: option B lagta hai, par 2 conditions me sphericity apne aap satisfy hoti hai; option A sample badhane se confounding nahi jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w9-q6",
+          "code": "Participant   1 exposure   2 exposures   3 exposures\nP1            4            6             8\nP2            2            3             6\nP3            6            8             9\nP4            4            7             7",
+          "question": "4 participants ne ek ad ko 1, 2 aur 3 exposures ke baad recall-score diya (table neeche). Critical values: F(2, 6) = 5.143, F(2, 9) = 4.256. Sahi repeated-measures ANOVA result kaunsa hai?",
+          "options": [
+            "F ≈ 4.11; significant nahi",
+            "F ≈ 27.75; significant",
+            "F ≈ 41.6; significant",
+            "F ≈ 1.52; significant nahi"
+          ],
+          "answer": 1,
+          "explanation": "Grand mean = 70 / 12 ≈ 5.833; condition means 4, 6, 7.5 ⇒ SS_cond = 4 × (1.833² + 0.167² + 1.667²) ≈ 24.67. Subject means 6, 3.67, 7.67, 6 ⇒ SS_subj = 3 × Σ(dev²) ≈ 24.33. SST ≈ 51.67, toh SS_error ≈ 2.67, df = 6. F = (24.67 / 2) / (2.67 / 6) ≈ 12.33 / 0.444 ≈ 27.75 > 5.143, option B. Trap: option A data ko independent groups maan leta hai (SSW = 27, df 9, F ≈ 4.11 < 4.256); option C sahi SS_error ko galat df = 9 se divide karta hai; option D SS_subjects ko error maan leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Time series I: decomposition, moving averages and exponential smoothing",
+      "summary": "Is week aap seekhoge ki sales jaisi time series ko trend, seasonality aur irregular components me kaise todte hain, additive aur multiplicative models me kaise chunte hain, centred moving average se seasonal indices kaise nikaalte hain, aur simple exponential smoothing aur Holt's method se forecast kaise banate hain.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Components**: **trend** (lambi avadhi ki disha, jaise har saal 8% growth), **seasonality** (fixed period pe repeat hone wala pattern: garmi me ice-cream, Diwali pe electronics), **cyclical** (business cycle jaise bina fixed period ke ups-downs) aur **irregular** (random noise, ek-baar ki strike). Forecast se pehle plot dekho aur pehchano ki kaunse components hain.",
+        "**Additive vs multiplicative**: additive: Y = T + S + I, jab seasonal swing ka size level badhne pe bhi lagbhag same rahe (har December +200 units). Multiplicative: Y = T × S × I, jab swing level ke proportion me bade (har December +25%). Growing business me aksar multiplicative fit hota hai; log lene se multiplicative additive ban jaata hai.",
+        "**Moving averages**: m-period trailing MA = pichhle m values ka average; simple forecast ke roop me next value = last m ka average. Centred MA trend nikaalta hai aur seasonality ko smooth kar deta hai jab m = season length. Even period (jaise 4 quarters) me 4-MA do quarters ke beech pe baithta hai, isliye do consecutive 4-MAs ka average lete hain: **2×4 centred MA**.",
+        "**Seasonal indices (ratio-to-moving-average)**: multiplicative model me har quarter ke liye ratio = actual / centred MA. Same quarter ke ratios ka average lo, phir indices ko scale karo taaki unka average 1 ho (4 quarters ka sum 4). **Deseasonalised value** = actual / index; isse 'Q4 me sales giri ya bas season tha' pata chalta hai.",
+        "**Simple exponential smoothing (SES)**: Fₜ₊₁ = α·yₜ + (1 − α)·Fₜ, 0 < α ≤ 1. Equivalent: naya forecast = purana forecast + α × (error). Weights exponentially girte hain: k periods purane observation ka weight α(1 − α)^k. Bada α ⇒ tez reaction par noisy; chhota α ⇒ smooth par slow. SES sirf level ke liye hai, trend ya seasonality wali series pe yeh lag karega.",
+        "**Holt's linear trend method**: level Lₜ = α·yₜ + (1 − α)(Lₜ₋₁ + Tₜ₋₁); trend Tₜ = β·(Lₜ − Lₜ₋₁) + (1 − β)·Tₜ₋₁; h-step forecast Fₜ₊ₕ = Lₜ + h·Tₜ. **Holt–Winters** isme seasonal component jodta hai (additive ya multiplicative). α, β ko aam taur pe historical one-step errors minimise karke chunte hain.",
+        "**Benchmarks pehle**: naive (agla = last value), seasonal naive (agla Q4 = pichhla Q4) aur moving average hamesha compute karo. Complex model in benchmarks ko out-of-sample nahi hara paata toh use deploy karne ka koi fayda nahi."
+      ],
+      "example": {
+        "problem": "Himalaya Creamery (fictional) ki quarterly sales (₹ lakh): 2023: Q1 40, Q2 70, Q3 60, Q4 30; 2024: Q1 48, Q2 82, Q3 68, Q4 38. 2×4 centred moving averages aur multiplicative seasonal ratios nikaalo, aur normalised seasonal indices batao.",
+        "steps": [
+          "4-quarter MAs: (40 + 70 + 60 + 30) / 4 = 50; phir 52, 55, 57, 59 (har baar ek quarter aage).",
+          "Centred MAs (do consecutive 4-MAs ka average): Q3-2023 = (50 + 52) / 2 = 51; Q4-2023 = 53.5; Q1-2024 = 56; Q2-2024 = 58.",
+          "Seasonal ratios: Q3 = 60 / 51 ≈ 1.176; Q4 = 30 / 53.5 ≈ 0.561; Q1 = 48 / 56 ≈ 0.857; Q2 = 82 / 58 ≈ 1.414.",
+          "Ratios ka sum ≈ 4.008, toh har ratio ko 4 / 4.008 se multiply karke normalise karo.",
+          "Indices: Q1 ≈ 0.855, Q2 ≈ 1.411, Q3 ≈ 1.174, Q4 ≈ 0.560 (sum = 4).",
+          "Interpretation: Q2 (garmi) me sales trend se lagbhag 41% upar, Q4 me lagbhag 44% neeche. Q4-2024 ki 38 ko deseasonalise karo: 38 / 0.560 ≈ 67.9, jo trend ke saath consistent hai.",
+          "**Answer**: centred MAs **51, 53.5, 56, 58**; seasonal indices **Q1 ≈ 0.86, Q2 ≈ 1.41, Q3 ≈ 1.17, Q4 ≈ 0.56**."
+        ]
+      },
+      "mistakes": [
+        "Even period ke liye simple 4-MA ko kisi ek quarter ka trend maan lena. Fix: 4-MA do quarters ke beech pe hota hai; 2×4 centred MA lo.",
+        "Trend wali series pe SES lagana aur hairaan hona ki forecast hamesha peeche reh jaata hai. Fix: trend ho toh Holt, seasonality bhi ho toh Holt–Winters.",
+        "Seasonal indices normalise na karna. Fix: multiplicative indices ka average 1 (sum = season length) aur additive indices ka sum 0 hona chahiye."
+      ],
+      "revision": [
+        "Y = T + S + I (additive) ya T × S × I (multiplicative).",
+        "Swing level ke saath bade ⇒ multiplicative.",
+        "Even season ⇒ 2×4 centred MA.",
+        "Seasonal index = avg(actual / CMA), normalised; deseasonalised = actual / index.",
+        "SES: Fₜ₊₁ = αyₜ + (1 − α)Fₜ.",
+        "Holt: Fₜ₊ₕ = Lₜ + h·Tₜ."
+      ],
+      "questions": [
+        {
+          "id": "ba-w10-q1",
+          "question": "Ek e-commerce company ki monthly sales har saal lagbhag 30% badhti hai, aur festive season ka spike bhi har saal bada hota jaata hai: pehle saal +₹2 crore, teesre saal +₹3.4 crore, jabki spike hamesha usi saal ki baseline ka lagbhag 40% rehta hai. Kaunsa decomposition model zyada suitable hai?",
+          "options": [
+            "Additive, kyunki seasonal spike har saal aata hai",
+            "Sirf trend model, seasonality ignore karo",
+            "Multiplicative, kyunki seasonal swing level ke proportion me badh raha hai",
+            "Additive, kyunki trend linear hai"
+          ],
+          "answer": 2,
+          "explanation": "Spike ka absolute size badh raha hai par level ka constant share (~40%) hai, yaani S level ko multiply karta hai: multiplicative model, option C. Trap: option A sirf 'pattern repeat hota hai' dekhta hai; additive model tab hota jab spike rupees me lagbhag constant rehta. Option D bhi galat hai: trend 30% compounding hai (linear nahi), aur additive/multiplicative ka chunaav seasonal swing ke size se hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w10-q2",
+          "question": "Ek kirana distributor ki weekly sales (₹ hazaar): 120, 135, 126, 141. 3-week trailing moving average se agle hafte ka forecast kya hai?",
+          "options": [
+            "134",
+            "130.5",
+            "141",
+            "127"
+          ],
+          "answer": 0,
+          "explanation": "Last 3 weeks: (135 + 126 + 141) / 3 = 402 / 3 = 134, option A. Trap: option B chaaron weeks ka average hai (4-week MA); option C naive forecast (sirf last value) hai; option D pehle teen weeks (120, 135, 126) ka average hai, jo latest week ko ignore kar deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w10-q3",
+          "question": "SES with α = 0.3. Month 1 ka forecast F₁ = 100 tha. Actual demand: month 1 = 110, month 2 = 90. Month 3 ka forecast F₃ kya hai?",
+          "options": [
+            "103",
+            "99.1",
+            "97",
+            "93.9"
+          ],
+          "answer": 1,
+          "explanation": "F₂ = 0.3 × 110 + 0.7 × 100 = 103. F₃ = 0.3 × 90 + 0.7 × 103 = 27 + 72.1 = 99.1, option B. Trap: option C F₂ ko update kiye bina purana F₁ = 100 use karta hai (0.3 × 90 + 0.7 × 100 = 97); option A sirf F₂ hai; option D weights ulte laga deta hai (0.7 × 90 + 0.3 × 103).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w10-q4",
+          "question": "Ek electronics retailer ki Q4 sales ₹130 crore hai aur multiplicative model me Q4 ka seasonal index 1.30 hai. Deseasonalised Q4 sales kya hai?",
+          "options": [
+            "₹169 crore",
+            "₹128.7 crore",
+            "₹130 crore",
+            "₹100 crore"
+          ],
+          "answer": 3,
+          "explanation": "Multiplicative model me deseasonalised = actual / index = 130 / 1.30 = ₹100 crore, option D: season ka 30% boost hata diya. Trap: option A index se divide karne ki jagah multiply karta hai; option B additive soch ke 1.30 ghatata hai (index ek ratio hai, rupees nahi); option C seasonality adjust hi nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w10-q5",
+          "question": "Quarterly sales: Q1 = 20, Q2 = 30, Q3 = 40, Q4 = 26, agle saal Q1 = 24. Q3 pe 2×4 centred moving average kya hai?",
+          "options": [
+            "29.5",
+            "29",
+            "30",
+            "32"
+          ],
+          "answer": 0,
+          "explanation": "Pehla 4-MA (Q1–Q4) = 116 / 4 = 29, jo Q2 aur Q3 ke beech baithta hai; doosra 4-MA (Q2–agla Q1) = 120 / 4 = 30, jo Q3 aur Q4 ke beech hai. Centred MA at Q3 = (29 + 30) / 2 = 29.5, option A. Trap: options B aur C sirf ek 4-MA lete hain, jo exactly Q3 pe centred nahi hai; option D Q2, Q3, Q4 ka 3-point average hai, jo poore season ko smooth nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w10-q6",
+          "question": "Holt's method (Lₜ = αyₜ + (1 − α)(Lₜ₋₁ + Tₜ₋₁), Tₜ = β(Lₜ − Lₜ₋₁) + (1 − β)Tₜ₋₁, Fₜ₊ₕ = Lₜ + h·Tₜ): pichhla level Lₜ₋₁ = 200, pichhla trend Tₜ₋₁ = 10, naya actual yₜ = 220, α = 0.4, β = 0.5. Lₜ aur Tₜ update karke 3 periods aage ka forecast Fₜ₊₃ kya hai?",
+          "options": [
+            "244",
+            "256",
+            "238",
+            "250"
+          ],
+          "answer": 3,
+          "explanation": "Lₜ = 0.4 × 220 + 0.6 × (200 + 10) = 88 + 126 = 214. Tₜ = 0.5 × (214 − 200) + 0.5 × 10 = 7 + 5 = 12. Fₜ₊₃ = 214 + 3 × 12 = 250, option D. Trap: option A trend update karna bhool jaata hai (214 + 3 × 10); option B level ki jagah actual 220 se start karta hai (220 + 36); option C sirf 2 steps lagata hai (214 + 24).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Time series II: autocorrelation, AR models and forecast accuracy",
+      "summary": "Is week aap seekhoge ki autocorrelation function (ACF) se series ki memory kaise padhte hain, stationarity kyun zaroori hai aur differencing kya karta hai, AR(1) model se multi-step forecast kaise banate hain, aur MAE, RMSE, MAPE se forecasts ko time-ordered holdout pe kaise compare karte hain.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Autocorrelation**: series ka apne hi pichhle values ke saath correlation. Lag-k sample autocorrelation: rₖ = Σₜ (yₜ − ȳ)(yₜ₊ₖ − ȳ) / Σₜ (yₜ − ȳ)², jahan numerator me n − k pairs hain aur denominator poori series ka sum of squares. ACF plot har lag k ka rₖ dikhata hai; white noise ke liye lagbhag 95% values ±2 / √n band ke andar honi chahiye.",
+        "**ACF patterns padhna**: dheere-dheere girta ACF ⇒ trend / non-stationarity; season length pe spikes (jaise monthly data me lag 12) ⇒ seasonality; sirf lag 1 pe bada aur phir jaldi khatam ⇒ short memory. Model fit karne ke baad residuals ka ACF bhi check karo: koi bada spike bacha hai toh model ne pattern miss kiya (Ljung–Box test is idea ko formal banata hai).",
+        "**Stationarity**: series ka mean, variance aur autocorrelation structure time ke saath constant rahe. Stock prices, cumulative downloads, ya trend wali sales stationary nahi hain; daily % returns aur first differences aksar lagbhag stationary hote hain. Zyaadatar classical models (AR, ARMA) stationary series maangte hain, warna spurious regression aur galat forecasts milte hain.",
+        "**Differencing aur random walk**: Δyₜ = yₜ − yₜ₋₁ trend hata deta hai; seasonal difference yₜ − yₜ₋₁₂ annual pattern hata deta hai. **Random walk** yₜ = yₜ₋₁ + εₜ non-stationary hai (variance time ke saath badhta hai), par uska first difference white noise hai; iska best forecast simply last value (naive) hai.",
+        "**AR(1) model**: yₜ = c + φ·yₜ₋₁ + εₜ, |φ| < 1 ho toh stationary. Long-run mean μ = c / (1 − φ). h-step forecast: ŷₜ₊ₕ = μ + φ^h·(yₜ − μ), yaani forecast exponentially mean ki taraf lautta hai. Theoretical ACF = φ^k (dheere girta), jabki PACF lag 1 ke baad cut off hota hai; AR(p) ke liye PACF lag p ke baad cut off hota hai.",
+        "**Forecast error metrics** (eₜ = actual − forecast): **MAE** = mean |e|, same units, outliers pe kam sensitive. **RMSE** = √(mean e²), badi galtiyon ko zyada penalise karta hai; RMSE ≥ MAE hamesha. **MAPE** = mean |e / actual| × 100%, scale-free par actual 0 ke paas ho toh explode karta hai aur under-forecast vs over-forecast ko asymmetric treat karta hai. Metric business cost se chuno.",
+        "**Evaluation design**: time series ko shuffle karke split mat karo. Pehle ke data pe fit, baad ke holdout pe test (ya rolling-origin / walk-forward). Hamesha naive ya seasonal-naive benchmark ke saath compare karo; **MASE** = model ka MAE / naive ka in-sample MAE, < 1 matlab naive se behtar."
+      ],
+      "example": {
+        "problem": "Ek cement dealer (fictional) ki monthly demand (hazaar bags) ke liye fitted model: yₜ = 12 + 0.8·yₜ₋₁ + εₜ. Is mahine demand 66 thi. Long-run mean, agle do mahine ke forecasts, aur model ke theoretical ACF ke pehle do values batao.",
+        "steps": [
+          "|φ| = 0.8 < 1, toh series stationary hai. Long-run mean μ = c / (1 − φ) = 12 / 0.2 = 60.",
+          "1-step forecast: ŷ = 12 + 0.8 × 66 = 64.8.",
+          "2-step forecast: ŷ = 12 + 0.8 × 64.8 = 63.84. Check: μ + φ²(66 − 60) = 60 + 0.64 × 6 = 63.84.",
+          "Forecasts 66 se 60 ki taraf lautte hain: har step pe mean se gap 0.8 guna ho jaata hai.",
+          "Theoretical ACF: ρ₁ = φ = 0.8, ρ₂ = φ² = 0.64 (dheere girta hai); PACF lag 1 ke baad lagbhag zero hoga.",
+          "**Answer**: **μ = 60**, forecasts **64.8** aur **63.84**, ACF **0.8, 0.64**."
+        ],
+        "code": "c, phi, y = 12, 0.8, 66\nmu = c / (1 - phi)\nfor h in range(1, 4):\n    y = c + phi * y\n    print(h, round(y, 3))   # 64.8, 63.84, 63.072\nprint('long-run mean', round(mu, 2))  # 60.0"
+      },
+      "mistakes": [
+        "Trend wali (non-stationary) series pe seedha AR model ya correlation lagana. Fix: pehle plot aur ACF dekho; differencing ya detrending karke stationary banao.",
+        "Time series ko random shuffle karke train/test split karna. Fix: time order rakho; future ko kabhi training me leak mat hone do.",
+        "Jis series me zero ya bahut chhote actuals hain (jaise slow-moving spare parts) uspe MAPE use karna. Fix: MAE, RMSE ya MASE lo."
+      ],
+      "revision": [
+        "rₖ = Σ(yₜ − ȳ)(yₜ₊ₖ − ȳ) / Σ(yₜ − ȳ)²; band ±2/√n.",
+        "Stationary: constant mean, variance, autocorrelation.",
+        "Random walk ka difference white noise; forecast = last value.",
+        "AR(1): μ = c / (1 − φ); ŷₜ₊ₕ = μ + φ^h(yₜ − μ).",
+        "MAE robust; RMSE badi galtiyan penalise karta hai; MAPE scale-free.",
+        "Time-ordered holdout + naive benchmark."
+      ],
+      "questions": [
+        {
+          "id": "ba-w11-q1",
+          "question": "Inme se kaunsi series sabse zyada lagbhag stationary hone ki ummeed hai?",
+          "options": [
+            "Ek stock index ke daily percentage returns",
+            "Usi index ka daily closing level",
+            "Ek app ke cumulative total downloads",
+            "Har saal 40% badhne wale startup ka monthly revenue"
+          ],
+          "answer": 0,
+          "explanation": "Daily returns ek stable mean (lagbhag 0) ke aas-paas ghoomte hain aur unka koi lasting trend nahi hota, isliye woh lagbhag stationary hain: option A. Trap: option B (index level) random walk jaisa hai, jiska mean aur variance time ke saath badalta hai; returns isi level ka (percentage) difference hain. Options C aur D me clear trend hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w11-q2",
+          "question": "4 hafton ka actual demand: 50, 60, 40, 50 aur forecast: 45, 62, 46, 50. MAE kya hai?",
+          "options": [
+            "−0.75",
+            "4.03",
+            "13",
+            "3.25"
+          ],
+          "answer": 3,
+          "explanation": "Errors (actual − forecast): 5, −2, −6, 0. |e| ka mean = (5 + 2 + 6 + 0) / 4 = 13 / 4 = 3.25, option D. Trap: option A signed errors ka mean (bias) hai, jisme positive aur negative galtiyan cancel ho jaati hain; option B RMSE hai (√(65 / 4)); option C average ki jagah total absolute error hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w11-q3",
+          "question": "4 SKUs ka actual sale: 200, 250, 100, 50 aur forecast: 170, 250, 110, 60. MAPE kya hai?",
+          "options": [
+            "8.33%",
+            "12.5%",
+            "11.25%",
+            "45%"
+          ],
+          "answer": 2,
+          "explanation": "Percentage errors: 30 / 200 = 15%, 0 / 250 = 0%, 10 / 100 = 10%, 10 / 50 = 20%. MAPE = (15 + 0 + 10 + 20) / 4 = 11.25%, option C. Trap: option A total absolute error / total actual (50 / 600) hai, jo WAPE hai, MAPE nahi; option B MAE (12.5 units) ko % likh deta hai; option D average ki jagah sum hai. Dhyan do: 50 wale chhote SKU ka 20% error MAPE pe sabse bhari pada.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w11-q4",
+          "question": "Ek short series: 2, 4, 6, 8, 6, 4. Standard ACF formula (numerator me 5 lag-1 pairs, denominator me poori series ka Σ(yₜ − ȳ)²) se lag-1 autocorrelation r₁ kya hai?",
+          "options": [
+            "≈ 0.419",
+            "≈ 0.318",
+            "≈ 0.382",
+            "≈ −0.318"
+          ],
+          "answer": 1,
+          "explanation": "ȳ = 30 / 6 = 5; deviations −3, −1, 1, 3, 1, −1. Denominator = 9 + 1 + 1 + 9 + 1 + 1 = 22. Numerator = (−3)(−1) + (−1)(1) + (1)(3) + (3)(1) + (1)(−1) = 3 − 1 + 3 + 3 − 1 = 7. r₁ = 7 / 22 ≈ 0.318, option B. Trap: option A pairs (yₜ, yₜ₊₁) pe alag-alag means ke saath ordinary Pearson correlation hai, jo ACF formula nahi; option C numerator ko 5 aur denominator ko 6 se divide karke 'averages' ka ratio leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w11-q5",
+          "question": "4-month holdout pe actual demand: 100, 120, 80, 100. Model A forecasts: 110, 110, 90, 90. Model B forecasts: 100, 120, 80, 130. Ek badi galti (stock-out ya dead stock) bahut mehngi padti hai, chhoti galtiyan sasti. Kaunsa model chunna chahiye?",
+          "options": [
+            "Model B, kyunki uska MAE (7.5) Model A ke MAE (10) se kam hai",
+            "Model B, kyunki uske 4 me se 3 forecasts bilkul exact hain",
+            "Model A: MAE me B aage hai (7.5 vs 10), par RMSE me A aage hai (10 vs 15), aur badi galtiyan mehngi hain",
+            "Dono barabar hain, kyunki dono ka RMSE 10 hai"
+          ],
+          "answer": 2,
+          "explanation": "A ke errors: −10, 10, −10, 10 ⇒ MAE = 10, RMSE = 10. B ke errors: 0, 0, 0, −30 ⇒ MAE = 7.5, RMSE = √(900 / 4) = 15. RMSE badi galtiyon ko square karke zyada penalise karta hai, aur yahan badi galti hi mehngi hai, isliye option C. Trap: option A sirf MAE dekhta hai, jo ek 30-unit miss ko teen chhoti galtiyon jaisa hi treat karta hai; option D B ka RMSE galat calculate karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w11-q6",
+          "question": "Ek AR(1) model: yₜ = 20 + 0.6·yₜ₋₁ + εₜ. Aaj ki value yₜ = 70 hai. 3 periods aage ka forecast ŷₜ₊₃ kya hai?",
+          "options": [
+            "62",
+            "54.32",
+            "50",
+            "15.12"
+          ],
+          "answer": 1,
+          "explanation": "μ = 20 / (1 − 0.6) = 50. ŷₜ₊₃ = μ + φ³(yₜ − μ) = 50 + 0.216 × 20 = 54.32, option B. Step-by-step bhi: 62 → 57.2 → 54.32. Trap: option A sirf 1-step forecast hai; option C seedha long-run mean le leta hai (yeh h → ∞ pe hota hai); option D 0.6³ × 70 leta hai aur constant c bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "From question to decision: choosing methods, communicating results, data ethics",
+      "summary": "Is week aap poore course ko ek case me jodoge: business question ko decision aur KPI me badalna, outcome aur predictor ke type se sahi analysis chunna, statistical result ko break-even aur expected value se decision me badalna, multiple testing ke trap se bachna, results ko manager ke liye saaf communicate karna, aur data privacy aur fairness ka dhyan rakhna.",
+      "readMinutes": 20,
+      "concepts": [
+        "**Decision se shuru karo**: 'data me kya hai?' nahi, 'kaunsa decision lena hai aur kis evidence se woh badlega?' Pehle likho: decision options (rollout / na karo / aur test karo), primary KPI, minimum effect jo business ke liye maayne rakhta hai, aur analysis plan. Data dekhne se pehle plan likhna baad me cherry-picking se bachaata hai.",
+        "**Method chunna (outcome × predictor)**: categorical outcome vs categorical group → chi-square test (week 3). Numeric outcome, 2 independent groups → Welch t; 3+ groups → one-way ANOVA (week 4). Numeric outcome, numeric / mixed predictors → multiple regression with dummies aur interactions (weeks 5–7). Binary outcome → logistic regression (week 8). Same units baar-baar measure → paired t / RM-ANOVA (week 9). Time-ordered data aur forecast → decomposition, smoothing, AR (weeks 10–11).",
+        "**Experiment vs observational data**: randomised experiment (A/B test) me groups average me har cheez me same hote hain, isliye farq ko cause bol sakte ho. Observational data me confounders hote hain (Simpson's paradox, OVB); regression controls madad karte hain par sirf measured confounders ke liye. Jahan possible ho, randomise karo, ya kam se kam ek control group rakho.",
+        "**Statistical se business significance tak**: p-value sirf batata hai ki effect zero se alag hai ya nahi. Decision ke liye effect ka **confidence interval** business units me badlo aur **break-even** se compare karo. Poora CI break-even se upar ⇒ rollout; poora neeche ⇒ mat karo; CI break-even ko cross kare ⇒ test badhao ya staged rollout karo.",
+        "**Multiple testing aur p-hacking**: 20 segments ya 20 metrics α = 0.05 pe test kiye aur asal me koi effect nahi, toh bhi average me 20 × 0.05 = 1 false positive milega. Primary metric pehle se fix karo, Bonferroni (α / m) jaisa correction lagao, aur 'jo significant mila wahi story' (HARKing) se bacho; exploratory findings ko naye data pe confirm karo.",
+        "**Communication**: pehli line me answer aur recommendation ('Rollout 50% traffic pe; expected +₹1 lakh / month, par risk hai'), phir evidence: effect size + uncertainty business units me, ek chart ek message, assumptions aur limitations, aur next step. Jargon (p, F, β) appendix me rakho; manager ko 'kitna, kitna pakka, aur kya karein' chahiye.",
+        "**Data ethics aur privacy**: India ka Digital Personal Data Protection Act, 2023 consent, purpose limitation aur data minimisation jaise principles pe khada hai: jis kaam ke liye data liya, usi ke liye use karo, aur zaroorat se zyada mat rakho. Pseudonymised data bhi doosre datasets ke saath jodne pe re-identify ho sakta hai; access control aur aggregation se risk kam karo.",
+        "**Fairness aur proxies**: model me gender ya religion na ho tab bhi pincode, name, ya device type unke **proxy** ban sakte hain aur kuch groups ke saath systematically galat decisions ho sakte hain (disparate impact). Group-wise approval rates aur error rates (FPR, FNR) compare karo, proxy features ka justification likho, aur high-stakes decisions (credit, hiring) me human review aur appeal ka raasta rakho."
+      ],
+      "example": {
+        "problem": "Ganga Foods (fictional) ne naya product page A/B test kiya: control 20,000 visitors pe 4.0% conversion, naya page 20,000 visitors pe 4.4%. Naye page ki monthly cost ₹2,00,000 hai, site pe 5,00,000 visitors / month aate hain, aur har order pe margin ₹150 hai. Kya rollout karna chahiye?",
+        "steps": [
+          "Pooled p̂ = 0.042; SE = √(0.042 × 0.958 × 2 / 20,000) ≈ 0.00201; z = 0.004 / 0.00201 ≈ 1.99 > 1.96 ⇒ lift statistically significant (5%, two-sided).",
+          "95% CI for lift (unpooled SE ≈ 0.00201): 0.004 ± 1.96 × 0.00201 ≈ (0.0001, 0.0079), yaani lagbhag 0.01 pp se 0.79 pp.",
+          "Break-even lift = monthly cost / (visitors × margin) = 2,00,000 / (5,00,000 × 150) ≈ 0.00267 = 0.27 pp.",
+          "Point estimate 0.4 pp pe: extra orders = 5,00,000 × 0.004 = 2,000 ⇒ gain ₹3,00,000 − cost ₹2,00,000 = +₹1,00,000 / month.",
+          "CI ka lower end (≈ 0.01 pp) break-even se neeche hai, toh 'significant' hone ke bawajood loss ka real chance hai.",
+          "Recommendation: staged rollout (jaise 50% traffic) aur 2–4 hafte aur data; agar updated CI ka lower end 0.27 pp se upar aaye toh full rollout.",
+          "**Answer**: lift **significant (z ≈ 1.99)** aur expected profit **+₹1 lakh / month**, par CI **(0.01, 0.79) pp** break-even **0.27 pp** ko cross karta hai ⇒ **staged rollout + aur testing**, seedha full rollout nahi."
+        ]
+      },
+      "mistakes": [
+        "'p < 0.05' ko hi rollout decision bana dena. Fix: effect ka CI business units me nikaalo aur break-even / cost se compare karo.",
+        "Bahut saare segments test karke sirf significant wale report karna. Fix: primary metric pehle fix karo, multiple-testing correction lagao, aur sab tests report karo.",
+        "Sensitive attribute hata ke model ko 'fair' maan lena. Fix: proxies dhoondo aur group-wise approval aur error rates check karo."
+      ],
+      "revision": [
+        "Decision → KPI → minimum useful effect → method → data.",
+        "Categorical × categorical → χ²; numeric × groups → t / ANOVA; binary → logistic.",
+        "Same units repeated → paired / RM; time order → TS methods.",
+        "CI vs break-even: decision isi se lo, sirf p se nahi.",
+        "m tests ⇒ ~m × α false positives; Bonferroni α / m.",
+        "DPDP Act 2023: consent, purpose limitation, minimisation; proxies se fairness check."
+      ],
+      "questions": [
+        {
+          "id": "ba-w12-q1",
+          "question": "Ek beverage company jaanna chahti hai ki teen age groups (18–25, 26–40, 41+) ke 600 respondents ka favourite flavour (Mango / Lemon / Cola) age group pe depend karta hai ya nahi. Kaunsa analysis sahi hai?",
+          "options": [
+            "One-way ANOVA",
+            "Logistic regression with a numeric outcome",
+            "Paired t-test",
+            "Chi-square test of independence"
+          ],
+          "answer": 3,
+          "explanation": "Outcome (flavour) aur group (age band) dono categorical hain, aur sawaal association ka hai: 3 × 3 contingency table pe chi-square test of independence, option D. Trap: option A tab hota jab outcome numeric hota (jaise rating ya spend); option C same logon ke do measurements ke liye hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w12-q2",
+          "question": "Ek NBFC naye applicants ke liye predict karna chahti hai ki woh 12 mahine me default karenge (haan / nahi), income, existing EMIs aur credit history ke basis pe, aur har applicant ke liye default probability chahiye. Kaunsa method sabse suitable hai?",
+          "options": [
+            "Simple linear regression",
+            "Logistic regression",
+            "Chi-square goodness-of-fit test",
+            "Simple exponential smoothing"
+          ],
+          "answer": 1,
+          "explanation": "Outcome binary hai aur har applicant ki probability chahiye, kai numeric predictors ke saath: logistic regression, option B. Trap: option A linear model 0–1 ke bahar predictions de sakta hai aur binary outcome ke liye bana nahi hai; option D time series forecasting ke liye hai, individual classification ke liye nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w12-q3",
+          "question": "Ek retail chain ne apne 30 stores me naya store layout lagaya aur har store ki layout se pehle aur baad ki monthly sales record ki. Layout ka effect test karne ke liye sabse sahi approach kya hai?",
+          "options": [
+            "Har store ke (after − before) difference pe paired t-test, aur ideally un stores ka control group bhi jahan layout nahi badla",
+            "Before aur after ko 30 + 30 independent stores maan ke Welch two-sample t-test",
+            "Chi-square test of independence",
+            "Before aur after ko do groups maan ke one-way ANOVA"
+          ],
+          "answer": 0,
+          "explanation": "Same 30 stores do baar measure hue, toh har store ka difference lo aur paired t-test karo; store-to-store variation hat jaata hai, option A. Control stores isliye chahiye kyunki season ya market trend bhi before/after farq bana sakta hai. Trap: option B aur option D observations ko independent maan lete hain (dono me store-level pairing ignore hoti hai), isliye power kho dete hain; option C categorical data ke liye hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w12-q4",
+          "question": "Ek naye checkout flow ki monthly cost ₹3,00,000 hai. Site pe 8,00,000 visitors / month aate hain aur har order pe margin ₹125 hai. A/B test me conversion lift 0.5 percentage points aaya. Break-even lift kitna hai, aur kya point estimate pe rollout profitable hai?",
+          "options": [
+            "3.0 pp; nahi, kyunki 0.5 pp < 3.0 pp",
+            "0.03 pp; haan, kyunki lift break-even se bahut upar hai",
+            "0.30 pp; haan, kyunki 0.5 pp > 0.30 pp (monthly gain ₹5,00,000 vs cost ₹3,00,000)",
+            "0.50 pp; break-even wahi hai jo observed lift hai"
+          ],
+          "answer": 2,
+          "explanation": "Break-even = cost / (visitors × margin) = 3,00,000 / (8,00,000 × 125) = 0.003 = 0.30 pp. 0.5 pp pe extra orders = 8,00,000 × 0.005 = 4,000 ⇒ gain = 4,000 × 125 = ₹5,00,000 > ₹3,00,000, option C. Trap: options A aur B fraction ko percentage points me badalte waqt decimal galat jagah laga dete hain (0.003 = 0.3 pp, na 3 pp na 0.03 pp); option D observed lift ko hi break-even maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w12-q5",
+          "question": "Ek lending startup ka credit model gender aur religion use nahi karta, par 'pincode' ek strong predictor hai. Audit me dikhta hai ki kuch specific areas ke applicants ka approval rate bahut kam hai, jabki unka actual repayment baaki areas jaisa hai. Sabse sahi response kya hai?",
+          "options": [
+            "Kuch karne ki zaroorat nahi, kyunki model me sensitive attributes hain hi nahi",
+            "Pincode proxy discrimination ka source ho sakta hai: group-wise approval aur error rates check karo, pincode ki zaroorat justify karo ya hatao / replace karo, aur human review rakho",
+            "Pincode rakho par model ka threshold sabke liye 0.5 kar do",
+            "Un areas se applications lena band kar do kyunki model unhe risky maanta hai"
+          ],
+          "answer": 1,
+          "explanation": "Sensitive attribute hatane se fairness guarantee nahi hoti; pincode income, community ya religion ka proxy ban sakta hai. Jab actual repayment same ho par approval kam ho, toh model un groups pe zyada false positives (achhe applicants reject) de raha hai: option B ka audit-and-fix approach sahi hai. Trap: option A 'fairness through unawareness' ka galat bharosa hai; option C threshold badalne se proxy ka bias nahi jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w12-q6",
+          "question": "Marketing team ne ek campaign ka effect 20 customer segments me alag-alag test kiya, har test α = 0.05 pe. Do segments significant aaye, p = 0.012 aur p = 0.0018. Agar campaign ka asal me kahin bhi effect nahi hota, toh expected false positives kitne, Bonferroni threshold kya hai, aur kaunse results survive karte hain?",
+          "options": [
+            "Expected 1 false positive; threshold 0.0025; sirf p = 0.0018 wala survive karta hai",
+            "Expected 0.05 false positive; threshold 0.05; dono survive karte hain",
+            "Expected 1 false positive; threshold 0.0025; dono survive karte hain",
+            "Expected 1 false positive; threshold 0.0025; koi survive nahi karta"
+          ],
+          "answer": 0,
+          "explanation": "Expected false positives = m × α = 20 × 0.05 = 1. Bonferroni threshold = 0.05 / 20 = 0.0025. 0.0018 < 0.0025 survive karta hai, 0.012 > 0.0025 nahi, isliye option A. Trap: option B correction hi nahi lagata aur 20 tests ko ek test jaisa treat karta hai; option C threshold sahi likhta hai par 0.012 ko compare karna bhool jaata hai; option D 0.0018 ko bhi galti se reject kar deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}
