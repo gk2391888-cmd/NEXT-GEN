@@ -30,7 +30,7 @@ For people preparing for the IITM BS **qualifier exam**, who aren't students yet
   - Weeks marked done on their notes page drop out of the plan.
 - **Timed mocks** (`/qualifier/<id>/mock/<mock>`): the mock test runner with one section per course (32 questions, 80 min).
   - The result shows the score per course against the published pass rule (General: 40% in each course and 50% on average).
-  - Mock 1 of each qualifier is free, even logged out. Mock 2 is Pro and comes from `/api/pro/qualifier/<mock>`.
+  - Qualifier Prep stays open without a plan. Mock 1 of each qualifier is free, even logged out. Mock 2 is Pro and comes from `/api/pro/qualifier/<mock>`. The week 2–4 notes it links to need a trial or Pro, like every other week after the first.
   - Attempts are stored as test attempts with `subject_id = 'qualifier'`. They don't feed My Mistakes or weak weeks.
 - **Exam date:** `QUALIFIER_EXAM_DATE` in `lib/qualifier.ts` (2026-11-15) drives the countdown and the plan. Every page tells students to confirm their own date.
   - The official pages checked on 4 Nov 2026 did **not** show this date. They list the January 2027 term instead: apply by 29 Jan 2027, qualifier exam 14 Mar 2027 on the ES/AE/MG pages.
@@ -44,7 +44,7 @@ For people preparing for the IITM BS **qualifier exam**, who aren't students yet
 - **Cloud progress**: answers, mock tests, completed/saved weeks and the profile sync to Supabase. The browser keeps a copy, so the app stays instant and works offline; changes queue in `pending` and upload when the network is back.
 - **First login on a device** offers to move that device's logged-out progress into the account.
 - **My profile**: name, current-term subjects (shown first on Overview and Mock Tests), and delete account.
-- Logged-out students can still use everything; their progress stays on the device.
+- Logged-out visitors can open the Overview, Qualifier Prep and week 1 of every subject; everything else asks them to sign up (see [Access and the free trial](#access-and-the-free-trial)). Their progress stays on the device.
 
 Each student can only read and write their own rows. This is enforced by Row Level Security in the database, not just by the app.
 
@@ -59,25 +59,40 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 
 ## Phase 3: Pro, AI and practice tools
 
-| Feature | Free | Pro (₹99 / 30 days, 7-day trial on sign-up) |
+| Feature | No plan (guest, or trial over) | Free trial (7 days, once) and Pro (₹99 / 30 days) |
 | --- | --- | --- |
-| Notes, formula sheets, search, practice | ✓ | ✓ |
-| Quiz 1 / Quiz 2 mock tests | ✓ | ✓ |
-| End term mock tests | | ✓ |
+| Overview, pricing, profile, privacy and terms | ✓ | ✓ |
+| Week 1 of every subject: notes and practice | ✓ | ✓ |
 | Qualifier Prep: countdown, study plan, mock 1 of each qualifier (logged out too) | ✓ | ✓ |
-| Qualifier mock 2 (DS and ES) | | ✓ |
-| My Mistakes (spaced revision), Exam Planner | ✓ | ✓ |
-| Coding Lab practice problems (Python in the browser via Pyodide) | ✓ | ✓ |
-| OPPE-style coding sets with hidden tests | | ✓ |
-| Timed OPPE simulation (`/lab/oppe/<set>`): countdown, Submit all, score report | | ✓ |
-| AI Doubt Solver (limits set in `lib/ai/features.ts`), with “Why was my answer wrong?” from any explanation | 5 / day | 200 / day, longer answers |
 | Grade Calculator (`/grades`): total, grade and end-term score needed per grade | ✓ | ✓ |
+| Weeks 2–12: notes, formula sheets, search, practice | | ✓ |
+| Quiz 1, Quiz 2 and End term mock tests | | ✓ |
+| Qualifier mock 2 (DS and ES) | | ✓ |
+| My Mistakes (spaced revision), Exam Planner, My Progress | | ✓ |
+| Coding Lab: practice problems, OPPE-style sets with hidden tests (Python in the browser via Pyodide) | | ✓ |
+| Timed OPPE simulation (`/lab/oppe/<set>`): countdown, Submit all, score report | | ✓ |
+| AI Doubt Solver (limits set in `lib/ai/features.ts`), with “Why was my answer wrong?” from any explanation | | 200 / day |
 | Time per question in test results, Save as PDF | | ✓ |
+
+### Access and the free trial
+
+- **The paywall.** `lib/access.ts` (`isOpenPath`) lists the pages anyone can open (table above). Every other page is wrapped by `<AccessGate>` in the shell, which shows `<Paywall>` unless the student has an active trial or Pro, or is an admin (admins are never locked):
+  - logged out: "Sign up free to keep studying", with the trial and a link to the free week 1;
+  - trial or Pro over, or no trial given: why, a note that their progress is saved, and the same Razorpay / UPI buttons as `/pricing` (`useProCheckout()` in `components/pro-checkout.tsx`). A Razorpay payment refreshes the plan straight away, so the page opens at once; a UPI payment opens it once an admin approves the UTR.
+  - The renew banner warns 2 days before a trial ends and 5 days before Pro ends.
+- **What's checked on the server.** Pages only carry titles. Notes and questions for weeks 2–12, formula sheets, the search text, the question bank (My Mistakes, search, AI, admin), every mock test's questions and every Coding Lab problem come from `/api/pro/*`, which checks the session and `public.is_pro()` first (`requirePro()` in `lib/server/pro-access.ts`). The AI Doubt Solver checks the plan in `lib/server/ai/handler.ts`. Week 1 is in the page on purpose (free preview), and so are the free qualifier mocks.
+- **UI only, on purpose:** the "Predict the output" cards on `/lab` (`content/lab.json`) and the doubt-solver FAQs (`content/faqs.json`) are small and ship in the page; PDF notes that an admin marks as free stay open to everyone (mark them Pro only to lock them).
+- **One trial per person** (migration `0009_one_trial_per_person.sql`). New accounts start without a trial. After the first login, the app calls `POST /api/trial/start`, which calls `claim_trial()` with the service role. There's no trial when:
+  - the email is a throwaway inbox (`lib/disposable-email.ts`; the login form refuses these too),
+  - the same email already had one, ignoring case, `+tags` and Gmail's dots (`rahul.k+2@gmail.com` = `rahulk@gmail.com`),
+  - this browser already had one (a random device ID kept in local storage and an `ng_device` cookie), or
+  - 3 trials already started from this IP address in the last 24 hours (lenient, since hostels and mobile networks share IPs).
+  - Without a trial the account still works and can buy Pro straight away. `trial_claims` keeps only SHA-256 hashes of the email and IP, and stays when an account is deleted, so deleting and signing up again doesn't give a new trial. Accounts that already had a trial record each device they log in on.
 
 - **Admin panel** (`/admin`, accounts listed in `public.admins`): review student error reports, correct questions (stored in `content_overrides`, live immediately), upload PDF notes, post announcements, confirm UPI payments.
 - **PDF notes**: admins upload PDFs per subject and week (or for the whole subject) into the private Storage bucket `notes`, listed in `note_files`. Students open them from the Study Library and the week's notes through a one-hour signed link. Files marked Pro only open for trial and Pro students; Storage enforces that, not the browser.
 - **Plans** live on `profiles.trial_ends_at` / `pro_until`, which students can't edit. `lib/plans.ts` turns them into a tier, the same way on the server and in the browser.
-- **Pro content is checked on the server.** OPPE problems (with their hidden tests and solutions), End-term question pools and Pro qualifier mocks aren't in the pages; they come from `/api/pro/coding/<id>`, `/api/pro/oppe/<set>`, `/api/pro/tests/<subject>/<test>` and `/api/pro/qualifier/<mock>`, which check the student's session and `public.is_pro()` first (`lib/server/pro-access.ts`). Hidden tests and solutions are only fetched on Submit. The `<ProLock>` in the browser only decides what's shown.
+- **Paid content is checked on the server**, as above: `/api/pro/week/<subject>/<week>`, `/api/pro/formulas/<subject>`, `/api/pro/search`, `/api/pro/questions`, `/api/pro/tests/<subject>/<test>`, `/api/pro/coding/<id>`, `/api/pro/oppe/<set>` and `/api/pro/qualifier/<mock>`. Coding Lab hidden tests and solutions are only fetched on Submit. `<AccessGate>` and `<ProLock>` in the browser only decide what's shown.
 - **Payments**, two ways, each adding 30 days via the service-role key. Either can be on alone, or both.
   - Razorpay Checkout → `/api/payments/verify` (signature check) and `/api/payments/webhook` (backup).
   - Pay by UPI QR: the student pays our UPI ID and submits the 12-digit UTR (`/api/payments/upi`, table `upi_requests`). An admin matches it in the bank statement and approves it in **Admin → UPI payments** (`/api/payments/upi/review`).
@@ -88,7 +103,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | --- | --- |
 | `GROQ_API_KEY` | AI features via Groq (console.groq.com → API Keys) |
 | `AI_MODEL_SMART`, `AI_MODEL_FAST` | Optional: which models serve each tier. See **AI features** below. |
-| `SUPABASE_SERVICE_ROLE_KEY` | AI features (counting daily limits) and payments (granting Pro). Never expose it to the browser. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Required.** Free trials (`/api/trial/start`), AI features (counting daily limits) and payments (granting Pro). Without it new accounts can't start their trial. Never expose it to the browser. |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Payments |
 | `RAZORPAY_WEBHOOK_SECRET` | Payment webhook (`<site>/api/payments/webhook`, event `payment.captured`) |
 | `UPI_ID` | Pay by UPI QR, e.g. `yourname@okaxis`. A business/merchant UPI ID is safer than a personal one for many payments. |
@@ -98,7 +113,7 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 
-Migrations: run `supabase/migrations/0001…0008` in order in the Supabase SQL Editor. `0007_coding_attempts.sql` adds the table that syncs timed OPPE attempts; until it's run, those attempts stay on the student's device and everything else keeps syncing.
+Migrations: run `supabase/migrations/0001…0009` in order in the Supabase SQL Editor. `0007_coding_attempts.sql` adds the table that syncs timed OPPE attempts; until it's run, those attempts stay on the student's device and everything else keeps syncing. `0009_one_trial_per_person.sql` turns on one trial per person (see above); until it's run, every new account still gets 7 days from the column default.
 
 ## AI features
 

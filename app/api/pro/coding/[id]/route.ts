@@ -4,14 +4,14 @@ import { proJson, requirePro } from '@/lib/server/pro-access';
 export const dynamic = 'force-dynamic';
 
 /**
- * An OPPE problem, for trial and Pro students only.
+ * A Coding Lab problem (practice or OPPE), for trial and Pro students only.
  * GET /api/pro/coding/<id> → the problem without hidden tests or solution.
  * GET /api/pro/coding/<id>?part=answers → every test plus the model solution (fetched on Submit).
  */
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const problem = getProblem(id);
-  if (!problem || problem.tier !== 'oppe') return proJson({ ok: false, code: 'not_found', message: 'Problem not found.' }, 404);
+  if (!problem) return proJson({ ok: false, code: 'not_found', message: 'Problem not found.' }, 404);
 
   const denied = await requirePro(req);
   if (denied) return denied;

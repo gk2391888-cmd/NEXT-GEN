@@ -3,10 +3,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSubject, getSubjects, getWeek, getWeekRefs, getWeeks } from '@/lib/content';
 import { ChoiceWeek, SubjectCode } from '@/components/programme-switch';
-import { InlineText } from '@/components/ui';
+import { PREVIEW_WEEK } from '@/lib/access';
 import { WeekNav } from '@/components/library/week-nav';
 import { WeekActions, VisitTracker } from '@/components/library/week-actions';
 import { WeekNoteFiles } from '@/components/library/note-files';
+import { WeekNotes } from '@/components/library/week-notes';
+import { ProWeekNotes } from '@/components/library/pro-week-notes';
 
 type Params = { subject: string; week: string };
 
@@ -57,29 +59,8 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
 
           <WeekNoteFiles subjectId={subject.id} week={week.week} />
 
-          <section className="notes-section">
-            <h3><span className="num">1</span>Concept</h3>
-            <ul>{week.concepts.map((c, i) => <li key={i}><InlineText text={c} /></li>)}</ul>
-          </section>
-
-          <section className="notes-section">
-            <h3><span className="num">2</span>Solved example</h3>
-            <div className="example">
-              <div className="example-problem"><InlineText text={week.example.problem} /></div>
-              {week.example.code && <pre className="code-block">{week.example.code}</pre>}
-              <ol>{week.example.steps.map((s, i) => <li key={i}><InlineText text={s} /></li>)}</ol>
-            </div>
-          </section>
-
-          <section className="notes-section">
-            <h3><span className="num">3</span>Common mistakes</h3>
-            {week.mistakes.map((m, i) => <div key={i} className="mistake"><InlineText text={m} /></div>)}
-          </section>
-
-          <section className="notes-section">
-            <h3><span className="num">4</span>Quick revision</h3>
-            <ul className="revision">{week.revision.map((r, i) => <li key={i}><InlineText text={r} /></li>)}</ul>
-          </section>
+          {/* Only the free preview week is in the page; the others come from /api/pro/week/…, which checks the plan. */}
+          {week.week === PREVIEW_WEEK ? <WeekNotes week={week} /> : <ProWeekNotes subjectId={subject.id} week={week.week} />}
 
           <div className="notes-foot no-print">
             <span className="muted">Finished reading? Check your understanding with {week.questions.length} questions.</span>

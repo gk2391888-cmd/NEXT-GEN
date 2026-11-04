@@ -21,10 +21,11 @@ export default function PrivacyPage() {
         <li><strong>Account details</strong>: your email address and, if you sign in with Google, your name and profile picture URL from Google.</li>
         <li><strong>Learning progress</strong>: the questions you answer and whether they were correct, mock test attempts and scores, weeks you mark as done or save for revision, the last week you opened, and the subjects you choose in your profile.</li>
         <li><strong>Without an account</strong>: progress is stored only in your browser’s local storage and is never sent to us.</li>
+        <li><strong>Free trial check</strong>: to give one free trial per person, when an account starts its trial we keep a one-way fingerprint (a hash) of its email address and of the network it signed up from, and a random ID for the browser (also kept in a cookie). We can’t turn these back into your email or IP address. They are used only for this check and are kept even if you delete your account, so the trial can’t be claimed again.</li>
         <li><strong>AI doubts</strong>: the messages you send to the AI Doubt Solver are sent to our AI provider (currently Groq) to write the answer. We keep a daily count of your requests and the size of the answers to apply plan limits; we don’t store the chat itself.</li>
         <li><strong>Usage statistics</strong>: anonymous page views and page-speed measurements through Vercel Web Analytics and Speed Insights. They use no cookies and don’t identify you.</li>
       </ul>
-      <p>We do not collect payment details, your location, or your contacts, and we do not use advertising or tracking cookies.</p>
+      <p>We do not collect payment details, your location, or your contacts, and we do not use advertising or tracking cookies (the only cookie we set is the free-trial browser ID above).</p>
 
       <h2>How we use it</h2>
       <ul>
@@ -41,7 +42,7 @@ export default function PrivacyPage() {
 
       <h2>Your choices</h2>
       <ul>
-        <li>You can use NEXT GEN without an account.</li>
+        <li>You can preview week 1 of every subject and Qualifier Prep without an account.</li>
         <li>You can reset your progress at any time from <Link href="/progress">My Progress</Link>.</li>
         <li>You can permanently delete your account and all its data from <Link href="/profile">My profile</Link>.</li>
       </ul>

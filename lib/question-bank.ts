@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import type { Question } from './types';
+import { fetchProContent } from './pro-content';
 
 export type BankQuestion = Question & { subjectId: string; week: number; weekTitle: string };
 
 let cache: Promise<BankQuestion[]> | null = null;
 
-/** All questions, fetched once from /api/content/questions and shared. */
+/** All questions, fetched once from /api/pro/questions (trial, Pro and admins only) and shared. */
 export function loadQuestionBank(): Promise<BankQuestion[]> {
-  cache ??= fetch('/api/content/questions')
-    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+  cache ??= fetchProContent<{ questions: BankQuestion[] }>('/api/pro/questions')
+    .then((d) => d.questions)
     .catch((error) => {
       cache = null;
       throw error;

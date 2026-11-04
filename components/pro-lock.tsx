@@ -6,12 +6,15 @@ import { PRICING, usePlan } from '@/lib/plan';
 import type { ProContentError } from '@/lib/pro-content';
 import { useAuth } from './auth/auth-provider';
 
-/** Shown in place of a Pro-only feature for Free and logged-out students. */
+/**
+ * Shown in place of a trial-or-Pro feature on a page that's otherwise open to everyone
+ * (e.g. a Pro qualifier mock). Whole pages are locked by <AccessGate> instead.
+ */
 export function ProLock({ feature, children }: { feature: string; children: React.ReactNode }) {
   const plan = usePlan();
   const pathname = usePathname();
-  const { ready } = useAuth();
-  if (plan.isPro) return <>{children}</>;
+  const { ready, isAdmin } = useAuth();
+  if (plan.isPro || isAdmin) return <>{children}</>;
   // Until the session is known everyone looks like a guest, so don't flash "Log in" at Pro students.
   if (!ready) return <div className="card"><p className="muted">Loading…</p></div>;
 
@@ -21,13 +24,13 @@ export function ProLock({ feature, children }: { feature: string; children: Reac
       <h2 className="mt-md mb-sm">{feature} is a Pro feature</h2>
       {plan.tier === 'guest' ? (
         <>
-          <p>Log in to start your {PRICING.trialDays}-day free trial of Pro. No card needed.</p>
-          <Link className="btn btn-primary mt-lg" href={`/login?next=${encodeURIComponent(pathname)}`}>Log in to start free trial</Link>
+          <p>Sign up to start your {PRICING.trialDays}-day free trial. No card needed.</p>
+          <Link className="btn btn-primary mt-lg" href={`/login?next=${encodeURIComponent(pathname)}`}>Start free trial</Link>
         </>
       ) : (
         <>
-          <p>Upgrade to Pro for ₹{PRICING.proMonthlyInr}/month to unlock it, along with more AI doubts and exam-level practice.</p>
-          <Link className="btn btn-primary mt-lg" href="/pricing">See Pro plans</Link>
+          <p>Get Pro for ₹{PRICING.proMonthlyInr} for 30 days to unlock it, along with every subject’s notes, practice and mock tests. Your progress is saved.</p>
+          <Link className="btn btn-primary mt-lg" href="/pricing">Get Pro</Link>
         </>
       )}
     </div>

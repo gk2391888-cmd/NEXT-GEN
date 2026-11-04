@@ -49,9 +49,9 @@ export function AccountMenu() {
   return (
     <div className="account" ref={ref}>
       {STATUS_TEXT[status] && <span className={`sync-chip hide-tablet ${status}`}>{STATUS_TEXT[status]}</span>}
-      {plan.tier === 'trial' && <Link href="/pricing" className="plan-chip pro">Pro trial · {plan.daysLeft}d left</Link>}
+      {plan.tier === 'trial' && <Link href="/pricing" className="plan-chip pro">Free trial · {plan.daysLeft}d left</Link>}
       {plan.tier === 'pro' && <span className="plan-chip pro">Pro</span>}
-      {plan.tier === 'free' && <Link href="/pricing" className="plan-chip">Upgrade</Link>}
+      {plan.tier === 'free' && <Link href="/pricing" className="plan-chip">Get Pro</Link>}
       <button className="avatar" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label="Account menu">
         {initials(user, fullName)}
       </button>

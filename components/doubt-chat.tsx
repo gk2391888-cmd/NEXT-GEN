@@ -153,7 +153,7 @@ export function DoubtChat() {
     return (
       <div className="card empty">
         <div className="empty-icon">✦</div>
-        <p>Log in to ask the AI doubt solver. New accounts get {PRICING.trialDays} days of Pro, with {proLimits?.perDay} doubts a day.</p>
+        <p>Log in to ask the AI doubt solver. New accounts get a {PRICING.trialDays}-day free trial, with {proLimits?.perDay} doubts a day.</p>
         <Link className="btn btn-primary" href="/login?next=/doubts">Log in to ask a doubt</Link>
       </div>
     );

@@ -38,10 +38,12 @@ export async function handleAiRequest(req: Request, featureId: string): Promise<
   // The plan comes from the database, never from the request.
   const { data: profile } = await admin.from('profiles').select('trial_ends_at, pro_until').eq('id', auth.user.id).maybeSingle();
   const plan = planFrom({ trialEndsAt: profile?.trial_ends_at, proUntil: profile?.pro_until }, true);
-  const limits = limitsFor(featureId, accessOf(plan));
-  if (!limits) return fail('not_in_plan', `The ${feature.name} is part of Pro.`);
+  // Admins are never locked out, whatever their own plan.
+  const isAdmin = !plan.isPro && Boolean((await admin.from('admins').select('user_id').eq('user_id', auth.user.id).maybeSingle()).data);
+  const limits = limitsFor(featureId, isAdmin ? 'pro' : accessOf(plan));
+  if (!limits) return fail('not_in_plan', `The ${feature.name} needs an active free trial or Pro.`);
 
-  const prepared = await FEATURE_HANDLERS[featureId].prepare(await req.json().catch(() => null), { limits, userId: auth.user.id, admin, isPro: plan.isPro });
+  const prepared = await FEATURE_HANDLERS[featureId].prepare(await req.json().catch(() => null), { limits, userId: auth.user.id, admin, isPro: plan.isPro || isAdmin });
   if ('error' in prepared) return fail('invalid', prepared.error);
 
   const quota = await consumeQuota(admin, auth.user.id, featureId, limits).catch((error) => {

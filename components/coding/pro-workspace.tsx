@@ -9,7 +9,7 @@ import { CodingWorkspace } from './workspace';
 type Props = { id: string; prev?: string; next?: string; position: number; total: number };
 
 /**
- * An OPPE problem: its statement comes from /api/pro/coding/<id> (Pro only), and its
+ * A Coding Lab problem: its statement comes from /api/pro/coding/<id> (trial or Pro), and its
  * hidden tests and solution only when the student submits or asks for the solution.
  */
 export function ProCodingWorkspace({ id, ...nav }: Props) {

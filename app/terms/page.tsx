@@ -35,7 +35,8 @@ export default function TermsPage() {
 
       <h2>Pro plan and payments</h2>
       <ul>
-        <li>New accounts get 7 days of Pro free. No card is needed, and you move to the Free plan automatically when the trial ends.</li>
+        <li>New accounts get a 7-day free trial with full access. No card is needed. There is one free trial per person: a new account on an email address, device or network that has already had one may not get another, and temporary email addresses can’t be used.</li>
+        <li>When the trial or a Pro period ends, notes, practice, mock tests and the other study tools lock until you buy Pro. Week 1 of every subject, Qualifier Prep and the grade calculator stay free. Your progress is kept, and comes back as soon as you pay.</li>
         <li>Pro costs ₹99 for 30 days, paid through Razorpay. It does not renew automatically; each payment adds 30 days.</li>
         <li>If you were charged but Pro didn’t activate, or you were charged twice, email us within 7 days and we’ll fix it or refund you.</li>
         <li>Apart from that, payments for a period that has already started are not refundable.</li>

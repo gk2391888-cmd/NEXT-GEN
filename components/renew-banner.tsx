@@ -43,7 +43,7 @@ export function RenewBanner() {
   return (
     <div className="alert alert-warn renew-banner no-print" role="status">
       <span>
-        {plan.tier === 'trial' ? 'Your free Pro trial ends' : 'Your Pro plan ends'} {when}. Keep End term tests, OPPE sets and more AI doubts for ₹{PRICING.proMonthlyInr}/month.
+        {plan.tier === 'trial' ? 'Your free trial ends' : 'Your Pro plan ends'} {when}. After that, notes, practice and tests lock until you get Pro: ₹{PRICING.proMonthlyInr} for 30 days. Your progress stays saved.
       </span>
       <span className="btn-group">
         <Link className="btn btn-primary" href="/pricing">{plan.tier === 'trial' ? 'Keep Pro' : 'Renew'}</Link>
