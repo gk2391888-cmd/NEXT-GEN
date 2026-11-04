@@ -12,6 +12,7 @@
 import { AI_FEATURES, isAiFeatureId, limitsFor } from '@/lib/ai/features';
 import { planFrom, PRICING } from '@/lib/plans';
 import { cleanUtr, isUtr } from '@/lib/upi';
+import { buildStats, type StatsRows } from '@/lib/admin-stats';
 
 export const DEMO = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEMO_MODE === '1';
 
@@ -486,6 +487,25 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
     if (approve && profile) profile.pro_until = iso(Math.max(Date.now(), end(profile.pro_until), end(profile.trial_ends_at)) + 30 * DAY);
     saveDb(db);
     return reply({ ok: true });
+  }
+  // Same numbers as /api/admin/stats, counted from this browser's demo data.
+  if (path === '/api/admin/stats') {
+    if (p !== 'admin') return reply({ error: 'Only admins can see the stats.' }, 403);
+    const db = loadDb();
+    const profiles = db.profiles ?? [];
+    const answers = db.answers ?? [];
+    const weekAgo = Date.now() - 7 * DAY;
+    return reply(buildStats({
+      // Demo profiles have no sign-up date: spread them over the last few days.
+      users: profiles.map((_, i) => ({ created_at: day(-i), last_sign_in_at: day(-0.1) })),
+      profiles: profiles as unknown as StatsRows['profiles'],
+      trialClaims: [{ granted: false, reason: 'email' }],
+      upi: (db.upi_requests ?? []) as unknown as StatsRows['upi'],
+      razorpay: [],
+      recentAnswerUsers: answers.filter((a) => Date.parse(String(a.answered_at)) > weekAgo).map((a) => String(a.user_id)),
+      answers: answers.length,
+      tests: (db.test_attempts ?? []).length,
+    }));
   }
   return reply({ error: `${path} isn't available in demo mode` }, 404);
 }

@@ -419,8 +419,11 @@ Attempts are a `coding` `SyncOp` and sync to `coding_attempts` (migration 0007) 
 
 ### Admin (`/admin`)
 
-Five tabs ([components/admin/](components/admin/admin-panel.tsx)):
+Six tabs ([components/admin/](components/admin/admin-panel.tsx)):
 
+- **Stats** (opens first): sign-ups (total, today, last 7 days, per day for 14 days), who practised in the last 7 days, students on the free trial / paying Pro / trial over, accounts refused a trial and why, UPI and Razorpay payments received, what students are preparing for, and questions answered and mock tests submitted. Days are India time.
+  - The numbers come from `GET /api/admin/stats`, which checks `is_admin()` and then reads with the service role (it needs `auth.users`, which the browser can't read). `buildStats()` in [lib/admin-stats.ts](lib/admin-stats.ts) does the counting, shared with demo mode.
+  - Visitors who never sign up aren't here: they're in Vercel → Analytics.
 - **Reports:** open reports grouped by question, with **Fix** and **Dismiss**.
 - **Edit questions:** search by ID (for example `stat1-w3-q4`) or text in either language. Edit the text, options, answer and explanation, with a live preview. The English / Hinglish switch picks which language's text you're editing; both are saved together, and code and the correct option are shared.
   - Saves go to `content_overrides`, and students see them **without a redeploy** via `useCorrectedQuestions()` in [lib/overrides.ts](lib/overrides.ts).

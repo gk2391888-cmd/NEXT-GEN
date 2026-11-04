@@ -10,16 +10,17 @@ import { QuestionEditor } from './question-editor';
 import { Announcements } from './announcements';
 import { UpiRequests } from './upi-requests';
 import { NoteUploads } from './note-uploads';
+import { Stats } from './stats';
 
 type Report = { id: number; question_id: string; kind: string; message: string; created_at: string };
-type Tab = 'reports' | 'edit' | 'notes' | 'announcements' | 'payments';
+type Tab = 'stats' | 'reports' | 'edit' | 'notes' | 'announcements' | 'payments';
 
 const KIND_LABEL: Record<string, string> = { wrong_answer: 'Wrong answer', unclear: 'Unclear', typo: 'Typo', other: 'Other' };
 
 export function AdminPanel({ subjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const { user, ready, isAdmin } = useAuth();
   const bank = useQuestionBank();
-  const [tab, setTab] = useState<Tab>('reports');
+  const [tab, setTab] = useState<Tab>('stats');
   const [editing, setEditing] = useState<string | null>(null);
   const [reports, setReports] = useState<Report[] | null>(null);
   const [error, setError] = useState('');
@@ -70,8 +71,9 @@ export function AdminPanel({ subjects, catalog }: { subjects: Subject[]; catalog
 
   return (
     <>
-      <PageHead kicker="Admin" title="Admin panel" description="Review reported questions, correct content, upload PDF notes, post announcements and confirm UPI payments. Changes go live immediately." />
+      <PageHead kicker="Admin" title="Admin panel" description="See how many students joined and paid, review reported questions, correct content, upload PDF notes, post announcements and confirm UPI payments. Changes go live immediately." />
       <div className="filters mb-lg">
+        <button className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>Stats</button>
         <button className={tab === 'reports' ? 'on' : ''} onClick={() => setTab('reports')}>Reports ({grouped.length})</button>
         <button className={tab === 'edit' ? 'on' : ''} onClick={() => setTab('edit')}>Edit questions</button>
         <button className={tab === 'notes' ? 'on' : ''} onClick={() => setTab('notes')}>PDF notes</button>
@@ -79,6 +81,8 @@ export function AdminPanel({ subjects, catalog }: { subjects: Subject[]; catalog
         <button className={tab === 'payments' ? 'on' : ''} onClick={() => setTab('payments')}>UPI payments{pendingPayments ? ` (${pendingPayments})` : ''}</button>
       </div>
       {error && <p className="field-error" role="alert">{error}</p>}
+
+      {tab === 'stats' && <Stats onOpenPayments={() => setTab('payments')} />}
 
       {tab === 'reports' && (
         <div className="card">
