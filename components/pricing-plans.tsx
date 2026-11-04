@@ -16,7 +16,7 @@ const PRO_DOUBTS = limitsFor('doubt', 'pro')?.perDay ?? 0;
 
 const FREE_FEATURES = [
   'Every week of notes and formula sheets',
-  'Every practice question',
+  'Every practice question, at Easy, Medium and Hard levels',
   'Quiz 1 and Quiz 2 mock tests',
   'My Mistakes revision and Exam Planner',
   'Python Coding Lab practice problems',

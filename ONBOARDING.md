@@ -7,7 +7,7 @@ A walkthrough of the whole project for a developer taking it over: what it is, h
 NEXT GEN ("by THE TECH HUB") is a study site for **IIT Madras online BS students**. It isn't affiliated with IITM. Each student picks a programme (Data Science, Electronic Systems, Aeronautics, Management & Data Science) and sees its subjects; every subject has 12 weeks, and every week has:
 
 - **Hinglish notes** (concept, solved example, common mistakes, quick revision)
-- **6 MCQs**, in English and Hinglish
+- **6 MCQs** per week (15 in the Data Science Foundation subjects, 1,440 in total, at least 5 each at Easy, Medium and Hard), in English and Hinglish
 
 It also has a **Qualifier Prep** section for people preparing for the IITM BS qualifier exam, who aren't students yet.
 
@@ -72,6 +72,7 @@ next-gen/
 │   ├── sync.ts               ← ★ Uploads and downloads progress to and from Supabase
 │   ├── plans.ts  plan.ts     ← guest / free / trial / pro logic + PRICING (shared) · usePlan() hook
 │   ├── ai/                   ← ★ AI features + Free/Pro limits (features.ts), askAi() (client.ts)
+│   ├── levels.ts  practice-level.ts  ← Easy / Medium / Hard / Mixed (shared) · the practice level picked (browser)
 │   ├── tests.ts  planner.ts  coding.ts  overrides.ts  question-bank.ts  python-runner.ts
 │   ├── qualifier.ts          ← Qualifier config: exam date, pass rules, sources (shared); qualifier-content.ts reads the mocks (server), qualifier-plan.ts builds the study plan
 │   ├── supabase/client.ts    ← Browser Supabase client + authedFetch()
@@ -80,7 +81,7 @@ next-gen/
 ├── content/                  ← ★ All study material
 │   ├── programmes.json       ← Programme → levels → subject ids, plus per-programme course codes
 │   ├── subjects.json         ← Every subject once (id, code, name, icon, status); colours live in tokens
-│   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week (Hinglish)
+│   ├── weeks/<subject>.json  ← 12 weeks of notes + 6 questions per week; 15 (5+ per level) in Data Science Foundation (Hinglish)
 │   ├── weeks-en/<subject>.json ← English text of every question, by id
 │   ├── coding/problems.json  ← 42 problems (30 practice + 12 OPPE in 3 sets)
 │   ├── qualifier/            ← qualifiers.json (qualifiers + their mocks), mocks/<mock>.json (Hinglish), mocks-en/<mock>.json (English)
@@ -230,8 +231,11 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 
 ### Practice (`/practice` → `/practice/[subject]/[week]`)
 
-1. The picker shows a subject dropdown and a table of weeks with your accuracy for each.
-2. Each session goes through the 6 questions one at a time:
+1. The picker shows a subject dropdown, the **level** switch and a table of weeks with your accuracy for each.
+   - Levels ([level-switch.tsx](components/quiz/level-switch.tsx), helpers in [lib/levels.ts](lib/levels.ts)): **Easy**, **Medium**, **Hard** or **Mixed** (every question of the week, easy first). Each button shows how many questions that level has (the subject's total on the picker, the week's in a session), and only levels with questions are offered; a level the week has none of falls back to Mixed.
+   - The choice is kept in localStorage (`nextgen-practice-level`, [lib/practice-level.ts](lib/practice-level.ts)), Mixed by default, per device like the question language.
+   - `getWeekRefs()` sends each week's count per level (`WeekRef.levels`), so the picker doesn't need the questions.
+2. Each session goes through the chosen level's questions one at a time (15 for Mixed, 5 or more for one level). Changing the level, in the session or on its result screen, starts again at that level:
    - pick an option → **Check answer** → green/red feedback and the explanation → Next
    - an **English / Hinglish** switch at the top changes the question, options and explanation (see "Question language" below)
    - each answer is recorded as `mode: 'practice'`
@@ -259,7 +263,11 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
   - **Quiz 1**: weeks 1–4, 15 questions, 25 min
   - **Quiz 2**: weeks 5–8, 15 questions, 25 min
   - **End term**: all weeks, 30 questions, 60 min, **Pro**. Its question pool comes from `/api/pro/tests/<subject>/end-term` ([pro-test-runner.tsx](components/quiz/pro-test-runner.tsx)), not from the page.
-- Questions are picked spread evenly across the weeks.
+- Questions are picked spread evenly across the weeks (`pickQuestions()` in [lib/tests.ts](lib/tests.ts)).
+  - By default a test is a balanced mix, `testMix()`: about 30% easy, 40% medium, 30% hard (Quiz: 4 / 7 / 4, End term: 9 / 12 / 9). Each week in turn gives the level the test still needs most of, so weeks and levels both come out even.
+  - On the intro screen a student can pick **Easy**, **Medium** or **Hard** only instead. A level is offered only when the pool has a whole test's worth of it. The choice isn't remembered: every test starts as Mixed. Sectioned (qualifier) mocks have no level choice.
+  - The level isn't stored with the attempt (no migration). The previous-attempts table works it out from the questions and shows a chip when they're all one level.
+  - End-term pools still come from `/api/pro/tests/...` with every level; the level is applied in the browser.
 - [test-runner.tsx](components/quiz/test-runner.tsx) has 3 screens:
   1. **Intro:** the rules and your previous attempts.
   2. **Running:**
@@ -467,7 +475,8 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 5. **Pricing has one source per number.** AI limits per plan live in `lib/ai/features.ts`, and the server enforces exactly those. The price shown in the UI is `PRICING` in `lib/plans.ts`, but the amount actually charged is `PRO_PRICE_INR` on the server, so change those two together. The old `consume_doubt()` (hard-coded 5/200) from 0002 is unused since 0004; migration 0008 drops it.
 6. **Content rules** (enforced by the validator):
    - exactly 12 weeks per subject
-   - 6 questions per week
+   - at least 6 questions per week; in `LEVELLED_SUBJECTS` (the 8 Data Science Foundation subjects) at least 5 easy, 5 medium and 5 hard
+   - new questions take the next free id in their week; existing ids never change (progress is stored by id)
    - 4 distinct options per question
    - an English version of every question in `content/weeks-en/<subject>.json`, with its options in the same order
    - question IDs like `math1-w3-q2` (qualifier mocks: `ds-1-math1-q3`, one section per course in the order of `qualifiers.json`, 5–25 questions each, at least one free mock per qualifier)

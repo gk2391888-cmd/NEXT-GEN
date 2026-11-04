@@ -14,8 +14,12 @@ const subjects = JSON.parse(readFileSync(join(root, 'content/subjects.json'), 'u
 const { programmes } = JSON.parse(readFileSync(join(root, 'content/programmes.json'), 'utf8'));
 const WEEKS = 12;
 const STATUSES = new Set(['partial', 'planned']);
-const QUESTIONS_PER_WEEK = 6;
+const MIN_QUESTIONS_PER_WEEK = 6;
 const DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
+// Students can practise one level at a time (Easy / Medium / Hard), so in these subjects every week
+// needs at least PER_LEVEL questions of each level, in both languages. Add a subject here once its weeks have them.
+const LEVELLED_SUBJECTS = new Set(['math1', 'stat1', 'ct', 'eng1', 'math2', 'stat2', 'python', 'eng2']);
+const PER_LEVEL = 5;
 const EN_FIELDS = ['question', 'options', 'explanation'];
 
 const requested = process.argv.slice(2);
@@ -178,6 +182,7 @@ for (const id of targets) {
 
   const ids = new Set();
   const answerCounts = [0, 0, 0, 0];
+  const levelCounts = { easy: 0, medium: 0, hard: 0 };
 
   (data.weeks || []).forEach((w, i) => {
     const at = `week ${i + 1}`;
@@ -191,10 +196,17 @@ for (const id of targets) {
     if (!isTextList(w.mistakes, 1, 3)) err(`${at}: mistakes should be 1–3 strings`);
     if (!isTextList(w.revision, 3, 6)) err(`${at}: revision should be 3–6 strings`);
 
-    if (!Array.isArray(w.questions) || w.questions.length !== QUESTIONS_PER_WEEK) {
-      err(`${at}: expected ${QUESTIONS_PER_WEEK} questions`);
+    if (!Array.isArray(w.questions) || w.questions.length < MIN_QUESTIONS_PER_WEEK) {
+      err(`${at}: expected at least ${MIN_QUESTIONS_PER_WEEK} questions`);
       return;
     }
+    if (LEVELLED_SUBJECTS.has(id)) {
+      for (const level of DIFFICULTIES) {
+        const n = w.questions.filter((q) => q.difficulty === level).length;
+        if (n < PER_LEVEL) err(`${at}: needs at least ${PER_LEVEL} ${level} questions, has ${n}`);
+      }
+    }
+    for (const q of w.questions) if (q.difficulty in levelCounts) levelCounts[q.difficulty]++;
     w.questions.forEach((q, j) => {
       checkQuestion(q, `${id}-w${i + 1}-q${j + 1}`, `${at} q${j + 1}`, english, `content/weeks-en/${id}.json`, ids, answerCounts, err, warnings);
     });
@@ -213,7 +225,7 @@ for (const id of targets) {
     console.log(`✗ ${id}: ${errors.length} problem(s)`);
     errors.slice(0, 40).forEach((e) => console.log(`   - ${e}`));
   } else {
-    console.log(`✓ ${id}: ${data.weeks.length}${partial || planned ? ` of ${WEEKS}` : ''} weeks, ${total} questions in Hinglish and English`);
+    console.log(`✓ ${id}: ${data.weeks.length}${partial || planned ? ` of ${WEEKS}` : ''} weeks, ${total} questions (${levelCounts.easy} easy, ${levelCounts.medium} medium, ${levelCounts.hard} hard) in Hinglish and English`);
   }
   // Not errors: a translation may write a number as a word. Listed so a person can check them.
   if (warnings.length) {

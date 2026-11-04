@@ -58,4 +58,10 @@ export type Week = {
 
 export type SubjectContent = { subjectId: string; weeks: Week[] };
 
-export type WeekRef = { week: number; title: string; questionCount: number };
+export type WeekRef = {
+  week: number;
+  title: string;
+  questionCount: number;
+  /** Questions at each difficulty, for the Easy / Medium / Hard choice on practice. */
+  levels?: Record<Difficulty, number>;
+};
