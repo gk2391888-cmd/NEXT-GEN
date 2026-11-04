@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getAuthProviders, getSupabase } from '@/lib/supabase/client';
+import { isDisposableEmail } from '@/lib/disposable-email';
+import { PRICING } from '@/lib/plans';
 import { useAuth } from './auth-provider';
 
 const RESEND_SECONDS = 60;
@@ -65,6 +67,10 @@ export function LoginForm() {
       setError('Enter a valid email address, such as rahul@gmail.com.');
       return;
     }
+    if (isDisposableEmail(address)) {
+      setError('Temporary email addresses can’t be used. Please use your own email, such as Gmail or your college email.');
+      return;
+    }
     setBusy(true);
     setError('');
     // The email carries a login link (and a code too, once the email template includes {{ .Token }}).
@@ -109,8 +115,8 @@ export function LoginForm() {
 
       {step === 'email' ? (
         <form onSubmit={sendCode} noValidate>
-          <h1 className="login-title">Log in to save your progress</h1>
-          <p className="mt-sm mb-xl">Pick up your notes and tests exactly where you left off, on any device.</p>
+          <h1 className="login-title">Log in or sign up</h1>
+          <p className="mt-sm mb-xl">New accounts get {PRICING.trialDays} days of full access free, no card needed. Your progress is saved on every device.</p>
           {googleEnabled && (
             <>
               <button type="button" className="btn btn-secondary btn-block btn-lg btn-google" onClick={google}>
@@ -139,7 +145,7 @@ export function LoginForm() {
             {busy ? 'Sending…' : 'Email me a login link →'}
           </button>
           <p className="muted mt-lg">
-            New here? Your account is created automatically. You can also study and practise without logging in; your progress will then be saved only on this device.
+            New here? Your account is created automatically. One free trial per person. Week 1 of every subject is free to preview without an account.
           </p>
           <p className="muted mt-md">
             By continuing you agree to our <Link href="/terms">Terms</Link> and <Link href="/privacy">Privacy Policy</Link>.

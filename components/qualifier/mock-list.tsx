@@ -32,7 +32,7 @@ export function QualifierMockList({ mocks, sections, questionCounts }: { mocks: 
             <div className="muted">
               {attempts.length ? (
                 <>Best: <strong className={accuracyTone(best)}>{best}%</strong> · {attempts.length} attempt{attempts.length > 1 ? 's' : ''}</>
-              ) : m.pro ? `Part of Pro: free for ${PRICING.trialDays} days after you sign up` : 'Free, no login needed'}
+              ) : m.pro ? `Part of Pro: included in the ${PRICING.trialDays}-day free trial` : 'Free, no login needed'}
             </div>
             <Link className={`btn ${inProgress || !attempts.length ? 'btn-primary' : 'btn-secondary'}`} href={`/qualifier/${m.qualifier}/mock/${m.id}`}>
               {inProgress ? 'Resume mock' : attempts.length ? 'Take again' : 'Start mock'} →

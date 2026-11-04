@@ -10,6 +10,7 @@ import { RenewBanner } from './renew-banner';
 import { ProgrammeSwitch } from './programme-switch';
 import { ProgrammePrompt } from './programme-prompt';
 import { ChoiceNotice } from './choice-notice';
+import { AccessGate } from './access-gate';
 import { useChoice, useChosen } from '@/lib/programme-choice';
 import { choiceHas, QUALIFIER_PATH, type Tool } from '@/lib/programmes';
 
@@ -91,14 +92,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="sidebar-bottom">
           {ready && !user && (
             <Link href={`/login?next=${encodeURIComponent(pathname)}`} className="sidebar-login">
-              <strong>Log in to save progress</strong>
-              <span>Keep your progress on every device</span>
+              <strong>Start your {PRICING.trialDays}-day free trial</strong>
+              <span>Sign up free, no card needed</span>
             </Link>
           )}
-          {ready && user && !plan.isPro && (
+          {ready && user && !plan.isPro && !isAdmin && (
             <Link href="/pricing" className="sidebar-pro">
-              <strong>Go Pro for ₹{PRICING.proMonthlyInr}/month</strong>
-              <span>More AI doubts and End term tests</span>
+              <strong>Get Pro for ₹{PRICING.proMonthlyInr}</strong>
+              <span>30 days of full access, progress kept</span>
             </Link>
           )}
           <div className="sidebar-info">
@@ -131,7 +132,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <main className="content" id="content">
           <RenewBanner />
           <ChoiceNotice />
-          {children}
+          <AccessGate>{children}</AccessGate>
           <ProgrammePrompt />
         </main>
         <footer className="footer">

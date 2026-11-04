@@ -39,8 +39,8 @@ export const AI_FEATURES = {
     id: 'doubt',
     name: 'AI Doubt Solver',
     model: 'smart',
+    // Only trial and Pro students (and admins): the whole study app needs an active plan.
     limits: {
-      free: { perDay: 5, cooldownSec: 15, historyMessages: 6, maxInputChars: 1500, maxOutputTokens: 900 },
       pro: { perDay: 200, cooldownSec: 3, historyMessages: 12, maxInputChars: 4000, maxOutputTokens: 1800 },
     },
   },

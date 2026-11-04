@@ -9,6 +9,8 @@ import { localize } from '@/lib/question-text';
 import { LanguageSwitch } from '@/components/quiz/language-switch';
 import { useInChoice } from '@/lib/programme-choice';
 import { LevelComingSoon } from '@/components/coming-soon';
+import { ProContentStatus } from '@/components/pro-lock';
+import { useProContent } from '@/lib/pro-content';
 
 export type SearchEntry = { subjectId: string; subject: string; week: number; title: string; summary: string; text: string };
 
@@ -46,7 +48,13 @@ function snippet(text: string, query: string) {
   return `${start > 0 ? '…' : ''}${text.slice(start, i + 120)}…`;
 }
 
-export function NotesSearch({ entries: allEntries }: { entries: SearchEntry[] }) {
+export function NotesSearch() {
+  const { data, error, retry } = useProContent<{ entries: SearchEntry[] }>('/api/pro/search');
+  if (!data) return <ProContentStatus error={error} onRetry={retry} />;
+  return <SearchView allEntries={data.entries} />;
+}
+
+function SearchView({ allEntries }: { allEntries: SearchEntry[] }) {
   const router = useRouter();
   const initial = useSearchParams().get('q') ?? '';
   const [query, setQuery] = useState(initial);

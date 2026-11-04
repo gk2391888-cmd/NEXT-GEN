@@ -11,7 +11,7 @@ NEXT GEN ("by THE TECH HUB") is a study site for **IIT Madras online BS students
 
 It also has a **Qualifier Prep** section for people preparing for the IITM BS qualifier exam, who aren't students yet.
 
-Around that content it adds mock tests, a Python coding lab, an AI doubt solver, spaced-repetition revision, an exam planner, progress tracking, and a paid **Pro** plan (₹99 for 30 days, with a 7-day free trial when you sign up).
+Around that content it adds mock tests, a Python coding lab, an AI doubt solver, spaced-repetition revision, an exam planner, progress tracking, and a paid **Pro** plan (₹99 for 30 days, with a 7-day free trial once per person). Without an active trial or Pro, only the Overview, Qualifier Prep, week 1 of every subject and a few utility pages open; everything else shows a paywall.
 
 It was built in 3 phases, one commit each:
 
@@ -50,9 +50,11 @@ next-gen/
 │   ├── login/  profile/  pricing/  admin/  privacy/  terms/
 │   ├── api/                  ← Server-only endpoints
 │   │   ├── ai/[feature]/route.ts      → every AI feature (POST /api/ai/doubt)
-│   │   ├── content/questions/route.ts → every question as JSON (static)
-│   │   ├── pro/coding/[id]/route.ts   → an OPPE problem; ?part=answers adds hidden tests + solution (Pro only)
-│   │   ├── pro/tests/[subject]/[test]/route.ts → the End-term question pool (Pro only)
+│   │   ├── pro/week/[subject]/[week]/route.ts → a week's notes + questions (week 1 open, others trial/Pro)
+│   │   ├── pro/formulas/[subject]/route.ts, pro/search/route.ts, pro/questions/route.ts → formula sheet, search text, every question (trial/Pro)
+│   │   ├── pro/coding/[id]/route.ts   → a Coding Lab problem; ?part=answers adds hidden tests + solution (trial/Pro)
+│   │   ├── pro/tests/[subject]/[test]/route.ts → a mock test's question pool (trial/Pro)
+│   │   ├── trial/start/route.ts       → claims the free trial once per person (claim_trial(), migration 0009)
 │   │   ├── pro/qualifier/[mock]/route.ts → a Pro qualifier mock's questions (Pro only)
 │   │   ├── content/qualifier/[mock]/route.ts → a free qualifier mock's questions (static, for the doubt solver)
 │   │   └── payments/{config,order,verify,webhook,upi,upi/review}/route.ts
@@ -70,7 +72,9 @@ next-gen/
 │   ├── content.ts            ← Reads content/*.json (server-only)
 │   ├── progress/             ← ★ Local progress store, types, insights, spaced repetition
 │   ├── sync.ts               ← ★ Uploads and downloads progress to and from Supabase
-│   ├── plans.ts  plan.ts     ← guest / free / trial / pro logic + PRICING (shared) · usePlan() hook
+│   ├── plans.ts  plan.ts     ← guest / free / trial / pro logic + PRICING (shared) · usePlan(), useStudyAccess() hooks
+│   ├── access.ts             ← isOpenPath(): the pages open without a plan (shared)
+│   ├── trial.ts  disposable-email.ts ← claiming the free trial (browser) · throwaway-inbox list (shared)
 │   ├── ai/                   ← ★ AI features + Free/Pro limits (features.ts), askAi() (client.ts)
 │   ├── levels.ts  practice-level.ts  ← Easy / Medium / Hard / Mixed (shared) · the practice level picked (browser)
 │   ├── tests.ts  planner.ts  coding.ts  overrides.ts  question-bank.ts  python-runner.ts
@@ -87,7 +91,7 @@ next-gen/
 │   ├── qualifier/            ← qualifiers.json (qualifiers + their mocks), mocks/<mock>.json (Hinglish), mocks-en/<mock>.json (English)
 │   ├── lab.json  faqs.json   ← "Predict the output" cards, quick concept answers
 ├── tokens/                   ← ★ Design tokens (DTCG JSON): primitive / semantic / component
-├── supabase/migrations/      ← 0001 → 0008, run by hand in the Supabase SQL editor
+├── supabase/migrations/      ← 0001 → 0009, run by hand in the Supabase SQL editor
 ├── scripts/
 │   ├── validate-content.mjs  ← Runs before every build, so broken content never ships
 │   ├── build-tokens.mjs      ← tokens/*.json → app/tokens.css + lib/tokens.ts
@@ -123,10 +127,10 @@ next-gen/
 **D. The database enforces security, not the app.**
 
 - Every table has Row Level Security, so a student can only ever see their own rows.
-- Students **can't edit their plan dates**: column-level grants in migration 0002 block it.
+- Students **can't edit their plan dates**: column-level grants in migration 0002 block it. The free trial is granted only by `claim_trial()` (migration 0009), called with the service role by `/api/trial/start`, once per person.
 - AI limits are counted atomically by the SQL function `consume_ai_quota()`. Only the server can call it, using the limits in `lib/ai/features.ts`.
 - Only server routes that hold `SUPABASE_SERVICE_ROLE_KEY` can grant Pro.
-- Pro **content** (OPPE problems, End-term pools) is only sent by `/api/pro/*`, after `requirePro()` ([lib/server/pro-access.ts](lib/server/pro-access.ts)) has checked the access token and asked `public.is_pro()` as that student. The plan in localStorage only decides what the UI shows.
+- Paid **content** (notes and questions after week 1, mock tests, Coding Lab problems, the question bank) is only sent by `/api/pro/*`, after `requirePro()` ([lib/server/pro-access.ts](lib/server/pro-access.ts)) has checked the access token and asked `public.is_pro()` as that student (admins pass too). The plan in localStorage only decides what the UI shows.
 
 **E. The student's choice filters what they see, not which pages exist.**
 
@@ -147,7 +151,8 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 
 | Table | Holds | Who writes it |
 |---|---|---|
-| `profiles` | Name, subjects, last visited, exam target, `trial_ends_at`, `pro_until` | Student (limited columns); trigger on sign-up; server for `pro_until` |
+| `profiles` | Name, subjects, last visited, exam target, `trial_ends_at`, `pro_until` | Student (limited columns); trigger on sign-up; server for `trial_ends_at` (`claim_trial()`) and `pro_until` |
+| `trial_claims` | One row per free-trial claim: SHA-256 of the normalised email, device IDs, keyed hash of the IP, granted or why not. Kept when the account is deleted (migration 0009) | Server (service role) only |
 | `answers` | One row per answered question (practice or test) | Student |
 | `test_attempts` | Submitted mock tests, responses, time per question | Student |
 | `coding_attempts` | Submitted timed OPPE simulations: set, score out of 100, per-problem public/hidden tests passed, time and code (migration 0007) | Student |
@@ -165,25 +170,37 @@ Browser ──(publishable key + RLS)──► Supabase  (profiles, answers, tes
 
 | Tier | How they get it | What they can do |
 |---|---|---|
-| **Guest** | Not logged in | Everything free. Progress stays on this device only. No AI. |
-| **Free** | Logged in, trial over | Free features + 5 AI doubts a day |
-| **Trial** | First 7 days after sign-up (`trial_ends_at`) | Same as Pro |
-| **Pro** | Paid (`pro_until` is in the future) | End-term mock tests, OPPE coding sets and the timed OPPE simulation, 200 doubts a day, time per question, Save as PDF |
-| **Admin** | A row in `public.admins`, added by hand in SQL | `/admin` panel |
+| **Guest** | Not logged in | The open pages only: Overview, Qualifier Prep (with its free mocks), week 1 of every subject (notes and practice), the subject and week lists, grade calculator, pricing, legal pages. Progress stays on this device. |
+| **Free** (shown as "trial ended") | Logged in, trial or Pro over, or no trial given | The same open pages, plus their profile. Every other page shows the paywall. Their progress stays in the account. |
+| **Trial** | 7 days, claimed once per person after the first login (`trial_ends_at`) | Everything, same as Pro |
+| **Pro** | Paid (`pro_until` is in the future) | Everything: all notes and practice, mock tests, Coding Lab and the timed OPPE simulation, 200 doubts a day, time per question, Save as PDF |
+| **Admin** | A row in `public.admins`, added by hand in SQL | Everything, whatever their own plan, plus the `/admin` panel |
 
-The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`). Pro features are wrapped in `<ProLock>` or show a `<ProTag>` ([components/pro-lock.tsx](components/pro-lock.tsx)).
+The tier is calculated in [lib/plan.ts](lib/plan.ts) (`planFrom`), and `useStudyAccess()` turns it into `checking / guest / starting / locked / open`.
 
-`<ProLock>` only decides what the UI shows, from the plan in localStorage, which a student can edit. So anything worth paying for must also be checked on the server:
+**Which pages need a plan.** `isOpenPath()` in [lib/access.ts](lib/access.ts) lists the open pages. [components/shell.tsx](components/shell.tsx) wraps every page in `<AccessGate>` ([access-gate.tsx](components/access-gate.tsx)), which shows [`<Paywall>`](components/paywall.tsx) on any other page unless access is `open`:
+- guests get the sign-up screen (trial, then ₹99 for 30 days, and a link to the free week 1);
+- `starting` (a new account claiming its trial) shows "Setting up your free trial…";
+- `locked` says why (trial ended, Pro ended, or no trial on this account and the reason), that their progress is saved, and has the Razorpay / UPI buttons from `useProCheckout()` ([pro-checkout.tsx](components/pro-checkout.tsx), shared with `/pricing`).
+Inside open pages, single Pro items (a Pro qualifier mock) still use `<ProLock>`.
 
-| Pro feature | Where it's enforced |
+**The free trial, once per person.** New accounts start with `trial_ends_at` null (migration 0009). Once the account has loaded, [auth-provider.tsx](components/auth/auth-provider.tsx) calls `claimTrial()` ([lib/trial.ts](lib/trial.ts)) → `POST /api/trial/start` → `claim_trial()` in the database, which grants 7 days unless the email is a throwaway inbox ([lib/disposable-email.ts](lib/disposable-email.ts), also refused by the login form), the same email already had one (lower-cased, `+tag` dropped, Gmail dots dropped), this browser already had one (device ID in localStorage `nextgen-device-id` and the httpOnly cookie `ng_device`), or 3 trials already started from this IP in 24 hours. No trial still sets `trial_ends_at` to now, so the check runs once. Accounts that already had their turn call it once per device too, which records the device. The reason is kept in localStorage (`nextgen-trial-result:<uid>`) for the paywall's wording.
+
+`<AccessGate>` and `<ProLock>` only decide what the UI shows, from the plan in localStorage, which a student can edit. So anything worth paying for is also checked on the server:
+
+| Paid content | Where it's enforced |
 |---|---|
+| Notes and practice questions, weeks 2–12 | Server: `/api/pro/week/<subject>/<week>`. The page has only the title and summary; week 1 is in the page as the free preview. |
+| Formula sheets, search, the question bank (My Mistakes, search, AI, admin) | Server: `/api/pro/formulas/<subject>`, `/api/pro/search`, `/api/pro/questions` |
+| Quiz 1, Quiz 2 and End term mock tests | Server: `/api/pro/tests/<subject>/<test>`. The page has no questions. |
+| Coding Lab practice problems | Server: `/api/pro/coding/<id>`, the same as OPPE problems below. |
 | OPPE coding sets | Server: `/api/pro/coding/<id>`. The page only has the title; statement and visible tests come from the route, hidden tests and solution only on Submit or "Show model solution" (`?part=answers`). |
 | Timed OPPE sets | Server: `/api/pro/oppe/<set>`. The page only has the set's id, title and time limit; problems come from the route with hidden tests blanked, and `?part=answers` (every problem's tests and solution) is fetched on Submit and for the score report. |
-| End-term mock tests | Server: `/api/pro/tests/<subject>/end-term`. The page has no questions. |
 | Qualifier mock 2 (DS, ES) | Server: `/api/pro/qualifier/<mock>`. The page has only the question count. |
-| AI limits (200 doubts a day, longer answers) | Server: `lib/server/ai/handler.ts` |
+| AI Doubt Solver (trial, Pro and admins only; 200 a day) | Server: `lib/server/ai/handler.ts` |
 | Pro-only PDF notes | Storage policies (migration 0006) |
 | Time per question, Save as PDF | UI only, on purpose: one shows the student's own timings, the other is the browser's print dialog. Nothing to protect. |
+| "Predict the output" cards (`/lab`), doubt-solver FAQs, the subject and week lists | UI only, on purpose: small, or titles only. |
 
 To add Pro content: put it behind a route under `app/api/pro/` that starts with `const denied = await requirePro(req); if (denied) return denied;`, fetch it with `useProContent()` inside a `<ProLock>`, and never pass it as a prop from a server page (props end up in the page's HTML).
 
@@ -193,7 +210,8 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 
 - **Left sidebar** with the "Preparing for" switch and up to 11 nav items, plus Admin for admins. Which items show depends on the choice (`choiceHas()`): Qualifier Prep only for qualifier students; Mock Tests, Exam Planner and Grade Calculator only for admitted students; Coding Lab only for the Data Science programme (Foundation and Diplomas). Before a visitor chooses, all of them show.
 - **Notice above the page** ([choice-notice.tsx](components/choice-notice.tsx)) when the page isn't part of the choice, with "Switch to …" and a way back.
-- **Bottom of the sidebar:** a "Log in to save progress" card (guests) or a "Go Pro" card (free users).
+- **Bottom of the sidebar:** a "Start your 7-day free trial" card (guests) or a "Get Pro for ₹99" card (logged in without a plan).
+- **The page itself** goes through `<AccessGate>`: pages outside `isOpenPath()` show the paywall without an active trial or Pro (see §5).
 - **Topbar:** breadcrumb, and an account menu showing the sync chip, plan chip, avatar, Profile, Progress, Billing and Logout.
 - On mobile the sidebar becomes a ☰ drawer.
 - `/login` is the only full-screen page, without this layout.
@@ -216,7 +234,7 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 1. You enter an email. Supabase sends a **magic link**, and a 6-digit code too once the email template includes `{{ .Token }}`.
 2. Step 2 tells you to click the link **or** type the code. A resend button unlocks after 60 s.
 3. A Google button appears automatically if Google is switched on in Supabase.
-4. There's no separate sign-up. The first login creates the account, and a database trigger creates the `profiles` row along with the 7-day trial.
+4. There's no separate sign-up. The first login creates the account, and a database trigger creates the `profiles` row. The 7-day trial is then claimed by the app (`/api/trial/start`, once per person; see §5). Throwaway email addresses are refused here (`isDisposableEmail()`).
 5. After login you're sent back to `next`. Only same-site paths are allowed, which blocks open redirects.
 6. **Guest import:** if this device has progress from before logging in, a modal offers "Save to my account" or "Start fresh" ([import-prompt.tsx](components/auth/import-prompt.tsx)).
 
@@ -383,11 +401,11 @@ Attempts are a `coding` `SyncOp` and sync to `coding_attempts` (migration 0007) 
 
 ### Pro ending reminder
 
-- [components/renew-banner.tsx](components/renew-banner.tsx), shown on every page except `/pricing`: paid Pro in its last 5 days, or a trial in its last 2. "Later" hides it for the day.
+- [components/renew-banner.tsx](components/renew-banner.tsx), shown on every page except `/pricing`: paid Pro in its last 5 days, or a trial in its last 2. It says the study tools lock when it ends and the progress stays. "Later" hides it for the day.
 
 ### Pricing and payment (`/pricing`)
 
-1. Free vs Pro cards ([components/pricing-plans.tsx](components/pricing-plans.tsx)). The button changes with your state: Start trial / Upgrade / Keep Pro / Pro active / "launching soon" when neither Razorpay nor `UPI_ID` is set.
+1. Free trial vs Pro cards ([components/pricing-plans.tsx](components/pricing-plans.tsx)), and what stays open without a plan. The Pro button comes from `useProCheckout()` ([pro-checkout.tsx](components/pro-checkout.tsx)), shared with the paywall, and changes with your state: Start trial / Get Pro / Keep Pro / Pro active / "launching soon" when neither Razorpay nor `UPI_ID` is set.
 2. Payment flow:
    - `POST /api/payments/order` creates a Razorpay order plus a `payments` row with status `created`.
    - The Razorpay modal opens.
@@ -451,9 +469,9 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 
 - **Demo mode (no real login needed):** `npm run dev:demo` starts a dev server on port 3001 where [lib/supabase/demo.ts](lib/supabase/demo.ts) replaces Supabase with dummy data kept in the browser. No requests go to the real database, and the AI and payment routes return canned replies.
   - Add `?demo=<persona>` to any URL to switch who you are:
-    - `guest`: logged out
-    - `new`: just signed up, with progress on the device to import
-    - `free`: trial over, 3 of 5 AI doubts used today
+    - `guest`: logged out: open pages only, the paywall elsewhere
+    - `new`: just signed up, with progress on the device to import; claims its trial on first load (demo answer to `/api/trial/start`)
+    - `free`: trial over: open pages only, the "trial ended" paywall elsewhere
     - `trial`: Pro trial, 4 days left
     - `pro`: paid Pro
     - `admin`: Pro plus the admin panel
@@ -468,9 +486,9 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 
 ## 9. Things worth knowing
 
-1. **Pro content comes from the server, and `<ProLock>` is only UI.**
-   - OPPE problems and End-term pools are served by `/api/pro/*` after a server-side plan check (see §5). Don't pass Pro content as props from a server page: props are in the page's HTML.
-   - End-term questions are still the same questions used in free practice (and in `/api/content/questions`), so what Pro buys there is the 30-question timed test, not new questions. Pro-only questions would need their own content file that only the route reads.
+1. **Paid content comes from the server, and `<AccessGate>` / `<ProLock>` are only UI.**
+   - Notes and questions after week 1, mock tests, Coding Lab problems and the question bank are served by `/api/pro/*` after a server-side plan check (see §5). Don't pass them as props from a server page: props are in the page's HTML. To add a page that needs a plan, leave it out of `isOpenPath()` and load its content from a route that calls `requirePro()`.
+   - Week 1 of every subject is in the page on purpose (free preview, and what search engines index; the sitemap lists only open pages).
    - Hidden tests reach a Pro student's browser on Submit, since Pyodide grades in the browser (see Coding Lab above).
 2. **Coding Lab "solved" status is device-only.** `markSolved` uses `commit`, not `dispatch`, so it never syncs to the account. Timed OPPE attempts do sync (`coding_attempts`).
 3. **There are no automated tests and no ESLint setup.** The only safety nets are `validate:content` (which runs before every build) and `typecheck`.

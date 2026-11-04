@@ -2,9 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getProblem, OPPE_SETS, PROBLEMS, siblings } from '@/lib/coding';
-import { CodingWorkspace } from '@/components/coding/workspace';
 import { ProCodingWorkspace } from '@/components/coding/pro-workspace';
-import { ProLock } from '@/components/pro-lock';
 
 type Params = { id: string };
 
@@ -34,12 +32,8 @@ export default async function ProblemPage({ params }: { params: Promise<Params> 
         <Link href="/lab">Coding Lab</Link><span className="sep">/</span>
         {setTitle}<span className="sep">/</span><strong>{problem.title}</strong>
       </div>
-      {problem.tier === 'oppe' ? (
-        // Only the id goes into the page: the problem itself is Pro content, fetched from /api/pro/coding/<id>.
-        <ProLock feature="OPPE-style coding practice"><ProCodingWorkspace id={problem.id} {...nav} /></ProLock>
-      ) : (
-        <CodingWorkspace problem={problem} {...nav} />
-      )}
+      {/* Only the id goes into the page: the problem comes from /api/pro/coding/<id>, which checks the plan. */}
+      <ProCodingWorkspace id={problem.id} {...nav} />
     </>
   );
 }

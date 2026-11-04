@@ -14,7 +14,7 @@ export default function DoubtsPage() {
       <PageHead
         kicker="Ask anything"
         title="AI Doubt Solver"
-        description={`Type your doubt in Hinglish or English and get a step-by-step explanation. Free students get ${limitsFor('doubt', 'free')?.perDay} doubts a day; Pro gets ${limitsFor('doubt', 'pro')?.perDay}.`}
+        description={`Type your doubt in Hinglish or English and get a step-by-step explanation, up to ${limitsFor('doubt', 'pro')?.perDay} doubts a day.`}
       />
       <Suspense>
         <DoubtChat />

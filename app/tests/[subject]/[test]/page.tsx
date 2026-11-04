@@ -3,9 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getQuestionsForWeeks, getSubject, getSubjects, getWeekRefs, getWeeks } from '@/lib/content';
 import { getMockTest, MOCK_TESTS } from '@/lib/tests';
-import { TestRunner } from '@/components/quiz/test-runner';
 import { ProTestRunner } from '@/components/quiz/pro-test-runner';
-import { ProLock } from '@/components/pro-lock';
 
 type Params = { subject: string; test: string };
 
@@ -37,14 +35,8 @@ export default async function TestPage({ params }: { params: Promise<Params> }) 
         <Link href="/tests">Mock Tests</Link><span className="sep">/</span>
         {subject.short}<span className="sep">/</span><strong>{test.title}</strong>
       </div>
-      {test.pro ? (
-        // The questions aren't put in the page: Pro tests fetch them from /api/pro/tests/<subject>/<test>.
-        <ProLock feature="The End term mock test">
-          <ProTestRunner subject={subject} test={test} weekTitles={weekTitles} />
-        </ProLock>
-      ) : (
-        <TestRunner subject={subject} test={test} pool={pool} weekTitles={weekTitles} />
-      )}
+      {/* The questions aren't put in the page: they come from /api/pro/tests/<subject>/<test>, which checks the plan. */}
+      <ProTestRunner subject={subject} test={test} weekTitles={weekTitles} />
     </>
   );
 }

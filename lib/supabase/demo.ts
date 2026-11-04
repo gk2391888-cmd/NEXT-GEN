@@ -7,9 +7,8 @@
  *
  * Start it with `npm run dev:demo`, then pick who you are with ?demo=<persona> on
  * any URL: guest · new · free · trial · pro · admin. It never runs in production.
+ * guest and free (trial over) see the paywall; new claims its trial on first load.
  */
-import math1 from '@/content/weeks/math1.json';
-import stat1 from '@/content/weeks/stat1.json';
 import { AI_FEATURES, isAiFeatureId, limitsFor } from '@/lib/ai/features';
 import { planFrom, PRICING } from '@/lib/plans';
 import { cleanUtr, isUtr } from '@/lib/upi';
@@ -75,12 +74,28 @@ const dateOnly = (offset: number) => day(offset).slice(0, 10);
 const todayIST = () => new Date(Date.now() + 5.5 * 3_600_000).toISOString().slice(0, 10);
 
 type Week = { week: number; questions: { id: string; answer: number }[] };
-const WEEKS: Record<string, Week[]> = { math1: math1.weeks, stat1: stat1.weeks };
+type Weeks = Record<string, Week[]>;
+
+/**
+ * The questions the dummy answers are made from, fetched from the dev server's own
+ * /api/pro/week route (which honours the demo header only in demo mode). Never imported
+ * from content/, since this file is in the browser bundle even in production builds.
+ */
+async function loadWeeks(): Promise<Weeks> {
+  const subjects = ['math1', 'stat1'];
+  const weeks = [1, 2, 3, 4, 5];
+  const get = (s: string, w: number) =>
+    fetch(`/api/pro/week/${s}/${w}`, { headers: { 'x-demo-pro': '1' } })
+      .then((r) => r.json())
+      .then((d) => d.week as Week);
+  const loaded = await Promise.all(subjects.map((s) => Promise.all(weeks.map((w) => get(s, w))))).catch(() => subjects.map(() => []));
+  return Object.fromEntries(subjects.map((s, i) => [s, loaded[i].filter(Boolean)]));
+}
 
 /** Deterministic "random" so the dummy data is the same on every reload. */
 const pick = (seed: string) => [...seed].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 1000, 7) / 1000;
 
-function seedUser(db: Db, p: Persona) {
+function seedUser(db: Db, p: Persona, WEEKS: Weeks) {
   const uid = userId(p);
   if ((db.profiles ?? []).some((r) => r.id === uid)) return;
   const now = Date.now();
@@ -91,7 +106,8 @@ function seedUser(db: Db, p: Persona) {
     full_name: NAMES[p as Exclude<Persona, 'guest'>],
     subjects: p === 'new' ? [] : ['math1', 'stat1', 'ct', 'eng1'],
     last_visited: p === 'new' ? null : { subjectId: 'math1', week: 4, at: day(-1) },
-    trial_ends_at: p === 'free' || p === 'pro' || p === 'admin' ? day(-20) : day(p === 'new' ? 7 : 4),
+    // A new account has no trial until it claims one (POST /api/trial/start, answered by demoFetch below).
+    trial_ends_at: p === 'new' ? null : p === 'free' || p === 'pro' || p === 'admin' ? day(-20) : day(4),
     pro_until: p === 'pro' || p === 'admin' ? day(21) : null,
     exam_name: p === 'new' ? null : 'Quiz 2',
     exam_date: p === 'new' ? null : dateOnly(10),
@@ -167,10 +183,10 @@ function seedShared(db: Db) {
 }
 
 /** A logged-out student with some progress on this device, so the "save to my account" prompt shows. */
-function seedGuestProgress() {
+function seedGuestProgress(WEEKS: Weeks) {
   if (read<{ answers?: unknown[] }>(GUEST_PROGRESS_KEY, {}).answers?.length) return;
   const at = day(-1);
-  const answers = WEEKS.math1[0].questions.map((q, i) => ({ id: `guest-${q.id}`, questionId: q.id, subjectId: 'math1', week: 1, correct: i !== 2, mode: 'practice', at }));
+  const answers = (WEEKS.math1[0]?.questions ?? []).map((q, i) => ({ id: `guest-${q.id}`, questionId: q.id, subjectId: 'math1', week: 1, correct: i !== 2, mode: 'practice', at }));
   write(GUEST_PROGRESS_KEY, { version: 2, weeks: { 'math1:1': { done: true, saved: false } }, answers, tests: [], active: {}, pending: [] });
 }
 
@@ -252,7 +268,8 @@ class Query implements PromiseLike<Result> {
   single() { this.oneRow = 'one'; return this; }
 
   then<A = Result, B = never>(ok?: ((r: Result) => A | PromiseLike<A>) | null, fail?: ((e: unknown) => B | PromiseLike<B>) | null): PromiseLike<A | B> {
-    return new Promise<Result>((resolve) => setTimeout(() => resolve(this.run()), 120)).then(ok, fail);
+    // Waits for the dummy data to be seeded (see createDemoClient).
+    return seeded.then(() => new Promise<Result>((resolve) => setTimeout(() => resolve(this.run()), 120))).then(ok, fail);
   }
 
   private visible(row: Row) {
@@ -306,23 +323,31 @@ class Query implements PromiseLike<Result> {
 
 type AuthListener = (event: string, session: ReturnType<typeof sessionFor>) => void;
 
+/** Resolves once the persona's dummy data is in place; every query waits for it. */
+let seeded: Promise<unknown> = Promise.resolve();
+
 export function createDemoClient() {
   let current = persona();
   const listeners = new Set<AuthListener>();
-  const db = loadDb();
-  seedShared(db);
-  if (current !== 'guest') seedUser(db, current);
-  saveDb(db);
-  // Only the "new" persona should be asked to import this device's progress.
-  if (current === 'new') seedGuestProgress();
-  else if (read<{ answers?: { id: string }[] }>(GUEST_PROGRESS_KEY, {}).answers?.[0]?.id.startsWith('guest-')) window.localStorage.removeItem(GUEST_PROGRESS_KEY);
+  const weeks = loadWeeks();
+  const seed = (p: Persona) =>
+    (seeded = seeded.then(() => weeks).then((w) => {
+      const db = loadDb();
+      seedShared(db);
+      if (p !== 'guest') seedUser(db, p, w);
+      saveDb(db);
+      return w;
+    }));
+  seed(current).then((w) => {
+    // Only the "new" persona should be asked to import this device's progress.
+    if (current === 'new') seedGuestProgress(w as Weeks);
+  });
+  if (current !== 'new' && read<{ answers?: { id: string }[] }>(GUEST_PROGRESS_KEY, {}).answers?.[0]?.id.startsWith('guest-')) window.localStorage.removeItem(GUEST_PROGRESS_KEY);
 
   const signIn = (p: Persona) => {
     current = p;
     write(PERSONA_KEY, p);
-    const next = loadDb();
-    seedUser(next, p);
-    saveDb(next);
+    seed(p);
     const session = sessionFor(p);
     listeners.forEach((l) => l('SIGNED_IN', session));
     return session;
@@ -423,6 +448,16 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
         ].join('\n'),
       },
     });
+  }
+
+  // Same contract as /api/trial/start: a new account gets 7 days, anyone else already had their turn.
+  if (path === '/api/trial/start') {
+    const db = loadDb();
+    const profile = (db.profiles ?? []).find((r) => r.id === userId(p));
+    if (!profile || profile.trial_ends_at || profile.pro_until) return reply({ result: 'already' });
+    profile.trial_ends_at = day(PRICING.trialDays);
+    saveDb(db);
+    return reply({ result: 'granted' });
   }
 
   if (path === '/api/payments/order' || path === '/api/payments/verify') return reply({ error: 'Payments are switched off in demo mode.' }, 503);
