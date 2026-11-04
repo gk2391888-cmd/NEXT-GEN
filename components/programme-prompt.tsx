@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { progress, useProgress } from '@/lib/progress/store';
 import { hasProgress } from '@/lib/progress/types';
 import { setChoice, useLocalChoice } from '@/lib/programme-choice';
-import { CHOICES, choiceInProfile, DEFAULT_CHOICE_ID, parseChoice, PROGRAMMES, QUALIFIER, QUALIFIER_PATH } from '@/lib/programmes';
+import { CHOICES, choiceInProfile, DEFAULT_CHOICE_ID, parseChoice, PROGRAMMES, QUALIFIER_PATH } from '@/lib/programmes';
 import { useAuth } from './auth/auth-provider';
 
 /** Pages where the question would get in the way. */
@@ -42,7 +42,8 @@ export function ProgrammePrompt() {
   function confirm(e: React.FormEvent) {
     e.preventDefault();
     setChoice(picked, user ? state.profile : undefined);
-    if (picked === QUALIFIER) router.push(QUALIFIER_PATH);
+    const qualifier = parseChoice(picked)?.qualifier;
+    if (qualifier) router.push(`${QUALIFIER_PATH}/${qualifier}`);
   }
 
   return (
@@ -50,7 +51,7 @@ export function ProgrammePrompt() {
       <form className="card modal" onSubmit={confirm}>
         <span className="chip chip-teal">ONE QUICK QUESTION</span>
         <h2 id="programme-title" className="mt-md mb-sm">What are you preparing for?</h2>
-        <p className="muted mb-lg">We’ll show only that course’s subjects. You can change it any time from the menu or My profile.</p>
+        <p className="muted mb-lg">We’ll show only its subjects and tools. You can change it any time from the menu or My profile.</p>
         <fieldset className="fieldset stack" aria-labelledby="programme-title">
           {PROGRAMMES.map((p) => (
             <div key={p.id}>
@@ -63,9 +64,11 @@ export function ProgrammePrompt() {
             </div>
           ))}
           <div>
-            <div className="field-label mb-xs">Not admitted yet</div>
+            <div className="field-label mb-xs">Not admitted yet: the qualifier exam</div>
             <div className="check-grid">
-              <Option id={QUALIFIER} label="Qualifier exam" picked={picked} onPick={setPicked} />
+              {CHOICES.filter((c) => !c.programme).map((c) => (
+                <Option key={c.id} id={c.id} label={c.label} picked={picked} onPick={setPicked} />
+              ))}
             </div>
           </div>
         </fieldset>

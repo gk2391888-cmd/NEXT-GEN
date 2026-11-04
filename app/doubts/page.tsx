@@ -19,7 +19,6 @@ export default function DoubtsPage() {
       <Suspense>
         <DoubtChat />
       </Suspense>
-      <h2 className="section-heading">Quick concept answers</h2>
       <DoubtSearch faqs={faqs} />
     </>
   );

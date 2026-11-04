@@ -5,7 +5,7 @@ import { useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent, score, studyStreak, weakWeeks } from '@/lib/progress/insights';
 import { orderSubjects } from '@/lib/subjects';
-import { useChoice, useChoiceSubjects } from '@/lib/programme-choice';
+import { useChoice, useChoiceCatalog, useChoiceSubjects, useInChoice } from '@/lib/programme-choice';
 import { QUALIFIER_PATH, termSubjects } from '@/lib/programmes';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar, SubjectIcon, subjectColor, weekCount } from '@/components/ui';
@@ -13,24 +13,28 @@ import { AnnouncementBar } from '@/components/announcement-bar';
 import { LevelComingSoon, useLevelComingSoon } from '@/components/coming-soon';
 import { computeMistakes, isDue } from '@/lib/progress/mistakes';
 
-export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
+export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
   const choice = useChoice();
+  const catalog = useChoiceCatalog(allWeeks);
+  const inChoice = useInChoice();
+  // Every number on this page counts only the choice's subjects (and a qualifier's first weeks).
+  const answers = state.answers.filter((a) => inChoice(a.subjectId, a.week));
   const comingSoon = useLevelComingSoon(catalog);
   const subjects = orderSubjects(useChoiceSubjects(allSubjects), termSubjects(state.profile?.subjects));
-  const totals = score(state.answers);
+  const totals = score(answers);
   const programmeWeeks = subjects.map((s) => catalog[s.id] ?? []);
   const totalWeeks = programmeWeeks.reduce((n, w) => n + w.length, 0);
   const totalQuestions = programmeWeeks.reduce((n, weeks) => n + weeks.reduce((m, w) => m + w.questionCount, 0), 0);
   const weeksDone = subjects.reduce((n, s) => n + (catalog[s.id] ?? []).filter((w) => state.weeks[weekKey(s.id, w.week)]?.done).length, 0);
-  const streak = studyStreak(state.answers);
-  const weak = weakWeeks(state.answers).filter((w) => subjects.some((s) => s.id === w.subjectId)).slice(0, 3);
-  const dueMistakes = computeMistakes(state.answers).filter((m) => isDue(m)).length;
-  // Every subject, so "Continue" and weak weeks still name a subject from another programme.
-  const subjectById = new Map(allSubjects.map((s) => [s.id, s]));
+  const streak = studyStreak(answers);
+  const weak = weakWeeks(answers).slice(0, 3);
+  const dueMistakes = computeMistakes(answers).filter((m) => isDue(m)).length;
+  const subjectById = new Map(subjects.map((s) => [s.id, s]));
   const titleOf = (subjectId: string, week: number) => catalog[subjectId]?.find((w) => w.week === week)?.title ?? '';
 
-  const last = state.lastVisited;
+  // "Continue" only offers a week that's part of the choice.
+  const last = state.lastVisited && inChoice(state.lastVisited.subjectId, state.lastVisited.week) ? state.lastVisited : undefined;
   const lastSubject = last && subjectById.get(last.subjectId);
 
   return (
@@ -38,8 +42,8 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
       <AnnouncementBar />
       {choice.qualifier && (
         <div className="alert mb-lg flex-between">
-          <span>You’re preparing for the qualifier exam. Its weeks are the first Foundation weeks of the subjects below.</span>
-          <Link className="btn btn-primary" href={QUALIFIER_PATH}>Qualifier prep →</Link>
+          <span>You’re preparing for the {choice.programme.short} qualifier exam. It covers weeks 1–{choice.weeks} of the four courses below.</span>
+          <Link className="btn btn-primary" href={`${QUALIFIER_PATH}/${choice.qualifier}`}>Qualifier prep →</Link>
         </div>
       )}
       <div className="kicker">Your learning dashboard</div>
@@ -54,7 +58,11 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
             ) : (
               <Link className="btn btn-primary" href="/library">Start learning →</Link>
             )}
-            <Link className="btn btn-secondary" href="/tests">Take a mock test</Link>
+            {choice.qualifier ? (
+              <Link className="btn btn-secondary" href={`${QUALIFIER_PATH}/${choice.qualifier}`}>Take a qualifier mock</Link>
+            ) : (
+              <Link className="btn btn-secondary" href="/tests">Take a mock test</Link>
+            )}
           </div>
         </div>
         <div className="hero-art" aria-hidden="true"><span className="logo">N</span></div>
@@ -118,12 +126,16 @@ export function Dashboard({ subjects: allSubjects, catalog }: { subjects: Subjec
             title={dueMistakes ? `Revise ${dueMistakes} mistake${dueMistakes === 1 ? '' : 's'}` : 'My Mistakes'}
             text={dueMistakes ? 'Due today for revision' : 'Wrong answers come back here for revision'}
           />
-          <QuickAction
-            href="/planner"
-            icon="▦"
-            title={state.exam ? `${state.exam.name}: ${new Date(state.exam.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'Plan for your exam'}
-            text={state.exam ? 'See today’s study plan' : 'Get a day-by-day plan to your exam date'}
-          />
+          {choice.qualifier ? (
+            <QuickAction href={`${QUALIFIER_PATH}/${choice.qualifier}/plan`} icon="▦" title="Your qualifier study plan" text="A day-by-day plan to the qualifier exam" />
+          ) : (
+            <QuickAction
+              href="/planner"
+              icon="▦"
+              title={state.exam ? `${state.exam.name}: ${new Date(state.exam.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'Plan for your exam'}
+              text={state.exam ? 'See today’s study plan' : 'Get a day-by-day plan to your exam date'}
+            />
+          )}
           <QuickAction href="/doubts" icon="✦" title="Ask a doubt" text="Step-by-step answers from the AI doubt solver" />
           <QuickAction href="/practice" icon="▤" title="Practice a week" text={`${totalQuestions} original MCQs with Hinglish explanations`} />
         </section>

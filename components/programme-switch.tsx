@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useId } from 'react';
 import { useProgress } from '@/lib/progress/store';
-import { setChoice, useChoice, useSubjectCode } from '@/lib/programme-choice';
-import { CHOICES, PROGRAMMES, QUALIFIER, QUALIFIER_PATH } from '@/lib/programmes';
+import { setChoice, useChoice, useInChoice, useSubjectCode } from '@/lib/programme-choice';
+import { CHOICES, parseChoice, PROGRAMMES, QUALIFIER_PATH } from '@/lib/programmes';
 import type { Subject } from '@/lib/types';
 
 /** Picks the programme level (or the qualifier) whose subjects every page lists. Compact in the sidebar; a form field on the profile. */
@@ -16,7 +16,8 @@ export function ProgrammeSwitch({ variant = 'sidebar' }: { variant?: 'sidebar' |
 
   function change(value: string) {
     setChoice(value, state.profile);
-    if (value === QUALIFIER) router.push(QUALIFIER_PATH);
+    const qualifier = parseChoice(value)?.qualifier;
+    if (qualifier) router.push(`${QUALIFIER_PATH}/${qualifier}`);
   }
 
   return (
@@ -34,7 +35,11 @@ export function ProgrammeSwitch({ variant = 'sidebar' }: { variant?: 'sidebar' |
             ))}
           </optgroup>
         ))}
-        <option value={QUALIFIER}>{variant === 'sidebar' ? 'Qualifier exam' : CHOICES.find((c) => c.id === QUALIFIER)?.label}</option>
+        <optgroup label={variant === 'sidebar' ? 'Qualifier exam' : 'Qualifier exam (not admitted yet)'}>
+          {CHOICES.filter((c) => !c.programme).map((c) => (
+            <option key={c.id} value={c.id}>{c.label}</option>
+          ))}
+        </optgroup>
       </select>
     </div>
   );
@@ -43,4 +48,13 @@ export function ProgrammeSwitch({ variant = 'sidebar' }: { variant?: 'sidebar' |
 /** A subject's course code as the student's programme writes it, for pages rendered on the server. */
 export function SubjectCode({ subject }: { subject: Subject }) {
   return <>{useSubjectCode(subject)}</>;
+}
+
+/**
+ * A week of a subject on a page rendered on the server (the formula sheet), hidden when the subject is in the choice
+ * but the week isn't: a qualifier student sees weeks 1–4 only. Another programme's subject shows whole, under its notice.
+ */
+export function ChoiceWeek({ subjectId, week, children }: { subjectId: string; week: number; children: React.ReactNode }) {
+  const inChoice = useInChoice();
+  return inChoice(subjectId) && !inChoice(subjectId, week) ? null : <>{children}</>;
 }

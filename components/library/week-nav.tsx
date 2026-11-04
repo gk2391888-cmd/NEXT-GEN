@@ -6,10 +6,13 @@ import { weekKey } from '@/lib/progress/types';
 import { percent } from '@/lib/progress/insights';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar, subjectColor } from '@/components/ui';
-import { useSubjectCode } from '@/lib/programme-choice';
+import { useInChoice, useSubjectCode } from '@/lib/programme-choice';
 
-export function WeekNav({ subject, weeks, current }: { subject: Subject; weeks: WeekRef[]; current: number }) {
+export function WeekNav({ subject, weeks: allWeeks, current }: { subject: Subject; weeks: WeekRef[]; current: number }) {
   const state = useProgress();
+  const inChoice = useInChoice();
+  // A qualifier student sees the weeks the qualifier covers; another programme's subject shows whole.
+  const weeks = inChoice(subject.id) ? allWeeks.filter((w) => inChoice(subject.id, w.week)) : allWeeks;
   const isDone = (week: number) => Boolean(state.weeks[weekKey(subject.id, week)]?.done);
   const doneCount = weeks.filter((w) => isDone(w.week)).length;
   const code = useSubjectCode(subject);

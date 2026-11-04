@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSubject, getSubjects, getWeeks } from '@/lib/content';
-import { SubjectCode } from '@/components/programme-switch';
+import { ChoiceWeek, SubjectCode } from '@/components/programme-switch';
 import { InlineText, PageHead } from '@/components/ui';
 import { PrintButton } from '@/components/library/print-button';
 
@@ -40,10 +40,12 @@ export default async function FormulaSheetPage({ params }: { params: Promise<Par
         />
         <div className="formula-grid">
           {weeks.map((w) => (
-            <section key={w.week} className="formula-week">
-              <h3><Link href={`/library/${subject.id}/${w.week}`}>Week {w.week} · {w.title}</Link></h3>
-              <ul className="revision">{w.revision.map((r, i) => <li key={i}><InlineText text={r} /></li>)}</ul>
-            </section>
+            <ChoiceWeek key={w.week} subjectId={subject.id} week={w.week}>
+              <section className="formula-week">
+                <h3><Link href={`/library/${subject.id}/${w.week}`}>Week {w.week} · {w.title}</Link></h3>
+                <ul className="revision">{w.revision.map((r, i) => <li key={i}><InlineText text={r} /></li>)}</ul>
+              </section>
+            </ChoiceWeek>
           ))}
         </div>
       </article>

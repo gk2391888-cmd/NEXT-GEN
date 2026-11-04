@@ -6,6 +6,7 @@ import { progress, useProgress } from '@/lib/progress/store';
 import { computeMistakes, isDue, type Mistake } from '@/lib/progress/mistakes';
 import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
 import { useCorrectedQuestions } from '@/lib/overrides';
+import { useInChoice } from '@/lib/programme-choice';
 import type { Subject, WeekRef } from '@/lib/types';
 import { ProgressBar } from '@/components/ui';
 import { Explanation, QuestionView } from '@/components/quiz/question-view';
@@ -17,7 +18,9 @@ export function MistakesView({ subjects, catalog }: Props) {
   const state = useProgress();
   const bank = useQuestionBank();
   const [session, setSession] = useState<BankQuestion[] | null>(null);
-  const mistakes = useMemo(() => computeMistakes(state.answers), [state.answers]);
+  const inChoice = useInChoice();
+  // Only the choice's subjects (and a qualifier's first weeks); the rest come back when the student switches back.
+  const mistakes = useMemo(() => computeMistakes(state.answers).filter((m) => inChoice(m.subjectId, m.week)), [state.answers, inChoice]);
   const due = mistakes.filter((m) => isDue(m));
   const upcoming = mistakes.filter((m) => !isDue(m));
   const subjectName = new Map(subjects.map((s) => [s.id, s.short]));

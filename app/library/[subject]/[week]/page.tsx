@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getSubject, getSubjects, getWeek, getWeekRefs, getWeeks } from '@/lib/content';
-import { SubjectCode } from '@/components/programme-switch';
+import { ChoiceWeek, SubjectCode } from '@/components/programme-switch';
 import { InlineText } from '@/components/ui';
 import { WeekNav } from '@/components/library/week-nav';
 import { WeekActions, VisitTracker } from '@/components/library/week-actions';
@@ -91,7 +91,11 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
 
           <div className="notes-foot flush no-print">
             {prev ? <Link className="link" href={`/library/${subject.id}/${prev.week}`}>← Week {prev.week}: {prev.title}</Link> : <span />}
-            {next && <Link className="link" href={`/library/${subject.id}/${next.week}`}>Week {next.week}: {next.title} →</Link>}
+            {next && (
+              <ChoiceWeek subjectId={subject.id} week={next.week}>
+                <Link className="link" href={`/library/${subject.id}/${next.week}`}>Week {next.week}: {next.title} →</Link>
+              </ChoiceWeek>
+            )}
           </div>
         </article>
       </div>

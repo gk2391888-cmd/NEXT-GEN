@@ -6,7 +6,7 @@ import { progress, useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { buildPlan, daysUntil, EXAMS, examWeeks, type PlanItem } from '@/lib/planner';
 import { orderSubjects } from '@/lib/subjects';
-import { useChoiceSubjects } from '@/lib/programme-choice';
+import { useChoiceCatalog, useChoiceSubjects } from '@/lib/programme-choice';
 import { termSubjects } from '@/lib/programmes';
 import { LevelComingSoon, useLevelComingSoon } from '@/components/coming-soon';
 import type { Subject, WeekRef } from '@/lib/types';
@@ -18,9 +18,10 @@ const todayLocal = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-export function ExamPlanner({ subjects: allSubjects, catalog }: Props) {
+export function ExamPlanner({ subjects: allSubjects, catalog: allWeeks }: Props) {
   const state = useProgress();
   const subjects = useChoiceSubjects(allSubjects);
+  const catalog = useChoiceCatalog(allWeeks);
   const comingSoon = useLevelComingSoon(catalog);
   const [today, setToday] = useState('');
   const [name, setName] = useState('');

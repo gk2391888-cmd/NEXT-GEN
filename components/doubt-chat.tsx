@@ -11,6 +11,8 @@ import { limitsFor, type AiUsage } from '@/lib/ai/features';
 import { askAi } from '@/lib/ai/client';
 import { useQuestionLang } from '@/lib/question-lang';
 import { localize } from '@/lib/question-text';
+import { useInChoice } from '@/lib/programme-choice';
+import faqs from '@/content/faqs.json';
 import { useAuth } from './auth/auth-provider';
 import { RichText } from './rich-text';
 
@@ -28,6 +30,9 @@ export function DoubtChat() {
   const plan = usePlan();
   const params = useSearchParams();
   const lang = useQuestionLang();
+  const inChoice = useInChoice();
+  // An example from the student's own courses (the first quick answer in their choice).
+  const example = faqs.find((f) => inChoice(f.subject))?.title ?? 'Is week ke main concept ko ek example se samjhao.';
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -177,7 +182,7 @@ export function DoubtChat() {
       <div className="chat-log" aria-live="polite">
         {turns.length === 0 && (
           <p className="muted chat-empty">
-            Example: “Median aur mean mein outlier ka effect alag kyun hota hai?”
+            Example: “{example}”
           </p>
         )}
         {turns.map((t, i) => (

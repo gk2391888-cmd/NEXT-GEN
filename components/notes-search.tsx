@@ -7,7 +7,7 @@ import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
 import { useQuestionLang } from '@/lib/question-lang';
 import { localize } from '@/lib/question-text';
 import { LanguageSwitch } from '@/components/quiz/language-switch';
-import { useChoice } from '@/lib/programme-choice';
+import { useInChoice } from '@/lib/programme-choice';
 import { LevelComingSoon } from '@/components/coming-soon';
 
 export type SearchEntry = { subjectId: string; subject: string; week: number; title: string; summary: string; text: string };
@@ -50,11 +50,8 @@ export function NotesSearch({ entries: allEntries }: { entries: SearchEntry[] })
   const router = useRouter();
   const initial = useSearchParams().get('q') ?? '';
   const [query, setQuery] = useState(initial);
-  const level = useChoice().level;
-  const entries = useMemo(() => {
-    const ids = new Set(level.subjects);
-    return allEntries.filter((e) => ids.has(e.subjectId));
-  }, [allEntries, level]);
+  const inChoice = useInChoice();
+  const entries = useMemo(() => allEntries.filter((e) => inChoice(e.subjectId, e.week)), [allEntries, inChoice]);
   const results = useMemo(() => search(entries, query), [entries, query]);
   const subjectNames = useMemo(() => new Map(entries.map((e) => [e.subjectId, e.subject])), [entries]);
 
@@ -82,16 +79,16 @@ export function NotesSearch({ entries: allEntries }: { entries: SearchEntry[] })
           <span className="muted">{snippet(r.text, query) || r.summary}</span>
         </Link>
       ))}
-      {query.trim().length > 1 && <QuestionHits query={query} subjects={subjectNames} />}
+      {query.trim().length > 1 && <QuestionHits query={query} subjects={subjectNames} inChoice={inChoice} />}
     </div>
   );
 }
 
 /** Matching practice questions, shown in the student's chosen language. The question bank loads once a search starts. */
-function QuestionHits({ query, subjects }: { query: string; subjects: Map<string, string> }) {
+function QuestionHits({ query, subjects, inChoice }: { query: string; subjects: Map<string, string>; inChoice: (subjectId: string, week?: number) => boolean }) {
   const bank = useQuestionBank();
   const lang = useQuestionLang();
-  const hits = useMemo(() => (bank ? searchQuestions(bank.filter((q) => subjects.has(q.subjectId)), query) : []), [bank, query, subjects]);
+  const hits = useMemo(() => (bank ? searchQuestions(bank.filter((q) => inChoice(q.subjectId, q.week)), query) : []), [bank, query, inChoice]);
   if (!bank || hits.length === 0) return null;
   return (
     <>
