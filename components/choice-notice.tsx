@@ -20,7 +20,7 @@ import {
 } from '@/lib/programmes';
 
 /** The pages behind each tool that only some choices have (see `choiceHas`). */
-const TOOL_PAGES: Record<string, Tool> = { qualifier: 'qualifier', tests: 'tests', lab: 'lab', grades: 'grades' };
+const TOOL_PAGES: Record<string, Tool> = { qualifier: 'qualifier', tests: 'tests', lab: 'lab', grades: 'grades', planner: 'planner' };
 /** Pages that belong to one subject: /library/<subject>/<week>, /practice/<subject>/<week>, /tests/<subject>/<test>. */
 const SUBJECT_PAGES = new Set(['library', 'practice', 'tests']);
 
@@ -87,8 +87,8 @@ function noticeFor(pathname: string, choice: Choice): Notice | undefined {
       case 'lab':
         return {
           text: choice.qualifier
-            ? 'The Coding Lab is for the Python course, after admission. The qualifier doesn’t test Python coding.'
-            : `The Coding Lab runs Python, a Data Science Foundation course. It isn’t part of ${mine}.${
+            ? 'The Coding Lab is for admitted Data Science students. The qualifier doesn’t test Python coding.'
+            : `The Coding Lab’s Python problems are for the Data Science programme. They aren’t part of ${mine}.${
                 inChoice(choice, 'cprog') ? ' For C, practise the “what does this print?” questions in Practice Quiz.' : ''
               }`,
           switchTo: 'ds/foundation',
@@ -98,6 +98,12 @@ function noticeFor(pathname: string, choice: Choice): Notice | undefined {
         return {
           text: `Course mock tests are for admitted students. Your qualifier mocks, one section per course, are in Qualifier Prep.`,
           link: { href: `${QUALIFIER_PATH}/${choice.qualifier}`, label: 'My qualifier mocks →' },
+          switchTo: ownFoundation,
+        };
+      case 'planner':
+        return {
+          text: 'The Exam Planner plans course quizzes and end terms. Your day-by-day plan to the qualifier exam is in Qualifier Prep.',
+          link: { href: `${QUALIFIER_PATH}/${choice.qualifier}/plan`, label: 'My qualifier plan →' },
           switchTo: ownFoundation,
         };
       case 'grades':

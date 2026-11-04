@@ -133,7 +133,7 @@ next-gen/
 - `content/programmes.json` maps programme → levels → subject ids. Subjects are shared by id (English I/II are in Data Science and Electronic Systems), so progress never depends on the programme.
 - Each student chooses a level (`ds/foundation`, `es/foundation`, `ds/diploma-programming`, …) or a qualifier (`qualifier/ds`, `qualifier/es`), asked once by [programme-prompt.tsx](components/programme-prompt.tsx) after sign-up. A qualifier choice's "level" is its four courses from `content/qualifier/qualifiers.json` (each section's `subjectId`), and only weeks 1–4 (`choice.weeks`).
 - Pages are still pre-rendered for every subject. Components that list subjects call `useChoiceSubjects(subjects)` ([lib/programme-choice.ts](lib/programme-choice.ts)) to show only the chosen level's, with its programme's course codes; components that list weeks use `useChoiceCatalog(catalog)`; anything that counts answers, mistakes or tests filters with `useInChoice()`.
-- Sidebar tools that only some choices have (Qualifier Prep, Mock Tests, Coding Lab, Grade Calculator) follow `choiceHas(choice, tool)` in [lib/programmes.ts](lib/programmes.ts). A page outside the choice still opens, under a notice from [choice-notice.tsx](components/choice-notice.tsx) that offers to switch. The full table of what each choice shows is in the README's Programmes section.
+- Sidebar tools that only some choices have (Qualifier Prep, Mock Tests, Coding Lab, Exam Planner, Grade Calculator) follow `choiceHas(choice, tool)` in [lib/programmes.ts](lib/programmes.ts). A page outside the choice still opens, under a notice from [choice-notice.tsx](components/choice-notice.tsx) that offers to switch. The full table of what each choice shows, and the reason for each rule, is in the README's Programmes section.
 - The choice is a `programme:<choice>` entry in the profile's `subjects` for logged-in students (anything reading `subjects` as subject ids goes through `termSubjects()`), and localStorage `nextgen-programme` for guests. Default: Data Science Foundation.
 
 ```
@@ -191,7 +191,7 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 
 **Layout everywhere** ([components/shell.tsx](components/shell.tsx)):
 
-- **Left sidebar** with the "Preparing for" switch and up to 11 nav items, plus Admin for admins. Which items show depends on the choice (`choiceHas()`): Qualifier Prep only for qualifier students; Mock Tests and Grade Calculator only for admitted students; Coding Lab only for levels with Python (Data Science Foundation). Before a visitor chooses, all of them show.
+- **Left sidebar** with the "Preparing for" switch and up to 11 nav items, plus Admin for admins. Which items show depends on the choice (`choiceHas()`): Qualifier Prep only for qualifier students; Mock Tests, Exam Planner and Grade Calculator only for admitted students; Coding Lab only for the Data Science programme (Foundation and Diplomas). Before a visitor chooses, all of them show.
 - **Notice above the page** ([choice-notice.tsx](components/choice-notice.tsx)) when the page isn't part of the choice, with "Switch to …" and a way back.
 - **Bottom of the sidebar:** a "Log in to save progress" card (guests) or a "Go Pro" card (free users).
 - **Topbar:** breadcrumb, and an account menu showing the sync chip, plan chip, avatar, Profile, Progress, Billing and Logout.

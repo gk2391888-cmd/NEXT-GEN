@@ -26,6 +26,7 @@ export function LibraryGrid({ subjects, catalog: allWeeks }: { subjects: Subject
 
 function SubjectCards({ subjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
+  const { qualifier } = useChoice();
 
   return (
     <div className="grid grid-2">
@@ -51,7 +52,7 @@ function SubjectCards({ subjects, catalog }: { subjects: Subject[]; catalog: Rec
                 </div>
                 <div className="flex-between">
                   <span className="muted">
-                    {done === weeks.length ? 'All weeks complete. Take a mock test to revise.' : `Next: Week ${next.week} · ${next.title}`}
+                    {done === weeks.length ? `All weeks complete. Take a ${qualifier ? 'qualifier mock' : 'mock test'} to revise.` : `Next: Week ${next.week} · ${next.title}`}
                   </span>
                   <div className="btn-group">
                     <Link className="link" href={`/library/${s.id}/formulas`}>Formula sheet</Link>

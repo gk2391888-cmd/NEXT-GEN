@@ -196,16 +196,25 @@ Open http://localhost:3000.
 
   | Choice | Subjects and weeks | Sidebar tools beyond the shared ones |
   |---|---|---|
-  | Data Science – Foundation | Its 8 subjects, all 12 weeks | Mock Tests, Coding Lab, Grade Calculator |
-  | Data Science – a Diploma | Its subjects ("coming soon" for now) | Mock Tests, Grade Calculator |
-  | Electronic Systems / Aeronautics / Management & DS – Foundation | That Foundation's subjects, all 12 weeks | Mock Tests, Grade Calculator |
+  | Data Science – Foundation | Its 8 subjects, all 12 weeks | Mock Tests, Coding Lab, Exam Planner, Grade Calculator |
+  | Data Science – a Diploma | Its subjects ("coming soon" for now) | Mock Tests, Coding Lab, Exam Planner, Grade Calculator |
+  | Electronic Systems / Aeronautics / Management & DS – Foundation | That Foundation's subjects, all 12 weeks | Mock Tests, Exam Planner, Grade Calculator |
   | Qualifier – Data Science | Maths I, Stats I, CT, English I, weeks 1–4 only | Qualifier Prep (opens `/qualifier/ds`) |
   | Qualifier – Electronic Systems | English I, Maths for Electronics I, Electronic Systems Thinking and Circuits, C Programming, weeks 1–4 only | Qualifier Prep (opens `/qualifier/es`) |
 
-  - Shared tools, for every choice: Overview, Study Library, Practice Quiz, My Mistakes, AI Doubt Solver, Exam Planner, My Progress. Qualifier Prep, Mock Tests, Coding Lab (it runs Python, so only levels with Python) and Grade Calculator follow `choiceHas()`. Until a visitor has chosen, every tool stays in the sidebar.
-  - Overview, Study Library (cards, PDF files, week list), Practice, Mock Tests, Exam Planner, Search (notes and questions), My Mistakes, My Progress, the formula sheets, the Doubt Solver's quick answers (each in `content/faqs.json` has a `subject`) and the profile show only the choice's subjects and weeks. Subjects without notes say "Notes coming soon"; when none of the level's subjects has notes, Overview, Planner and Search show a "coming soon" notice from `components/coming-soon.tsx`.
+  - Shared tools, for every choice: Overview, Study Library, Practice Quiz, My Mistakes, AI Doubt Solver, My Progress. The others follow `choiceHas()` in `lib/programmes.ts`.
+- **The rules, and why**:
+  - *Hidden tools leave the sidebar* rather than sit there greyed out: a student sees one clean menu for what they're preparing for, and the "Preparing for" switch brings the rest back.
+  - *Until a visitor chooses, nothing is hidden*: Qualifier Prep is how many visitors arrive, so it must be findable before the question is asked.
+  - *Qualifier Prep only for qualifier students*: admitted students have no qualifier to take.
+  - *Two qualifier choices, weeks 1–4 only*: the DS and ES qualifiers test different courses, and only their first four weeks.
+  - *Mock Tests, Exam Planner and Grade Calculator only for admitted students*: they're built around course quizzes, end terms and course grades. Qualifier students get their own timed mocks, day-by-day plan and pass rules in Qualifier Prep, and the Overview's quick actions point there.
+  - *Coding Lab for every Data Science level*: its problems and Pro OPPE sets are Python, the programme's coding language from Foundation to the Diplomas. None of the other Foundations here has a Python course, so no Pro student loses a tool their courses use.
+  - *Numbers count only the choice*: totals from another programme would make the Overview and My Progress misleading. Progress in a shared course such as English I counts in every choice that has it.
+  - *Direct links still open, under a notice*: links shared by friends and found on Google must keep working, and the notice offers the right switch instead of a dead end.
+  - Overview, Study Library (cards, PDF files, week list), Practice, Mock Tests, Exam Planner, Search (notes and questions), My Mistakes, My Progress, the formula sheets, the Doubt Solver's quick answers and its example question (each in `content/faqs.json` has a `subject`) and the profile show only the choice's subjects and weeks. Subjects without notes say "Notes coming soon"; when none of the level's subjects has notes, Overview, Planner and Search show a "coming soon" notice from `components/coming-soon.tsx`.
   - Numbers count only the choice: questions attempted, accuracy, streak, weak weeks, mistakes due, mock test history (a qualifier student sees their own qualifier's mocks). Nothing is deleted: switching back brings the other numbers back. "Reset progress" still resets everything.
-  - **Direct links still open.** Week, practice, test and tool pages exist for every subject, so links from friends and Google keep working. When one isn't part of the student's choice (another programme's notes, the Coding Lab for an Electronic Systems student, week 7 for a qualifier student, the other qualifier), `components/choice-notice.tsx` shows a notice above the page with a button to switch to a choice that has it and a way back.
+  - **Direct links still open.** Week, practice, test and tool pages exist for every subject, so links from friends and Google keep working. When one isn't part of the student's choice (another programme's notes, the Coding Lab for an Electronic Systems student, the Exam Planner or week 7 for a qualifier student, the other qualifier), `components/choice-notice.tsx` shows a notice above the page with a button to switch to a choice that has it and a way back.
   - The admin editor and PDF uploads list every subject, grouped by programme and level.
 - **Status**: in `content/subjects.json`, a subject without `status` has all 12 weeks; `"partial"` has weeks 1..n; `"planned"` has none yet.
 - **Coverage** and the research behind it (programmes, levels, official course codes, with sources): [docs/iitm-programmes.md](docs/iitm-programmes.md).

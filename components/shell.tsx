@@ -23,7 +23,7 @@ const NAV: { href: string; label: string; icon: string; tag?: string; tool?: Too
   { href: '/tests', label: 'Mock Tests', icon: '◷', tool: 'tests' },
   { href: '/lab', label: 'Coding Lab', icon: '⌘', tag: 'NEW', tool: 'lab' },
   { href: '/doubts', label: 'AI Doubt Solver', icon: '✦', tag: 'NEW' },
-  { href: '/planner', label: 'Exam Planner', icon: '▦' },
+  { href: '/planner', label: 'Exam Planner', icon: '▦', tool: 'planner' },
   { href: '/grades', label: 'Grade Calculator', icon: '∑', tag: 'NEW', tool: 'grades' },
   { href: '/progress', label: 'My Progress', icon: '▥' },
 ];

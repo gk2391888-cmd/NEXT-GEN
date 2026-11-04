@@ -126,12 +126,16 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
             title={dueMistakes ? `Revise ${dueMistakes} mistake${dueMistakes === 1 ? '' : 's'}` : 'My Mistakes'}
             text={dueMistakes ? 'Due today for revision' : 'Wrong answers come back here for revision'}
           />
-          <QuickAction
-            href="/planner"
-            icon="▦"
-            title={state.exam ? `${state.exam.name}: ${new Date(state.exam.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'Plan for your exam'}
-            text={state.exam ? 'See today’s study plan' : 'Get a day-by-day plan to your exam date'}
-          />
+          {choice.qualifier ? (
+            <QuickAction href={`${QUALIFIER_PATH}/${choice.qualifier}/plan`} icon="▦" title="Your qualifier study plan" text="A day-by-day plan to the qualifier exam" />
+          ) : (
+            <QuickAction
+              href="/planner"
+              icon="▦"
+              title={state.exam ? `${state.exam.name}: ${new Date(state.exam.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}` : 'Plan for your exam'}
+              text={state.exam ? 'See today’s study plan' : 'Get a day-by-day plan to your exam date'}
+            />
+          )}
           <QuickAction href="/doubts" icon="✦" title="Ask a doubt" text="Step-by-step answers from the AI doubt solver" />
           <QuickAction href="/practice" icon="▤" title="Practice a week" text={`${totalQuestions} original MCQs with Hinglish explanations`} />
         </section>

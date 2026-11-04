@@ -121,11 +121,12 @@ export function choiceCatalog(choice: Choice, catalog: Record<string, WeekRef[]>
 }
 
 /** The tools in the sidebar that only some choices have. Every other page is for everyone. */
-export type Tool = 'qualifier' | 'tests' | 'lab' | 'grades';
+export type Tool = 'qualifier' | 'tests' | 'lab' | 'grades' | 'planner';
 
 /**
- * Qualifier Prep is for qualifier students only. Course mock tests and the Grade Calculator are for admitted
- * students (qualifier students have their own mocks). The Coding Lab runs Python, so it's for levels with Python.
+ * Qualifier Prep is for qualifier students only. Course mock tests, the Exam Planner and the Grade Calculator are
+ * for admitted students (qualifier students have their own mocks and their own plan to the exam date). The Coding
+ * Lab's Python problems and OPPE sets are for the Data Science programme, Foundation and Diplomas alike.
  */
 export function choiceHas(choice: Choice, tool: Tool): boolean {
   switch (tool) {
@@ -133,9 +134,10 @@ export function choiceHas(choice: Choice, tool: Tool): boolean {
       return choice.qualifier !== null;
     case 'tests':
     case 'grades':
+    case 'planner':
       return choice.qualifier === null;
     case 'lab':
-      return choice.qualifier === null && choice.level.subjects.includes('python');
+      return choice.qualifier === null && choice.programme.id === 'ds';
   }
 }
 
