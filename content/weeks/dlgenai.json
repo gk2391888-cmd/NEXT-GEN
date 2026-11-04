@@ -718,6 +718,721 @@
           "difficulty": "hard"
         }
       ]
+    },
+    {
+      "week": 7,
+      "title": "Generative Models I: Autoencoders, VAEs and GANs",
+      "summary": "Is week aap autoencoder ka bottleneck idea, VAE ka reparameterisation trick aur ELBO (reconstruction + KL), aur GAN ka generator–discriminator game, uske losses aur mode collapse samjhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Generative vs discriminative**: discriminative model p(y | x) seekhta hai (ye image cat hai ya dog). Generative model data ka distribution p(x) seekhta hai, taaki naye realistic samples bana sake. Is week ke teen models isi ke alag-alag tareeke hain.",
+        "**Autoencoder (AE)**: encoder x ko chhote latent code z (bottleneck) mein compress karta hai, decoder z se x̂ banata hai; loss = reconstruction error (MSE ya BCE) between x̂ aur x. Uses: compression, denoising (noisy input → clean target), anomaly detection (high reconstruction error = unusual). Par plain AE ka latent space 'gaps' wala hota hai, isliye random z se decode karke achhe naye samples nahi milte.",
+        "**Variational autoencoder (VAE)**: encoder har x ke liye ek distribution q(z | x) = N(μ, σ²) deta hai (aksar μ aur log σ² output karta hai). Sample karke decoder ko diya jaata hai. Prior p(z) = N(0, I) rakha jaata hai, taaki generation ke time seedha z ~ N(0, I) se sample karke decode kar sakein.",
+        "**Reparameterisation trick**: z = μ + σ ⊙ ε, ε ~ N(0, I). Randomness ε mein chali jaati hai, aur z ab μ, σ ka differentiable function hai, isliye backprop encoder tak pahunchta hai. Seedha 'sample from N(μ, σ²)' likhne par gradient nahi bahta.",
+        "**ELBO idea**: log p(x) ≥ E_q[log p(x | z)] − KL(q(z | x) ‖ p(z)). Isse maximise karna = loss (reconstruction + KL) minimise karna. Diagonal Gaussian ke liye har dimension ka KL = ½(μ² + σ² − ln σ² − 1); ye 0 tab hota hai jab μ = 0, σ = 1. KL term latent space ko smooth aur 'bhara hua' rakhta hai; trade-off ki wajah se VAE samples thode blurry hote hain.",
+        "**GAN**: generator G noise z se fake sample banata hai; discriminator D(x) batata hai x real hone ki probability. Minimax game: min_G max_D E[ln D(x)] + E[ln(1 − D(G(z)))]. Fixed G ke liye optimal D*(x) = p_data(x)/(p_data(x) + p_g(x)); equilibrium par p_g = p_data aur D* = 0.5 har jagah.",
+        "**GAN training practice**: D aur G ko alternate steps mein update karte hain. Shuruaat mein D aasaani se jeet jaata hai aur ln(1 − D(G(z))) saturate ho jaata hai, isliye generator 'non-saturating' loss −ln D(G(z)) minimise karta hai. Problems: unstable training, aur **mode collapse** (G sirf kuch types ke samples banata hai jo D ko bewakoof banate hain, diversity khatam).",
+        "**Kab kya**: AE representation/denoising ke liye; VAE jab smooth latent space aur likelihood-based training chahiye (samples thode blurry); GAN sharp samples deta hai par training mushkil aur coverage (diversity) kam ho sakti hai."
+      ],
+      "example": {
+        "problem": "Ek VAE ka 2-D latent hai. Ek image x = [1, 0, 1] ke liye encoder μ = (0.5, −1) aur log σ² = (0, ln 0.25) deta hai; decoder ka reconstruction x̂ = [0.8, 0.1, 0.7] hai. Loss = squared-error sum + KL. ε = (1, −2) ke saath z bhi nikaalo.",
+        "steps": [
+          "σ² = (e⁰, 0.25) = (1, 0.25), isliye σ = (1, 0.5).",
+          "Reparameterisation: z = μ + σ ⊙ ε = (0.5 + 1·1, −1 + 0.5·(−2)) = (1.5, −2).",
+          "KL dim 1: ½(0.25 + 1 − 0 − 1) = 0.125.",
+          "KL dim 2: ½(1 + 0.25 − ln 0.25 − 1) = ½(0.25 + 1.386) = 0.818. Total KL = 0.943.",
+          "Reconstruction: (0.2)² + (0.1)² + (0.3)² = 0.04 + 0.01 + 0.09 = 0.14.",
+          "**Answer: z = (1.5, −2); loss = 0.14 + 0.943 = 1.083.** Dhyaan do, yahan KL reconstruction se bada hai, yaani latent ko prior ki taraf kaafi kheencha ja raha hai."
+        ],
+        "code": "import math\nmu, logvar, eps = [0.5, -1], [0.0, math.log(0.25)], [1, -2]\nz = [m + math.exp(lv / 2) * e for m, lv, e in zip(mu, logvar, eps)]\nkl = sum(0.5 * (m * m + math.exp(lv) - lv - 1) for m, lv in zip(mu, logvar))\nrec = sum((a - b) ** 2 for a, b in zip([1, 0, 1], [0.8, 0.1, 0.7]))\nprint(z, round(kl, 3), round(rec + kl, 3))   # [1.5, -2.0] 0.943 1.083"
+      },
+      "mistakes": [
+        "Reparameterisation mein σ ki jagah variance σ² se ε ko multiply karna. Agar encoder log σ² deta hai to σ = exp(½ log σ²).",
+        "GAN mein discriminator ki accuracy ~100% ko achhi training samajhna. Iska matlab aksar ye hai ki generator ko useful gradient nahi mil raha; D aur G ka balance chahiye.",
+        "VAE se generate karte waqt encoder use karna. Naye samples ke liye z ko prior N(0, I) se sample karke sirf decoder chalao; encoder sirf training aur reconstruction ke liye hai."
+      ],
+      "revision": [
+        "AE loss = reconstruction(x̂, x); VAE loss = reconstruction + KL.",
+        "z = μ + σ ⊙ ε, ε ~ N(0, I).",
+        "KL(N(μ, σ²) ‖ N(0, 1)) = ½(μ² + σ² − ln σ² − 1).",
+        "Optimal D*(x) = p_data/(p_data + p_g); equilibrium par 0.5.",
+        "Non-saturating G loss = −ln D(G(z)); mode collapse = kam diversity."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w7-q1",
+          "question": "Ek plain (non-variational) autoencoder ko train karte waqt loss kin do cheezon ke beech compute hota hai?",
+          "options": [
+            "Latent code z aur class label",
+            "Decoder ka reconstruction x̂ aur original input x",
+            "Latent code z aur standard normal noise",
+            "Generator output aur discriminator output"
+          ],
+          "answer": 1,
+          "explanation": "Autoencoder ka target input khud hai: loss = reconstruction error(x̂, x), option B. Isliye ise labels nahi chahiye (self-supervised). Option A supervised classification hai. Option C VAE ke KL term jaisa lagta hai, par plain AE mein latent par koi prior nahi hota. Option D GAN ka setup hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w7-q2",
+          "question": "VAE encoder ek 1-D latent ke liye μ = 1.0 aur σ = 0.5 deta hai. Reparameterisation trick mein sampled noise ε = −0.4 hai. z kya hoga?",
+          "options": [
+            "1.2",
+            "0.9",
+            "−0.2",
+            "0.8"
+          ],
+          "answer": 3,
+          "explanation": "z = μ + σ·ε = 1.0 + 0.5·(−0.4) = 0.8, option D. Option B (0.9) σ ki jagah variance σ² = 0.25 se multiply karta hai. Option A (1.2) ε ka sign ignore karta hai. Option C (−0.2) sirf σ·ε hai, mean μ jodna bhool gaye.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w7-q3",
+          "question": "VAE ka latent 2-D hai aur prior N(0, I). Ek input ke liye encoder μ = (1, 0) aur σ² = (1, 0.5) deta hai. KL(q(z | x) ‖ p(z)) kitna hai (natural log)?",
+          "options": [
+            "0.500",
+            "1.193",
+            "0.597",
+            "0.097"
+          ],
+          "answer": 2,
+          "explanation": "Har dimension: ½(μ² + σ² − ln σ² − 1). Dim 1: ½(1 + 1 − 0 − 1) = 0.5. Dim 2: ½(0 + 0.5 + 0.693 − 1) = 0.097. Total = 0.597, option C. Option B (1.193) ½ factor bhool jaata hai. Option A sirf pehli dimension hai, aur option D sirf doosri; KL independent dimensions par add hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w7-q4",
+          "question": "Ek GAN mein generator fixed hai. Kisi point x par real data density p_data(x) = 0.3 aur generator density p_g(x) = 0.1 hai. Is x par optimal discriminator D*(x) kya output karega?",
+          "options": [
+            "0.75",
+            "0.50",
+            "0.25",
+            "3.00"
+          ],
+          "answer": 0,
+          "explanation": "D*(x) = p_data/(p_data + p_g) = 0.3/0.4 = 0.75, option A. Option B (0.50) tab hota hai jab p_g = p_data (equilibrium), jo yahan nahi hai; ye sabse common trap hai. Option C (0.25) generator wali density ko numerator mein rakh deta hai. Option D (3.00) sirf ratio hai, jo probability nahi ho sakti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w7-q5",
+          "question": "Handwritten digits (0–9) par train hua ek GAN bahut sharp images banata hai, par lagbhag saari images sirf '1' aur '7' ki hain, chahe noise z kuch bhi ho. Is problem ka sabse sahi naam kya hai?",
+          "options": [
+            "Discriminator ka training set par overfitting",
+            "Generator mein exploding gradients",
+            "Posterior collapse",
+            "Mode collapse: generator data distribution ke kuch hi modes cover kar raha hai"
+          ],
+          "answer": 3,
+          "explanation": "Alag z ke liye bhi output kuch hi classes mein simat jaana mode collapse hai, option D: G ne kuch aise samples dhoondh liye jo D ko bewakoof banate hain aur baaki modes chhod diye. Option C posterior collapse VAE ki problem hai (decoder latent ko ignore karta hai), GAN ki nahi. Option B se training unstable hoti hai, specific 'kam diversity' pattern nahi. Option A se samples ki sharpness/diversity ka ye pattern explain nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w7-q6",
+          "question": "Ek training step mein discriminator ek real image ko D(x) = 0.9 aur ek fake image ko D(G(z)) = 0.2 deta hai. Discriminator loss −[ln D(x) + ln(1 − D(G(z)))] aur generator ka non-saturating loss −ln D(G(z)) kya hain? (D loss, G loss)",
+          "options": [
+            "(1.715, 1.609)",
+            "(0.329, 1.609)",
+            "(0.329, 0.223)",
+            "(1.715, 0.223)"
+          ],
+          "answer": 1,
+          "explanation": "D loss = −ln 0.9 − ln 0.8 = 0.105 + 0.223 = 0.329. G loss = −ln 0.2 = 1.609. Isliye option B. 1.715 wale options (A, D) fake ke liye ln(1 − 0.2) ki jagah ln 0.2 le lete hain, yaani fake ko 'real' label de dete hain. 0.223 wale options (C, D) generator ke liye purana minimax term ln(1 − D(G(z))) use karte hain, jo non-saturating loss nahi hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Generative Models II: Diffusion Models",
+      "summary": "Is week aap diffusion models ka forward noising process, noise schedule (β, α, ᾱ), closed-form x_t, noise-prediction training objective aur step-by-step reverse sampling numbers ke saath samjhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Core idea**: data ko dheere-dheere Gaussian noise se tab tak kharab karo jab tak woh pure noise na ban jaaye (forward process), phir ek network ko ye process ulta chalana sikhao (reverse process). Generation = pure noise se shuru karke step-by-step denoise karna.",
+        "**Forward process**: q(xₜ | xₜ₋₁) = N(√(1 − βₜ)·xₜ₋₁, βₜI), t = 1 … T (jaise T = 1000). βₜ chhote numbers hain (noise schedule, linear ya cosine). Ye process fixed hai, isme kuch seekha nahi jaata. √(1 − βₜ) scaling ki wajah se variance control mein rehta hai aur end mein xₜ lagbhag N(0, I) ho jaata hai.",
+        "**Closed form**: αₜ = 1 − βₜ aur ᾱₜ = α₁α₂…αₜ. Tab xₜ = √ᾱₜ·x₀ + √(1 − ᾱₜ)·ε, ε ~ N(0, I). Isliye training mein kisi bhi t ka noisy sample ek hi step mein ban jaata hai, saare beech ke steps chalane ki zaroorat nahi. Signal-to-noise ratio = ᾱₜ/(1 − ᾱₜ), jo t badhne par girta hai.",
+        "**Training objective**: x₀ data se lo, t uniformly random, ε ~ N(0, I), xₜ banao, aur network ε_θ(xₜ, t) ko ε predict karne do. Loss = ‖ε − ε_θ(xₜ, t)‖² (MSE). Ye simplified objective ELBO se nikalta hai. Network aam taur par ek U-Net hota hai jise timestep t ka embedding bhi diya jaata hai.",
+        "**x₀ ka estimate**: predicted noise se x̂₀ = (xₜ − √(1 − ᾱₜ)·ε̂)/√ᾱₜ. Ye batata hai ki model ke hisaab se 'saaf image' kaisi dikhti hai; samplers isse internally use karte hain.",
+        "**Reverse sampling (DDPM)**: x_T ~ N(0, I) se shuru. Har step: xₜ₋₁ = (1/√αₜ)·(xₜ − (βₜ/√(1 − ᾱₜ))·ε_θ(xₜ, t)) + σₜz, z ~ N(0, I) (last step par z = 0). T steps = T network evaluations, isliye sampling slow hai. DDIM jaise samplers kam steps (jaise 50) mein achhe samples dete hain.",
+        "**GAN/VAE se tulna**: diffusion training stable hai (simple MSE, koi adversarial game nahi) aur data ke saare modes achhe se cover karta hai; samples high quality hote hain. Kami: generation slow, kyunki network ko bahut baar chalana padta hai."
+      ],
+      "example": {
+        "problem": "Schedule β = (0.1, 0.2), T = 2. Ek scalar data point x₀ = 1.0 aur noise ε = 0.5. x₂ banao. Maan lo network ne noise bilkul sahi predict kiya (ε̂ = 0.5). Ek DDPM reverse step ka mean (x₁ ki taraf) aur x̂₀ nikaalo.",
+        "steps": [
+          "α = (0.9, 0.8), ᾱ₁ = 0.9, ᾱ₂ = 0.9 × 0.8 = 0.72.",
+          "x₂ = √0.72·1.0 + √0.28·0.5 = 0.849 + 0.265 = 1.113.",
+          "Reverse mean = (1/√α₂)·(x₂ − (β₂/√(1 − ᾱ₂))·ε̂) = (1/√0.8)·(1.113 − (0.2/0.529)·0.5) = 1.118 × (1.113 − 0.189) = 1.033.",
+          "x̂₀ = (x₂ − √0.28·0.5)/√0.72 = (1.113 − 0.265)/0.849 = 1.0, yaani perfect noise prediction se original data wapas mil jaata hai.",
+          "Asli sampling mein is mean mein σ₂z noise joda jaata hai aur phir t = 1 ka step chalta hai.",
+          "**Answer: x₂ = 1.113, reverse mean = 1.033, x̂₀ = 1.0.**"
+        ],
+        "code": "import math\nbeta = [0.1, 0.2]\nalpha = [1 - b for b in beta]\nabar = [alpha[0], alpha[0] * alpha[1]]\nx0, eps = 1.0, 0.5\nx2 = math.sqrt(abar[1]) * x0 + math.sqrt(1 - abar[1]) * eps\nmean = (x2 - beta[1] / math.sqrt(1 - abar[1]) * eps) / math.sqrt(alpha[1])\nx0_hat = (x2 - math.sqrt(1 - abar[1]) * eps) / math.sqrt(abar[1])\nprint(round(x2, 3), round(mean, 3), round(x0_hat, 3))   # 1.113 1.033 1.0"
+      },
+      "mistakes": [
+        "Closed form mein square roots bhool jaana: xₜ = ᾱₜx₀ + (1 − ᾱₜ)ε galat hai. Sahi: √ᾱₜ·x₀ + √(1 − ᾱₜ)·ε, kyunki ᾱₜ aur 1 − ᾱₜ variances ke coefficients hain.",
+        "ᾱₜ ko 1 − Σβ samajhna. ᾱₜ product hai: Π(1 − βₛ). Chhote β ke liye dono kareeb hote hain, par bade t par bahut alag ho jaate hain.",
+        "Ye maan lena ki forward process bhi train hota hai. Sirf reverse/denoising network ε_θ ke parameters seekhe jaate hain; forward schedule pehle se fixed hai."
+      ],
+      "revision": [
+        "αₜ = 1 − βₜ, ᾱₜ = Π αₛ.",
+        "xₜ = √ᾱₜ·x₀ + √(1 − ᾱₜ)·ε.",
+        "Loss = ‖ε − ε_θ(xₜ, t)‖².",
+        "x̂₀ = (xₜ − √(1 − ᾱₜ)·ε̂)/√ᾱₜ.",
+        "Sampling: x_T ~ N(0, I) se T reverse steps; DDIM kam steps."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w8-q1",
+          "question": "DDPM-style diffusion model ke forward (noising) process ke baare mein kaunsa statement sahi hai?",
+          "options": [
+            "Ye fixed hai: har step thoda Gaussian noise add karta hai aur isme koi trainable parameter nahi hota",
+            "Ye ek neural network hai jo image se noise hatana seekhta hai",
+            "Ye GAN discriminator ki tarah har image ko real ya fake classify karta hai",
+            "Ye image ko ek hi step mein pure noise bana deta hai aur sampling ke time chalaya jaata hai"
+          ],
+          "answer": 0,
+          "explanation": "Forward process ek fixed Markov chain hai jo schedule βₜ ke hisaab se noise jodta hai; kuch seekha nahi jaata, option A. Option B reverse process (ε_θ network) ka description hai, yahi sabse common confusion hai. Option C GAN ka concept hai. Option D galat hai: noise kai chhote steps mein judta hai (closed form sirf shortcut hai), aur sampling ke time reverse process chalta hai, forward nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w8-q2",
+          "question": "Ek diffusion model ka noise schedule constant hai: har step βₜ = 0.1. Teen steps ke baad ᾱ₃ kya hai?",
+          "options": [
+            "0.700",
+            "0.271",
+            "0.729",
+            "0.300"
+          ],
+          "answer": 2,
+          "explanation": "αₜ = 1 − 0.1 = 0.9 aur ᾱ₃ = 0.9 × 0.9 × 0.9 = 0.729, option C. Option A (0.700 = 1 − 3β) product ki jagah β ko add karta hai; chhote β par ye approximation lagta hai par exact nahi. Option B (0.271) noise variance 1 − ᾱ₃ hai. Option D sirf βs ka sum hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w8-q3",
+          "question": "Ek scalar data point x₀ = 2 hai. Timestep t par ᾱₜ = 0.64 aur sampled noise ε = 0.5 hai. Closed form se noisy sample xₜ kya hai?",
+          "options": [
+            "1.46",
+            "2.5",
+            "1.6",
+            "1.9"
+          ],
+          "answer": 3,
+          "explanation": "xₜ = √0.64·2 + √(1 − 0.64)·0.5 = 0.8·2 + 0.6·0.5 = 1.6 + 0.3 = 1.9, option D. Option A (1.46 = 0.64·2 + 0.36·0.5) square roots bhool jaata hai, ye sabse common trap hai. Option C noise term chhod deta hai. Option B (2.5) x₀ + ε hai, signal ko scale hi nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w8-q4",
+          "question": "Ek step par xₜ = 1.0, ᾱₜ = 0.25, aur network ka predicted noise ε̂ = 0.4 hai. Model ka clean-data estimate x̂₀ = (xₜ − √(1 − ᾱₜ)·ε̂)/√ᾱₜ kya hai (3 decimal tak)?",
+          "options": [
+            "0.654",
+            "1.307",
+            "1.400",
+            "2.693"
+          ],
+          "answer": 1,
+          "explanation": "√(1 − 0.25) = 0.866, to xₜ − 0.866·0.4 = 1 − 0.346 = 0.654. Phir √0.25 = 0.5 se divide: 0.654/0.5 = 1.307, option B. Option A √ᾱₜ se divide karna bhool jaata hai. Option C (1.400) 1 − ᾱₜ = 0.75 ko bina square root ke use karta hai. Option D (2.693) noise ko subtract karne ki jagah add kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w8-q5",
+          "question": "Ek training example mein sampled noise ε = [1, −1, 0.5, 0] hai aur network predict karta hai ε̂ = [0.8, −0.6, 0.5, 0.2]. Simplified diffusion loss (elements par mean squared error) kya hai?",
+          "options": [
+            "0.06",
+            "0.24",
+            "0.20",
+            "0.245"
+          ],
+          "answer": 0,
+          "explanation": "Errors: 0.2, −0.4, 0, −0.2; squares: 0.04, 0.16, 0, 0.04; sum = 0.24, mean = 0.24/4 = 0.06, option A. Option B (0.24) mean ki jagah sum hai. Option C (0.20) mean absolute error hai. Option D (0.245) RMSE (√0.06) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w8-q6",
+          "question": "Ek schedule mein har step βₜ = 0.02 constant hai. Sabse chhota t kaunsa hai jiske liye ᾱₜ < 0.5 ho jaata hai (yaani signal ka variance-coefficient noise se kam ho jaata hai)?",
+          "options": [
+            "25",
+            "34",
+            "35",
+            "50"
+          ],
+          "answer": 2,
+          "explanation": "ᾱₜ = 0.98ᵗ < 0.5 ⇒ t > ln 0.5/ln 0.98 = 34.3, isliye t = 35, option C. Check: 0.98³⁴ = 0.503 (abhi bhi ≥ 0.5) aur 0.98³⁵ = 0.493. Option B (34) rounding down ka off-by-one hai. Option A (25) 1 − tβ = 0.5 se aata hai, yaani product ki jagah sum. Option D (50) β ke reciprocal ka confusion hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Generative Vision in Practice: Guidance, Evaluation, Ethics",
+      "summary": "Is week aap pretrained text-to-image diffusion pipelines ke parts, latent diffusion, classifier-free guidance, GAN latent tricks, FID jaise evaluation metrics aur generated images ke responsible use ko practical numbers ke saath samjhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Text-to-image pipeline**: (1) text encoder prompt ko embeddings mein badalta hai; (2) denoiser (U-Net ya transformer) har step par noise predict karta hai aur cross-attention se text embeddings ko dekhta hai; (3) scheduler decide karta hai kitne steps aur kaise update; (4) decoder final latent ko image banata hai. Random seed shuruaati noise tay karta hai, isliye same seed + same settings = same image (reproducibility).",
+        "**Latent diffusion**: pixel space (jaise 512 × 512 × 3) ki jagah ek pretrained autoencoder ke chhote latent space (jaise 64 × 64 × 4) mein diffusion chalate hain. Har step par kaafi kam numbers process hote hain, isliye training aur sampling dono saste. Ant mein decoder latent ko wapas image banata hai.",
+        "**Classifier-free guidance (CFG)**: training ke time kuch fraction examples mein condition (prompt) hata di jaati hai, taaki ek hi model conditional ε_c aur unconditional ε_u dono predict kar sake. Sampling par ε̃ = ε_u + w·(ε_c − ε_u). w = 1 normal conditional model hai; w > 1 prompt-adherence badhata hai par diversity ghatata hai, aur bahut bada w over-saturated ya artefact wali images deta hai. Har step par do predictions lagti hain, isliye cost lagbhag double.",
+        "**Editing modes**: img2img mein input image ko kisi intermediate t tak noise karke wahan se denoise karte hain ('strength' = kitna noise, yaani kitni azaadi). Inpainting mein sirf mask wale region ko regenerate karte hain. Negative prompt unconditional branch ki jagah use hota hai, taaki guidance unwanted features se door le jaaye.",
+        "**GAN practice**: latent space mein do z ke beech interpolation karke smooth transitions dekh sakte hain. Truncation trick (z ko mean ke paas se sample karna) quality badhata hai par diversity ghatata hai. Conditional GAN class label ko G aur D dono ko deta hai, taaki chuni hui class generate ho.",
+        "**Evaluation**: FID real aur generated images ke feature vectors (ek pretrained image network se) ko Gaussians maan kar unke beech Fréchet distance nikaalta hai: ‖μ₁ − μ₂‖² + Tr(Σ₁ + Σ₂ − 2(Σ₁Σ₂)^½). Kam FID = behtar; ye quality aur diversity dono pakadta hai par bahut samples chahiye aur feature extractor ke bias ke saath aata hai. Prompt alignment ke liye text–image similarity scores aur human evaluation bhi use hote hain.",
+        "**Ethics aur responsible use**: real logon ki likeness bina consent (deepfakes), copyrighted ya bina permission ke training data, demographic bias (jaise 'doctor' prompt par ek hi type ke log), aur misinformation bade risks hain. Achhe practices: synthetic content ko disclose/label karna, provenance metadata ya watermark rakhna, model/licence terms follow karna, aur outputs ka bias audit karna."
+      ],
+      "example": {
+        "problem": "Ek fictional design studio 8 images banata hai: 25 sampling steps, CFG scale w = 7.5, latent diffusion (512 × 512 × 3 image ↔ 64 × 64 × 4 latent). (a) Kisi ek latent element par ε_u = 0.1, ε_c = 0.3 ho to guided noise kya hai? (b) Kul kitni noise predictions (image-level) lagengi? (c) Latent kitna chhota hai?",
+        "steps": [
+          "(a) ε̃ = ε_u + w(ε_c − ε_u) = 0.1 + 7.5 × 0.2 = 1.6. Guidance difference ko 7.5 guna kheench deta hai.",
+          "(b) Har image, har step par 2 predictions (conditional + unconditional): 8 × 25 × 2 = 400.",
+          "(c) Image elements = 512 × 512 × 3 = 786432; latent elements = 64 × 64 × 4 = 16384.",
+          "Ratio = 786432/16384 = 48, yaani denoiser har step par 48 guna kam numbers process karta hai.",
+          "**Answer: ε̃ = 1.6, 400 noise predictions, latent 48 guna chhota.**"
+        ],
+        "code": "eps_u, eps_c, w = 0.1, 0.3, 7.5\nprint(round(eps_u + w * (eps_c - eps_u), 2))      # 1.6\nprint(8 * 25 * 2)                                  # 400\nprint((512 * 512 * 3) // (64 * 64 * 4))            # 48"
+      },
+      "mistakes": [
+        "Guidance scale ko 'jitna bada utna achha' samajhna. Bahut bada w images ko over-saturated, kam diverse aur artefact wala bana deta hai; ek moderate range try karke dekho.",
+        "Bas kuch dozen images par FID report karna ya alag sample sizes ke FID compare karna. FID ka estimate sample size par depend karta hai; hazaaron samples aur same setup rakho.",
+        "Generated images ko 'real photo' ki tarah publish karna ya kisi asli insaan ki likeness bina consent use karna. Disclose karo aur consent/licence check karo."
+      ],
+      "revision": [
+        "CFG: ε̃ = ε_u + w(ε_c − ε_u); w > 1 = zyada prompt adherence, kam diversity.",
+        "CFG ke saath har step par 2 noise predictions.",
+        "Latent diffusion: chhote latent mein denoise, decoder se image.",
+        "FID: Gaussian features ka Fréchet distance; kam = behtar.",
+        "Responsible use: consent, disclosure/provenance, bias audit, licence."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w9-q1",
+          "question": "Text-to-image diffusion mein classifier-free guidance scale w ko 1 se badha kar kaafi bada karne ka typical effect kya hota hai?",
+          "options": [
+            "Images prompt se kam match karti hain par zyada diverse hoti hain",
+            "Sampling steps apne aap kam ho jaate hain",
+            "Model ke weights prompt ke hisaab se fine-tune ho jaate hain",
+            "Images prompt ko zyada closely follow karti hain, par diversity ghatti hai aur bahut bade w par over-saturation/artefacts aa sakte hain"
+          ],
+          "answer": 3,
+          "explanation": "ε̃ = ε_u + w(ε_c − ε_u) mein bada w prediction ko conditional direction mein aur zor se dhakelta hai: adherence ↑, diversity ↓, aur extreme w par artefacts, option D. Option A ulta effect batata hai. Option B galat hai: steps scheduler setting hai, guidance se nahi badalte. Option C galat hai: guidance sirf sampling-time combination hai, weights update nahi hote.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w9-q2",
+          "question": "Ek fictional company 'PixelNest' apne ad campaign mein AI-generated images use karna chahti hai. Inme se kaunsa practice sabse responsible hai?",
+          "options": [
+            "Images ko synthetic ke roop mein disclose karna, kisi asli insaan ki likeness bina consent use na karna, aur model/licence terms check karna",
+            "Kisi famous actor jaisa chehra generate karke use endorsement ki tarah dikhana, kyunki image technically nayi hai",
+            "Provenance metadata ya watermark hata dena taaki images asli photos lagein",
+            "Bias check skip karna, kyunki pretrained model pehle se bade dataset par train hua hai"
+          ],
+          "answer": 0,
+          "explanation": "Disclosure, consent aur licence compliance responsible use ke basic pillars hain, option A. Option B 'nayi image' hone ke bawajood ek asli insaan ki likeness ka misuse aur misleading endorsement hai. Option C jaan-boojh kar dhokha dena hai. Option D galat assumption hai: bade datasets se bias khatam nahi hota, aksar wahi se aata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w9-q3",
+          "question": "Ek sampling step par kisi latent element ke liye unconditional prediction ε_u = 0.2 aur conditional prediction ε_c = 0.5 hai. Guidance scale w = 3 ke saath classifier-free guided noise ε̃ kya hai? (Convention: ε̃ = ε_u + w(ε_c − ε_u))",
+          "options": [
+            "0.9",
+            "1.5",
+            "1.1",
+            "0.5"
+          ],
+          "answer": 2,
+          "explanation": "ε̃ = ε_u + w(ε_c − ε_u) = 0.2 + 3 × 0.3 = 1.1, option C. Option A (0.9) sirf w(ε_c − ε_u) hai, base ε_u jodna bhool gaye. Option B (1.5 = 3 × 0.5) conditional prediction ko seedha scale kar deta hai. Option D sirf ε_c hai, jo w = 1 par milta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w9-q4",
+          "question": "Ek latent diffusion model 512 × 512 × 3 images ko 64 × 64 × 4 latent mein encode karta hai. Denoiser ko har step par pixel space ki tulna mein kitne guna kam numbers process karne padte hain?",
+          "options": [
+            "8",
+            "48",
+            "64",
+            "192"
+          ],
+          "answer": 1,
+          "explanation": "Image: 512·512·3 = 786432 elements; latent: 64·64·4 = 16384. Ratio = 48, option B. Option A (8) sirf ek side ka downsampling factor hai. Option C (64 = 8²) spatial area ka factor hai par channels (3 → 4) ignore karta hai. Option D (192) latent ke 4 channels bhool kar sirf 64 × 64 ginta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w9-q5",
+          "question": "Ek prompt se 4 images banani hain, 30 sampling steps, classifier-free guidance ke saath (har image ke liye har step par conditional aur unconditional prediction alag-alag ginni hai). Kul kitni noise predictions (image-level network evaluations) lagengi?",
+          "options": [
+            "120",
+            "60",
+            "30",
+            "240"
+          ],
+          "answer": 3,
+          "explanation": "4 images × 30 steps × 2 predictions = 240, option D. Option A (120) CFG ki doosri (unconditional) prediction bhool jaata hai, ye sabse common trap hai. Option B (60) sirf ek image ka count hai. Option C sirf steps hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w9-q6",
+          "question": "Ek toy 1-D 'FID' mein real images ke features ~ N(2, 1) aur generated images ke features ~ N(1.5, 0.25) hain (second number variance hai). Fréchet distance (μ₁ − μ₂)² + σ₁² + σ₂² − 2σ₁σ₂ kya hai?",
+          "options": [
+            "0.50",
+            "0.8125",
+            "1.50",
+            "0.25"
+          ],
+          "answer": 0,
+          "explanation": "σ₁ = 1, σ₂ = √0.25 = 0.5. FD = 0.5² + 1 + 0.25 − 2·1·0.5 = 0.25 + 0.25 = 0.5, option A; 1-D mein ye (Δμ)² + (σ₁ − σ₂)² hai. Option B (0.8125) standard deviations ki jagah variances ka difference square karta hai: 0.25 + 0.75². Option C (1.50) cross term −2σ₁σ₂ bhool jaata hai. Option D sirf mean ka difference ginta hai aur spread ka mismatch ignore karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Language Models I: Tokens, Embeddings and Attention",
+      "summary": "Is week aap subword tokenisation (BPE), word embeddings aur cosine similarity, scaled dot-product attention, multi-head attention ke parameters, positional encoding aur transformer block ka structure seekhoge.",
+      "readMinutes": 20,
+      "concepts": [
+        "**Tokenisation**: word-level vocab mein naye/rare words OOV ban jaate hain; character-level mein sequences bahut lambi ho jaati hain. Subword methods (BPE, WordPiece, unigram) beech ka raasta hain: common words ek token, rare words chhote tukdon mein. BPE characters se shuru karke baar-baar sabse frequent adjacent pair ko merge karta hai. Isliye 1 token ≠ 1 word; context limits aur cost tokens mein gine jaate hain.",
+        "**Word embeddings**: har token ek dense vector hai. Distributional idea: jo words similar contexts mein aate hain unke vectors paas hote hain (word2vec/GloVe jaise methods). Similarity aksar cosine se naapte hain: cos = (u·v)/(‖u‖‖v‖). Static embeddings har word ka ek hi vector dete hain; transformer ke contextual embeddings same word ko context ke hisaab se alag vector dete hain ('bank' of a river vs bank account).",
+        "**Scaled dot-product attention**: Q = XW_Q, K = XW_K, V = XW_V. Attention(Q, K, V) = softmax(QKᵀ/√d_k)·V. Har query sabhi keys se similarity score nikaalti hai, softmax se weights banate hain, aur output values ka weighted average hai. √d_k se divide isliye karte hain kyunki bade d_k par dot products ka variance badhta hai aur softmax saturate hokar gradients chhote kar deta hai.",
+        "**Multi-head attention**: h heads, har head d_k = d_model/h size ke apne Q, K, V projections ke saath alag-alag relations (jaise syntax, coreference) dekh sakta hai. Heads ke outputs concat karke W_O se project karte hain. Total projection params = 4·(d_model² + d_model) (bias ke saath), heads ki sankhya se independent, kyunki heads d_model ko baant lete hain.",
+        "**Positional encoding**: attention khud order-agnostic hai (tokens shuffle karo to bas outputs shuffle hote hain). Isliye position information jodte hain. Sinusoidal: PE(pos, 2i) = sin(pos/10000^(2i/d)), PE(pos, 2i + 1) = cos(pos/10000^(2i/d)); kam index wale dimensions tezi se ghoomte hain, zyada index wale dheere. Learned position embeddings aur relative/rotary schemes bhi common hain.",
+        "**Transformer block**: [multi-head self-attention → residual add → LayerNorm] → [position-wise feed-forward (aksar 4·d_model hidden, non-linear) → residual add → LayerNorm]. Kai blocks stack hote hain. RNN ki tarah step-by-step nahi chalta, isliye poori sequence parallel process hoti hai; par attention ka cost sequence length n ke saath n² badhta hai.",
+        "**Self vs cross attention, aur masking**: self-attention mein Q, K, V ek hi sequence se aate hain; cross-attention mein Q ek sequence (decoder) se aur K, V doosri (encoder output) se. Causal mask future positions ke scores ko −∞ kar deta hai, taaki token i sirf positions ≤ i ko dekhe; ye language generation ke liye zaroori hai (next week detail mein)."
+      ],
+      "example": {
+        "problem": "Ek chhota fictional corpus: 'data' × 4, 'date' × 3, 'gate' × 2. Characters se shuru karke BPE ke pehle teen merges nikaalo.",
+        "steps": [
+          "Shuru: d a t a (4), d a t e (3), g a t e (2).",
+          "Pair counts: (a, t) = 4 + 3 + 2 = 9, (d, a) = 7, (t, e) = 5, (t, a) = 4, (g, a) = 2. Merge 1: a + t → 'at'.",
+          "Ab: d at a, d at e, g at e. Counts: (d, at) = 7, (at, e) = 5, (at, a) = 4, (g, at) = 2. Merge 2: d + at → 'dat'.",
+          "Ab: dat a, dat e, g at e. Counts: (dat, a) = 4, (dat, e) = 3, (g, at) = 2, (at, e) = 2. Merge 3: dat + a → 'data'.",
+          "Final segmentation: 'data' = 1 token, 'date' = dat + e, 'gate' = g + at + e. Frequent word ek token ban gaya, kam frequent words tukdon mein.",
+          "**Answer: merges = 'at', 'dat', 'data'.**"
+        ],
+        "code": "from collections import Counter\ncorpus = {(\"d\", \"a\", \"t\", \"a\"): 4, (\"d\", \"a\", \"t\", \"e\"): 3, (\"g\", \"a\", \"t\", \"e\"): 2}\nmerges = []\nfor _ in range(3):\n    pairs = Counter()\n    for w, f in corpus.items():\n        for p in zip(w, w[1:]):\n            pairs[p] += f\n    a, b = max(pairs, key=pairs.get)\n    merges.append(a + b)\n    new = {}\n    for w, f in corpus.items():\n        out, i = [], 0\n        while i < len(w):\n            if i + 1 < len(w) and (w[i], w[i + 1]) == (a, b):\n                out.append(a + b)\n                i += 2\n            else:\n                out.append(w[i])\n                i += 1\n        new[tuple(out)] = f\n    corpus = new\nprint(merges)   # ['at', 'dat', 'data']"
+      },
+      "mistakes": [
+        "√d_k ki jagah d_k se divide karna, ya scaling bilkul bhool jaana. Bina scaling ke softmax bahut peaky ho jaata hai (kuch tokens par lagbhag saara weight).",
+        "Ye sochna ki zyada heads = zyada parameters. Standard design mein har head d_model/h size ka hota hai, isliye attention ke projection params heads badalne se nahi badalte.",
+        "Token count ko word count ke barabar maan lena. Subword tokenisation mein ek word kai tokens ho sakta hai, khaaskar rare words, numbers aur non-English text."
+      ],
+      "revision": [
+        "BPE: sabse frequent adjacent pair ko baar-baar merge karo.",
+        "cos(u, v) = u·v/(‖u‖‖v‖).",
+        "Attention = softmax(QKᵀ/√d_k)·V.",
+        "MHA projection params = 4(d_model² + d_model), h se independent.",
+        "PE(pos, 2i) = sin(pos/10000^(2i/d)), PE(pos, 2i + 1) = cos(…)."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w10-q1",
+          "question": "Do word embeddings u = [1, 2, 2] aur v = [2, 1, 2] hain. Unki cosine similarity kya hai?",
+          "options": [
+            "8",
+            "0.889",
+            "1.414",
+            "0.111"
+          ],
+          "answer": 1,
+          "explanation": "u·v = 2 + 2 + 4 = 8, aur ‖u‖ = ‖v‖ = √9 = 3. cos = 8/9 = 0.889, option B. Option A sirf dot product hai, norms se divide nahi kiya. Option C (√2) Euclidean distance hai. Option D (1/9) cosine distance (1 − cos) hai, similarity nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w10-q2",
+          "question": "Scaled dot-product attention mein key dimension d_k = 64 hai. Softmax se pehle QKᵀ ke scores ko kis number se divide kiya jaata hai?",
+          "options": [
+            "64",
+            "4096",
+            "0.125",
+            "8"
+          ],
+          "answer": 3,
+          "explanation": "Scores ko √d_k = √64 = 8 se divide karte hain, option D. Option A (64) square root bhool jaata hai; isse scores zaroorat se zyada chhote ho jaate hain. Option B d_k² hai. Option C (1/8) woh factor hai jisse multiply karte hain, divide karne wala number nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w10-q3",
+          "question": "Ek query ke do keys ke saath raw dot products q·k₁ = 2 aur q·k₂ = 0 hain, aur d_k = 4. Scaled dot-product attention mein key 1 ko kitna attention weight milega?",
+          "options": [
+            "0.731",
+            "0.881",
+            "1.000",
+            "0.500"
+          ],
+          "answer": 0,
+          "explanation": "Scaled scores = [2, 0]/√4 = [1, 0]. Softmax: e/(e + 1) = 0.731, option A. Option B (0.881) scaling bhool kar softmax([2, 0]) leta hai. Option C hard argmax hai; softmax kabhi exactly 1 nahi deta jab tak doosra score −∞ na ho. Option D maan leta hai ki weights barabar hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w10-q4",
+          "question": "Ek multi-head self-attention layer mein d_model = 512 aur 8 heads hain (har head d_k = d_v = 64). W_Q, W_K, W_V aur output projection W_O sab mein bias hai. Is layer ke total parameters kitne hain?",
+          "options": [
+            "1048576",
+            "8404992",
+            "1050624",
+            "262656"
+          ],
+          "answer": 2,
+          "explanation": "Saare heads milkar har projection ko 512 → 512 banate hain: har ek 512·512 + 512 = 262656, aur chaar projections: 4 × 262656 = 1050624, option C. Option A (1048576) biases chhod deta hai. Option B (8404992) har head ko poore 512 × 512 projections de deta hai, yaani 8 guna; ye sabse common trap hai. Option D sirf ek projection hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w10-q5",
+          "question": "Sinusoidal positional encoding: PE(pos, 2i) = sin(pos/10000^(2i/d)), PE(pos, 2i + 1) = cos(pos/10000^(2i/d)), d = 4. Position pos = 2 ke vector mein dimension index 2 (0 se ginti) ki value kya hai (4 decimal tak)?",
+          "options": [
+            "0.9093",
+            "0.9998",
+            "0.0002",
+            "0.0200"
+          ],
+          "answer": 3,
+          "explanation": "Index 2 even hai, to 2i = 2, i = 1, aur 10000^(2/4) = 100. Value = sin(2/100) = sin(0.02) = 0.0200, option D. Option A (sin 2) index 0 ki value hai. Option B cos(0.02) index 3 ki value hai. Option C (sin(2/10000)) exponent 2i/d ki jagah denominator poora 10000 le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w10-q6",
+          "question": "Ek query q = [1, 0] hai, aur teen tokens ke keys aur values same hain: k₁ = v₁ = [1, 0], k₂ = v₂ = [0, 1], k₃ = v₃ = [1, 1]; d_k = 2. Scaled dot-product attention ka output vector kya hai (3 decimal tak)?",
+          "options": [
+            "[0.845, 0.578]",
+            "[0.802, 0.599]",
+            "[0.667, 0.667]",
+            "[1.000, 0.000]"
+          ],
+          "answer": 1,
+          "explanation": "Scores q·k = [1, 0, 1], /√2 = [0.707, 0, 0.707]. Softmax: e^0.707 = 2.028, weights = [0.401, 0.198, 0.401]. Output = 0.401·[1, 0] + 0.198·[0, 1] + 0.401·[1, 1] = [0.802, 0.599], option B. Option A √2 se scaling bhool jaata hai (weights [0.422, 0.155, 0.422]). Option C barabar weights 1/3 maan leta hai. Option D sirf pehle token ko poora weight de deta hai, jabki k₃ ka score bhi utna hi hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Language Models II: Architectures, Fine-tuning and LoRA",
+      "summary": "Is week aap encoder-only, decoder-only aur encoder–decoder transformers ka fark, unke pretraining objectives, full fine-tuning ki cost, aur PEFT methods (khaaskar LoRA) ka maths aur parameter savings seekhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Encoder-only (BERT-like)**: bidirectional self-attention, har token dono taraf ka context dekhta hai. Pretraining: masked language modelling (kuch tokens ko mask karke predict karna). Classification, NER, semantic search embeddings jaise understanding tasks ke liye accha; free-form text generation ke liye natural nahi.",
+        "**Decoder-only (GPT-like)**: causal (masked) self-attention, token i sirf positions ≤ i dekhta hai. Pretraining: next-token prediction (causal LM). Generation autoregressive hoti hai: ek token predict karo, append karo, repeat. Bade decoder-only models prompt mein diye examples se naya task kar lete hain (in-context learning).",
+        "**Encoder–decoder (T5/BART-like)**: encoder input ko bidirectionally padhta hai; decoder causal self-attention ke saath output banata hai aur cross-attention mein Q apne se, K aur V encoder ke outputs se leta hai. Translation, summarisation jaise seq2seq tasks ke liye natural. Pretraining aksar denoising (corrupted spans ko reconstruct karna) hoti hai.",
+        "**Pretrain → adapt**: pehle bade unlabelled corpus par self-supervised pretraining, phir task data par adaptation: full fine-tuning, instruction tuning (instruction–response pairs par), aur human preferences se alignment (jaise RLHF ya preference-optimisation methods). Chhote task data par full fine-tuning se catastrophic forgetting (purani general abilities ka nuksaan) bhi ho sakta hai.",
+        "**Full fine-tuning ki cost**: har parameter ke gradient aur Adam ke do states (m, v) bhi memory mein rakhne padte hain. fp32 mein roughly 4 (weight) + 4 (grad) + 8 (Adam) = 16 bytes per parameter. Har task ke liye poore model ki alag copy bhi save karni padti hai.",
+        "**PEFT (parameter-efficient fine-tuning)**: base model freeze karke bahut chhote extra parameters train karo. Types: adapters (layers ke beech chhote bottleneck MLP), prefix/prompt tuning (trainable virtual tokens), aur LoRA. Fayde: kam memory, kam storage (har task ka sirf chhota delta), ek base model par kai tasks.",
+        "**LoRA**: frozen weight W (d × k) ke update ko low-rank maana jaata hai: W′ = W + (α/r)·BA, jahan B (d × r), A (r × k), r ≪ min(d, k). Trainable params = r(d + k) vs full d·k. B ko zero se initialise karte hain, isliye shuruaat mein ΔW = 0 aur model bilkul pretrained jaisa behave karta hai. Training ke baad BA ko W mein merge kar sakte hain, isliye inference par extra latency nahi. Aam taur par attention ke W_Q, W_V (ya saare projections) par lagate hain."
+      ],
+      "example": {
+        "problem": "Ek fictional 1.2 billion parameter decoder-only model: 20 layers, d_model = 2048. (a) fp32 + Adam se full fine-tuning ke liye weights, gradients aur optimizer states ki memory kitni? (b) LoRA r = 8 sirf W_Q aur W_V (har ek 2048 × 2048) par lagao: trainable params, unka fraction, aur unke gradient + Adam states ki memory nikaalo.",
+        "steps": [
+          "(a) 16 bytes/param × 1.2 × 10⁹ = 19.2 GB (activations alag se).",
+          "(b) Ek matrix par LoRA params = r(d + k) = 8 × (2048 + 2048) = 32768.",
+          "Har layer mein 2 matrices, 20 layers: 32768 × 2 × 20 = 1310720 trainable params.",
+          "Fraction = 1310720 / (1.2 × 10⁹) ≈ 0.11%.",
+          "In par gradient + Adam = 12 bytes/param: 1310720 × 12 ≈ 15.7 MB. Frozen base weights (fp32 mein 4.8 GB) phir bhi load karne padte hain, par unke gradients/optimizer states nahi.",
+          "**Answer: full FT ≈ 19.2 GB training state; LoRA ≈ 1.31 million params (≈ 0.11%) aur sirf ≈ 15.7 MB extra training state.**"
+        ],
+        "code": "params = 1.2e9\nprint(params * 16 / 1e9)                        # 19.2 (GB)\nlora = 8 * (2048 + 2048) * 2 * 20\nprint(lora, round(lora / params * 100, 2), round(lora * 12 / 1e6, 1))   # 1310720 0.11 15.7"
+      },
+      "mistakes": [
+        "LoRA params ko r·d·k samajhna. Do chhote matrices hain: B (d × r) aur A (r × k), isliye r(d + k).",
+        "Encoder-only model ko seedha open-ended text generation ke liye chuna. Uska objective bidirectional masked prediction hai; generation ke liye decoder-only ya encoder–decoder lo.",
+        "LoRA mein A aur B dono ko random init karna. Tab shuruaat mein hi ΔW ≠ 0 hota hai aur pretrained behaviour bigad jaata hai; standard practice mein B = 0 hota hai."
+      ],
+      "revision": [
+        "Encoder-only = bidirectional + MLM; decoder-only = causal + next token; enc–dec = seq2seq + cross-attention.",
+        "Cross-attention: Q decoder se, K, V encoder outputs se.",
+        "Causal mask: n tokens par n(n + 1)/2 allowed pairs.",
+        "LoRA: W′ = W + (α/r)BA, params r(d + k), B = 0 init.",
+        "Full FT (fp32 + Adam) ≈ 16 bytes/param."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w11-q1",
+          "question": "Next-token prediction se pretrain hone wale aur causal mask (sirf pichhle tokens dekhna) use karne wale transformer ko kya kehte hain?",
+          "options": [
+            "Encoder-only (BERT-like)",
+            "Sirf CNN-based language model",
+            "Decoder-only (GPT-like)",
+            "Koi transformer causal mask use nahi karta"
+          ],
+          "answer": 2,
+          "explanation": "Causal self-attention aur next-token objective decoder-only (GPT-like) models ki pehchaan hai, option C. Option A sabse tempting trap hai: encoder-only models bidirectional attention aur masked LM use karte hain; 'mask' wahan input tokens chhupaane ke liye hai, attention ko causal banane ke liye nahi. Option B transformer hai hi nahi. Option D galat hai: decoder (aur encoder–decoder ka decoder) causal mask use karte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w11-q2",
+          "question": "Ek frozen weight matrix 4096 × 4096 hai. Us par LoRA rank r = 8 lagaya jaata hai (B: 4096 × 8, A: 8 × 4096). LoRA ke trainable parameters kitne hain?",
+          "options": [
+            "65536",
+            "32768",
+            "16777216",
+            "8192"
+          ],
+          "answer": 0,
+          "explanation": "r(d + k) = 8 × (4096 + 4096) = 65536, option A, jo full matrix ke 16777216 ka sirf 0.39% hai. Option B (32768) sirf ek matrix (B ya A) ginta hai. Option C full fine-tuning ka count hai. Option D (d + k) rank r se multiply karna bhool jaata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w11-q3",
+          "question": "Ek decoder ke causal self-attention mein sequence length 5 hai. Har token khud ko aur apne pichhle tokens ko dekh sakta hai. Kul kitne (query, key) pairs ko non-zero attention allowed hai?",
+          "options": [
+            "25",
+            "10",
+            "5",
+            "15"
+          ],
+          "answer": 3,
+          "explanation": "Token i (1 se 5) i positions dekhta hai: 1 + 2 + 3 + 4 + 5 = 15 = n(n + 1)/2, option D. Option A (25) full bidirectional attention hai, mask ignore kiya. Option B (10) diagonal chhod deta hai, jabki token khud ko bhi dekhta hai. Option C sirf self-pairs hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w11-q4",
+          "question": "Ek model mein 24 transformer layers hain. Har layer ke W_Q aur W_V (dono 1024 × 1024) par LoRA r = 16 lagaya jaata hai; baaki sab frozen. Total trainable parameters kitne hain?",
+          "options": [
+            "786432",
+            "1572864",
+            "50331648",
+            "3145728"
+          ],
+          "answer": 1,
+          "explanation": "Ek matrix: 16 × (1024 + 1024) = 32768. Har layer 2 matrices, 24 layers: 32768 × 2 × 24 = 1572864, option B. Option A (786432) har layer mein sirf ek matrix ginta hai. Option C (2 × 24 × 1024²) full fine-tuning ka count hai. Option D chaaron projections (Q, K, V, O) par LoRA maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w11-q5",
+          "question": "Ek encoder–decoder translation model ke decoder mein cross-attention layer apne keys (K) aur values (V) kahan se leti hai?",
+          "options": [
+            "Decoder ke pichhle generated tokens se",
+            "Positional encoding table se",
+            "Encoder ke final hidden states (outputs) se",
+            "Vocabulary embedding matrix se seedha"
+          ],
+          "answer": 2,
+          "explanation": "Cross-attention mein queries decoder se aati hain, aur keys/values encoder outputs se, taaki har output token source sentence ke relevant hisson ko dekh sake, option C. Option A decoder ki masked self-attention ka description hai, ye sabse common confusion hai. Option B aur D attention ke K/V ke source nahi hain; woh sirf input representations banane mein kaam aate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w11-q6",
+          "question": "Ek tiny LoRA layer: frozen W = [[2, 1], [0, 1]], A = [1, 2] (1 × 2), B = [0.5, −1]ᵀ (2 × 1), rank r = 1, scaling α = 2. Input x = [1, 1]. Output h = Wx + (α/r)·B(Ax) kya hai?",
+          "options": [
+            "[4.5, −2]",
+            "[3.75, −0.5]",
+            "[3, 1]",
+            "[6, −5]"
+          ],
+          "answer": 3,
+          "explanation": "Wx = [2 + 1, 0 + 1] = [3, 1]. Ax = 1 + 2 = 3, B(Ax) = [1.5, −3], scale α/r = 2 se [3, −6]. h = [3 + 3, 1 − 6] = [6, −5], option D. Option A scaling factor bhool jaata hai. Option B α/r ki jagah r/α = 0.5 use karta hai. Option C maan leta hai ki LoRA ka contribution zero hai, jo sirf initialisation par (B = 0) sach hota hai, yahan B non-zero hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "LLMs in Practice: Prompting, Evaluation, Responsible Use",
+      "summary": "Is week aap zero-shot, few-shot aur chain-of-thought prompting, decoding settings (temperature, top-p), prompt tuning, LLM outputs ka evaluation, aur hallucination, prompt injection jaisi limitations ke saath responsible use seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Prompt ka structure**: achha prompt role/instruction, zaroori context, input (delimiters ke andar, jaise triple quotes), output format (jaise JSON keys) aur constraints saaf batata hai. Vague prompt = vague output. Prompt ko code ki tarah treat karo: version rakho aur ek fixed test set par measure karke hi badlo.",
+        "**Zero-shot vs few-shot**: zero-shot mein sirf instruction hoti hai; few-shot mein kuch solved input → output examples bhi prompt mein hote hain (in-context learning, weights update nahi hote). Examples ka choice, order aur label balance results badal sakta hai; examples test inputs jaise hone chahiye.",
+        "**Chain-of-thought (CoT) idea**: multi-step problems (arithmetic, logic) mein model ko pehle reasoning steps likhne dena aksar accuracy badhata hai. Self-consistency: kai reasoning paths sample karke final answers par majority vote. Par likha hua reasoning hamesha model ke asli computation ka faithful explanation nahi hota, aur ye tokens/cost badhata hai.",
+        "**Decoding settings**: greedy (temperature ≈ 0) har step sabse probable token leta hai: deterministic, extraction/classification ke liye accha. Temperature distribution ko sharp/flat karta hai. Top-k sirf k sabse probable tokens rakhta hai; top-p (nucleus) sabse chhota set rakhta hai jiski cumulative probability ≥ p ho, phir renormalise karke sample karta hai.",
+        "**Prompt tuning vs prompt engineering**: prompt engineering haath se text likhna hai. Prompt tuning (soft prompts) m trainable embedding vectors input ke aage jodta hai aur sirf unhe gradient se train karta hai, model frozen rehta hai: params = m × d_model. Prefix tuning aise vectors har layer mein jodta hai, isliye usme zyada params hote hain.",
+        "**Evaluation**: closed-form tasks par exact match/accuracy/F1; summarisation/translation par overlap metrics (ROUGE/BLEU) jo semantics poori tarah nahi pakadte; open-ended answers ke liye rubric ke saath human review ya LLM-as-judge (iske bhi bias hote hain: position, length). Held-out, contamination-free test set rakho aur cost, latency, safety bhi measure karo.",
+        "**Limitations aur responsible use**: hallucination (confident par galat facts), knowledge cutoff, prompt phrasing ke prati sensitivity, bias, context window aur KV-cache memory ki limits. Prompt injection: untrusted text (web page, email) mein chhupe instructions model ko bhatka sakte hain, isliye tool access limit karo. Mitigations: retrieval se grounding aur citations, 'pata nahi' kehne ki permission, sensitive data prompt mein na daalna, aur high-stakes decisions mein human review."
+      ],
+      "example": {
+        "problem": "Ek fictional legal-tech team ka model 8192-token context window rakhta hai. Prompt mein system instructions 500 tokens, 8 few-shot examples (har ek 600 tokens) hain, aur output ke liye 1000 tokens reserve hain. Analyse karne wala contract 2500 tokens ka hai. Kya fit hoga? Na ho to kitne examples rakh sakte hain?",
+        "steps": [
+          "Fixed parts: 500 + 8 × 600 + 1000 = 500 + 4800 + 1000 = 6300 tokens.",
+          "Document ke liye bacha: 8192 − 6300 = 1892 tokens, jo 2500 se kam hai, isliye fit nahi hoga.",
+          "Examples ke liye budget: 8192 − 500 − 1000 − 2500 = 4192 tokens.",
+          "Max examples = ⌊4192/600⌋ = 6 (6 × 600 = 3600 tokens).",
+          "Bachi jagah: 4192 − 3600 = 592 tokens, safety margin ke liye theek. Doosra option: lamba document chunks mein todna ya sirf relevant sections retrieve karna.",
+          "**Answer: 8 examples ke saath fit nahi hota (sirf 1892 tokens bachte hain); 6 examples tak ghataane par contract fit ho jaata hai.**"
+        ],
+        "code": "window, system, ex, out, doc = 8192, 500, 600, 1000, 2500\nprint(window - (system + 8 * ex + out))          # 1892\nprint((window - system - out - doc) // ex)       # 6"
+      },
+      "mistakes": [
+        "Extraction ya classification jaise deterministic tasks par high temperature use karna. Isse har run alag output aata hai; aise tasks mein low temperature/greedy rakho.",
+        "Kuch hand-picked examples dekh kar prompt ko 'kaam karta hai' maan lena. Ek fixed, labelled eval set banao aur har prompt change ko us par measure karo.",
+        "Model ke fluent answer ko verified fact maan lena, ya untrusted content ke instructions ko follow hone dena. Grounding, citations, human review aur limited tool permissions rakho."
+      ],
+      "revision": [
+        "Zero-shot = sirf instruction; few-shot = instruction + solved examples.",
+        "CoT: step-by-step reasoning; self-consistency = majority vote.",
+        "Top-p: smallest set with cumulative prob ≥ p, phir renormalise.",
+        "Prompt tuning params = soft tokens × d_model (model frozen).",
+        "KV cache = 2 × layers × tokens × d_model × bytes.",
+        "Hallucination, injection, bias → grounding, least privilege, human review."
+      ],
+      "questions": [
+        {
+          "id": "dlgenai-w12-q1",
+          "question": "Ek prompt mein pehle task ki instruction hai, phir 3 solved examples (review → sentiment), aur ant mein naya review jiska sentiment chahiye. Model ke weights update nahi hote. Is technique ko kya kehte hain?",
+          "options": [
+            "Few-shot prompting",
+            "Zero-shot prompting",
+            "Fine-tuning",
+            "Prompt tuning (soft prompts)"
+          ],
+          "answer": 0,
+          "explanation": "Prompt ke andar solved examples dena aur weights na badalna few-shot (in-context) prompting hai, option A. Option B mein koi example nahi hota, sirf instruction. Option C weights update karta hai. Option D trainable embedding vectors seekhta hai, jo gradient training hai, text examples nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w12-q2",
+          "question": "Fictional e-commerce company 'ShopEase' ka LLM support bot return policy ke baare mein confident par galat answers deta hai. Inme se sabse effective mitigation kaunsa hai?",
+          "options": [
+            "Temperature badha do taaki answers zyada varied hon",
+            "System prompt mein likh do ki 'tum kabhi galat nahi hote'",
+            "Bot se lambe, detailed answers likhwao",
+            "Answers ko company ke official policy documents par ground karo (retrieval), sources cite karwao, aur info na milne par 'pata nahi' kehne do"
+          ],
+          "answer": 3,
+          "explanation": "Hallucination ka sabse practical ilaaj grounding hai: relevant official text retrieve karke prompt mein do, citations maango, aur abstain karne do, option D. Option A randomness badhata hai, galtiyaan kam nahi karta. Option B se model sirf aur confident lagta hai, sahi nahi hota. Option C lamba answer zyada unverified claims bhi la sakta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "dlgenai-w12-q3",
+          "question": "Agle token ki probabilities (sorted) hain: 0.5, 0.2, 0.15, 0.1, 0.05. Top-p (nucleus) sampling p = 0.8 ke saath kitne tokens nucleus mein rehte hain, aur renormalise karne ke baad sabse probable token ki probability kya hoti hai?",
+          "options": [
+            "(2, 0.714)",
+            "(3, 0.588)",
+            "(3, 0.500)",
+            "(4, 0.526)"
+          ],
+          "answer": 1,
+          "explanation": "Cumulative: 0.5, 0.7 (< 0.8), 0.85 (≥ 0.8), isliye 3 tokens. Renormalise: 0.5/0.85 = 0.588, option B. Option A cumulative 0.8 se pehle hi ruk jaata hai (0.7 abhi p tak nahi pahuncha). Option C renormalise karna bhool jaata hai. Option D ek token zyada le leta hai (0.95), smallest set ka rule todta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w12-q4",
+          "question": "Ek frozen LLM (32 layers, embedding dimension 4096) par prompt tuning kiya jaata hai: input embeddings ke aage 20 trainable soft-prompt vectors jode jaate hain, aur sirf yahi train hote hain. Trainable parameters kitne hain?",
+          "options": [
+            "4096",
+            "20",
+            "81920",
+            "2621440"
+          ],
+          "answer": 2,
+          "explanation": "Har soft token ek 4096-dimensional vector hai: 20 × 4096 = 81920, option C. Option D (81920 × 32) prefix tuning jaisa har layer par vectors maan leta hai, jabki prompt tuning sirf input par hota hai. Option A ek hi vector hai, aur option B sirf tokens ki ginti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w12-q5",
+          "question": "Ek LLM-based toxicity filter (fictional eval set) ne 40 outputs ko toxic flag kiya; unme se 30 sach mein toxic the. Eval set mein kul 50 toxic outputs the. 'Toxic' class ka F1 score kya hai?",
+          "options": [
+            "0.667",
+            "0.750",
+            "0.600",
+            "0.675"
+          ],
+          "answer": 0,
+          "explanation": "Precision = 30/40 = 0.75, recall = 30/50 = 0.6. F1 = 2PR/(P + R) = 2(0.75)(0.6)/1.35 = 0.667, option A. Option B precision hai aur option C recall. Option D (0.675) P aur R ka arithmetic mean hai, jabki F1 harmonic mean hai jo chhote value ki taraf jhukta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "dlgenai-w12-q6",
+          "question": "Ek decoder-only model: 32 layers, d_model = 4096, standard multi-head attention (K aur V dono har layer mein d_model size ke). Ek sequence ke 2048 tokens ka KV cache fp16 (2 bytes per number) mein rakha hai, batch size 1. KV cache kitni memory leta hai? (1 GiB = 2³⁰ bytes)",
+          "options": [
+            "0.5 GiB",
+            "1 GiB",
+            "2 GiB",
+            "32 MiB"
+          ],
+          "answer": 1,
+          "explanation": "Memory = 2 (K aur V) × 32 layers × 2048 tokens × 4096 × 2 bytes = 1073741824 bytes = 1 GiB, option B. Option A sirf K (ya sirf V) ginta hai. Option C fp32 (4 bytes) maan leta hai. Option D (32 MiB) sirf ek layer ka cache hai, layers se multiply karna bhool gaye.",
+          "difficulty": "hard"
+        }
+      ]
     }
   ]
 }

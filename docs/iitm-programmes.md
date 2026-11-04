@@ -40,12 +40,12 @@ English I and II have different codes in ES (HS1101 / HS1102) and DS (BSHS1001 /
 
 **Management and Data Science** (all 4 credits): BSMA1001, BSMA1002, BSCS1001 and BSHS1001 (the Data Science courses, already covered), plus BSMS1201 Principles of Economics, BSMS1202 Financial Accounting, BSMS1203 Business Statistics and BSMS1204 Management Thought and Practice.
 
-## Data Science Diploma (listed in the app as planned)
+## Data Science Diploma
 
 - **Diploma in Programming**: BSCS2001 DBMS, BSCS2002 PDSA, BSCS2003 MAD I (+ project), BSCS2005 Java, BSCS2006 MAD II (+ project), BSSE2001 System Commands.
 - **Diploma in Data Science** (structure from the September 2025 term): BSCS2004 MLF, BSMS2001 BDM, BSCS2007 MLT, BSCS2008 MLP (+ project), BSSE2002 Tools in Data Science, then one track: BSMS2002 Business Analytics or BSDA2001 Introduction to Deep Learning and Generative AI (each + project).
 
-Students can already choose a Diploma; its subjects show "Notes coming soon" until they are written.
+All 13 subjects have 12 weeks of notes and 6 questions per week (2 easy, 3 medium, 1 hard), written from the official week topics (order only) and blind-checked: a second agent solved every question without the key, and all 936 answers matched (a few questions were reworded to state a convention they relied on).
 
 ## What the app covers (November 2026)
 
@@ -55,18 +55,17 @@ Students can already choose a Diploma; its subjects show "Notes coming soon" unt
 | Electronic Systems – Foundation | All 9 theory courses: English I, Math for Electronics I, Electronic Systems Thinking and Circuits, Introduction to C, Introduction to Linux, English II, Digital Systems, Electrical and Electronic Circuits, Embedded C | Labs aren't covered (no weekly theory) |
 | Aeronautics – Foundation | All 8: the 5 shared with Electronic Systems, plus Math for Electronics II, Introduction to Aerospace Systems and Engineering Mechanics | — |
 | Management & DS – Foundation | All 8: Maths I, Statistics I, Computational Thinking and English I (shared with Data Science), plus Principles of Economics, Financial Accounting, Business Statistics and Management Thought and Practice | — |
-| Data Science – Diploma in Programming | 0 of 6 | DBMS, PDSA, MAD I, Java, MAD II, System Commands |
-| Data Science – Diploma in Data Science | 0 of 7 | MLF, BDM, MLT, MLP, Tools in Data Science, Business Analytics, Deep Learning & GenAI |
+| Data Science – Diploma in Programming | All 6: DBMS, PDSA, MAD I, Java, MAD II, System Commands | Projects (MAD I/II) aren't covered |
+| Data Science – Diploma in Data Science | All 7: MLF, BDM, MLT, MLP, Tools in Data Science, Business Analytics, Deep Learning & GenAI | Projects aren't covered |
 | Qualifier exam | Data Science Foundation subjects, plus `/qualifier` (built on another branch) | — |
 
-In all: 22 subjects × 12 weeks, 1,584 questions in Hinglish and English. All notes and questions are original. The official week-topic titles were used only to decide the order of topics.
+In all: 35 subjects × 12 weeks, 3,384 questions in Hinglish and English (the Data Science Foundation subjects have 15+ per week for the Easy / Medium / Hard levels). All notes and questions are original. The official week-topic titles were used only to decide the order of topics.
 
 - The Electronic Systems Python course (CS1002) is a Diploma course with the same weekly topics as Data Science's BSCS1002, so the existing `python` subject can be reused when the ES Diploma is added.
 - The Coding Lab runs Python only. Electronic Systems students get a note pointing them to the C "what does this print?" questions, since C can't run in the browser yet.
 
 ## Not in the app yet
 
-- The two Data Science Diplomas (13 subjects above): they can be chosen and show "Notes coming soon" everywhere until written.
 
 - Electronic Systems Diploma (EE2101 Signals and Systems, EE2102 Analog Electronic Systems, CS1002 Python Programming, EE2103 Digital System Design, EE3101 DSP, EE3103 Sensors, EE4108 Testing and Measurement, EE2106 Computer Organisation, plus labs and projects) and Degree.
 - The Aeronautics and Management Diploma and Degree levels.

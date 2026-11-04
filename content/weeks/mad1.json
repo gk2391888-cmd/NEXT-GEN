@@ -108,7 +108,7 @@
         },
         {
           "id": "mad1-w1-q6",
-          "question": "Plain HTTP/1.1 (TLS nahi), DNS pehle se cached, RTT 50 ms. Browser ek HTML page laata hai jo 5 aur files (3 CSS/JS + 2 images, same server) refer karta hai. Browser ek hi **persistent** TCP connection use karta hai aur files ek ke baad ek maangta hai (pipelining nahi). Transmission aur server time ignore karo. Saari 6 files aane mein kam se kam kitna time lagega?",
+          "question": "Plain HTTP/1.1 (TLS nahi), DNS pehle se cached, RTT 50 ms. Browser ek HTML page laata hai jo 5 aur files (3 CSS/JS + 2 images, same server) refer karta hai. Abhi koi TCP connection khula nahi hai; browser ek **persistent** TCP connection kholta hai aur files ek ke baad ek maangta hai (pipelining nahi). Transmission aur server time ignore karo. Saari 6 files aane mein kam se kam kitna time lagega?",
           "options": [
             "600 ms",
             "150 ms",
@@ -491,6 +491,989 @@
           ],
           "answer": 3,
           "explanation": "Pehli query saare 50 users laati hai. Lazy loading mein har `u.posts` pehli baar access karne par us user ke liye alag SELECT chalti hai, to 50 aur queries: 1 + 50 = 51. Yahi **N+1 problem** hai. Option B ka trap: yeh `selectinload` jaise eager loading ka count hai, default ka nahi. Option A `joinedload` jaisa ek JOIN maan leta hai, aur option C users wali pehli query bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Controllers: Routing, Requests and Validation",
+      "summary": "Is week aap controller ka kaam, Flask routing aur URL converters, request object se data padhna, redirect aur `url_for`, Post/Redirect/Get pattern, server-side validation aur business logic ko views se alag rakhna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Controller ka role**: request aati hai, controller input padhta aur validate karta hai, model/service ko kaam deta hai, aur decide karta hai ki response kya hoga (template, redirect, JSON ya error). Achha controller **thin** hota hai: usme HTTP se judi baatein hon, business rules alag functions mein.",
+        "**Routing**: `@app.route('/courses', methods=['GET', 'POST'])` ek URL rule ko view function se jodta hai. `methods` na do to sirf GET allowed hai (HEAD aur OPTIONS Flask khud sambhalta hai). Koi rule match na kare to **404**, rule match ho par method allowed na ho to **405**.",
+        "**Variable rules aur converters**: `/user/<int:uid>` mein converter value ko check bhi karta hai aur type bhi badalta hai: `/user/42` par view ko `uid=42` (int) milta hai, jabki `/user/abc` rule se match hi nahi karta aur 404 aata hai. Default converter `string` hai (slash ke bina koi text), `path` slash bhi le leta hai.",
+        "**Request object**: `request.method`, `request.args` (query string), `request.form` (form ka body), `request.get_json()` (JSON body), `request.files`, `request.headers`, `request.cookies`. `request.form['x']` key na mile to Flask khud **400 Bad Request** bhejta hai; optional field ke liye `request.form.get('x', '')` likho.",
+        "**Responses**: view string ya `render_template(...)` return kare to 200; `return body, 201` jaisa tuple status set karta hai. `redirect(url)` default mein 302 bhejta hai, `abort(404)` turant error response deta hai. **url_for** (`url_for('endpoint', key=value)`) function ke naam se URL banata hai; jo values rule mein nahi, woh query string ban jaati hain, isliye URLs hard-code nahi karne padte.",
+        "**Post/Redirect/Get (PRG)**: form ka POST successful ho to HTML render karne ke bajaye redirect karo. Browser phir GET karta hai, aur user refresh kare to sirf GET dobara hota hai, POST nahi; duplicate order/entry nahi banti. `flash('Saved')` agle page par ek baar dikhne wala message deta hai.",
+        "**Server-side validation**: browser ka `required` ya JavaScript check bypass ho sakta hai (curl, devtools), isliye har input server par check karo: strip, type, range, length, format, aur uniqueness (database se). Galat input par form ko errors aur user ki di hui values ke saath dobara dikhao, aur status 400 do; galat data ko kabhi model tak mat jaane do.",
+        "**MVC separation**: business rule (jaise 'course full ho to enroll mat karo') ek service function `enroll(student, course)` mein rakho jo exception raise kare. Controller us exception ko flash message ya HTTP status mein badalta hai. Isse rule bina HTTP ke unit test ho sakta hai aur API aur HTML dono controllers ise reuse kar sakte hain."
+      ],
+      "example": {
+        "problem": "Ek enrollment page banao: GET par form dikhe, POST par roll number validate ho, sahi ho to enroll karke course page par redirect, galat ho to error ke saath form dobara. Teen requests trace karo: GET, POST `roll=abc`, POST `roll=21`.",
+        "code": "@app.route('/courses/<int:course_id>/enroll', methods=['GET', 'POST'])\ndef enroll_view(course_id):\n    course = db.session.get(Course, course_id)\n    if course is None:\n        abort(404)\n    if request.method == 'POST':\n        roll = request.form.get('roll', '').strip()\n        if not roll.isdigit():\n            flash('Roll number must contain only digits')\n            return render_template('enroll.html', course=course, roll=roll), 400\n        services.enroll(int(roll), course)      # business rule lives here\n        flash('Enrolled successfully')\n        return redirect(url_for('course_detail', course_id=course.id))\n    return render_template('enroll.html', course=course, roll='')",
+        "steps": [
+          "`GET /courses/3/enroll`: converter `3` ko int banata hai, course mil jaata hai, method GET hai, to khaali form 200 ke saath render hota hai.",
+          "`GET /courses/x/enroll` hota to int converter match hi nahi karta aur 404 aata; course id 999 jaisi ho jo DB mein nahi, to `abort(404)`.",
+          "`POST` with `roll=abc`: `isdigit()` False hai, to flash message aur form dobara, user ki value ke saath, status 400.",
+          "`POST` with `roll=21`: validation pass, `services.enroll` business rule chalata hai, phir `redirect` 302 ke saath `/courses/3` par bhejta hai.",
+          "Browser `/courses/3` ke liye GET karta hai; ab refresh karne par enrollment dobara submit nahi hota (PRG).",
+          "Answer: responses **200 (form), 400 (form + error), 302 → /courses/3**."
+        ]
+      },
+      "mistakes": [
+        "`@app.route('/login')` likh kar form ko POST karna aur 405 dekh kar confuse hona. POST handle karna ho to `methods=['GET', 'POST']` likho.",
+        "Successful POST ke baad seedha `render_template` return karna. Refresh par browser form dobara bhejta hai; PRG use karo.",
+        "Sirf HTML `required`/`maxlength` par bharosa karna. Koi bhi bina browser ke request bhej sakta hai; validation server par zaroori hai."
+      ],
+      "revision": [
+        "Default method sirf GET; galat method → 405, koi rule nahi → 404.",
+        "`<int:id>` match nahi hua to 404, view chalta hi nahi.",
+        "`request.args` = query, `request.form` = form body, `request.get_json()` = JSON.",
+        "`url_for` ke extra arguments query string ban jaate hain.",
+        "POST success → redirect → GET (PRG).",
+        "Validation server par; business rules service functions mein."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w5-q1",
+          "question": "Route `@app.route('/submit')` ke saath define hai (koi `methods` argument nahi). Ek HTML form `POST /submit` bhejta hai. Response ka status kya hoga?",
+          "options": [
+            "200, kyunki route maujood hai",
+            "404 Not Found",
+            "405 Method Not Allowed",
+            "500 Internal Server Error"
+          ],
+          "answer": 2,
+          "explanation": "`methods` na dene par route sirf GET (aur automatic HEAD/OPTIONS) accept karta hai. URL match hota hai par method nahi, isliye 405. Option B ka trap: 'request fail hui to 404' sochna; 404 tab aata jab koi rule hi match na karta. Option A galat hai kyunki route ka hona kaafi nahi, method bhi allowed hona chahiye, aur option D tab hota jab view ke andar exception aata.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w5-q2",
+          "question": "`<form action=\"/signup\" method=\"post\">` mein `<input name=\"email\">` hai. Flask view mein is field ki value kahan se milegi?",
+          "options": [
+            "`request.form['email']`",
+            "`request.args['email']`",
+            "`request.get_json()['email']`",
+            "`request.cookies['email']`"
+          ],
+          "answer": 0,
+          "explanation": "POST form ka data request body mein form-encoded hota hai, aur Flask use `request.form` mein deta hai. Option B ka trap: `request.args` sirf URL ki query string hai, jo GET form mein bharti hai. Option C JSON body ke liye hai (jaise `fetch` se `application/json` bhejna), aur option D cookies ke liye; normal form submit unme kuch nahi daalta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w5-q3",
+          "question": "Route `@app.route('/user/<int:uid>')` hai aur view `def profile(uid):` hai. Requests `GET /user/42` aur `GET /user/abc` par kya hoga?",
+          "options": [
+            "Dono par view chalta hai; doosre case mein `uid` string `'abc'` hai",
+            "`/user/42` par `uid` string `'42'` hai; `/user/abc` par 404",
+            "`/user/42` theek chalta hai; `/user/abc` par view ke andar `int()` fail hota hai aur 500 aata hai",
+            "`/user/42` par `uid` integer 42 hai; `/user/abc` route se match hi nahi karta, isliye 404"
+          ],
+          "answer": 3,
+          "explanation": "`int` converter matching ke waqt hi check karta hai: digits hon to value int bana kar view ko deta hai, warna rule match nahi hota aur koi aur rule na ho to 404. Option C ka trap: sochna ki conversion view ke andar hota hai aur fail hone par crash (500) hoga; view chalta hi nahi. Option B galat hai kyunki converter type badal deta hai, aur option A converter ko ignore karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w5-q4",
+          "question": "Order place karne wala POST handler successful hone par `render_template('done.html')` ke bajaye `redirect(url_for('order_status', oid=o.id))` return karta hai. Iska main fayda kya hai?",
+          "options": [
+            "Server ka load kam hota hai, kyunki redirect ka response chhota hota hai",
+            "User page refresh kare to browser sirf GET dobara karta hai, form ka POST nahi, isliye duplicate order nahi banta",
+            "HTTP mein POST ke response mein HTML bhejna allowed nahi hai",
+            "Redirect se form ka data URL mein aa jaata hai, jo debugging ke liye achha hai"
+          ],
+          "answer": 1,
+          "explanation": "Yeh Post/Redirect/Get pattern hai: redirect ke baad browser ki history mein aakhri request GET hai, to refresh ya back-forward se order dobara POST nahi hota. Option A ka trap: redirect ko optimisation samajhna; asal mein ek extra request lagti hai. Option C galat hai, POST ka response HTML ho sakta hai; bas refresh par dobara submit ka khatra rehta hai. Option D bhi galat hai, form data redirect URL mein nahi jaata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w5-q5",
+          "question": "Route `@app.route('/post/<int:post_id>')` ka view function `show_post` hai. Ek request ke andar `url_for('show_post', post_id=7, ref='mail')` kya return karega?",
+          "options": [
+            "`/post/7/mail`",
+            "Error, kyunki `ref` route mein nahi hai",
+            "`/post/7?ref=mail`",
+            "`/post?post_id=7&ref=mail`"
+          ],
+          "answer": 2,
+          "explanation": "`url_for` rule ke variables (`post_id`) ko path mein bharta hai, aur jo extra arguments rule mein nahi hain (`ref`) unhe query string bana deta hai. Option B ka trap: extra argument ko error samajhna; Flask unhe chupchap query mein daal deta hai. Option D saare values ko query mein daalta hai aur option A unhe path mein, dono rule ko ignore karte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w5-q6",
+          "question": "Ek controller form ko is function se validate karta hai. Code ka output kya hoga?",
+          "code": "def validate(form):\n    errors = {}\n    name = form.get('name', '').strip()\n    if not name:\n        errors['name'] = 'required'\n    age = form.get('age', '')\n    if not age.isdigit():\n        errors['age'] = 'number'\n    elif not 18 <= int(age) <= 60:\n        errors['age'] = 'range'\n    return errors\n\nprint(validate({'name': '  ', 'age': '-5'}), validate({'name': 'Ravi', 'age': '075'}))",
+          "options": [
+            "{'name': 'required', 'age': 'number'} {'age': 'range'}",
+            "{'age': 'number'} {'age': 'range'}",
+            "{'name': 'required', 'age': 'range'} {'age': 'range'}",
+            "{'name': 'required', 'age': 'number'} {'age': 'number'}"
+          ],
+          "answer": 0,
+          "explanation": "Pehle form mein `'  '.strip()` khaali string hai, to `name` error. `'-5'.isdigit()` False hai (minus sign digit nahi), to `age` = 'number'. Doosre form mein `'075'.isdigit()` True hai aur `int('075')` = 75, jo 18–60 se bahar hai, to sirf `age` = 'range'. Option C ka trap: '-5' ko number maan kar range check par pahunchna. Option D leading zero ko invalid samajhta hai, aur option B `strip()` ko ignore karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Designing REST APIs with JSON",
+      "summary": "Is week aap API aur web page ka farak, REST ke principles, resources aur URI design, HTTP methods ki safe/idempotent properties, APIs ke liye sahi status codes, JSON aur OpenAPI se API ko document karna seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**API kyun**: HTML page insaan ke liye hai, API program ke liye. Ek hi backend ko browser ka JavaScript, mobile app aur doosri services API se use karti hain, isliye response data (aksar JSON) hota hai, layout nahi. MVC mein API ka 'view' JSON serializer hai.",
+        "**REST ke principles**: client-server alag, **stateless** (har request apni poori jaankari, jaise auth token, saath laaye; server pichhli request yaad nahi rakhta), cacheable responses, layered system, aur **uniform interface**: har resource ka URI hai, aur use standard HTTP methods se representations (JSON) bhej kar badla jaata hai.",
+        "**Resources aur URIs**: URI mein noun rakho, verb nahi; method hi verb hai. Collection `/api/v1/courses`, ek item `/api/v1/courses/12`, sub-resource `/api/v1/students/17/enrollments`. Filtering, sorting aur pagination query string mein: `?status=open&sort=-created&page=2&limit=20`. `/getCourses` ya `/deleteCourse?id=12` RPC style hai, REST nahi.",
+        "**Methods**: GET padhta hai, POST collection mein naya item banata hai, PUT poora resource replace karta hai (ya given URI par banata hai), PATCH kuch fields badalta hai, DELETE hataata hai. **Safe** = server state nahi badalta (GET, HEAD). **Idempotent** = ek baar karo ya das baar, server state par asar same (GET, HEAD, PUT, DELETE). POST na safe hai na idempotent: do baar bhejo to do items ban sakte hain; PATCH bhi guaranteed idempotent nahi (jaise 'stock mein 1 jodo').",
+        "**Status codes for APIs**: 200 OK (data ke saath), 201 Created (naya resource, `Location` header mein uska URI), 204 No Content (success, body nahi, jaise DELETE), 400 Bad Request (malformed JSON ya galat type), 401 Unauthorized (authentication nahi hai ya invalid), 403 Forbidden (pehchaan liya par permission nahi), 404 Not Found, 409 Conflict (duplicate ya version clash), 422 (aksar validation errors ke liye). Errors bhi JSON body mein, ek consistent format mein do: `{\"error\": \"...\"}`.",
+        "**JSON**: text format jiske types hain object, array, string, number, `true`/`false`, `null`. Python mapping: dict → object, list/tuple → array, `True` → `true`, `None` → `null`. Keys hamesha double-quoted strings hote hain. Response par `Content-Type: application/json` hona chahiye; Flask view dict return kare to Flask khud JSON bana deta hai (`jsonify` bhi yahi karta hai).",
+        "**Versioning, pagination, OpenAPI**: breaking change ke liye `/api/v2/` jaisa version rakho, taaki purane clients na tootein. Badi lists hamesha paginate karo. **OpenAPI** ek YAML/JSON specification hai jo har path, method, parameters, request/response schemas aur status codes describe karti hai; isse interactive docs, client code aur contract tests generate hote hain."
+      ],
+      "example": {
+        "problem": "Courses ke liye create endpoint banao: valid JSON par 201 + `Location`, `code` missing ya JSON kharab ho to 400, duplicate `code` par 409. Request `POST /api/v1/courses` body `{\"code\": \"MAD1\", \"title\": \"App Dev\"}` (DB mein MAD1 pehle se nahi) trace karo, phir wahi request dobara.",
+        "code": "@app.route('/api/v1/courses', methods=['POST'])\ndef create_course():\n    data = request.get_json(silent=True)          # None if body is not valid JSON\n    if not isinstance(data, dict) or not data.get('code'):\n        return {'error': 'code is required'}, 400\n    if Course.query.filter_by(code=data['code']).first():\n        return {'error': 'course already exists'}, 409\n    c = Course(code=data['code'], title=data.get('title', ''))\n    db.session.add(c)\n    db.session.commit()\n    body = {'id': c.id, 'code': c.code, 'title': c.title}\n    return body, 201, {'Location': url_for('get_course', cid=c.id)}",
+        "steps": [
+          "Body valid JSON object hai aur `code` maujood hai, isliye 400 wali condition false.",
+          "DB mein MAD1 nahi hai, to 409 wali condition bhi false.",
+          "Course banta hai, commit hota hai, aur response 201 ke saath JSON body aur `Location: /api/v1/courses/<new id>` header aata hai.",
+          "Wahi request dobara bhejne par `filter_by(code='MAD1')` ab row dhoondh leta hai, to 409 Conflict. Yahi dikhata hai ki POST idempotent nahi hai; server duplicate ko khud rokta hai.",
+          "Body mein `{\"code\": \"MAD1\"` (closing brace missing) bhejte to `get_json(silent=True)` None deta aur 400 aata.",
+          "Answer: pehli request **201 + Location**, doosri **409 Conflict**."
+        ]
+      },
+      "mistakes": [
+        "Har response ko 200 ke saath bhejna aur body mein `{\"success\": false}` likhna. Clients, caches aur monitoring status code dekhte hain; error ke liye 4xx/5xx do.",
+        "401 aur 403 ko mix karna. 401 = 'pehle batao tum kaun ho' (login/token missing ya invalid); 403 = 'pata hai tum kaun ho, par ijaazat nahi'.",
+        "Data badalne wala kaam GET par rakhna (`GET /courses/12/delete`). Crawlers, prefetch aur caches GET ko safe maan kar chala dete hain."
+      ],
+      "revision": [
+        "URI = noun; method = verb; filters query string mein.",
+        "Safe: GET, HEAD. Idempotent: GET, HEAD, PUT, DELETE. POST dono nahi.",
+        "201 + Location on create; 204 on delete without body.",
+        "400 malformed, 401 not authenticated, 403 not allowed, 404 missing, 409 conflict.",
+        "`True` → `true`, `None` → `null`; keys double quotes mein.",
+        "OpenAPI = machine-readable API contract."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w6-q1",
+          "question": "HTTP semantics ke hisaab se in methods mein se kaunsa **idempotent nahi** hai?",
+          "options": [
+            "GET",
+            "PUT",
+            "DELETE",
+            "POST"
+          ],
+          "answer": 3,
+          "explanation": "POST se aksar collection mein naya item banta hai; wahi request do baar bhejo to do items ban sakte hain, isliye POST idempotent nahi. Option B ka trap: PUT bhi data badalta hai, par PUT poora resource ek given state par set karta hai, to das baar karne par bhi final state wahi rehti hai. GET (option A) safe hai aur DELETE (option C) idempotent: delete ke baad dobara delete karne se state aur nahi badalti.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w6-q2",
+          "question": "`POST /api/v1/courses` ne naya course successfully bana diya. Response ke liye sabse sahi status code kaunsa hai?",
+          "options": [
+            "200 OK",
+            "201 Created, `Location` header mein naye course ka URI",
+            "204 No Content",
+            "202 Accepted"
+          ],
+          "answer": 1,
+          "explanation": "Naya resource banne par 201 Created standard hai, aur `Location` header client ko batata hai ki naya resource kahan mila. Option A ka trap: 200 bhi 'success' hai, isliye log use hi bhej dete hain, par woh creation ka signal nahi deta. Option D (202) tab hai jab kaam abhi queue mein hai aur baad mein hoga, aur option C success ke saath body na hone ke liye hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w6-q3",
+          "question": "Ek API mein student 17 ke saare enrollments padhne hain. In mein se kaunsa endpoint sabse RESTful hai?",
+          "options": [
+            "`GET /api/v1/students/17/enrollments`",
+            "`GET /api/v1/getEnrollmentsForStudent?id=17`",
+            "`POST /api/v1/students/17/enrollments`",
+            "`GET /api/v1/enrollments/fetch/17`"
+          ],
+          "answer": 0,
+          "explanation": "Enrollments student ka sub-resource hain, URI mein sirf nouns hain, aur padhne ke liye GET hai. Option C ka trap: sahi URI par galat method; POST us collection mein naya enrollment banane ke liye hota. Options B aur D URI mein verb ('get', 'fetch') daalte hain, jo RPC style hai; REST mein verb ka kaam HTTP method karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w6-q4",
+          "question": "Client `DELETE /api/v1/items/5` bhejta hai aur 204 milta hai. Network glitch ki wajah se client wahi request dobara bhejta hai aur ab 404 milta hai. Kya DELETE ab bhi idempotent kehlayega?",
+          "options": [
+            "Nahi, kyunki dono baar response code alag aaya (204 aur 404)",
+            "Haan, par sirf tab jab server dono baar 204 hi bheje; 404 bhejna standard ke khilaaf hai",
+            "Haan; idempotence server ki state par asar ke baare mein hai, aur dono cases ke baad item 5 deleted hi hai. Response code alag ho sakta hai",
+            "Nahi, DELETE kabhi idempotent nahi hota; sirf GET hota hai"
+          ],
+          "answer": 2,
+          "explanation": "Idempotent ka matlab hai ki ek request ka server state par asar, ek baar ya kai baar bhejne par, same rahe. Pehli DELETE ke baad item gaya, doosri ke baad bhi state wahi hai, isliye DELETE idempotent hai. Option A ka trap: idempotence ko 'har baar same response' samajhna. Option B galat hai kyunki doosri baar 404 dena bilkul valid hai, aur option D DELETE ki standard property ke ulta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w6-q5",
+          "question": "Ek API view yeh payload JSON mein bhejta hai. Code ka output kya hoga?",
+          "code": "import json\n\npayload = {'ok': True, 'items': [], 'next': None, 'price': 99.5}\nprint(json.dumps(payload))",
+          "options": [
+            "{'ok': True, 'items': [], 'next': None, 'price': 99.5}",
+            "{\"ok\": \"True\", \"items\": [], \"next\": \"None\", \"price\": 99.5}",
+            "{\"ok\": true, \"items\": [], \"next\": undefined, \"price\": 99.5}",
+            "{\"ok\": true, \"items\": [], \"next\": null, \"price\": 99.5}"
+          ],
+          "answer": 3,
+          "explanation": "`json.dumps` keys ko double quotes mein likhta hai, `True` ko JSON ka `true` aur `None` ko `null` banata hai; float 99.5 waisa hi rehta hai. Option A ka trap: yeh Python dict ka `print` (repr) hai, JSON nahi; single quotes JSON mein valid nahi. Option B booleans/None ko strings bana deta hai, aur option C JavaScript ka `undefined` likhta hai, jo JSON ka type hi nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w6-q6",
+          "question": "Notes API mein note 9 Meera ka hai. Teen requests: (i) `DELETE /api/notes/9` bina kisi token ke; (ii) wahi request Ravi ke valid token ke saath; (iii) Meera ke valid token ke saath `PUT /api/notes/9`, body `{\"title\": \"x\"` (closing brace missing, yaani invalid JSON). Sabse standard status codes kis order mein honge?",
+          "options": [
+            "403, 401, 400",
+            "401, 403, 400",
+            "401, 404, 500",
+            "400, 403, 401"
+          ],
+          "answer": 1,
+          "explanation": "(i) Client ne apni pehchaan hi nahi di, to 401 Unauthorized (yaani unauthenticated). (ii) Ravi pehchaana gaya par note uska nahi, to 403 Forbidden. (iii) Body parse hi nahi hoti, yeh client ki galti hai: 400 Bad Request. Option A ka trap: 401 aur 403 ka matlab ulta samajhna. Kuch APIs (ii) mein jaan-boojh kar 404 dete hain taaki note ka hona chhupa rahe, par option C (iii) ke liye 500 deta hai, jo galat hai kyunki kharab input server error nahi. Option D (i) aur (iii) ko ulat deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Backend Systems: State, Caching and App Servers",
+      "summary": "Is week aap data kahan persist karein, WSGI interface aur app servers, worker processes ka asar, cookies aur sessions (server-side vs signed cookie), HTTP aur application caching, aur scaling ke basics seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Persistence ke levels**: process memory (sabse fast, par restart par gayab aur har process ki alag), files, database (durable, sab processes ke liye shared, transactions ke saath), aur cache jaise Redis (fast, shared, par data kabhi bhi evict ho sakta hai). Jo data khona nahi chahiye woh database mein; cache sirf 'dobara bana sakte hain' wale data ke liye.",
+        "**WSGI**: Python web apps aur servers ke beech standard interface (PEP 3333). App ek callable hai: `app(environ, start_response)`. `environ` dict mein `REQUEST_METHOD`, `PATH_INFO`, `QUERY_STRING` aur `HTTP_*` headers hote hain; app `start_response(status, headers)` call karke **bytes** ka iterable return karti hai. Flask ka `app` object khud ek WSGI app hai, isliye use Gunicorn, uWSGI ya Waitress jaise kisi bhi WSGI server par chala sakte ho.",
+        "**Workers aur memory**: Gunicorn jaise servers kai **worker processes** chalate hain; har process ki apni memory hoti hai. Isliye module-level variable (jaise `hits = 0` ya ek dict 'cache') workers ke beech shared nahi hota aur restart par reset ho jaata hai. App tier ko **stateless** rakho: shared state database ya Redis mein.",
+        "**Cookies**: server `Set-Cookie: sid=abc; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=3600` bhejta hai, aur browser matching requests mein `Cookie: sid=abc` lautata hai. `Max-Age`/`Expires` na ho to cookie browser band hone tak ki 'session cookie' hai. **HttpOnly** JavaScript (`document.cookie`) se chhupata hai, **Secure** sirf HTTPS par bhejta hai, **SameSite** cross-site requests mein bhejna limit karta hai. Ek cookie lagbhag 4 KB tak.",
+        "**Sessions**: HTTP stateless hai, session state jodta hai. **Server-side session**: cookie mein sirf random session id, data DB/Redis mein; logout par server use mita sakta hai. **Flask ka default session**: poora data cookie mein, `SECRET_KEY` se **signed** (badla to signature fail), par **encrypted nahi**, yaani user cookie decode karke padh sakta hai. Isliye usme password ya secret kabhi mat rakho, sirf `user_id` jaisi cheezein.",
+        "**HTTP caching**: `Cache-Control: max-age=600` ka matlab 600 s tak browser bina poochhe cached copy use karega; `no-store` cache mana karta hai. Response mein `ETag: \"v7\"` ho to expiry ke baad browser `If-None-Match: \"v7\"` bhejta hai, aur content na badla ho to server body ke bina **304 Not Modified** deta hai. Static files (CSS/JS) ke liye lamba max-age plus file naam mein version hash best practice hai.",
+        "**Application caching (cache-aside)**: pehle cache dekho; hit ho to wahi do, miss ho to DB se laao, cache mein TTL ke saath rakho aur do. Average latency = hit ratio × hit time + (1 − hit ratio) × miss time, jahan miss time mein cache check bhi shaamil hai. Sabse mushkil hissa **invalidation** hai: data likhte waqt related cache key delete karo, warna users purana (stale) data dekhenge.",
+        "**Scaling basics**: vertical scaling = badi machine (simple, par limit hai); horizontal scaling = kai app servers ke aage **load balancer**. Horizontal tabhi kaam karta hai jab app servers stateless hon. Agla bottleneck aksar database hota hai: indexes, connection pooling, caching aur read replicas se sambhaalte hain."
+      ],
+      "example": {
+        "problem": "Bina Flask ke ek chhota WSGI app likho jo `/health` par `ok` aur baaki paths par 404 de. `GET /health` aur `GET /x` ke liye status, `Content-Length` aur body trace karo.",
+        "code": "def app(environ, start_response):\n    path = environ['PATH_INFO']\n    if path == '/health':\n        body = b'ok'\n        status = '200 OK'\n    else:\n        body = b'not found'\n        status = '404 Not Found'\n    headers = [('Content-Type', 'text/plain'), ('Content-Length', str(len(body)))]\n    start_response(status, headers)\n    return [body]\n\nif __name__ == '__main__':\n    from wsgiref.simple_server import make_server\n    make_server('127.0.0.1', 8000, app).serve_forever()",
+        "steps": [
+          "Server har request ke liye `environ` dict banata hai; `GET /health` mein `PATH_INFO` = '/health'.",
+          "Path match hota hai: body `b'ok'` (2 bytes), status '200 OK'.",
+          "`start_response` status aur headers server ko deta hai; `Content-Length` = '2'. App bytes ki list return karti hai.",
+          "`GET /x` mein path match nahi hota: body `b'not found'` (9 bytes), status '404 Not Found', `Content-Length` = '9'.",
+          "Flask yahi interface andar implement karta hai; `wsgiref` sirf testing ke liye hai, production mein Gunicorn jaisa server chahiye.",
+          "Answer: **/health → 200, length 2, ok**; **/x → 404, length 9, not found**."
+        ]
+      },
+      "mistakes": [
+        "Module-level dict ko 'cache' ya 'session store' bana dena. Kai workers mein har ek ki alag copy hoti hai aur restart par sab khatam; Redis ya DB use karo.",
+        "Flask session ko encrypted maan kar usme sensitive data rakhna. Woh sirf signed hai; koi bhi cookie decode karke padh sakta hai.",
+        "Data update karte waqt cache invalidate na karna. TTL khatam hone tak users purani value dekhte rahenge."
+      ],
+      "revision": [
+        "WSGI: `app(environ, start_response)` → iterable of bytes.",
+        "Har worker process ki alag memory; app tier stateless rakho.",
+        "HttpOnly = JS se chhupa, Secure = sirf HTTPS, SameSite = cross-site limit.",
+        "Flask default session = signed cookie, encrypted nahi.",
+        "max-age ke andar cache se; baad mein If-None-Match → 304.",
+        "Avg latency = h × hit time + (1 − h) × miss time."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w7-q1",
+          "question": "Flask ka default `session` (koi extension nahi) data kahan aur kaise rakhta hai?",
+          "options": [
+            "Server ki memory mein; browser ko sirf ek random session id milti hai",
+            "Database ki ek sessions table mein",
+            "Browser ke cookie mein, `SECRET_KEY` se signed par encrypted nahi; user content padh sakta hai par badal nahi sakta",
+            "Browser ke cookie mein, encrypted; user content padh bhi nahi sakta"
+          ],
+          "answer": 2,
+          "explanation": "Flask ka default session client-side hai: data serialize hokar cookie mein jaata hai aur `SECRET_KEY` se sign hota hai, isliye badla hua cookie reject ho jaata hai, par content decode karke padha ja sakta hai. Option D ka trap: 'signed' ko 'encrypted' samajh lena. Options A aur B server-side sessions ka description hain, jo Flask-Session jaise extensions se milte hain, default se nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w7-q2",
+          "question": "Session cookie ko XSS se churaye jaane se bachane ke liye, yaani page ka JavaScript `document.cookie` se use padh na sake, kaunsa cookie attribute lagate hain?",
+          "options": [
+            "`Secure`",
+            "`HttpOnly`",
+            "`SameSite=Strict`",
+            "`Max-Age=0`"
+          ],
+          "answer": 1,
+          "explanation": "`HttpOnly` cookie browser HTTP requests mein bhejta hai, par JavaScript ko nahi dikhata, isliye injected script use chura nahi sakti. Option A ka trap: `Secure` bhi security attribute hai, par woh sirf ye ensure karta hai ki cookie HTTPS par hi jaaye; JS phir bhi padh sakta hai. Option C cross-site requests (CSRF) ke liye hai, aur option D cookie ko turant expire (delete) karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w7-q3",
+          "question": "Ek WSGI app ko `environ = {'name': 'Zoë'}` ke saath call kiya jaata hai. `Content-Length` header ki value kya hogi?",
+          "code": "def app(environ, start_response):\n    name = environ.get('name', 'world')\n    body = f'Hi {name}!'.encode('utf-8')\n    start_response('200 OK', [\n        ('Content-Type', 'text/plain; charset=utf-8'),\n        ('Content-Length', str(len(body))),\n    ])\n    return [body]",
+          "options": [
+            "8",
+            "7",
+            "10",
+            "9"
+          ],
+          "answer": 0,
+          "explanation": "`'Hi Zoë!'` mein 7 characters hain, par UTF-8 mein 'ë' 2 bytes leta hai, to encoded body 8 bytes hai, aur `len(body)` bytes ginta hai. `Content-Length` hamesha bytes mein hota hai, isliye yeh sahi tareeka hai. Option B ka trap: string ke characters ginna (encode se pehle `len`). Option C template `Hi {name}!` ke characters ginta hai, aur option D 'ë' ko 3 bytes maanta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w7-q4",
+          "question": "`GET /logo.png` ka response aaya: `Cache-Control: max-age=600` aur `ETag: \"v7\"`. User 5 minute baad aur phir (pehli request se) 15 minute baad wahi image dobara load karta hai. Image server par badli nahi. Browser kya karega?",
+          "options": [
+            "Dono baar server se poori image dobara download karega",
+            "Dono baar cache se, server se baat kiye bina, kyunki ETag maujood hai",
+            "5 minute par `If-None-Match` bhejega; 15 minute par poori image download karega",
+            "5 minute par seedha cache se (server se baat nahi); 15 minute par `If-None-Match: \"v7\"` ke saath conditional request, aur server 304 Not Modified dega"
+          ],
+          "answer": 3,
+          "explanation": "max-age=600 yaani 10 minute tak copy fresh hai, to 5 minute par bina network ke cache use hota hai. 15 minute par copy stale hai, par ETag hai, to browser `If-None-Match` ke saath poochhta hai; image nahi badli, isliye server body ke bina 304 bhejta hai aur cached copy reuse hoti hai. Option B ka trap: ETag ko freshness samajhna; ETag sirf revalidation ke liye hai. Option C freshness aur revalidation ka order ulta karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w7-q5",
+          "question": "Ek API cache-aside use karti hai. Cache hit ratio 0.8 hai. Cache check mein 2 ms lagte hain; miss par cache check ke baad DB query mein 50 ms aur lagte hain. Average response time (sirf data fetch) kitna hai?",
+          "options": [
+            "11.6 ms",
+            "12 ms",
+            "42 ms",
+            "26 ms"
+          ],
+          "answer": 1,
+          "explanation": "Hit: 2 ms. Miss: 2 + 50 = 52 ms (pehle cache check hua, phir DB). Average = 0.8 × 2 + 0.2 × 52 = 1.6 + 10.4 = 12 ms. Option A ka trap: miss par cache check ka 2 ms bhool jaana (0.8 × 2 + 0.2 × 50). Option C hit aur miss ki probabilities ulat deta hai, aur option D seedha (2 + 50) ÷ 2 leta hai, jaise dono barabar baar hote hon.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w7-q6",
+          "question": "Yeh Flask app Gunicorn par 2 sync worker **processes** ke saath abhi start hui hai. Maan lo requests baari-baari se dono workers ko jaati hain (1st worker A, 2nd worker B, 3rd worker A, ...). `/hits` par 6 requests ke baad 6th response mein kya aayega?",
+          "code": "hits = 0\n\n@app.route('/hits')\ndef count_hits():\n    global hits\n    hits += 1\n    return f'hits={hits}'",
+          "options": [
+            "hits=6",
+            "hits=1",
+            "hits=3",
+            "Error, kyunki do processes ek hi `global` variable badal rahe hain"
+          ],
+          "answer": 2,
+          "explanation": "Har worker process ke paas module ki apni copy hai, to `hits` do alag counters hain. Worker A ne requests 1, 3, 5 aur worker B ne 2, 4, 6 sambhaali; 6th request worker B ki teesri request hai, isliye `hits=3`. Option A ka trap: maan lena ki saare workers ek hi memory share karte hain. Option D galat hai kyunki processes ki memory alag hai, conflict hota hi nahi; isi wajah se shared counter ke liye DB ya Redis chahiye.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Frontend JavaScript: DOM, Events and fetch",
+      "summary": "Is week aap browser mein JavaScript ka role, DOM ko padhna aur badalna, events aur `preventDefault`, event loop ka order, Promises aur `async/await`, `fetch` se API call karna aur progressive enhancement seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Browser mein JavaScript**: HTML structure deta hai, CSS look, aur JS behaviour. Script page ke saath download hokar client par chalti hai, isliye server ka koi bhi rule (validation, permission) sirf JS par nahi chhoda ja sakta. `<script src=\"app.js\" defer>` HTML parse hone ke baad, likhe gaye order mein chalti hai aur page rendering ko block nahi karti.",
+        "**DOM**: browser HTML ko objects ke tree (Document Object Model) mein badalta hai. `document.querySelector('#total')` pehla matching element deta hai, `querySelectorAll('.item')` saare (NodeList). Badalne ke liye `el.textContent = ...`, `el.classList.add('done')`, `el.setAttribute(...)`, `document.createElement('li')` aur `parent.append(li)`.",
+        "**textContent vs innerHTML**: `textContent` value ko plain text ki tarah daalta hai; `innerHTML` use HTML ki tarah parse karta hai. User ya API se aaya data `innerHTML` mein daaloge to usme chhupa `<img onerror=...>` chal sakta hai (DOM-based XSS). User data ke liye hamesha `textContent` ya `createElement`.",
+        "**Events**: `el.addEventListener('click', handler)` handler ko ek `event` object deta hai. Form ke `submit` event par `event.preventDefault()` browser ka default full-page POST rokta hai, taaki JS khud request bheje. Events bubble hote hain (child se parent tak), isliye list ke parent par ek listener laga kar `event.target.closest('li')` se item pehchaan sakte ho (**event delegation**).",
+        "**Event loop**: JS single-threaded hai. Pehle current synchronous code poora chalta hai, phir saare **microtasks** (Promise callbacks, `await` ke baad ka code), phir agla **macrotask** (jaise `setTimeout` callback). Isliye `setTimeout(fn, 0)` bhi turant nahi chalta; already resolved Promise ka `.then` usse pehle chalta hai.",
+        "**Promises aur async/await**: `fetch(url)` turant ek Promise return karta hai. `async` function mein `await` sirf us function ko rokta hai; caller ka baaki synchronous code aage chalta rehta hai. `await res.json()` bhi Promise hai, kyunki body stream hokar aati hai. Errors ke liye `try/catch` (async) ya `.catch()`.",
+        "**fetch ki semantics**: fetch ka Promise sirf network failure (server tak pahunch hi na paaye, CORS block) par reject hota hai. 404 ya 500 aane par bhi Promise resolve hota hai, isliye `res.ok` (status 200–299) ya `res.status` khud check karo. JSON bhejne ke liye `method: 'POST'`, header `Content-Type: application/json` aur `body: JSON.stringify(data)`.",
+        "**Progressive enhancement**: pehle aisa HTML banao jo bina JS ke bhi kaam kare (normal links aur forms jo server par jaate hain), phir JS ho to usi ko behtar banao (fetch, bina reload update). Fayda: slow network, purane devices, JS fail hone par bhi app chalti hai, aur server-side logic ek hi jagah rehta hai."
+      ],
+      "example": {
+        "problem": "Ek 'Like' button ko progressive enhancement se banao: bina JS ke normal form POST ho, JS ho to page reload ke bina count update ho. Server `/posts/5/like` par JSON `{\"likes\": 13}` lautata hai. Click ke baad kya hota hai?",
+        "code": "<form id=\"like-form\" action=\"/posts/5/like\" method=\"post\">\n    <button type=\"submit\">Like (<span id=\"likes\">12</span>)</button>\n</form>\n<script>\ndocument.querySelector('#like-form').addEventListener('submit', async (event) => {\n    event.preventDefault();\n    const form = event.target;\n    const res = await fetch(form.action, {\n        method: 'POST',\n        headers: { 'Accept': 'application/json' }\n    });\n    if (!res.ok) {\n        form.submit();   // fall back to a normal form post\n        return;\n    }\n    const data = await res.json();\n    document.querySelector('#likes').textContent = data.likes;\n});\n</script>",
+        "steps": [
+          "JS band ho to listener lagta hi nahi: button normal form POST karta hai, server redirect karke updated page dikhata hai. Feature phir bhi kaam karta hai.",
+          "JS on ho to `submit` event par `preventDefault()` full-page POST rok deta hai.",
+          "`fetch` wahi URL POST karta hai; `await` handler ko response aane tak rokta hai, page freeze nahi hota.",
+          "`res.ok` true hai (status 200), to `await res.json()` se `{likes: 13}` milta hai.",
+          "`textContent` span ko 13 kar deta hai; agar response 4xx/5xx hota to `form.submit()` normal POST kar deta (yeh method `submit` event dobara fire nahi karta, isliye loop nahi banta).",
+          "Real app mein is POST ke saath CSRF token bhi bhejna hoga (week 9).",
+          "Answer: page reload ke bina button **Like (13)** dikhata hai."
+        ]
+      },
+      "mistakes": [
+        "`fetch(...).catch(...)` se 404/500 handle hone ki ummeed karna. Catch sirf network failure par chalta hai; `res.ok` check karo.",
+        "API se aaye naam ya comment ko `innerHTML` mein daalna. Isse XSS ka raasta khulta hai; `textContent` use karo.",
+        "Form ke submit handler mein `preventDefault()` bhool jaana. Browser fetch ke saath-saath normal POST bhi kar deta hai aur page reload ho jaata hai."
+      ],
+      "revision": [
+        "`defer` = parse ke baad, order mein.",
+        "User data → `textContent`, kabhi `innerHTML` nahi.",
+        "Order: sync code → microtasks (Promises) → macrotasks (setTimeout).",
+        "`await` sirf apne async function ko rokta hai.",
+        "fetch 404/500 par bhi resolve hota hai; `res.ok` check karo.",
+        "Progressive enhancement: pehle bina JS kaam kare, phir JS se behtar."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w8-q1",
+          "question": "Comment form ke liye **progressive enhancement** ka sahi matlab kya hai?",
+          "options": [
+            "Poori app JavaScript framework mein banao aur JS band ho to 'Please enable JavaScript' message dikhao",
+            "Form bina JavaScript ke normal POST se kaam kare; JS available ho to usi form ko `fetch` se enhance karo taaki page reload na ho",
+            "Sirf latest browsers support karo aur purane browsers ko block karo",
+            "Saara content JavaScript se render karo, kyunki isse SEO behtar hota hai"
+          ],
+          "answer": 1,
+          "explanation": "Progressive enhancement mein base layer (HTML form + server) har jagah kaam karti hai, aur JS uske upar extra experience jodta hai. Option A ka trap: yeh ulta approach hai jahan JS ke bina kuch nahi chalta. Option D bhi galat hai: sirf JS se render hua content crawlers aur slow devices ke liye aksar mushkil hota hai, aur option C kisi ko enhance nahi karta, bas exclude karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w8-q2",
+          "question": "API se ek user ka comment string `comment` mein aaya hai. Use `<p id=\"c\">` mein dikhana hai, aur comment mein HTML/JS ho to woh chalna nahi chahiye. Kaunsi line sahi hai?",
+          "options": [
+            "`document.querySelector('#c').innerHTML = comment;`",
+            "`document.querySelector('#c').outerHTML = comment;`",
+            "`document.write(comment);`",
+            "`document.querySelector('#c').textContent = comment;`"
+          ],
+          "answer": 3,
+          "explanation": "`textContent` string ko sirf text node ki tarah daalta hai; `<script>` ya `<img onerror=...>` jaisa content bas text ban kar dikhta hai. Option A ka trap: `innerHTML` short aur common hai, par woh string ko HTML ki tarah parse karta hai, jisse DOM-based XSS hota hai. Options B aur C bhi string ko HTML ki tarah page mein daalte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w8-q3",
+          "question": "Is JavaScript code ka output kis order mein aayega?",
+          "code": "console.log('A');\nsetTimeout(() => console.log('B'), 0);\nPromise.resolve().then(() => console.log('C'));\nconsole.log('D');",
+          "options": [
+            "A D C B",
+            "A B C D",
+            "A C B D",
+            "A D B C"
+          ],
+          "answer": 0,
+          "explanation": "Pehle saara synchronous code: A, D. Phir microtask queue: Promise ka `.then` → C. Uske baad macrotask: `setTimeout` callback → B. Option D ka trap: `setTimeout` pehle register hua tha, isliye use pehle maan lena; par timer callback macrotask hai aur microtasks ke baad chalta hai. Option B maanta hai ki `setTimeout(..., 0)` turant chalta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w8-q4",
+          "question": "Server `/api/missing` par status 404 aur ek chhota text body bhejta hai (network theek hai). Yeh code kya print karega?",
+          "code": "fetch('/api/missing')\n  .then(res => console.log('then', res.status, res.ok))\n  .catch(err => console.log('catch'));",
+          "options": [
+            "catch",
+            "then 200 false",
+            "then 404 false",
+            "then 404 true"
+          ],
+          "answer": 2,
+          "explanation": "fetch ka Promise tab bhi resolve hota hai jab server 4xx/5xx bheje, kyunki HTTP response successfully mil gaya. `res.status` 404 hai aur `res.ok` sirf 200–299 par true hota hai, isliye false. Option A ka trap: 404 ko exception maan lena; `.catch` sirf network failure par chalta hai. Option D `ok` ko 'response aaya' samajhta hai, aur option B status hi galat padhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w8-q5",
+          "question": "Cart API se yeh items aaye. Code ka output kya hoga?",
+          "code": "const items = [\n  { name: 'pen', qty: 2, price: 10 },\n  { name: 'book', qty: 1, price: 250 },\n  { name: 'bag', qty: 0, price: 900 }\n];\nconst total = items.filter(i => i.qty > 0).reduce((s, i) => s + i.qty * i.price, 0);\nconsole.log(total, items.map(i => i.name).join('|'));",
+          "options": [
+            "270 pen|book",
+            "260 pen|book|bag",
+            "1160 pen|book|bag",
+            "270 pen|book|bag"
+          ],
+          "answer": 3,
+          "explanation": "Filter ke baad pen aur book bachte hain: 2 × 10 + 1 × 250 = 270. `map` original `items` par chala hai (filter naya array banata hai, original nahi badalta), isliye teeno naam aate hain: pen|book|bag. Option A ka trap: sochna ki `filter` ne `items` ko hi badal diya. Option B qty se multiply karna bhool jaata hai, aur option C saare prices jod deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w8-q6",
+          "question": "Is code ka output kis order mein aayega?",
+          "code": "async function load() {\n  console.log(1);\n  const v = await Promise.resolve(2);\n  console.log(v);\n  return 3;\n}\nload().then(x => console.log(x));\nconsole.log(4);",
+          "options": [
+            "1 4 2 3",
+            "1 2 3 4",
+            "1 2 4 3",
+            "4 1 2 3"
+          ],
+          "answer": 0,
+          "explanation": "`load()` call hote hi synchronously chalta hai aur 1 print karta hai. `await` par function ruk jaata hai aur control caller ko lautta hai, jo 4 print karta hai. Phir microtask mein function resume hokar 2 print karta hai aur 3 return karta hai, jisse `.then` 3 print karta hai. Option B ka trap: `await` ko poore program ka 'wait' samajhna, jaise synchronous code. Option D maanta hai ki async function ka pehla hissa bhi baad mein chalta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Web Application Security Essentials",
+      "summary": "Is week aap authentication aur authorization ka farak, passwords ko salt aur slow hashing se store karna, sessions aur tokens, aur teen sabse common attacks (XSS, CSRF, SQL injection) ke defences, saath hi HTTPS kya bachata hai aur kya nahi, seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Authentication vs authorization**: authentication = 'tum kaun ho?' (login, password, token check); authorization = 'tumhe yeh karne ki ijaazat hai?' (role, ownership check). Authorization **har request par server par** check karo: sirf button chhupa dena kaafi nahi, kyunki koi bhi seedha `/notes/9/delete` hit kar sakta hai (IDOR bug). Har user ko kam se kam zaroori permission do (least privilege).",
+        "**Password storage**: password kabhi plain text ya reversible encryption mein mat rakho. Har user ke liye random **salt** lo aur slow password-hashing function (bcrypt, scrypt, Argon2, PBKDF2 with lakhon iterations) se hash karo; salt aur hash dono store karo. Salt ki wajah se same password wale do users ke hash alag hote hain aur precomputed (rainbow) tables bekaar ho jaate hain; slowness brute force ko mehnga banati hai. Flask world mein Werkzeug ke `generate_password_hash`/`check_password_hash` yahi karte hain.",
+        "**Sessions aur tokens**: login ke baad server session banata hai aur browser ko cookie deta hai (`HttpOnly`, `Secure`, `SameSite`). Login par session id naya banao (session fixation se bachav), expiry rakho aur logout par session khatam karo. APIs aksar **bearer token** (`Authorization: Bearer ...`) use karti hain; signed tokens (jaise JWT) server par state nahi maangte, par expiry se pehle unhe revoke karna mushkil hota hai.",
+        "**XSS (Cross-Site Scripting)**: attacker ka input page mein code ban kar doosre users ke browser mein chalta hai: stored (DB mein save hua comment), reflected (URL parameter seedha page mein) ya DOM-based (`innerHTML`). Defence: output par context ke hisaab se escaping (Jinja autoescape on rakho, `|safe` aur `innerHTML` se bacho), Content-Security-Policy header, aur session cookie par `HttpOnly` taaki script use chura na sake.",
+        "**CSRF (Cross-Site Request Forgery)**: browser cookies apne aap har matching request ke saath bhejta hai, chahe request kisi aur site ke page ne trigger ki ho. Attacker ka page ek hidden form aapke `POST /transfer` par auto-submit kar sakta hai, aur logged-in user ki cookie saath chali jaati hai. Defence: har state-changing form mein random **CSRF token** jo server session se match kare (Flask-WTF), `SameSite=Lax/Strict` cookies, `Origin` header check, aur GET se kabhi state mat badlo.",
+        "**SQL injection**: user input ko string formatting se SQL mein jodne par input query ka structure badal deta hai. SQL mein `AND` ki precedence `OR` se zyada hai, isliye injected `OR` ka asar hamesha 'saare rows' nahi hota; par khatra har haal mein hai. Defence: **parameterized queries** (`execute('... WHERE name = ?', (name,))`) ya ORM; table/column naam user se lene hon to whitelist; DB user ko minimum privileges.",
+        "**HTTPS/TLS**: teen cheezein deta hai: confidentiality (beech mein koi padh nahi sakta), integrity (koi badal nahi sakta) aur server authentication (certificate se pata chalta hai ki sahi server hai). Login form, cookies aur tokens sirf HTTPS par bhejo, aur HSTS header se browser ko hamesha HTTPS use karne ko kaho. HTTPS app ke andar ke bugs (XSS, SQLi, galat authorization) se nahi bachata."
+      ],
+      "example": {
+        "problem": "Sirf Python standard library se ek secure login check banao: PBKDF2 se salted hash, constant-time comparison aur parameterized query. Teen login attempts ka result kya hoga: sahi password, galat password, aur username mein injection `x' OR '1'='1`?",
+        "code": "import hashlib, hmac, os, sqlite3\n\ndef hash_password(pw, salt=None):\n    salt = salt or os.urandom(16)\n    digest = hashlib.pbkdf2_hmac('sha256', pw.encode(), salt, 200_000)\n    return salt.hex() + '$' + digest.hex()\n\ndef check_password(pw, stored):\n    salt_hex, digest_hex = stored.split('$')\n    digest = hashlib.pbkdf2_hmac('sha256', pw.encode(), bytes.fromhex(salt_hex), 200_000)\n    return hmac.compare_digest(digest.hex(), digest_hex)\n\ndb = sqlite3.connect(':memory:')\ndb.execute('CREATE TABLE users (name TEXT UNIQUE, pw TEXT)')\ndb.execute('INSERT INTO users VALUES (?, ?)', ('asha', hash_password('s3cret!')))\n\ndef login(name, pw):\n    row = db.execute('SELECT pw FROM users WHERE name = ?', (name,)).fetchone()\n    return row is not None and check_password(pw, row[0])\n\nprint(login('asha', 's3cret!'), login('asha', 'guess'), login(\"x' OR '1'='1\", 'anything'))",
+        "steps": [
+          "`hash_password` har user ke liye 16 random bytes ka salt banata hai aur `salt$hash` format mein store karta hai; database leak ho to bhi password seedha nahi dikhta.",
+          "`login('asha', 's3cret!')`: row milti hai, stored salt se dobara hash banta hai aur match hota hai → True.",
+          "`login('asha', 'guess')`: hash match nahi hota → False. `hmac.compare_digest` comparison ka time input par depend nahi karne deta (timing attack se bachav).",
+          "`login(\"x' OR '1'='1\", ...)`: `?` placeholder ki wajah se poori string sirf ek value hai; is naam ka user nahi, `fetchone()` None deta hai → False.",
+          "Answer: **True False False**."
+        ]
+      },
+      "mistakes": [
+        "`md5(password)` ya `sha256(password)` bina salt ke store karna. Yeh fast hash hain; GPU par arbon guesses per second ho jaate hain aur same passwords ke hash same dikhte hain.",
+        "Sochna ki form ko POST bana diya to CSRF se bach gaye. Attacker ki site bhi POST form auto-submit kar sakti hai; CSRF token ya SameSite chahiye.",
+        "Sirf frontend par admin button chhupa kar authorization 'implement' karna. Server par har endpoint mein role/ownership check karo."
+      ],
+      "revision": [
+        "Authentication = kaun ho; authorization = kya kar sakte ho (server par, har request).",
+        "Password: per-user salt + slow hash; kabhi plain ya encrypted nahi.",
+        "XSS → output escape, `|safe`/`innerHTML` se bacho, CSP, HttpOnly.",
+        "CSRF → token + SameSite + Origin check; GET se state mat badlo.",
+        "SQLi → parameterized queries; `AND` ki precedence `OR` se zyada.",
+        "HTTPS = confidentiality + integrity + server authentication; app bugs nahi rokta."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w9-q1",
+          "question": "Riya login karke `/admin/reports` kholti hai aur 403 Forbidden milta hai, kyunki uska role 'student' hai. Yeh kis cheez ka check fail hua?",
+          "options": [
+            "Authentication: server ne Riya ko pehchaana hi nahi",
+            "Authorization: Riya pehchaani gayi, par is resource ki permission nahi hai",
+            "Encryption: connection HTTPS nahi tha",
+            "Input validation: request ka data galat tha"
+          ],
+          "answer": 1,
+          "explanation": "Riya logged in hai, yaani authentication ho chuka; server ne uska role dekh kar access mana kiya, jo authorization hai, aur 403 isi ka status hai. Option A ka trap: dono 'auth' words ko mix karna; pehchaan na hoti to response 401 hota. Options C aur D ka is scenario se lena-dena nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w9-q2",
+          "question": "Ek naye app mein users ke passwords store karne ka sabse sahi tareeka kya hai?",
+          "options": [
+            "Plain text mein, taaki 'forgot password' par user ko uska password email kar sakein",
+            "`sha256(password)` bina salt ke, kyunki SHA-256 secure hash hai",
+            "Har user ke liye random salt ke saath slow password-hashing function (bcrypt, scrypt, Argon2 ya PBKDF2), aur salt + hash store karna",
+            "Password ko server ki secret key se AES encrypt karke store karna"
+          ],
+          "answer": 2,
+          "explanation": "Salted slow hash one-way hai, har user ke liye alag hai aur har guess ko mehnga banata hai. Option B ka trap: SHA-256 secure hash hai, par password ke liye bahut fast hai aur bina salt ke same passwords ka same hash aata hai. Option D reversible hai: key leak hui to saare passwords khul jaate hain. Option A sabse kharab hai; reset ke liye password bhejne ki jagah reset link bhejo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w9-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "import hashlib\n\ndef h(pw, salt):\n    return hashlib.pbkdf2_hmac('sha256', pw.encode(), salt, 100_000).hex()\n\na = h('secret', b'salt-A')\nb = h('secret', b'salt-B')\nc = h('secret', b'salt-A')\nprint(a == b, a == c, len(a))",
+          "options": [
+            "True True 64",
+            "False False 64",
+            "False True 32",
+            "False True 64"
+          ],
+          "answer": 3,
+          "explanation": "Same password par alag salt se alag hash aata hai (`a == b` False), aur same password + same salt se hamesha same hash (`a == c` True); isi se login verify hota hai. SHA-256 ka output 32 bytes hai aur `.hex()` har byte ko 2 characters mein likhta hai, to length 64. Option C ka trap: bytes (32) aur hex string ki length (64) ko mix karna. Option A salt ka asar ignore karta hai, aur option B maanta hai ki hashing random hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w9-q4",
+          "question": "Ek banking app ka `/transfer` endpoint session cookie se user pehchaanta hai. In mein se kaunsa measure **akela** CSRF attack ko nahi rokta?",
+          "options": [
+            "Endpoint ko GET se badal kar sirf POST accept karna",
+            "Har state-changing form mein random CSRF token jo server session wale token se match ho",
+            "Session cookie par `SameSite=Lax` ya `SameSite=Strict`",
+            "Server par `Origin` header check karke sirf apni site se aayi requests maanna"
+          ],
+          "answer": 0,
+          "explanation": "Attacker ki site par ek hidden `<form method=\"post\">` JavaScript se auto-submit ho sakta hai, aur browser user ki cookie saath bhej deta hai; isliye sirf POST bana dena kaafi nahi (haan, GET se state na badalna phir bhi zaroori hai). Option B ka token attacker ko pata nahi hota, option C cross-site request par cookie bhejna rokta hai, aur option D doosri site ka origin pakad leta hai. Trap: option A ko 'secure method' samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w9-q5",
+          "question": "Flask app mein autoescape on hai. Comments page ka kaunsa template line stored XSS ka raasta kholti hai, agar `c.text` user ka likha comment hai?",
+          "options": [
+            "`<p>{{ c.text }}</p>`",
+            "`<p>{{ c.text|e }}</p>`",
+            "`<p>{{ c.text|safe }}</p>`",
+            "`<p>{{ c.text|length }} characters</p>`"
+          ],
+          "answer": 2,
+          "explanation": "`|safe` Jinja ko batata hai ki yeh string trusted HTML hai, isliye escaping band ho jaati hai aur comment mein likha `<script>` sabke browser mein chalta hai. Option A ka trap: plain `{{ }}` dekh kar dar jaana; autoescape on hai to yeh safe hai. Option B (`|e`) explicitly escape karta hai, aur option D sirf ek number print karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w9-q6",
+          "question": "`users` table mein teen rows hain: ('asha', '1234'), ('bilal', '0000'), ('chen', '9999'). Ek vulnerable login yeh query banata hai, aur attacker username field mein `x' OR '1'='1` aur pin mein `0000` daalta hai. Query kya return karegi?",
+          "code": "u = \"x' OR '1'='1\"\np = \"0000\"\nq = f\"SELECT name FROM users WHERE name = '{u}' AND pin = '{p}'\"\nrows = conn.execute(q).fetchall()",
+          "options": [
+            "Teeno users (asha, bilal, chen), kyunki `'1'='1'` hamesha true hai",
+            "Koi row nahi, kyunki 'x' naam ka user nahi hai",
+            "Sirf `bilal`",
+            "SQL syntax error"
+          ],
+          "answer": 2,
+          "explanation": "Banne wali query: `WHERE name = 'x' OR '1'='1' AND pin = '0000'`. `AND` ki precedence `OR` se zyada hai, to yeh `name = 'x' OR ('1'='1' AND pin = '0000')` hai, jo sirf pin 0000 wali row (bilal) par true hai. Option A ka trap: `'1'='1'` dekhte hi 'sab rows' maan lena, precedence bhool kar. Quotes balanced hain, isliye option D bhi galat hai. Fix: parameterized query.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Testing Web Applications",
+      "summary": "Is week aap unit, integration aur end-to-end tests ka farak, pytest ke conventions aur fixtures, Flask test client se routes test karna, mocking se external services alag karna, aur line vs branch coverage ka matlab seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Tests kyun**: har change ke baad poori app haath se check karna possible nahi. Automated tests regression pakadte hain, refactoring ka confidence dete hain aur code ka behaviour document karte hain. CI (jaise har push par tests chalna) ke saath toota hua code main branch tak nahi pahunchta.",
+        "**Test pyramid**: neeche bahut saare **unit tests** (ek function/class akele, milliseconds mein), beech mein kam **integration tests** (routes + database + templates saath, jaise test client se), aur upar thode **end-to-end tests** (real browser Playwright/Selenium se poora user flow). Upar jaate hue tests slow, mehnge aur flaky hote hain, par real user ke zyada kareeb.",
+        "**pytest basics**: pytest `test_*.py` ya `*_test.py` files mein `test` se shuru hone wale functions apne aap dhoondta hai. Simple `assert` likho; fail hone par pytest dono values dikhata hai. `@pytest.mark.parametrize` ek test ko kai inputs par chalata hai, aur `with pytest.raises(ValueError):` check karta hai ki exception aaya. Har test **Arrange-Act-Assert** pattern mein aur baaki tests se independent ho.",
+        "**Fixtures**: `@pytest.fixture` setup code ko reusable banata hai; test parameter mein fixture ka naam likho aur pytest use inject kar deta hai. `yield` se pehle setup, baad mein teardown. Default scope **function** hai, yaani har test ke liye fixture naye sire se banta hai; `scope='module'` ya `'session'` se ek baar banta hai aur share hota hai. Common fixtures `conftest.py` mein rakhte hain.",
+        "**Flask test client**: app factory `create_app({'TESTING': True, ...})` se test config (jaise in-memory SQLite) do. `app.test_client()` bina real server aur network ke requests seedha WSGI app ko bhejta hai: `client.get('/')`, `client.post('/login', data={...}, follow_redirects=True)`, `client.post('/api/x', json={...})`. Response par `status_code`, `data`, `get_json()` aur headers check karo.",
+        "**Mocking**: payment gateway, email, time ya randomness jaise external/non-deterministic cheezon ko test mein asli nahi chalate. `unittest.mock.patch` unhe ek fake object se badal deta hai jiska return value tum set karte ho, aur baad mein `call_count`/`assert_called_with` se check kar sakte ho ki code ne use sahi call kiya. Patch wahan karo jahan object **lookup** hota hai.",
+        "**Coverage**: `coverage run -m pytest` phir `coverage report -m` batata hai kaunsi lines chali. **Line coverage** = kitni executable lines kam se kam ek baar chali; **branch coverage** = har `if` ke True aur False dono raaste chale ya nahi. 100% line coverage ka matlab bug-free nahi: bina assert ke chali line bhi 'covered' hai, aur boundary values (jaise exactly 50) alag se test karne padte hain."
+      ],
+      "example": {
+        "problem": "Week 6 ke create-course API ke liye do pytest tests likho: create par 201, duplicate par 409. Fixture har test ke liye fresh in-memory database deta hai. Dono tests pass honge?",
+        "code": "# conftest.py\nimport pytest\nfrom myapp import create_app, db\n\n@pytest.fixture\ndef client():\n    app = create_app({'TESTING': True, 'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:'})\n    with app.app_context():\n        db.create_all()\n        yield app.test_client()\n        db.drop_all()\n\n# test_courses.py\ndef test_create_course(client):\n    r = client.post('/api/v1/courses', json={'code': 'MAD1'})\n    assert r.status_code == 201\n    assert r.get_json()['code'] == 'MAD1'\n\ndef test_duplicate_course(client):\n    client.post('/api/v1/courses', json={'code': 'MAD1'})\n    r = client.post('/api/v1/courses', json={'code': 'MAD1'})\n    assert r.status_code == 409",
+        "steps": [
+          "pytest `test_courses.py` ke dono `test_` functions collect karta hai aur `client` parameter dekh kar `conftest.py` ka fixture inject karta hai.",
+          "Fixture ka scope function hai: har test se pehle naya app aur khaali database, test ke baad `drop_all()`.",
+          "`test_create_course`: khaali DB mein MAD1 banta hai → 201, JSON mein `code` MAD1 → pass.",
+          "`test_duplicate_course`: is test ka DB bhi khaali hai, to pehli POST 201, doosri 409 → pass.",
+          "Agar fixture `scope='module'` hota to dono tests ek DB share karte, aur doosre test ki pehli POST hi 409 deti; tests order par depend karne lagte. Isliye isolated fixtures behtar hain.",
+          "Answer: **dono tests pass** hote hain, bina real server chalaye."
+        ]
+      },
+      "mistakes": [
+        "Tests ko ek-doosre ke data par depend karwana (ek test user banaye, agla use use kare). Order badalte hi tests toot jaate hain; har test apna data khud banaye.",
+        "Test mein asli payment/email API call karna. Tests slow, flaky aur mehnge ho jaate hain; mock karo.",
+        "Coverage % ko hi goal bana lena. Bina meaningful `assert` ke 100% coverage bhi bugs nahi pakadta; boundaries aur error paths test karo."
+      ],
+      "revision": [
+        "Unit (bahut, fast) → integration (kam) → e2e (thode, slow).",
+        "pytest: `test_*.py`/`*_test.py` files, `test*` functions, plain `assert`.",
+        "Fixture default scope = function: har test ke liye naya setup.",
+        "Test client: bina server ke `client.get/post`, `status_code`, `get_json()`.",
+        "`patch` = external cheez ko fake se badlo, lookup wali jagah par.",
+        "100% line coverage ≠ 100% branch coverage ≠ bug-free."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w10-q1",
+          "question": "Ek test headless browser kholta hai, login page par email aur password type karta hai, Submit dabata hai, aur check karta hai ki dashboard par user ka naam dikh raha hai. Yeh kis type ka test hai?",
+          "options": [
+            "End-to-end test",
+            "Unit test",
+            "Integration test (test client wala)",
+            "Static type check"
+          ],
+          "answer": 0,
+          "explanation": "Real browser se poora user flow (UI → server → database → wapas UI) chalaya ja raha hai, yahi end-to-end test hai. Option C ka trap: integration test bhi kai parts saath chalata hai, par test client wala test browser, HTML rendering aur JavaScript ko nahi chalata. Unit test (option B) ek function ko akela test karta hai, aur option D code chalata hi nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w10-q2",
+          "question": "Project folder mein bina kisi argument ke `pytest` chalaya gaya (default settings). In mein se kaunsa function test ki tarah collect hoga?",
+          "options": [
+            "`test_cart.py` file mein `def total_test():`",
+            "`cart.py` file mein `def test_total():`",
+            "`cart_test.py` file mein `def check_total():`",
+            "`test_cart.py` file mein `def test_total():`"
+          ],
+          "answer": 3,
+          "explanation": "Default mein pytest sirf `test_*.py` ya `*_test.py` files dekhta hai, aur unke andar `test` se shuru hone wale functions. Option D dono shartein poori karta hai. Option A ka trap: file sahi hai par function ka naam `test` se shuru nahi hota. Option B mein function sahi hai par file `cart.py` pattern se match nahi karti, aur option C mein file sahi par function galat.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w10-q3",
+          "question": "Abhi tests sirf `grade(95)` aur `grade(70)` check karte hain. 100% line coverage ke liye kaunsa ek call aur jodna hoga?",
+          "code": "def grade(m):\n    if m >= 90:\n        return 'A'\n    if m >= 50:\n        return 'P'\n    return 'F'",
+          "options": [
+            "`grade(90)`",
+            "`grade(50)`",
+            "`grade(30)`",
+            "`grade(100)`"
+          ],
+          "answer": 2,
+          "explanation": "95 'A' wali line aur 70 'P' wali line chala chuke hain; sirf `return 'F'` bachi hai, jo m < 50 par chalti hai, isliye `grade(30)`. Option B ka trap: 50 boundary hai aur test karna achha hai, par `50 >= 50` True hai, to woh bhi 'P' deta hai aur nayi line nahi chalata. Options A aur D 'A' wali line hi dobara chalate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w10-q4",
+          "question": "Ek test file mein yeh fixture aur chaar tests hain. `pytest -s` chalane par 'setup' kitni baar print hoga?",
+          "code": "import pytest\n\n@pytest.fixture\ndef client():\n    print('setup')\n    yield 'fake-client'\n    print('teardown')\n\ndef test_home(client):\n    assert client\n\ndef test_login(client):\n    assert client\n\ndef test_logout(client):\n    assert client\n\ndef test_utils():\n    assert 1 + 1 == 2",
+          "options": [
+            "1 baar",
+            "3 baar",
+            "4 baar",
+            "2 baar"
+          ],
+          "answer": 1,
+          "explanation": "Fixture ka default scope function hai, to har us test ke liye alag se setup chalta hai jo use maangta hai: `test_home`, `test_login`, `test_logout` = 3 baar. `test_utils` fixture nahi maangta, isliye uske liye setup nahi. Option A ka trap: fixture ko 'file mein ek baar' samajhna; woh `scope='module'` par hota. Option C maanta hai ki fixture har test ke liye chalta hai, chahe test use maange ya nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w10-q5",
+          "question": "Dice-roll feature ko deterministic test karne ke liye `random.randint` ko patch kiya gaya. Code ka output kya hoga?",
+          "code": "from unittest.mock import patch\nimport random\n\ndef roll():\n    return random.randint(1, 6)\n\nwith patch('random.randint', return_value=4) as m:\n    print(roll(), roll(), m.call_count)",
+          "options": [
+            "4 4 2",
+            "4 4 1",
+            "4 4 0",
+            "Do random numbers aur 2"
+          ],
+          "answer": 0,
+          "explanation": "`roll()` har call par `random.randint` ko module se lookup karta hai, aur `with` block ke andar woh mock hai jo hamesha 4 lautata hai. Mock har call ginta hai: do `roll()` = `call_count` 2. Option B ka trap: sochna ki `return_value` ek hi baar use hota hai ya mock sirf pehli call ginta hai. Option D maanta hai ki patch `roll` ke andar tak nahi pahunchta, jabki lookup call ke waqt hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w10-q6",
+          "question": "Is function ka sirf ek test hai: `assert shipping(600, True) == 0`. Coverage ke baare mein kaunsa statement sahi hai?",
+          "code": "def shipping(total, is_member):\n    fee = 50\n    if is_member:\n        fee = 0\n    if total > 500:\n        fee = 0\n    return fee",
+          "options": [
+            "Line aur branch dono coverage 100% hain, kyunki har line chali",
+            "Branch coverage 100% hai par line coverage nahi",
+            "Line coverage 100% hai, par branch coverage nahi, kyunki dono `if` ka False raasta kabhi nahi chala",
+            "Line coverage 100% nahi hai, kyunki `fee = 0` do baar likha hai"
+          ],
+          "answer": 2,
+          "explanation": "`shipping(600, True)` mein dono conditions True hain, to saari lines chalti hain: line coverage 100%. Par branch coverage dono raaste maangta hai, aur `is_member` False ya `total ≤ 500` wala case kabhi test nahi hua; non-member chhota order (fee 50) bilkul untested hai. Option A ka trap: line coverage ko hi poora coverage samajhna. Option B ulta hai (branches poore hon to lines bhi chal chuki hoti hain), aur option D ka duplicate line se koi lena-dena nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Modern HTML: Browser APIs, Components, PWAs, Accessibility and SEO",
+      "summary": "Is week aap HTML5 ke native features aur browser APIs (Web Storage, IndexedDB, Geolocation), Web Components ka idea, PWA ke liye manifest aur service worker, aur accessibility aur SEO ke practical rules seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Modern HTML**: aaj HTML ek 'living standard' hai jo lagatar update hota hai. Semantic elements ke saath native media (`<video controls>`, `<audio>`), drawing ke liye `<canvas>` aur `<svg>`, aur `<dialog>` jaise interactive elements aa gaye, jinke liye pehle plugins ya bhaari JavaScript lagta tha.",
+        "**Native form features**: `type=\"email\"`, `number`, `date`, `url` aur attributes `required`, `min`, `max`, `pattern`, `maxlength` browser mein hi validation aur sahi mobile keyboard dete hain. Yeh UX ke liye hai, security ke liye nahi: devtools, curl ya script inhe bypass kar sakte hain, isliye server-side validation hamesha zaroori hai.",
+        "**Storage APIs**: `localStorage` per-origin, browser band karne ke baad bhi rehta hai; `sessionStorage` sirf us tab tak. Dono synchronous hain aur **sirf strings** rakhte hain (number dalo to string ban jaata hai; objects ke liye `JSON.stringify`/`JSON.parse`). Yeh server ko apne aap nahi jaate, cookies jaate hain. Bade ya structured data ke liye async **IndexedDB**. XSS hone par script localStorage padh sakti hai, isliye usme secrets mat rakho.",
+        "**Aur browser APIs**: Geolocation (user permission aur secure context zaroori), History API (`pushState` se bina reload URL badalna, single-page apps ke liye), WebSockets (server aur browser ke beech two-way connection, jaise live chat), Notifications. Use se pehle feature detection karo: `if ('geolocation' in navigator) { ... }`.",
+        "**Web Components**: framework ke bina reusable elements. **Custom Elements**: `customElements.define('user-card', class extends HTMLElement { ... })`; naam mein hyphen zaroori hai aur letters lowercase hone chahiye, taaki future ke built-in tags se clash na ho. **Shadow DOM** component ke andar ka DOM aur CSS bahar se alag (encapsulated) rakhta hai, aur `<template>`/`<slot>` markup ko reuse karne dete hain.",
+        "**PWA (Progressive Web App)**: normal website jo installable aur offline-capable ho. **Web App Manifest** (JSON: name, icons, `start_url`, `display`) install ka data deta hai. **Service worker** ek background script hai jo page aur network ke beech proxy ki tarah `fetch` events pakadta hai aur Cache API se offline responses de sakta hai. Yeh sirf secure context (HTTPS, ya development mein localhost) par chalta hai, aur default **scope** uski script ki directory hoti hai.",
+        "**Accessibility (a11y)**: pehle semantic HTML (`<button>`, `<nav>`, `<label>`), ARIA sirf tab jab native element na ho; galat ARIA na hone se bhi bura hai. Har kaam keyboard se ho sake, focus dikhe, images par alt ho, aur normal text ka contrast kam se kam 4.5:1 (WCAG AA). Dynamic updates (jaise 'Saved') ko `aria-live` region se screen reader tak pahunchao.",
+        "**SEO basics**: har page ka unique `<title>` aur meta description, ek saaf `<h1>`, crawlable `<a href>` links (sirf JS click handler nahi), server par rendered content, `robots.txt`, `sitemap.xml` aur canonical URL. Fast, mobile-friendly pages rank aur conversion dono mein madad karte hain. Semantic HTML accessibility aur SEO dono ko ek saath fayda deta hai."
+      ],
+      "example": {
+        "problem": "Ek Flask app ko offline-capable banana hai. Service worker register karo aur static files cache-first strategy se do. Kya chalega offline, aur `sw.js` kahan serve karna chahiye?",
+        "code": "// base template (progressive enhancement: sirf supported browsers mein)\nif ('serviceWorker' in navigator) {\n    navigator.serviceWorker.register('/sw.js');\n}\n\n// sw.js (site root par serve hota hai, isliye scope '/')\nconst CACHE = 'static-v1';\nself.addEventListener('install', (event) => {\n    event.waitUntil(\n        caches.open(CACHE).then((c) => c.addAll(['/', '/static/app.css', '/static/app.js']))\n    );\n});\nself.addEventListener('fetch', (event) => {\n    event.respondWith(\n        caches.match(event.request).then((hit) => hit || fetch(event.request))\n    );\n});",
+        "steps": [
+          "Feature detection: purane browser mein `serviceWorker` nahi hai to kuch nahi hota, site normal chalti hai.",
+          "`/sw.js` root par hai, to default scope `/` hai aur poori site ke pages control hote hain. Flask mein iske liye ek route chahiye jo file root URL par de (sirf `/static/` mein rakhne se scope `/static/` reh jaata).",
+          "`install` event par teen URLs cache mein store hote hain.",
+          "Har `fetch` par pehle cache dekha jaata hai (cache-first); mila to wahi, warna network.",
+          "Offline hone par `/`, CSS aur JS cache se khulte hain; jo URLs cache mein nahi (jaise API calls) woh fail honge, unhe UI mein sambhaalo.",
+          "Files badlo to `CACHE` ka naam (`static-v2`) badlo, warna users purana version dekhte rahenge.",
+          "Answer: **cached shell offline khulta hai**, aur `sw.js` ko **site root `/sw.js`** par serve karna chahiye."
+        ]
+      },
+      "mistakes": [
+        "`<div onclick=\"...\">` ko button bana dena. Woh keyboard se focus nahi hota aur screen reader use button nahi batata; `<button>` use karo.",
+        "localStorage se number padh kar seedha jodna (`getItem('n') + 1`). Value string hai, to concatenation hota hai; `Number(...)` ya `JSON.parse` karo.",
+        "Service worker ko `/static/js/sw.js` par rakh kar poori site offline hone ki ummeed karna. Default scope script ki directory hai."
+      ],
+      "revision": [
+        "HTML validation = UX; server validation = security.",
+        "Web Storage sirf strings, per-origin; server ko nahi jaata (cookies jaati hain).",
+        "Custom element naam mein hyphen zaroori: `user-card`.",
+        "PWA = manifest + service worker + HTTPS; SW scope = script ki directory.",
+        "Native semantic elements pehle, ARIA baad mein; contrast ≥ 4.5:1.",
+        "SEO: unique title, h1, crawlable links, server-rendered content."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w11-q1",
+          "question": "In mein se kaunsa naam `customElements.define(naam, SomeClass)` se valid custom element ke roop mein register ho sakta hai?",
+          "options": [
+            "`usercard`",
+            "`user-card`",
+            "`9-card`",
+            "`user_card`"
+          ],
+          "answer": 1,
+          "explanation": "Custom element ke naam mein kam se kam ek hyphen hona chahiye aur woh lowercase letter se shuru ho, isliye `user-card` valid hai. Hyphen ka rule future ke built-in HTML tags (jinme hyphen nahi hota) se clash rokta hai. Option D ka trap: underscore ko hyphen jaisa separator samajhna. Option A mein hyphen nahi, aur option C mein hyphen to hai par naam digit se shuru hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w11-q2",
+          "question": "Signup form mein ab `<input type=\"email\" name=\"email\" required>` hai. Server-side validation ke baare mein sahi kya hai?",
+          "options": [
+            "Server par phir bhi validate karna zaroori hai, kyunki browser validation devtools, curl ya script se bypass ho sakti hai",
+            "Ab server validation ki zaroorat nahi, browser invalid email bhejega hi nahi",
+            "`required` attribute server par bhi apne aap check hota hai",
+            "`type=\"email\"` yeh bhi verify kar deta hai ki email address sach mein maujood hai"
+          ],
+          "answer": 0,
+          "explanation": "HTML validation sirf browser mein, user ki convenience ke liye chalti hai; koi bhi seedha HTTP request bana kar khaali ya galat field bhej sakta hai. Option B ka trap: normal user ka experience dekh kar maan lena ki har request browser se hi aayegi. Option C galat hai kyunki server ko HTML attributes dikhte hi nahi, aur option D sirf format check karta hai, mailbox ka hona nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w11-q3",
+          "question": "Browser console mein yeh code chalaya gaya. Output kya hoga?",
+          "code": "localStorage.setItem('visits', 5);\nconst v = localStorage.getItem('visits');\nconsole.log(v + 1, typeof v);",
+          "options": [
+            "6 number",
+            "51 number",
+            "NaN string",
+            "51 string"
+          ],
+          "answer": 3,
+          "explanation": "Web Storage sirf strings rakhta hai, isliye number 5 string '5' ban kar store hota hai aur `getItem` '5' lautata hai. String + 1 concatenation hai: '51', aur `typeof v` 'string'. Option A ka trap: maan lena ki storage type yaad rakhta hai. Option B output sahi padhta hai par type galat, aur option C maanta hai ki string aur number jodne se NaN aata hai; JS mein `+` string milte hi concatenation karta hai, NaN nahi deta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w11-q4",
+          "question": "In mein se kaunsa client-side storage browser **har matching HTTP request ke saath apne aap** server ko bhejta hai?",
+          "options": [
+            "`localStorage`",
+            "`sessionStorage`",
+            "Cookies (jo us domain aur path se match karein)",
+            "IndexedDB"
+          ],
+          "answer": 2,
+          "explanation": "Cookies browser khud har matching request ke `Cookie` header mein lagata hai; isi wajah se sessions kaam karte hain aur isi wajah se CSRF bhi possible hota hai. Option A ka trap: localStorage bhi 'login data rakhne ki jagah' ke roop mein mashhoor hai, par woh tab hi server tak jaata hai jab JavaScript use khud request mein daale. Options B aur D bhi sirf browser ke andar rehte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w11-q5",
+          "question": "Ek page par Save button aise bana hai: `<div class=\"btn\" onclick=\"save()\">Save</div>`. Mouse se click theek kaam karta hai. Sabse badi problem kya hai?",
+          "options": [
+            "Keyboard se ispar focus nahi hota aur Enter/Space se activate nahi hota, aur screen reader ise button nahi batata; native `<button type=\"button\">` use karna chahiye",
+            "Koi problem nahi, kyunki mouse click kaam kar raha hai",
+            "Sirf styling ki problem hai; CSS se button jaisa dikha do to sab theek",
+            "`div` SEO ke liye kharab hai, isliye page rank girega"
+          ],
+          "answer": 0,
+          "explanation": "Native `<button>` mein focus, Enter/Space se activation aur 'button' role muft milte hain; `div` mein yeh sab nahi, isliye keyboard aur screen reader users Save nahi kar paate. Option C ka trap: accessibility ko sirf look ka masla samajhna; CSS role ya keyboard behaviour nahi deta. Option B sirf mouse users ko dekhta hai, aur option D asli problem (accessibility) ko chhod kar galat cheez pakadta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w11-q6",
+          "question": "Ek HTTPS site `/dashboard` page se `navigator.serviceWorker.register('/static/js/sw.js')` call karti hai (koi `scope` option nahi, koi `Service-Worker-Allowed` header nahi). Yeh service worker kin pages ko control karega?",
+          "options": [
+            "Poori site, yaani `/` se shuru hone wale saare pages",
+            "Sirf `/dashboard`, kyunki usi page ne register kiya",
+            "Koi page nahi, kyunki service workers localhost aur HTTPS dono par mana hain",
+            "Sirf `/static/js/` ke andar ke URLs; `/dashboard` control nahi hoga. Poori site ke liye `sw.js` ko `/sw.js` par serve karo"
+          ],
+          "answer": 3,
+          "explanation": "Service worker ka default scope uski script ki directory hai: `/static/js/sw.js` ka scope `/static/js/` hai, aur header ke bina woh isse upar (jaise `/`) scope le bhi nahi sakta. Isliye `/dashboard` uske control mein nahi aata. Option A ka trap: maan lena ki register karne wali site ka har page apne aap control hota hai. Option B scope ko registering page se jodta hai, jo galat hai, aur option C ulta hai: service workers ko secure context chahiye, jisme HTTPS aur localhost dono aate hain.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Deployment, Configuration and Monitoring",
+      "summary": "Is week aap environments aur config ko code se alag rakhna, production mein WSGI server aur workers, reverse proxy ka kaam, containers ka idea, migrations ke saath safe releases, aur logging aur monitoring (percentiles) seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Environments**: development (aapka laptop), testing/CI, staging (production jaisa, real users ke bina) aur production. Code sab jagah wahi hona chahiye, sirf configuration badle; environments jitne milte-julte (parity) honge, 'mere machine par to chal raha tha' wale bugs utne kam.",
+        "**Configuration aur secrets**: database URL, `SECRET_KEY`, API keys jaise values code mein hard-code mat karo; unhe **environment variables** se padho (`os.environ.get('DATABASE_URL', default)`). Secrets kabhi git mein commit mat karo; local `.env` file `.gitignore` mein rakho. Production mein debug hamesha off: debug mode error par interactive debugger kholta hai, jisse server par arbitrary code chal sakta hai.",
+        "**Production WSGI server**: `flask run` wala development server testing ke liye hai, production load aur security ke liye nahi. Gunicorn jaisa server kai worker processes chalata hai: `gunicorn -w 4 -b 0.0.0.0:8000 wsgi:app`. Sync workers ke liye common starting point (2 × CPU cores) + 1 hai; har sync worker ek waqt mein ek request sambhalta hai, to max throughput ≈ workers ÷ average request time.",
+        "**Reverse proxy**: Nginx jaisa server app ke aage baithta hai: HTTPS (TLS) terminate karta hai, `/static/` files seedha disk se deta hai, compression aur slow clients ki buffering karta hai, rate limiting aur kai app instances mein load balancing karta hai. Python code (views, templates) Gunicorn workers mein chalta hai. Proxy ke peeche app ko asli client IP aur scheme `X-Forwarded-For`/`X-Forwarded-Proto` headers se pata chalte hain.",
+        "**Containers**: **image** app, uski dependencies aur runtime ka read-only package hai; **container** us image ka chalta hua instance. Dockerfile image banane ki recipe hai, aur ek hi image dev, staging aur prod mein chalti hai; farak sirf environment variables ka. Containers ko stateless rakho: uploads aur database volumes ya managed services mein, kyunki container kabhi bhi replace ho sakta hai.",
+        "**Releases aur migrations**: schema changes Alembic/Flask-Migrate jaisi **migrations** se versioned aur repeatable hote hain, aur deploy ke dauraan chalte hain. Backups lo, health check endpoint (`/health`) rakho, aur rolling deploy (ek-ek instance badalna) se downtime bachao. Kuch toote to pichhle version par rollback ka raasta pehle se tay ho.",
+        "**Logging**: levels DEBUG < INFO < WARNING < ERROR < CRITICAL. Logger ka level threshold hai: usse neeche ke messages drop hote hain. Containers mein logs stdout par likho taaki platform unhe collect kare. Har log line mein request id jaisa context do, aur passwords, tokens ya personal data kabhi log mat karo.",
+        "**Monitoring**: request rate, error rate (5xx %), latency aur saturation (CPU, memory, DB connections) track karo, aur thresholds par alerts lagao. Latency ke liye **percentiles** (p50, p95, p99) dekho, average nahi: kuch bahut slow requests average ko bigaad dete hain aur 'typical' user ka experience chhupa dete hain. Nearest-rank method mein p-th percentile = sorted list mein rank ⌈p/100 × n⌉ wali value."
+      ],
+      "example": {
+        "problem": "Ek Flask app ko container mein pack karo jahan Gunicorn port 8000 par chale, aur config environment se aaye. Container ko 1 CPU mila hai. Kitne workers rakhoge, aur code badalne par image rebuild mein kya fast hota hai?",
+        "code": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nENV PYTHONUNBUFFERED=1\nEXPOSE 8000\nCMD [\"gunicorn\", \"--workers\", \"3\", \"--bind\", \"0.0.0.0:8000\", \"wsgi:app\"]\n\n# run (values are examples)\n# docker build -t notes-app .\n# docker run -e DATABASE_URL=postgresql://... -e SECRET_KEY=... -p 8000:8000 notes-app",
+        "steps": [
+          "Workers: (2 × 1 CPU) + 1 = 3, isliye `--workers 3`. Yeh starting point hai; load test karke adjust karo.",
+          "`requirements.txt` pehle copy hota hai aur dependencies alag layer mein install hoti hain. Sirf app code badle to yeh layer cache se reuse hoti hai, sirf `COPY . .` ke baad ka hissa dobara banta hai.",
+          "`DATABASE_URL` aur `SECRET_KEY` image mein nahi, `docker run -e` se aate hain; wahi image staging aur production dono mein chalti hai.",
+          "`PYTHONUNBUFFERED=1` se logs turant stdout par aate hain, jahan se platform unhe collect karta hai.",
+          "Production mein iske aage Nginx (ya cloud load balancer) HTTPS terminate karke requests container ke port 8000 par bhejta hai.",
+          "Answer: **3 workers**, aur code change par **dependency layer cache se reuse** hoti hai."
+        ]
+      },
+      "mistakes": [
+        "`app.run(debug=True)` ke saath production chalana. Development server production ke liye nahi bana, aur debugger kisi ko bhi server par code chalane ka mauka de sakta hai.",
+        "`SECRET_KEY` ya database password ko code mein likh kar git par push karna. History se secret hatana mushkil hai; key rotate karo aur env vars use karo.",
+        "Sirf average latency monitor karna. Average 'theek' dikh sakta hai jabki har 10 mein se 1 user ko 2 second lag rahe hon; p95/p99 dekho."
+      ],
+      "revision": [
+        "Same code, alag config: env vars se, secrets git se bahar.",
+        "Production: debug off, Gunicorn jaisa WSGI server, workers ≈ (2 × cores) + 1.",
+        "Nginx: TLS, static files, buffering, load balancing; Python Gunicorn mein.",
+        "Image = package, container = running instance; containers stateless.",
+        "Logger level se neeche ke messages drop; logs stdout par.",
+        "Latency ke liye percentiles; nearest-rank = ⌈p/100 × n⌉."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w12-q1",
+          "question": "Production server par Flask app ko `debug=True` ke saath chalana khatarnaak kyun hai?",
+          "options": [
+            "Kyunki isse app thodi slow ho jaati hai, bas itni si baat hai",
+            "Kyunki error par interactive debugger aur poore tracebacks khulte hain, jisse code aur config leak hote hain aur debugger se server par arbitrary Python chalaya ja sakta hai",
+            "Kyunki debug mode mein templates load nahi hote",
+            "Kyunki debug mode HTTPS ko band kar deta hai"
+          ],
+          "answer": 1,
+          "explanation": "Debug mode ka debugger browser mein Python console deta hai; production mein yeh remote code execution ka raasta hai, aur tracebacks secrets aur code structure dikhate hain. Option A ka trap: debug ko sirf performance ka masla samajhna, jabki asli khatra security ka hai. Options C aur D debug mode ke behaviour se mel nahi khaate; templates aur HTTPS (jo proxy sambhalta hai) dono par iska aisa asar nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w12-q2",
+          "question": "Is shell mein na `DATABASE_URL` set hai na `FLASK_DEBUG`. Code ka output kya hoga?",
+          "code": "import os\n\ndb_url = os.environ.get('DATABASE_URL', 'sqlite:///dev.db')\ndebug = os.environ.get('FLASK_DEBUG', '0') == '1'\nprint(db_url, debug)",
+          "options": [
+            "sqlite:///dev.db False",
+            "None False",
+            "KeyError aayega",
+            "sqlite:///dev.db 0"
+          ],
+          "answer": 0,
+          "explanation": "`os.environ.get(key, default)` key na milne par default lautata hai, to `db_url` dev SQLite URL hai. `FLASK_DEBUG` bhi missing hai, to `'0' == '1'` False. Option C ka trap: `get` ko `os.environ['DATABASE_URL']` jaisa samajhna, jo missing key par KeyError deta. Option B default ko ignore karta hai, aur option D comparison ke bajaye raw default '0' print karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w12-q3",
+          "question": "Server mein 4 CPU cores hain aur Gunicorn sync workers ki sankhya (2 × cores) + 1 rakhi gayi. Har request average 200 ms tak worker ko busy rakhti hai (zyadatar DB ka wait). Har sync worker ek waqt mein ek request sambhalta hai. Lagbhag maximum throughput kitna hoga?",
+          "options": [
+            "9 requests/s",
+            "20 requests/s",
+            "45 requests/s",
+            "5 requests/s"
+          ],
+          "answer": 2,
+          "explanation": "Workers = 2 × 4 + 1 = 9. Ek worker 200 ms mein ek request, yaani 1 ÷ 0.2 = 5 requests/s. Kul ≈ 9 × 5 = 45 requests/s. Option B ka trap: workers ki jagah cores (4 × 5) se multiply karna; sync worker DB ka wait karte waqt bhi busy rehta hai, aur yahan workers 9 hain. Option A sirf workers ginta hai, aur option D ek worker ka throughput hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w12-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "import logging\n\nlogging.basicConfig(level=logging.WARNING, format='%(levelname)s:%(message)s')\nlog = logging.getLogger('shop')\nlog.debug('cart loaded')\nlog.info('order placed')\nlog.warning('stock low')\nlog.error('payment failed')",
+          "options": [
+            "Chaaron messages, har ek apne level ke saath",
+            "Sirf `WARNING:stock low`",
+            "Sirf `ERROR:payment failed`",
+            "Do lines: `WARNING:stock low` aur `ERROR:payment failed`"
+          ],
+          "answer": 3,
+          "explanation": "Threshold WARNING hai: is level aur usse upar (ERROR, CRITICAL) ke messages print hote hain, DEBUG aur INFO drop ho jaate hain. `shop` logger ka apna level set nahi, to woh root ka WARNING level use karta hai. Option B ka trap: level ko 'sirf yahi level' samajhna, jabki yeh minimum hai. Option A level ko ignore karta hai, aur option C maanta hai ki sirf errors hi log hote hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w12-q5",
+          "question": "Production setup: Internet → Nginx → Gunicorn (Flask app). In mein se kaunsa kaam aam taur par **Nginx ka nahi** hota?",
+          "options": [
+            "HTTPS (TLS) terminate karna",
+            "`/static/` ki CSS/JS files seedha disk se serve karna",
+            "Flask ke view functions chalana aur Jinja templates render karna",
+            "Requests ko kai Gunicorn instances mein load-balance karna"
+          ],
+          "answer": 2,
+          "explanation": "Nginx Python code nahi chalata; views aur templates Gunicorn ke worker processes mein Flask chalata hai, aur Nginx requests unhe proxy karta hai. Option B ka trap: lagta hai ki static files bhi 'app ka hissa' hain, par unhe Nginx se dena hi best practice hai (fast, Python workers free). Options A aur D reverse proxy ke classic kaam hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w12-q6",
+          "question": "Ek endpoint ki 10 requests ki latencies (ms) hain: 80, 85, 90, 95, 100, 105, 110, 120, 130, 2000. Nearest-rank method (p-th percentile = sorted list mein rank ⌈p/100 × n⌉ wali value) se mean aur p90 kya hain?",
+          "options": [
+            "mean 291.5 ms, p90 130 ms",
+            "mean 102.5 ms, p90 130 ms",
+            "mean 291.5 ms, p90 2000 ms",
+            "mean 291.5 ms, p90 120 ms"
+          ],
+          "answer": 0,
+          "explanation": "Sum = 2915, to mean = 2915 ÷ 10 = 291.5 ms; ek 2000 ms wali request ne average ko baaki 9 requests ke average (lagbhag 102 ms) se karib teen guna kar diya. p90: rank ⌈0.9 × 10⌉ = 9, aur 9th value 130 ms hai. Option C ka trap: p90 ko 'sabse bada' (yahan p100/max) samajhna. Option B mean ki jagah median (102.5) leta hai, aur option D rank 8 wali value padhta hai. Isi wajah se dashboards percentiles dikhate hain: 90% requests 130 ms ya kam mein poori hui.",
           "difficulty": "hard"
         }
       ]

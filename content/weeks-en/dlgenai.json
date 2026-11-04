@@ -360,6 +360,366 @@
         "0.34"
       ],
       "explanation": "NLL in bits: 1, 2, 1, 3, mean = 1.75 bits. Perplexity = 2^1.75 = 3.36 (the same with natural logs: exp(1.75·ln 2)), option A. Option B (1.75) is the average NLL, not the perplexity; the exponent was forgotten. Option C (4.00) is the arithmetic mean of 1/p (2, 4, 2, 8), but perplexity is the geometric mean. Option D (0.34) is the mean probability."
+    },
+    "dlgenai-w7-q1": {
+      "question": "When training a plain (non-variational) autoencoder, the loss is computed between which two things?",
+      "options": [
+        "The latent code z and the class label",
+        "The decoder's reconstruction x̂ and the original input x",
+        "The latent code z and standard normal noise",
+        "The generator output and the discriminator output"
+      ],
+      "explanation": "An autoencoder's target is the input itself: loss = reconstruction error(x̂, x), option B. So it needs no labels (self-supervised). Option A is supervised classification. Option C resembles the VAE's KL term, but a plain AE puts no prior on the latent. Option D is the GAN set-up."
+    },
+    "dlgenai-w7-q2": {
+      "question": "A VAE encoder outputs μ = 1.0 and σ = 0.5 for a 1-D latent. In the reparameterisation trick the sampled noise is ε = −0.4. What is z?",
+      "options": [
+        "1.2",
+        "0.9",
+        "−0.2",
+        "0.8"
+      ],
+      "explanation": "z = μ + σ·ε = 1.0 + 0.5·(−0.4) = 0.8, option D. Option B (0.9) multiplies by the variance σ² = 0.25 instead of σ. Option A (1.2) ignores the sign of ε. Option C (−0.2) is only σ·ε, forgetting to add the mean μ."
+    },
+    "dlgenai-w7-q3": {
+      "question": "A VAE has a 2-D latent with prior N(0, I). For one input the encoder gives μ = (1, 0) and σ² = (1, 0.5). What is KL(q(z | x) ‖ p(z)) (natural log)?",
+      "options": [
+        "0.500",
+        "1.193",
+        "0.597",
+        "0.097"
+      ],
+      "explanation": "Per dimension: ½(μ² + σ² − ln σ² − 1). Dim 1: ½(1 + 1 − 0 − 1) = 0.5. Dim 2: ½(0 + 0.5 + 0.693 − 1) = 0.097. Total = 0.597, option C. Option B (1.193) forgets the ½ factor. Option A is only the first dimension and option D only the second; KL adds over independent dimensions."
+    },
+    "dlgenai-w7-q4": {
+      "question": "In a GAN the generator is fixed. At a point x the real-data density is p_data(x) = 0.3 and the generator density is p_g(x) = 0.1. What does the optimal discriminator D*(x) output at this x?",
+      "options": [
+        "0.75",
+        "0.50",
+        "0.25",
+        "3.00"
+      ],
+      "explanation": "D*(x) = p_data/(p_data + p_g) = 0.3/0.4 = 0.75, option A. Option B (0.50) holds only when p_g = p_data (equilibrium), which is not the case here; it is the most common trap. Option C (0.25) puts the generator density in the numerator. Option D (3.00) is just the ratio, which cannot be a probability."
+    },
+    "dlgenai-w7-q5": {
+      "question": "A GAN trained on handwritten digits (0–9) produces very sharp images, but almost all of them are only '1' and '7', whatever the noise z. What is the best name for this problem?",
+      "options": [
+        "The discriminator overfitting the training set",
+        "Exploding gradients in the generator",
+        "Posterior collapse",
+        "Mode collapse: the generator covers only a few modes of the data distribution"
+      ],
+      "explanation": "Outputs that shrink to a few classes even for different z is mode collapse, option D: G found a few samples that fool D and abandoned the other modes. Option C, posterior collapse, is a VAE problem (the decoder ignores the latent), not a GAN one. Option B makes training unstable but does not produce this specific 'low diversity' pattern. Option A does not explain this pattern of sharp but non-diverse samples."
+    },
+    "dlgenai-w7-q6": {
+      "question": "In one training step the discriminator gives a real image D(x) = 0.9 and a fake image D(G(z)) = 0.2. What are the discriminator loss −[ln D(x) + ln(1 − D(G(z)))] and the generator's non-saturating loss −ln D(G(z))? (D loss, G loss)",
+      "options": [
+        "(1.715, 1.609)",
+        "(0.329, 1.609)",
+        "(0.329, 0.223)",
+        "(1.715, 0.223)"
+      ],
+      "explanation": "D loss = −ln 0.9 − ln 0.8 = 0.105 + 0.223 = 0.329. G loss = −ln 0.2 = 1.609. So option B. The options with 1.715 (A, D) use ln 0.2 instead of ln(1 − 0.2) for the fake, i.e. give the fake a 'real' label. The options with 0.223 (C, D) use the old minimax term ln(1 − D(G(z))) for the generator, which is not the non-saturating loss."
+    },
+    "dlgenai-w8-q1": {
+      "question": "Which statement about the forward (noising) process of a DDPM-style diffusion model is correct?",
+      "options": [
+        "It is fixed: each step adds a little Gaussian noise and it has no trainable parameters",
+        "It is a neural network that learns to remove noise from an image",
+        "Like a GAN discriminator, it classifies each image as real or fake",
+        "It turns an image into pure noise in a single step and is run at sampling time"
+      ],
+      "explanation": "The forward process is a fixed Markov chain that adds noise according to the schedule βₜ; nothing is learned, option A. Option B describes the reverse process (the ε_θ network), which is the most common confusion. Option C is a GAN concept. Option D is wrong: noise is added over many small steps (the closed form is only a shortcut), and sampling runs the reverse process, not the forward one."
+    },
+    "dlgenai-w8-q2": {
+      "question": "A diffusion model has a constant noise schedule: βₜ = 0.1 at every step. What is ᾱ₃ after three steps?",
+      "options": [
+        "0.700",
+        "0.271",
+        "0.729",
+        "0.300"
+      ],
+      "explanation": "αₜ = 1 − 0.1 = 0.9 and ᾱ₃ = 0.9 × 0.9 × 0.9 = 0.729, option C. Option A (0.700 = 1 − 3β) adds the βs instead of multiplying the αs; for small β it looks close but is not exact. Option B (0.271) is the noise variance 1 − ᾱ₃. Option D is just the sum of the βs."
+    },
+    "dlgenai-w8-q3": {
+      "question": "A scalar data point is x₀ = 2. At timestep t, ᾱₜ = 0.64 and the sampled noise is ε = 0.5. What is the noisy sample xₜ from the closed form?",
+      "options": [
+        "1.46",
+        "2.5",
+        "1.6",
+        "1.9"
+      ],
+      "explanation": "xₜ = √0.64·2 + √(1 − 0.64)·0.5 = 0.8·2 + 0.6·0.5 = 1.6 + 0.3 = 1.9, option D. Option A (1.46 = 0.64·2 + 0.36·0.5) forgets the square roots, the most common trap. Option C drops the noise term. Option B (2.5) is x₀ + ε and does not scale the signal at all."
+    },
+    "dlgenai-w8-q4": {
+      "question": "At one step xₜ = 1.0, ᾱₜ = 0.25 and the network's predicted noise is ε̂ = 0.4. What is the model's clean-data estimate x̂₀ = (xₜ − √(1 − ᾱₜ)·ε̂)/√ᾱₜ (to 3 decimals)?",
+      "options": [
+        "0.654",
+        "1.307",
+        "1.400",
+        "2.693"
+      ],
+      "explanation": "√(1 − 0.25) = 0.866, so xₜ − 0.866·0.4 = 1 − 0.346 = 0.654. Then divide by √0.25 = 0.5: 0.654/0.5 = 1.307, option B. Option A forgets to divide by √ᾱₜ. Option C (1.400) uses 1 − ᾱₜ = 0.75 without the square root. Option D (2.693) adds the noise instead of subtracting it."
+    },
+    "dlgenai-w8-q5": {
+      "question": "In one training example the sampled noise is ε = [1, −1, 0.5, 0] and the network predicts ε̂ = [0.8, −0.6, 0.5, 0.2]. What is the simplified diffusion loss (mean squared error over the elements)?",
+      "options": [
+        "0.06",
+        "0.24",
+        "0.20",
+        "0.245"
+      ],
+      "explanation": "Errors: 0.2, −0.4, 0, −0.2; squares: 0.04, 0.16, 0, 0.04; sum = 0.24, mean = 0.24/4 = 0.06, option A. Option B (0.24) is the sum instead of the mean. Option C (0.20) is the mean absolute error. Option D (0.245) is the RMSE (√0.06)."
+    },
+    "dlgenai-w8-q6": {
+      "question": "A schedule has a constant βₜ = 0.02 at every step. What is the smallest t for which ᾱₜ < 0.5 (i.e. the signal's variance coefficient drops below the noise's)?",
+      "options": [
+        "25",
+        "34",
+        "35",
+        "50"
+      ],
+      "explanation": "ᾱₜ = 0.98ᵗ < 0.5 ⇒ t > ln 0.5/ln 0.98 = 34.3, so t = 35, option C. Check: 0.98³⁴ = 0.503 (still ≥ 0.5) and 0.98³⁵ = 0.493. Option B (34) is the off-by-one from rounding down. Option A (25) comes from 1 − tβ = 0.5, a sum instead of a product. Option D (50) confuses it with the reciprocal of β."
+    },
+    "dlgenai-w9-q1": {
+      "question": "In text-to-image diffusion, what is the typical effect of raising the classifier-free guidance scale w from 1 to a fairly large value?",
+      "options": [
+        "Images match the prompt less but are more diverse",
+        "The number of sampling steps automatically decreases",
+        "The model's weights get fine-tuned to the prompt",
+        "Images follow the prompt more closely, but diversity drops and very large w can cause over-saturation/artefacts"
+      ],
+      "explanation": "In ε̃ = ε_u + w(ε_c − ε_u) a larger w pushes the prediction harder in the conditional direction: adherence ↑, diversity ↓, and artefacts at extreme w, option D. Option A states the opposite effect. Option B is wrong: the step count is a scheduler setting and does not change with guidance. Option C is wrong: guidance is only a sampling-time combination, no weights are updated."
+    },
+    "dlgenai-w9-q2": {
+      "question": "A fictional company 'PixelNest' wants to use AI-generated images in its ad campaign. Which of these practices is the most responsible?",
+      "options": [
+        "Disclose the images as synthetic, not use a real person's likeness without consent, and check the model/licence terms",
+        "Generate a face resembling a famous actor and present it like an endorsement, since the image is technically new",
+        "Strip provenance metadata or watermarks so the images look like real photos",
+        "Skip bias checks, because the pretrained model was already trained on a large dataset"
+      ],
+      "explanation": "Disclosure, consent and licence compliance are the basic pillars of responsible use, option A. Option B, despite the image being 'new', misuses a real person's likeness and makes a misleading endorsement. Option C is deliberate deception. Option D is a wrong assumption: large datasets do not remove bias, they are often where it comes from."
+    },
+    "dlgenai-w9-q3": {
+      "question": "At one sampling step, a latent element has unconditional prediction ε_u = 0.2 and conditional prediction ε_c = 0.5. With guidance scale w = 3, what is the classifier-free guided noise ε̃? (Convention: ε̃ = ε_u + w(ε_c − ε_u))",
+      "options": [
+        "0.9",
+        "1.5",
+        "1.1",
+        "0.5"
+      ],
+      "explanation": "ε̃ = ε_u + w(ε_c − ε_u) = 0.2 + 3 × 0.3 = 1.1, option C. Option A (0.9) is only w(ε_c − ε_u), forgetting to add the base ε_u. Option B (1.5 = 3 × 0.5) scales the conditional prediction directly. Option D is just ε_c, which is what w = 1 gives."
+    },
+    "dlgenai-w9-q4": {
+      "question": "A latent diffusion model encodes 512 × 512 × 3 images into a 64 × 64 × 4 latent. How many times fewer numbers does the denoiser process per step compared with pixel space?",
+      "options": [
+        "8",
+        "48",
+        "64",
+        "192"
+      ],
+      "explanation": "Image: 512·512·3 = 786432 elements; latent: 64·64·4 = 16384. Ratio = 48, option B. Option A (8) is only the per-side downsampling factor. Option C (64 = 8²) is the spatial-area factor but ignores the channels (3 → 4). Option D (192) forgets the latent's 4 channels and counts only 64 × 64."
+    },
+    "dlgenai-w9-q5": {
+      "question": "You generate 4 images from one prompt with 30 sampling steps and classifier-free guidance (count the conditional and unconditional predictions separately, for each image at each step). How many noise predictions (image-level network evaluations) are needed in total?",
+      "options": [
+        "120",
+        "60",
+        "30",
+        "240"
+      ],
+      "explanation": "4 images × 30 steps × 2 predictions = 240, option D. Option A (120) forgets CFG's second (unconditional) prediction, the most common trap. Option B (60) is the count for a single image. Option C is just the steps."
+    },
+    "dlgenai-w9-q6": {
+      "question": "In a toy 1-D 'FID', real-image features ~ N(2, 1) and generated-image features ~ N(1.5, 0.25) (the second number is the variance). What is the Fréchet distance (μ₁ − μ₂)² + σ₁² + σ₂² − 2σ₁σ₂?",
+      "options": [
+        "0.50",
+        "0.8125",
+        "1.50",
+        "0.25"
+      ],
+      "explanation": "σ₁ = 1, σ₂ = √0.25 = 0.5. FD = 0.5² + 1 + 0.25 − 2·1·0.5 = 0.25 + 0.25 = 0.5, option A; in 1-D this is (Δμ)² + (σ₁ − σ₂)². Option B (0.8125) squares the difference of the variances instead of the standard deviations: 0.25 + 0.75². Option C (1.50) forgets the cross term −2σ₁σ₂. Option D counts only the mean difference and ignores the mismatch in spread."
+    },
+    "dlgenai-w10-q1": {
+      "question": "Two word embeddings are u = [1, 2, 2] and v = [2, 1, 2]. What is their cosine similarity?",
+      "options": [
+        "8",
+        "0.889",
+        "1.414",
+        "0.111"
+      ],
+      "explanation": "u·v = 2 + 2 + 4 = 8, and ‖u‖ = ‖v‖ = √9 = 3. cos = 8/9 = 0.889, option B. Option A is just the dot product, not divided by the norms. Option C (√2) is the Euclidean distance. Option D (1/9) is the cosine distance (1 − cos), not the similarity."
+    },
+    "dlgenai-w10-q2": {
+      "question": "In scaled dot-product attention the key dimension is d_k = 64. By what number are the QKᵀ scores divided before the softmax?",
+      "options": [
+        "64",
+        "4096",
+        "0.125",
+        "8"
+      ],
+      "explanation": "The scores are divided by √d_k = √64 = 8, option D. Option A (64) forgets the square root, which shrinks the scores too much. Option B is d_k². Option C (1/8) is the factor you multiply by, not the number you divide by."
+    },
+    "dlgenai-w10-q3": {
+      "question": "A query's raw dot products with two keys are q·k₁ = 2 and q·k₂ = 0, and d_k = 4. In scaled dot-product attention, what attention weight does key 1 get?",
+      "options": [
+        "0.731",
+        "0.881",
+        "1.000",
+        "0.500"
+      ],
+      "explanation": "Scaled scores = [2, 0]/√4 = [1, 0]. Softmax: e/(e + 1) = 0.731, option A. Option B (0.881) forgets the scaling and takes softmax([2, 0]). Option C is a hard argmax; softmax never gives exactly 1 unless the other score is −∞. Option D assumes equal weights."
+    },
+    "dlgenai-w10-q4": {
+      "question": "A multi-head self-attention layer has d_model = 512 and 8 heads (each head d_k = d_v = 64). W_Q, W_K, W_V and the output projection W_O all have biases. How many parameters does the layer have in total?",
+      "options": [
+        "1048576",
+        "8404992",
+        "1050624",
+        "262656"
+      ],
+      "explanation": "Together the heads make each projection 512 → 512: each is 512·512 + 512 = 262656, and four projections give 4 × 262656 = 1050624, option C. Option A (1048576) leaves out the biases. Option B (8404992) gives every head full 512 × 512 projections, i.e. 8 times too many; this is the most common trap. Option D is a single projection."
+    },
+    "dlgenai-w10-q5": {
+      "question": "Sinusoidal positional encoding: PE(pos, 2i) = sin(pos/10000^(2i/d)), PE(pos, 2i + 1) = cos(pos/10000^(2i/d)), d = 4. In the vector for position pos = 2, what is the value at dimension index 2 (counting from 0), to 4 decimals?",
+      "options": [
+        "0.9093",
+        "0.9998",
+        "0.0002",
+        "0.0200"
+      ],
+      "explanation": "Index 2 is even, so 2i = 2, i = 1, and 10000^(2/4) = 100. Value = sin(2/100) = sin(0.02) = 0.0200, option D. Option A (sin 2) is the value at index 0. Option B, cos(0.02), is the value at index 3. Option C (sin(2/10000)) uses the full 10000 as the denominator instead of the exponent 2i/d."
+    },
+    "dlgenai-w10-q6": {
+      "question": "A query is q = [1, 0], and three tokens have identical keys and values: k₁ = v₁ = [1, 0], k₂ = v₂ = [0, 1], k₃ = v₃ = [1, 1]; d_k = 2. What is the output vector of scaled dot-product attention (to 3 decimals)?",
+      "options": [
+        "[0.845, 0.578]",
+        "[0.802, 0.599]",
+        "[0.667, 0.667]",
+        "[1.000, 0.000]"
+      ],
+      "explanation": "Scores q·k = [1, 0, 1], /√2 = [0.707, 0, 0.707]. Softmax: e^0.707 = 2.028, weights = [0.401, 0.198, 0.401]. Output = 0.401·[1, 0] + 0.198·[0, 1] + 0.401·[1, 1] = [0.802, 0.599], option B. Option A forgets the √2 scaling (weights [0.422, 0.155, 0.422]). Option C assumes equal weights of 1/3. Option D gives all the weight to the first token, although k₃ has the same score."
+    },
+    "dlgenai-w11-q1": {
+      "question": "What do we call a transformer that is pretrained with next-token prediction and uses a causal mask (it only sees previous tokens)?",
+      "options": [
+        "Encoder-only (BERT-like)",
+        "A purely CNN-based language model",
+        "Decoder-only (GPT-like)",
+        "No transformer uses a causal mask"
+      ],
+      "explanation": "Causal self-attention with a next-token objective is the hallmark of decoder-only (GPT-like) models, option C. Option A is the most tempting trap: encoder-only models use bidirectional attention with masked LM; the 'mask' there hides input tokens, it does not make attention causal. Option B is not a transformer at all. Option D is wrong: decoders (including the decoder of an encoder–decoder model) use a causal mask."
+    },
+    "dlgenai-w11-q2": {
+      "question": "A frozen weight matrix is 4096 × 4096. LoRA with rank r = 8 is applied to it (B: 4096 × 8, A: 8 × 4096). How many trainable LoRA parameters are there?",
+      "options": [
+        "65536",
+        "32768",
+        "16777216",
+        "8192"
+      ],
+      "explanation": "r(d + k) = 8 × (4096 + 4096) = 65536, option A, only 0.39% of the full matrix's 16777216. Option B (32768) counts only one of the matrices (B or A). Option C is the full fine-tuning count. Option D, (d + k), forgets to multiply by the rank r."
+    },
+    "dlgenai-w11-q3": {
+      "question": "A decoder's causal self-attention has sequence length 5. Each token can attend to itself and to earlier tokens. How many (query, key) pairs are allowed non-zero attention in total?",
+      "options": [
+        "25",
+        "10",
+        "5",
+        "15"
+      ],
+      "explanation": "Token i (1 to 5) sees i positions: 1 + 2 + 3 + 4 + 5 = 15 = n(n + 1)/2, option D. Option A (25) is full bidirectional attention, ignoring the mask. Option B (10) drops the diagonal, but a token also attends to itself. Option C is only the self-pairs."
+    },
+    "dlgenai-w11-q4": {
+      "question": "A model has 24 transformer layers. LoRA with r = 16 is applied to W_Q and W_V (both 1024 × 1024) in every layer; everything else is frozen. How many trainable parameters are there in total?",
+      "options": [
+        "786432",
+        "1572864",
+        "50331648",
+        "3145728"
+      ],
+      "explanation": "One matrix: 16 × (1024 + 1024) = 32768. Two matrices per layer, 24 layers: 32768 × 2 × 24 = 1572864, option B. Option A (786432) counts only one matrix per layer. Option C (2 × 24 × 1024²) is the full fine-tuning count. Option D assumes LoRA on all four projections (Q, K, V, O)."
+    },
+    "dlgenai-w11-q5": {
+      "question": "In the decoder of an encoder–decoder translation model, where does the cross-attention layer take its keys (K) and values (V) from?",
+      "options": [
+        "From the decoder's previously generated tokens",
+        "From the positional encoding table",
+        "From the encoder's final hidden states (outputs)",
+        "Directly from the vocabulary embedding matrix"
+      ],
+      "explanation": "In cross-attention the queries come from the decoder and the keys/values from the encoder outputs, so each output token can look at the relevant parts of the source sentence, option C. Option A describes the decoder's masked self-attention, the most common confusion. Options B and D are not the K/V source of attention; they only help build the input representations."
+    },
+    "dlgenai-w11-q6": {
+      "question": "A tiny LoRA layer: frozen W = [[2, 1], [0, 1]], A = [1, 2] (1 × 2), B = [0.5, −1]ᵀ (2 × 1), rank r = 1, scaling α = 2. Input x = [1, 1]. What is the output h = Wx + (α/r)·B(Ax)?",
+      "options": [
+        "[4.5, −2]",
+        "[3.75, −0.5]",
+        "[3, 1]",
+        "[6, −5]"
+      ],
+      "explanation": "Wx = [2 + 1, 0 + 1] = [3, 1]. Ax = 1 + 2 = 3, B(Ax) = [1.5, −3], and scaling by α/r = 2 gives [3, −6]. h = [3 + 3, 1 − 6] = [6, −5], option D. Option A forgets the scaling factor. Option B uses r/α = 0.5 instead of α/r. Option C assumes the LoRA contribution is zero, which is true only at initialisation (B = 0); here B is non-zero."
+    },
+    "dlgenai-w12-q1": {
+      "question": "A prompt first gives the task instruction, then 3 solved examples (review → sentiment), and finally a new review whose sentiment is wanted. The model's weights are not updated. What is this technique called?",
+      "options": [
+        "Few-shot prompting",
+        "Zero-shot prompting",
+        "Fine-tuning",
+        "Prompt tuning (soft prompts)"
+      ],
+      "explanation": "Putting solved examples inside the prompt without changing the weights is few-shot (in-context) prompting, option A. Option B has no examples, only the instruction. Option C updates the weights. Option D learns trainable embedding vectors, which is gradient training, not text examples."
+    },
+    "dlgenai-w12-q2": {
+      "question": "The LLM support bot of a fictional e-commerce company 'ShopEase' gives confident but wrong answers about the return policy. Which of these is the most effective mitigation?",
+      "options": [
+        "Raise the temperature so the answers vary more",
+        "Write in the system prompt that 'you are never wrong'",
+        "Make the bot write longer, more detailed answers",
+        "Ground the answers in the company's official policy documents (retrieval), ask for sources, and let it say 'I don't know' when the information is missing"
+      ],
+      "explanation": "The most practical fix for hallucination is grounding: retrieve the relevant official text into the prompt, ask for citations, and allow abstaining, option D. Option A adds randomness and does not reduce errors. Option B only makes the model sound more confident, not more correct. Option C's longer answers can carry even more unverified claims."
+    },
+    "dlgenai-w12-q3": {
+      "question": "The sorted next-token probabilities are 0.5, 0.2, 0.15, 0.1, 0.05. With top-p (nucleus) sampling at p = 0.8, how many tokens stay in the nucleus, and what is the most probable token's probability after renormalising?",
+      "options": [
+        "(2, 0.714)",
+        "(3, 0.588)",
+        "(3, 0.500)",
+        "(4, 0.526)"
+      ],
+      "explanation": "Cumulative: 0.5, 0.7 (< 0.8), 0.85 (≥ 0.8), so 3 tokens. Renormalise: 0.5/0.85 = 0.588, option B. Option A stops before reaching 0.8 (0.7 has not yet reached p). Option C forgets to renormalise. Option D takes one token too many (0.95), breaking the smallest-set rule."
+    },
+    "dlgenai-w12-q4": {
+      "question": "Prompt tuning is applied to a frozen LLM (32 layers, embedding dimension 4096): 20 trainable soft-prompt vectors are prepended to the input embeddings, and only these are trained. How many trainable parameters are there?",
+      "options": [
+        "4096",
+        "20",
+        "81920",
+        "2621440"
+      ],
+      "explanation": "Each soft token is a 4096-dimensional vector: 20 × 4096 = 81920, option C. Option D (81920 × 32) assumes vectors at every layer, as in prefix tuning, whereas prompt tuning works only at the input. Option A is a single vector, and option B is just the number of tokens."
+    },
+    "dlgenai-w12-q5": {
+      "question": "An LLM-based toxicity filter (fictional eval set) flagged 40 outputs as toxic; 30 of them really were toxic. The eval set contained 50 toxic outputs in total. What is the F1 score for the 'toxic' class?",
+      "options": [
+        "0.667",
+        "0.750",
+        "0.600",
+        "0.675"
+      ],
+      "explanation": "Precision = 30/40 = 0.75, recall = 30/50 = 0.6. F1 = 2PR/(P + R) = 2(0.75)(0.6)/1.35 = 0.667, option A. Option B is the precision and option C the recall. Option D (0.675) is the arithmetic mean of P and R, but F1 is the harmonic mean, which leans towards the smaller value."
+    },
+    "dlgenai-w12-q6": {
+      "question": "A decoder-only model: 32 layers, d_model = 4096, standard multi-head attention (both K and V are of size d_model in every layer). The KV cache for 2048 tokens of one sequence is kept in fp16 (2 bytes per number), batch size 1. How much memory does the KV cache take? (1 GiB = 2³⁰ bytes)",
+      "options": [
+        "0.5 GiB",
+        "1 GiB",
+        "2 GiB",
+        "32 MiB"
+      ],
+      "explanation": "Memory = 2 (K and V) × 32 layers × 2048 tokens × 4096 × 2 bytes = 1073741824 bytes = 1 GiB, option B. Option A counts only K (or only V). Option C assumes fp32 (4 bytes). Option D (32 MiB) is the cache of a single layer, forgetting to multiply by the layers."
     }
   }
 }

@@ -240,6 +240,486 @@
         "`5`, `6`, `7` (three lines)"
       ],
       "explanation": "`tail -n +5` starts at line 5: 5 to 20, 16 lines in all. `head -n -10` drops the last 10 lines (11 to 20), leaving 5 to 10. `tail -n 3` takes the last three of these: 8, 9, 10. The trap in option B: ignoring `head -n -10` and taking the last three straight away. The trap in option C: reading `head -n -10` as `head -n 10` (the first 10 lines, 5 to 14), which gives a last three of 12, 13, 14. Option D takes the first three of the remaining lines instead."
+    },
+    "syscmd-w5-q1": {
+      "question": "What is the output of this bash script (two lines)?",
+      "options": [
+        "`Hi asha` and `Hi asha`",
+        "`Hi $name` and `Hi $name`",
+        "`Hi asha` and `Hi $name`",
+        "`Hi $name` and `Hi asha`"
+      ],
+      "explanation": "A here-doc with an unquoted delimiter (`<<EOF`) undergoes parameter expansion, so the first line is `Hi asha`. Quoting the delimiter (`<<'EOF'`) keeps the body fully literal, so the second line is `Hi $name`. The trap in option A: thinking quoting has no effect on a here-doc. Option D comes from remembering the rule backwards."
+    },
+    "syscmd-w5-q2": {
+      "question": "`l.txt` has three lines: `err err`, `ok`, `err`. What do these two commands print, in order?",
+      "options": [
+        "`3` and `3`",
+        "`2` and `2`",
+        "`3` and `2`",
+        "`2` and `3`"
+      ],
+      "explanation": "`grep -c` counts matching lines: `err err` and `err` = 2 (two matches on the first line do not count it twice). `grep -o` prints each match on its own line: 2 + 1 = 3 lines, which `wc -l` counts as 3. The trap in option A: taking `-c` as a count of matches. Option C swaps the roles of the two."
+    },
+    "syscmd-w5-q3": {
+      "question": "These commands run in an empty directory. What ends up in the two files?",
+      "options": [
+        "Uppercase `HELLO` in both files",
+        "`hello` in `a.txt`, `HELLO` in `b.txt`",
+        "Only `hello`, because nothing is left in the pipe after `tee`",
+        "Only `HELLO`, because `a.txt` is empty"
+      ],
+      "explanation": "`tee a.txt` writes its input unchanged to `a.txt` and passes the same copy on to stdout. Further on, `tr` uppercases it and it is written to `b.txt`. So `a.txt` holds `hello` and `b.txt` holds `HELLO`. The trap in option A: thinking `tee` saves the pipeline's final result; it saves only the data at its own position. The trap in option C: thinking `tee` 'swallows' the data into the file; it makes a copy. Option D assumes the opposite, that nothing reaches the file when `tee` is followed by a pipe."
+    },
+    "syscmd-w5-q4": {
+      "question": "`w.txt` has five lines: `cat`, `concat`, `cat5`, `the cat sat`, `CAT`. What does `grep -wc cat w.txt` print?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "1"
+      ],
+      "explanation": "`-w` requires the match to be a whole word: there must be no word-constituent character (letter, digit, underscore) on either side. `cat` and `the cat sat` match. `concat` has `n` before `cat` and `cat5` has `5` after it (digits are word characters too), so they do not. `CAT` does not match a case-sensitive search. The answer is 2. The trap in option B: counting `cat5` as a word (or assuming `-i`). Option C is the count without `-w`."
+    },
+    "syscmd-w5-q5": {
+      "question": "These bash commands run in an empty directory. What does the final `cat f` show, and is any error printed?",
+      "options": [
+        "`c`; the third line prints a 'cannot overwrite existing file' error",
+        "`a`; the fourth line also fails because noclobber is on",
+        "`b`; no error is printed",
+        "Three lines `a`, `b`, `c`; noclobber turns `>` into an append"
+      ],
+      "explanation": "`echo a > f` creates a new file, which noclobber allows. `echo b > f` tries to overwrite an existing file, so bash prints an error and `f` still holds `a`. `>|` deliberately overrides noclobber, so `f` ends up holding `c`. The trap in option B: treating `>|` like a normal `>`. The trap in option D: thinking noclobber makes `>` append; it only blocks overwriting."
+    },
+    "syscmd-w5-q6": {
+      "question": "`d.txt` contains these 5 lines. With GNU grep, what does the command print?",
+      "options": [
+        "5",
+        "4",
+        "2",
+        "3"
+      ],
+      "explanation": "The pattern needs a whole word, a space, then the same word again, with word boundaries on both sides. `the the cat` (the the), `is is` and `go go!` match; `!` is not a word character, so there is a boundary after `go`. In `this is it`, `is` cannot start inside `this` (the leading `\\b` is required) and `is it` is not a repeat. In `abc abcd` the second `abc` is followed by `d`, so the final `\\b` fails. The answer is 3. The trap in option A: ignoring `\\b` (then all five would match). Option B counts `abc abcd`, and option C drops `go go!` because of the punctuation."
+    },
+    "syscmd-w6-q1": {
+      "question": "The current directory has `a.csv` and `b.csv`. Running `find . -name *.csv` makes GNU find report: `paths must precede expression: b.csv`. What is the cause and the fix?",
+      "options": [
+        "`find` does not support glob patterns; you must write `find . -regex '.*csv'`",
+        "The shell expanded `*.csv` to `a.csv b.csv`, so `find` got an extra argument; quote the pattern: `-name '*.csv'`",
+        "Patterns with a dot do not work with `-name`; use `-iname`",
+        "Writing the starting directory `.` is wrong; write `find -name *.csv`"
+      ],
+      "explanation": "The unquoted `*.csv` is expanded by the shell before find sees it, so the command becomes `find . -name a.csv b.csv`; `b.csv` is a stray argument, hence the error. Quoting passes the pattern unchanged and find matches it at every level itself. The trap in option A: `-name` does take a glob, it just has to be quoted. Options C and D miss the real cause (shell expansion)."
+    },
+    "syscmd-w6-q2": {
+      "question": "In vim's Normal mode you type `:%s/http:/https:/g` and press Enter. What does it do?",
+      "options": [
+        "Replaces every occurrence of `http:` with `https:` on every line of the file",
+        "Replaces only the first `http:` on each line",
+        "Replaces every `http:` on the cursor's line only",
+        "Replaces only the first `http:` in the whole file"
+      ],
+      "explanation": "The `%` range means all lines, and the trailing `g` flag replaces every match within each line. So every `http:` in the file becomes `https:`. The trap in option B: forgetting the `g` flag; without `g` only the first match on each line changes. Option C is `:s/.../g` without `%`, which applies only to the current line."
+    },
+    "syscmd-w6-q3": {
+      "question": "A directory has four files last modified 1.5, 2.5, 3.5 and 10 days ago. How many files does GNU `find . -type f -mtime +2` print?",
+      "options": [
+        "3",
+        "4",
+        "2",
+        "1"
+      ],
+      "explanation": "`-mtime` counts age in whole 24-hour days and drops the fraction: 1.5 → 1, 2.5 → 2, 3.5 → 3, 10 → 10. `+2` means more than 2, so the 3 and 10 ones: 2 files in all. The trap in option A: counting 2.5 days as 'more than 2 days'; after truncation it is exactly 2, which matches `-mtime 2`, not `+2`."
+    },
+    "syscmd-w6-q4": {
+      "question": "A directory holds three files `x.log`, `y.log`, `z.log` (and nothing else). How many output lines do these two commands give, in order?",
+      "options": [
+        "1 and 3",
+        "3 and 3",
+        "1 and 1",
+        "3 and 1"
+      ],
+      "explanation": "`{} \\;` runs `echo` once per file, so 3 lines. `{} +` packs all the files into a single `echo X ./x.log ./y.log ./z.log`, so 1 line. That is why `+` is faster on many files. The trap in option B: thinking the two forms differ only in syntax. Option A swaps their roles."
+    },
+    "syscmd-w6-q5": {
+      "question": "A directory contains `a.csv`, `b.tsv` and `c.txt`. With GNU find, what does this command print?",
+      "options": [
+        "`./a.csv` and `./b.tsv`",
+        "Only `./b.tsv`",
+        "Only `./a.csv`",
+        "`.`, `./a.csv`, `./b.tsv` and `./c.txt`"
+      ],
+      "explanation": "Once the expression contains an action (`-print`), no default print is added. The implicit `-a` binds tighter than `-o`, so this reads as `-name '*.csv' -o ( -name '*.tsv' -a -print )`. `a.csv` makes the first part true but has no action attached, so it is not printed; only `b.tsv` is printed. The trap in option A: thinking `-print` applies to the whole OR; that needs `\\( ... \\)`. Option D assumes the tests filter nothing."
+    },
+    "syscmd-w6-q6": {
+      "question": "A directory has three files: `empty.txt` (0 bytes), `small.csv` (500 KiB) and `big.csv` (3 MiB). What does GNU `find . -type f -size -1M` print?",
+      "options": [
+        "`./empty.txt` and `./small.csv`",
+        "Only `./small.csv`",
+        "Only `./empty.txt`",
+        "Nothing"
+      ],
+      "explanation": "Before comparing, `-size` rounds the file's size up to the given unit. In MiB units: `empty.txt` → 0, `small.csv` (500 KiB) → 1, `big.csv` → 3. `-1M` means less than 1, so only 0: just `./empty.txt`. The trap in option A: reading 500 KiB directly as 'smaller than 1 MiB'; after rounding it becomes 1 and `-1M` fails. For files under 1 MiB write `-size -1024k`."
+    },
+    "syscmd-w7-q1": {
+      "question": "`go.sh` (executable) has a single line: `cd /var/log`. You are in `/home/asha` and run the following. What does `pwd` print?",
+      "options": [
+        "`/var/log`",
+        "`/var`",
+        "An error, because `cd` is not allowed inside a script",
+        "`/home/asha`"
+      ],
+      "explanation": "`./go.sh` runs in a separate child process (a new bash); `cd` changes only that child's working directory, and the process ends when the script does. Your interactive shell stays in `/home/asha`. The trap in option A: treating the script as part of the current shell; that happens with `source go.sh`. Option C is wrong: `cd` is perfectly valid in a script."
+    },
+    "syscmd-w7-q2": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`even`",
+        "A syntax error, because `n` has no `$` before it",
+        "`odd`",
+        "`1`"
+      ],
+      "explanation": "`(( n % 2 ))` evaluates the arithmetic: 7 % 2 = 1. When the result is non-zero, `(( ))` returns exit status 0 (true), so the `then` branch runs and prints `odd`. The trap in option A: thinking that since status 1 means failure, a result of 1 must also be false; in `(( ))` a non-zero value is true. Option B: inside `(( ))` variables can be written without `$`."
+    },
+    "syscmd-w7-q3": {
+      "question": "What is the output of this bash code (two lines)?",
+      "options": [
+        "`yes` and `no`",
+        "`no` and `no`",
+        "`no` and `yes`",
+        "A 'unary operator expected' error on the first line, then `no`"
+      ],
+      "explanation": "An unquoted empty `$x` disappears, so the first test becomes `[ -n ]`. A one-argument test only checks that its string (`-n`) is non-empty, so it is true: `yes`. The quoted `[ -n \"\" ]` correctly tests an empty string: false, `no`. The trap in option B: expecting `-n` to behave the same both times. The trap in option D: that error appears in two-operand tests like `[ $x = val ]`, not here."
+    },
+    "syscmd-w7-q4": {
+      "question": "What is the output of this bash code? (`set --` sets the positional parameters.)",
+      "options": [
+        "`2 2 2`",
+        "`2 1 3`",
+        "`3 1 3`",
+        "`2 1 2`"
+      ],
+      "explanation": "There are two arguments: `a b` and `c`. `\"$@\"` keeps each argument as a separate word: 2 iterations. `\"$*\"` joins them into one string `a b c`: 1 iteration. Unquoted `$@` gets split again on spaces: `a`, `b`, `c` = 3. The trap in option D: treating unquoted `$@` like `\"$@\"`. Option A assumes all three forms behave alike."
+    },
+    "syscmd-w7-q5": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`2026`",
+        "`2026-11`",
+        "`04`",
+        "`11`"
+      ],
+      "explanation": "`=~` matches an ERE and the groups go into `BASH_REMATCH`: index 0 is the whole match (`2026-11`), index 1 the first group (`2026`), index 2 the second group (`11`). So `11`. The trap in option A: mixing up the indices; `2026` is at index 1, not 2. Option B is index 0. The trap in option C: the regex has no group for the day at all."
+    },
+    "syscmd-w7-q6": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`3 0 0 0`",
+        "`3 1 0 3`",
+        "`3 0 0 3`",
+        "`3 1 3 0`"
+      ],
+      "explanation": "`a`: `f` returns 3. `b`: `!` turns non-zero into 0 (and 0 into 1). `c`: `f` failed so `true` ran, and a list's status is that of the last command run: 0. `d`: the `if` condition failed with no `else`, and when no branch runs the whole `if` returns 0. So `3 0 0 0`. The trap in option B: taking `!` to give 1 here and expecting `if` to pass the condition's status through. Option C makes only the `if` mistake."
+    },
+    "syscmd-w8-q1": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`4 20`",
+        "`4 10`",
+        "`3 20`",
+        "`4 30`"
+      ],
+      "explanation": "`a+=(40)` appends one element, so there are now 4 elements and `${#a[@]}` gives 4. Bash arrays are indexed from 0, so `${a[1]}` is the second element, 20. The trap in option B: taking index 1 as the first element. The trap in option C: ignoring `+=` or reading it as a string append."
+    },
+    "syscmd-w8-q2": {
+      "question": "You need to run a report script `/srv/report.sh` exactly **once**, at 09:00 tomorrow morning, and never again. What is the best way?",
+      "options": [
+        "Add `0 9 * * * /srv/report.sh` to the crontab",
+        "`echo /srv/report.sh | at 09:00 tomorrow`",
+        "Run `sleep 86400; /srv/report.sh` in the terminal",
+        "Add `@reboot /srv/report.sh` to the crontab"
+      ],
+      "explanation": "`at` is built for one-off jobs: the job goes into a queue (visible with `atq`), runs once at the given time, and closing the terminal does not matter. The trap in option A: that cron line runs every day at 09:00, not once. Option C guesses the time and dies when the session closes. Option D runs on every boot."
+    },
+    "syscmd-w8-q3": {
+      "question": "A bash script (without `lastpipe`) contains this code. What does the last `echo` print?",
+      "options": [
+        "`3`",
+        "`1`",
+        "An empty line",
+        "`0`"
+      ],
+      "explanation": "Every part of a pipeline, including the `while` loop, runs in a subshell. Inside the loop `count` rises to 3 in the subshell's copy, but that copy ends with the loop; the parent shell's `count` stays 0. The trap in option A: thinking the loop runs in the current shell; with `done < <(printf ...)` or a file redirect you would get 3. The trap in option C: `count` was already set to 0, not empty."
+    },
+    "syscmd-w8-q4": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`9 10`",
+        "`1 2`",
+        "`1 10`",
+        "`5 10`"
+      ],
+      "explanation": "`local x=5` creates a separate `x` inside the function, so `echo` prints 5 × 2 = 10, which is captured in `y`. `x=9` also changes that local `x`, not the global one (and `$(f)` ran in a subshell anyway). The global `x` stays 1: `1 10`. The trap in option A: treating `x=9` as global. The trap in option B: thinking the function uses the global `x` (1)."
+    },
+    "syscmd-w8-q5": {
+      "question": "When will this crontab line run the script?",
+      "options": [
+        "Only on the 1st of a month when it is a Monday, at 09:00",
+        "On the 1st of every month at 09:01",
+        "On the 1st of every month at 09:00, and also every Monday at 09:00",
+        "Only on every Monday in January at 09:00"
+      ],
+      "explanation": "The fields are minute 0, hour 9, day-of-month 1, month `*`, day-of-week 1 (Monday). When both day-of-month and day-of-week are restricted (neither is `*`), cron ORs them: it runs on the 1st and also on every Monday. The trap in option A: treating them as AND, which feels natural but is not what cron does. Option B reads the field order backwards, and option D takes the month field (`*`) as 1."
+    },
+    "syscmd-w8-q6": {
+      "question": "What is the output of this bash script?",
+      "options": [
+        "`5 17 6`",
+        "`3 17 6`",
+        "`3 7 1`",
+        "`3 10 5`"
+      ],
+      "explanation": "`IFS=,` splits each line into city and amount. The loop is redirected from a here-doc, not a subshell, so the array survives. For each city the amount is added to the old value (0 the first time via `:-0`): pune 10 + 7 = 17, delhi 5 + 1 = 6, goa 3. There are 3 distinct keys, so `${#n[@]}` = 3. Output `3 17 6`. The trap in option A: reading `${#n[@]}` as the number of lines. The trap in option C: thinking each assignment overwrites the old value (here the expression adds to it). Option D keeps only the first entry."
+    },
+    "syscmd-w9-q1": {
+      "question": "What is the output of this pipeline? (Output lines are shown here separated by spaces.)",
+      "options": [
+        "`a a a b b c`",
+        "`a b`",
+        "`a b c`",
+        "`c`"
+      ],
+      "explanation": "`seen[$0]++` is a post-increment: the first time a line appears its old value is 0, `!0` is true, so the line prints; afterwards the value is 1, 2, ... and `!` gives false. So each line prints on its first appearance, in original order: `a b c`. Option A looks like a sort, and awk does not sort. The trap in option D: thinking it keeps only lines that appear once; that `uniq -u`-style job needs different logic."
+    },
+    "syscmd-w9-q2": {
+      "question": "Here is `emp.csv`. What does the command print?",
+      "options": [
+        "`68`",
+        "`56.6667`",
+        "`340`",
+        "`85`"
+      ],
+      "explanation": "`NR > 1` skips the header, so s = 50 + 80 + 70 + 40 + 100 = 340. In END, NR is the total record count including the header, 6, so the divisor is 6 − 1 = 5 and the mean is 340 / 5 = 68. The trap in option B: writing `s/NR`, which counts the header too (340/6). Option C is just the total, and option D divides by 4."
+    },
+    "syscmd-w9-q3": {
+      "question": "On the same `emp.csv` (header `id,dept,salary`, rows: `1,ds,50`, `2,ml,80`, `3,ds,70`, `4,ops,40`, `5,ml,100`), what does this pipeline print?",
+      "options": [
+        "`ds 120`, `ml 180`, `ops 40`",
+        "`ds 60`, `ml 90`, `ops 40`",
+        "`ds 70`, `ml 100`, `ops 40`",
+        "`ml 90`, `ds 60`, `ops 40`"
+      ],
+      "explanation": "Each dept's total and count: ds 50 + 70 = 120 / 2 = 60, ml 80 + 100 = 180 / 2 = 90, ops 40 / 1 = 40. `for (d in sum)` may produce any order, but `sort` puts the lines in alphabetical order: ds, ml, ops. The trap in option A: forgetting to divide by the count. Option C is each group's last value (as if `=` were written instead of `+=`). The trap in option D: expecting the order by average even after `sort`."
+    },
+    "syscmd-w9-q4": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`DATA 17 2027`",
+        "`ATA- 12 2027`",
+        "`DATA 12 20261`",
+        "`DATA 12 2027`"
+      ],
+      "explanation": "The default FS is whitespace, so `$1` = `Data-Science` (a hyphen does not split fields) and `$2` = `2026`. `substr($1, 1, 4)` takes 4 characters from position 1: `Data`, which `toupper` turns into `DATA`. `length($1)` = 12. `$2 + 1` is numeric addition: 2027. The trap in option A: taking the length of the whole line (17). The trap in option B: indexing substr from 0. The trap in option C: treating `+` as string joining; awk has no concatenation operator, values are simply written side by side."
+    },
+    "syscmd-w9-q5": {
+      "question": "A file holds these 8 numbers, one per line: 2, 4, 4, 4, 5, 5, 7, 9. What does this awk program print?",
+      "options": [
+        "`5 2`",
+        "`5 4`",
+        "`5 2.13809`",
+        "`40 2`"
+      ],
+      "explanation": "s = 40, so the mean m = 40 / 8 = 5. ss = 4 + 16 + 16 + 16 + 25 + 25 + 49 + 81 = 232, ss/NR = 29, variance = 29 − 25 = 4, and `sqrt` gives the population standard deviation 2. Output `5 2`. The trap in option B: forgetting `sqrt` and reading off the variance. Option C is the sample SD (dividing by n − 1 = 7), which this program does not compute. Option D is the sum instead of the mean."
+    },
+    "syscmd-w9-q6": {
+      "question": "GNU awk runs this command on the same `emp.csv` (header `id,dept,salary` and rows `1,ds,50`, `2,ml,80`, `3,ds,70`, `4,ops,40`, `5,ml,100`). What is the output?",
+      "options": [
+        "`5 100`",
+        "`2 80`",
+        "`1 50`",
+        "`id salary`"
+      ],
+      "explanation": "The header is not skipped. On the first line `$3` = `salary`, which does not look numeric, so it is compared as a string with the uninitialised `max`: `salary` > `\"\"` is true, so `max = salary` and `who = id`. Every later salary (like `50`) is then compared with the string `salary` as a string, and digits sort before letters, so none is bigger. Output `id salary`. The trap in option A: ignoring the header's effect (that is what `NR > 1` would give). Option B is what you would get if every comparison were a string one (`80` > `100` lexically)."
+    },
+    "syscmd-w10-q1": {
+      "question": "With GNU sed, what is the output of this pipeline? (Output lines are shown here separated by spaces.)",
+      "options": [
+        "`1 4 7 10`",
+        "`3 6 9`",
+        "`0 3 6 9`",
+        "All 10 lines, with 3, 6 and 9 printed twice"
+      ],
+      "explanation": "The `first~step` address (GNU) starts at line `first` and picks every `step`-th line; `0~3` means 3, 6, 9 (there is no line 0). `-n` turns off automatic printing, so only the `p` lines appear. The trap in option A: reading it like `1~3`. The trap in option D: forgetting `-n`; that is what you would get without `-n`."
+    },
+    "syscmd-w10-q2": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`id <&>`",
+        "`<id 42>`",
+        "`id <4><2>`",
+        "`id <42>`"
+      ],
+      "explanation": "In the replacement, `&` stands for the whole matched text. `[0-9]+` matches `42` in one go, so the result is `id <42>`. The trap in option A: taking `&` as a literal character (a literal one is written `\\&`). The trap in option C: thinking `+` matches each digit separately. Option B assumes the whole line matched."
+    },
+    "syscmd-w10-q3": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`bold text`",
+        "`bold</b> text`",
+        "` text` (with one leading space)",
+        "An empty line"
+      ],
+      "explanation": "`.*` is greedy: `<` starts the match at the first `<` and `.*` takes as much as it can, up to the last `>` (the one in `</b>`). That whole `<b>bold</b>` is removed and ` text` remains. The trap in option A: expecting non-greedy behaviour; `bold text` needs `s/<[^>]*>//g`. Option B is the result of removing only the first tag, which `<[^>]*>` without `g` would give. The trap in option D: thinking the match runs to the end of the line, but text remains after the `>`."
+    },
+    "syscmd-w10-q4": {
+      "question": "With GNU sed, what is the output of this command?",
+      "options": [
+        "`a,b;c;d`",
+        "`a;b;c;d`",
+        "`a,b;c,d`",
+        "`a;b,c,d`"
+      ],
+      "explanation": "The flag `2g` (GNU) means replace every match starting from the second one. The first comma (between a and b) stays, the second and third become `;`: `a,b;c;d`. Option C is the result of the `2` flag alone (only the second match). The trap in option B: reading `2g` as a plain `g`. Option D changes only the first match, which is what no flag would do."
+    },
+    "syscmd-w10-q5": {
+      "question": "`app.ini` has these 6 lines. Which line(s) change in the output of this sed command?",
+      "options": [
+        "Both `port=` lines become `port=6380`",
+        "Only the `port=5432` line changes",
+        "No line changes, because `[cache]` itself matches `/^\\[/` and closes the range at once",
+        "Only the `port=6379` line becomes `port=6380`"
+      ],
+      "explanation": "The range starts at the `[cache]` line. The end pattern `/^\\[/` is not checked on the start line but from the next line on; no later line starts with `[`, so the range runs to the end of the file. The only port line in this range is `port=6379`, which becomes `port=6380`; the `[db]` section's `port=5432` lies outside the range. Option C is the biggest trap: the start line does not close the range itself. Option A ignores the address."
+    },
+    "syscmd-w10-q6": {
+      "question": "What is the output of this pipeline? (Output lines are shown here separated by spaces.)",
+      "options": [
+        "`aX bX cX`",
+        "`aX b2 bX cX`",
+        "`aX bX bX cX`",
+        "`b2`"
+      ],
+      "explanation": "`-n` turns off auto-print. On each line `s/[0-9]/X/p` runs first: when a substitution happens the changed pattern space is printed, so `aX`, `bX` and `cX` are all printed. The second command `/b/p` looks at the changed pattern space (`bX`), which contains `b`, so `bX` is printed again. Four lines in all: `aX bX bX cX`. The trap in option A: thinking each line can print only once. The trap in option B: thinking `/b/` sees the original line `b2`; sed gives every command the current pattern space."
+    },
+    "syscmd-w11-q1": {
+      "question": "A directory contains only `data.csv`. After `gzip data.csv`, what does `ls` show?",
+      "options": [
+        "Both `data.csv` and `data.csv.gz`",
+        "Only `data.csv` (gzip writes its output to stdout)",
+        "Only `data.zip`",
+        "Only `data.csv.gz`"
+      ],
+      "explanation": "`gzip file` creates the compressed `file.gz` and, on success, removes the original. So only `data.csv.gz` remains. The trap in option A: expecting the behaviour of `zip` or `gzip -k`, which keep the original. Option B is what `gzip -c` does. The trap in option C: confusing gzip with the zip format."
+    },
+    "syscmd-w11-q2": {
+      "question": "You started Jupyter on a server. `ss -tlnp` shows this line. Can your laptop's browser open it directly at `http://<server-ip>:8888`?",
+      "options": [
+        "No; the service listens only on loopback `127.0.0.1`, so outside connections will not reach it (you need an ssh tunnel or a `0.0.0.0` bind)",
+        "Yes, because the Peer Address is `0.0.0.0:*`, meaning anyone can connect",
+        "Yes, because port 8888 is above 1024 and such ports are open to everyone",
+        "No, because the state `LISTEN` means the service is currently down"
+      ],
+      "explanation": "The Local Address `127.0.0.1:8888` shows the socket is bound only to the loopback interface; a packet from another machine arrives at the server's network IP, where nothing listens on 8888. You need an `ssh -L 8888:localhost:8888 server` tunnel from the laptop or a bind to `0.0.0.0`. The trap in option B: reading the Peer column as allowed clients; for a listening socket it is just a wildcard placeholder. Option C: the port number does not decide reachability. Option D: `LISTEN` means the service is waiting for connections."
+    },
+    "syscmd-w11-q3": {
+      "question": "Here is a Makefile; `make` has already run and every file is up to date (each target is newer than its prerequisites). Now you run `touch report.py` and then GNU `make`. Which recipe(s) run?",
+      "options": [
+        "Both recipes, the `clean.csv` one first, then the `report.html` one",
+        "None, because `report.html` already exists",
+        "Only the `report.html` recipe",
+        "Only the `clean.csv` recipe"
+      ],
+      "explanation": "The default goal is the first target, `report.html`. make first checks its prerequisite `clean.csv`: `raw.csv` and `clean.sh` are older than it, so it is up to date. Then `report.html`: its prerequisite `report.py` is now newer, so only this recipe runs. The trap in option A: thinking make reruns everything; it rebuilds only out-of-date targets. The trap in option B: looking only at existence, not timestamps. Option D assumes the dependency runs the other way."
+    },
+    "syscmd-w11-q4": {
+      "question": "A directory holds `a.csv`, `b.csv` and this Makefile; `all.csv` does not exist yet. What does GNU `make` print on the terminal?",
+      "options": [
+        "`cat $^ > $@` and `built $@ from $<`",
+        "`cat a.csv b.csv > all.csv` and `built all.csv from a.csv`",
+        "`cat a.csv b.csv > all.csv`, `echo built all.csv from a.csv` and `built all.csv from a.csv`",
+        "`cat a.csv b.csv > all.csv` and `built all.csv from a.csv b.csv`"
+      ],
+      "explanation": "make prints each recipe line, with variables expanded, before running it: `$^` = `a.csv b.csv`, `$@` = `all.csv`, so the first line shows as `cat a.csv b.csv > all.csv`. The second line starts with `@`, so the command itself is not printed, only its output `built all.csv from a.csv`, because `$<` is just the first prerequisite. The trap in option C: ignoring `@`. The trap in option D: reading `$<` as `$^`. Option A assumes make does not expand automatic variables."
+    },
+    "syscmd-w11-q5": {
+      "question": "A Linux laptop's `/etc/hosts` has the line `10.0.0.5  db.internal`, and the company DNS server has no record for `db.internal`. `ping -c1 db.internal` pings 10.0.0.5, but `dig db.internal` gets no answer. Why?",
+      "options": [
+        "`dig` only looks up IPv6 addresses",
+        "`dig` asks the DNS server directly and does not read `/etc/hosts`; `ping` uses the system resolver, which checks `/etc/hosts` first",
+        "`/etc/hosts` works only for root, and `ping` is setuid root",
+        "`ping` uses ICMP, which needs no name, so it works for any name"
+      ],
+      "explanation": "Programs like `ping`, `curl` and `ssh` resolve names through the C library resolver, which, per `/etc/nsswitch.conf`, usually checks `/etc/hosts` first. `dig` is a DNS debugging tool that sends its query straight to the DNS server, so it never sees the hosts file entry. `getent hosts db.internal` shows the system's real answer. The trap in option C: the hosts file is read for all users. Option D: the name must still be turned into an IP before an ICMP packet can be sent. Option A is wrong: `dig` asks for an A (IPv4) record by default."
+    },
+    "syscmd-w11-q6": {
+      "question": "The first field (client IP) of the 9 lines of `access.log` is, in order: `.4 .4 .4 .9 .9 .4 .7 .9 .4` (all `10.0.0.x`). Someone forgot `sort` and ran this pipeline. What is the output (ignoring uniq's leading spaces)?",
+      "options": [
+        "`3 10.0.0.4` and `2 10.0.0.9`",
+        "`5 10.0.0.4` and `3 10.0.0.9`",
+        "`5 10.0.0.4` and `1 10.0.0.7`",
+        "`1 10.0.0.4` and `1 10.0.0.7`"
+      ],
+      "explanation": "`uniq -c` only merges consecutive duplicate lines. The groups are: .4 ×3, .9 ×2, .4 ×1, .7 ×1, .9 ×1, .4 ×1. `sort -rn` orders the counts from largest to smallest and `head -n 2` gives the first two: `3 10.0.0.4`, `2 10.0.0.9`. Option B is the true totals (.4 = 5, .9 = 3), which you would get only with a `sort` before `uniq`; it is the biggest trap, because the broken pipeline still looks plausible. Options C and D misread the grouping."
+    },
+    "syscmd-w12-q1": {
+      "question": "A server has 4 disks of 4 TB each, set up as RAID 5. What is the usable capacity, and how many disk failures can the array survive?",
+      "options": [
+        "12 TB; any 1 disk can fail",
+        "16 TB; losing even one disk loses the data",
+        "8 TB; any 2 disks can fail",
+        "12 TB; any 2 disks can fail"
+      ],
+      "explanation": "RAID 5 spends one disk's worth of space on parity: (n − 1) × S = (4 − 1) × 4 = 12 TB. Parity lets the data of any one disk be rebuilt, but if a second disk fails the array is lost. Option B is RAID 0. Option C is the capacity and tolerance of RAID 6. The trap in option D: getting RAID 5's capacity right but crediting it with RAID 6's safety."
+    },
+    "syscmd-w12-q2": {
+      "question": "A teammate has pushed new commits to `main`. You are on your local `main` branch. What is true after you run `git fetch origin`?",
+      "options": [
+        "Your local `main` and the files in your working directory are updated with the new commits",
+        "The new commits are merged into your local `main`, but the files are still old",
+        "The new commits are downloaded and `origin/main` is updated, but your local `main` and files are unchanged",
+        "Nothing is downloaded; `fetch` only reports that the remote has new commits"
+      ],
+      "explanation": "`git fetch` downloads the remote's objects and moves the remote-tracking branch `origin/main` forward. Your local branch and working tree do not change until you `git merge origin/main` or `git rebase`; `git pull` does both steps at once. The trap in option A: confusing fetch with pull. The trap in option D: treating fetch as a mere 'check', when it really downloads the commits."
+    },
+    "syscmd-w12-q3": {
+      "question": "You have 6 disks of 2 TB each. Compare putting them in RAID 6 and in RAID 10: usable capacity and the number of arbitrary disk failures **guaranteed** to be survivable.",
+      "options": [
+        "RAID 6: 10 TB, any 1; RAID 10: 6 TB, any 3",
+        "RAID 6: 8 TB, any 2; RAID 10: 12 TB, any 1",
+        "RAID 6: 6 TB, any 3; RAID 10: 6 TB, any 3",
+        "RAID 6: 8 TB, any 2; RAID 10: 6 TB, only 1 guaranteed"
+      ],
+      "explanation": "RAID 6 keeps two disks' worth of double parity: (6 − 2) × 2 = 8 TB, and any 2 disks can fail. RAID 10 stripes across three mirrored pairs: (6 / 2) × 2 = 6 TB. If the failed disks are in different pairs up to 3 can be survived, but losing both disks of one pair loses the data, so only 1 is guaranteed. The trap in option A: treating RAID 10's best case as a guarantee. Option B gives RAID 10 the capacity of RAID 0."
+    },
+    "syscmd-w12-q4": {
+      "question": "These commands run in a new repo (every commit succeeds). What does the last command print?",
+      "options": [
+        "4",
+        "5",
+        "3",
+        "6"
+      ],
+      "explanation": "With `m1` on `main` the branches have diverged (main: c1 → m1, feat: c1 → f1 → f2), so a fast-forward is impossible and git creates a merge commit with two parents. `git log` shows the history of both parents: c1, m1, f1, f2 and the merge = 5. The trap in option A: not counting the merge commit (or assuming a fast-forward). Option C counts only main's own line (c1, m1, merge)."
+    },
+    "syscmd-w12-q5": {
+      "question": "Pushing to a GitHub repo over HTTPS from a new laptop, git asks for a username and password, and the account password fails to authenticate. What is the correct and safe approach?",
+      "options": [
+        "Create a token, put it in the repo's `.env` file and commit it so the whole team can use it",
+        "Create a token and set the remote URL to `https://user:TOKEN@github.com/org/repo.git`",
+        "Create a personal access token with only the needed repo and permissions and an expiry, use it in place of the password and let the credential manager save it",
+        "Make the repo public so that pushing needs no authentication"
+      ],
+      "explanation": "GitHub does not accept the account password for HTTPS git operations; it needs a token (or an SSH key). Least privilege (only the needed repo/permissions) and an expiry limit the damage of a leak, and a credential manager (such as Git Credential Manager or the OS keychain) keeps it in a secure store. The trap in option B: it works, but the token sits in plain text in `.git/config` and shell history. Option A puts the token into the repo's history. Option D is wrong: pushing needs auth even on a public repo."
+    },
+    "syscmd-w12-q6": {
+      "question": "The base version of file `f` has 5 lines: `a b c d e`. On branch `feat`, line 1 became `F1` and line 3 became `X`; on `main`, line 3 became `Y` and line 5 became `M5`. `git merge feat` on `main` reports a conflict. What does `f` contain at that moment?",
+      "options": [
+        "The whole file in one conflict block: HEAD side `a b Y d M5`, feat side `F1 b X d e`",
+        "`F1`, `b`, then a conflict block (HEAD side `Y`, feat side `X`), then `d`, `M5`",
+        "`a`, `b`, then a conflict block (HEAD side `Y`, feat side `X`), then `d`, `e`",
+        "`F1`, `b`, then a conflict block (HEAD side `X`, feat side `Y`), then `d`, `M5`"
+      ],
+      "explanation": "Git performs a line-level three-way merge. Line 1 was changed only by feat and line 5 only by main, and they are away from line 3, so both apply automatically: `F1` and `M5`. Only line 3 changed differently on both sides, and only it becomes a conflict block. Under `<<<<<<< HEAD` is the current branch's (main's) `Y`, and after `=======` comes feat's `X`. The trap in option C: thinking a conflict holds back the other changes too. The trap in option D: taking HEAD to be the branch being merged in. Option A assumes the conflict covers the whole file."
     }
   }
 }

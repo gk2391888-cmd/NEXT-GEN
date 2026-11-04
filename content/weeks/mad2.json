@@ -412,7 +412,7 @@
       "mistakes": [
         "Script mein `ref` ko bina `.value` ke use karna (`count++` ya `if (count > 5)`). Ye ref object ke saath kaam karta hai, uski value ke saath nahi. Template mein `.value` nahi chahiye, script mein chahiye.",
         "`v-for` mein `:key=\"index\"` dena jab list mein delete/re-order hota hai. Rows ki input state galat item ke saath chipak jaati hai; database id jaisi stable key do.",
-        "Child mein prop ko seedha badalna (`props.title = \"x\"`). Vue warning deta hai aur value nahi badalti; event emit karo ya prop se local `ref` banao agar sirf shuruaati value chahiye."
+        "Child mein prop ko seedha badalna (`props.title = \"x\"`). development build mein Vue warning deta hai aur value nahi badalti; event emit karo ya prop se local `ref` banao agar sirf shuruaati value chahiye."
       ],
       "revision": [
         "State badlo, Vue DOM badlega; DOM update agle tick par hota hai (`nextTick`).",
@@ -465,16 +465,16 @@
         },
         {
           "id": "mad2-w4-q4",
-          "question": "Vue 3 child component mein ye code hai. Parent `<TitleEditor title=\"Draft\" />` render karta hai. `rename()` chalne par kya hoga?",
+          "question": "Vue 3 child component mein ye code hai. Parent `<TitleEditor title=\"Draft\" />` render karta hai. Development build mein `rename()` chalne par kya hoga?",
           "code": "<script setup>\nconst props = defineProps([\"title\"]);\nfunction rename() {\n    props.title = \"Final\";\n}\n</script>",
           "options": [
             "Parent ki state bhi \"Final\" ho jaati hai, kyunki props two-way bound hote hain",
             "Child mein title \"Final\" ho jaata hai par parent mein \"Draft\" rehta hai, bina kisi warning ke",
-            "Props readonly hain: Vue (development mode mein) warning deta hai aur value nahi badalti; sahi tareeka event emit karke parent se badalwana hai",
+            "Props readonly hain: Vue warning deta hai aur value nahi badalti; sahi tareeka event emit karke parent se badalwana hai",
             "Ye compile error hai, app build hi nahi hogi"
           ],
           "answer": 2,
-          "explanation": "Vue 3 mein `props` object readonly hai (one-way data flow). Use likhne ki koshish par development build \"props are readonly\" jaisi warning deta hai aur assignment ignore hota hai. Agar child ko title badalwana hai to `emit(\"update:title\", \"Final\")` jaisa event bheje aur parent apni state badle. Option A ka trap hai props ko `v-model` jaisa two-way samajhna, aur option B ka trap hai sochna ki prop ek local copy hai jise child chupchaap badal sakta hai.",
+          "explanation": "Vue 3 mein `props` object readonly hai (one-way data flow). Development build setup ko props ka readonly version deta hai, isliye likhne ki koshish par warning aati hai aur assignment apply nahi hota (production build ye check hata deta hai, isliye galti wahan chupchaap bug ban sakti hai). Agar child ko title badalwana hai to `emit(\"update:title\", \"Final\")` jaisa event bheje aur parent apni state badle. Option A ka trap hai props ko `v-model` jaisa two-way samajhna, aur option B ka trap hai sochna ki prop ek local copy hai jise child chupchaap badal sakta hai.",
           "difficulty": "medium"
         },
         {
@@ -503,6 +503,985 @@
           ],
           "answer": 2,
           "explanation": "`count.value++` ke baad state turant 1 hai, par Vue DOM update ko agle tick tak buffer karta hai. Isliye `before` padhte waqt `<p>` mein abhi bhi purana text \"0\" hai. `await nextTick()` tab resolve hota hai jab Vue pending DOM update laga chuka hota hai, isliye `after` \"1\" hai. Option A ka trap hai sochna ki ref badalte hi DOM synchronously badal jaata hai; option B ka trap hai sochna ki click handler ke andar DOM kabhi update nahi hota.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "title": "Vue Meets the API: Lifecycle, Async Data and Forms",
+      "summary": "Is week aap Vue 3 component lifecycle hooks, API se data laate waqt loading/error/data states, stale responses ki race condition, timers ki cleanup, aur `v-model` ke saath forms aur validation seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Lifecycle hooks**: har component banta hai, DOM mein lagta (mount), update hota aur hatt-ta (unmount) hai. Composition API mein hooks: `onBeforeMount`, `onMounted`, `onBeforeUpdate`, `onUpdated`, `onBeforeUnmount`, `onUnmounted` (Options API mein inke naam `beforeMount`, `mounted` ... `unmounted`, aur `created` bhi). `<script setup>` ka code khud \"setup\" phase hai, jo mount se pehle chalta hai, isliye wahan template refs abhi `null` hote hain.",
+        "**Mount order**: parent ka setup pehle chalta hai, phir woh apne children render karta hai, aur har child ka setup aur mount hota hai. Parent ka `onMounted` tab chalta hai jab uske saare synchronous children mount ho chuke hon. Yani setup upar se neeche, mounted neeche se upar.",
+        "**Data kab laayein**: jis data ke liye DOM ki zaroorat nahi, uski request setup mein hi shuru kar sakte ho; DOM chahiye (chart, map, element ka size) to `onMounted` mein. Aam pattern: teen refs `data`, `loading`, `error`. Request se pehle `loading = true` aur purana error saaf; `try` mein data; `catch` mein error message; `finally` mein `loading = false`. Template mein `v-if=\"loading\"` / `v-else-if=\"error\"` / `v-else` se teeno halat dikhao.",
+        "**res.ok check**: `fetch` 4xx/5xx par reject nahi karta, isliye `if (!res.ok) throw new Error(...)` ke bina server ka error JSON chupchaap `data` ban jaata hai aur UI galat cheez dikhata hai. Server agar validation errors (jaise 422 ke saath field-wise messages) bhejta hai to unhe form ke fields ke paas dikhao.",
+        "**Race conditions**: search box mein har keystroke par request jaati hai, aur responses kisi bhi order mein laut sakte hain. Purani query ka slow response naye ko overwrite kar de to screen par stale results aate hain. Fix: nayi request se pehle purani ko `AbortController` se cancel karo, ya har request ko ek id do aur sirf latest id ka response lagao. Saath mein debounce (jaise 300 ms) se requests kam karo.",
+        "**Cleanup**: jo cheez component ne shuru ki (`setInterval`, `window.addEventListener`, WebSocket, pending request), use `onUnmounted` (ya `onBeforeUnmount`) mein band karo. Vue sirf apne banaye reactive effects aur template listeners khud saaf karta hai; browser timers ke baare mein use pata nahi. Cleanup na karne par har mount ek naya timer chhod jaata hai: duplicate requests aur memory leak.",
+        "**v-model**: form input aur state ke beech two-way binding. Text input par ye `:value` + `@input` ka shortcut hai. Checkbox boolean deta hai (ya array se bind karo to checked values ki list), `<select>` selected option ki value. Modifiers: `.trim` (spaces hatao), `.number` (number mein badlo), `.lazy` (har keystroke ki jagah `change` par update).",
+        "**Forms aur validation**: `<form @submit.prevent=\"save\">` page reload rokta hai. Client-side validation (required, email format, length) sirf user experience ke liye hai: turant feedback. Asli validation server par hi honi chahiye, kyunki koi bhi seedha API ko request bhej sakta hai. Submit ke dauran button disable karo (`:disabled=\"saving\"`) taaki double submit na ho."
+      ],
+      "example": {
+        "problem": "Ek fictional admin panel ka `UserList` component `/api/users` se users laata hai. Teen halat sambhaalni hain: load ho raha hai, error aaya (retry button ke saath), aur list. Server ka 500 bhi error ki tarah dikhna chahiye. Flow trace karo jab pehli request 500 de aur retry 200 de.",
+        "steps": [
+          "Setup mein `users`, `loading`, `error` refs bante hain aur `onMounted(load)` register hota hai (yahan DOM zaroori nahi tha, par pattern ek jaisa rakha hai).",
+          "Pehla `load()`: `loading = true`, `error = null`; template \"Loading...\" dikhata hai.",
+          "Response 500 aata hai: `fetch` fulfil hota hai par `res.ok` false hai, isliye hum `throw new Error(\"HTTP 500\")` karte hain. `catch` mein `error = \"HTTP 500\"`, `finally` mein `loading = false`.",
+          "Template ki `v-else-if=\"error\"` branch error aur \"Retry\" button dikhati hai.",
+          "User Retry dabata hai: `load()` dobara chalta hai, error saaf hota hai, response 200 aata hai aur `users` mein list aati hai.",
+          "Answer: **loading → error (HTTP 500) → loading → list**; `res.ok` check ke bina pehle step mein error JSON hi list ban jaata."
+        ],
+        "code": "<script setup>\nimport { ref, onMounted } from \"vue\";\nconst users = ref([]);\nconst loading = ref(false);\nconst error = ref(null);\n\nasync function load() {\n    loading.value = true;\n    error.value = null;\n    try {\n        const res = await fetch(\"/api/users\");\n        if (!res.ok) throw new Error(\"HTTP \" + res.status);\n        users.value = await res.json();\n    } catch (e) {\n        error.value = e.message;\n    } finally {\n        loading.value = false;\n    }\n}\nonMounted(load);\n</script>\n\n<template>\n    <p v-if=\"loading\">Loading...</p>\n    <p v-else-if=\"error\">{{ error }} <button @click=\"load\">Retry</button></p>\n    <ul v-else>\n        <li v-for=\"u in users\" :key=\"u.id\">{{ u.name }}</li>\n    </ul>\n</template>"
+      },
+      "mistakes": [
+        "Setup ki top level par template ref use karna (`canvas.value.getContext(...)`). Us waqt DOM bana hi nahi, ref `null` hai; DOM wala kaam `onMounted` mein karo.",
+        "`onMounted` mein `setInterval` ya `addEventListener` karke `onUnmounted` mein band na karna. Component har baar mount hone par ek aur timer jod deta hai.",
+        "Sirf client-side validation par bharosa karna. Browser ka code user badal sakta hai; server ko har field dobara check karni hi hai."
+      ],
+      "revision": [
+        "Setup upar se neeche, `onMounted` neeche se upar (child pehle).",
+        "DOM chahiye to `onMounted`; setup mein template ref `null`.",
+        "loading / error / data; `finally` mein `loading = false`; `res.ok` check zaroori.",
+        "Stale response: AbortController ya latest-request id; debounce se kam requests.",
+        "Jo shuru kiya woh `onUnmounted` mein band karo.",
+        "`v-model` modifiers: `.trim`, `.number`, `.lazy`; `@submit.prevent`."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w5-q1",
+          "question": "Vue 3 component ek chart library use karta hai jise `<canvas ref=\"canvas\">` ka DOM element chahiye. Chart Composition API ke kis hook mein banana chahiye?",
+          "options": [
+            "`onBeforeMount`",
+            "`onMounted`",
+            "`<script setup>` ki top level par, seedha",
+            "`onUnmounted`"
+          ],
+          "answer": 1,
+          "explanation": "`onMounted` tab chalta hai jab component ka DOM ban kar page mein lag chuka hota hai, isliye tab tak `canvas.value` asli element ban chuka hota hai. Option A ka trap hai naam se lagna ki \"before mount\" mein DOM tayyar hai; us waqt render hua hi nahi. Option C mein setup mount se pehle chalta hai, to template ref abhi `null` hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w5-q2",
+          "question": "Vue 3 template mein `<form @submit.prevent=\"save\">` likha hai. `.prevent` modifier kya karta hai?",
+          "options": [
+            "Submit event par `preventDefault()` call karta hai, isliye browser page reload ya navigate nahi karta aur sirf `save` chalta hai",
+            "`save` ko ek se zyada baar chalne se rokta hai (double submit protection)",
+            "Event ko parent elements tak bubble hone se rokta hai",
+            "Browser ki built-in form validation band kar deta hai"
+          ],
+          "answer": 0,
+          "explanation": "`.prevent` handler ke saath `event.preventDefault()` jod deta hai. Form submit ka default kaam page ko action URL par bhejna (reload) hai; SPA mein hum ye nahi chahte, data `fetch` se jaata hai. Option C `.stop` ka kaam hai (`stopPropagation`), aur option B ka trap hai sochna ki koi modifier double submit rokta hai; uske liye submit ke dauran button disable karna padta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w5-q3",
+          "question": "Ye `load` function ek Vue 3 component mein hai (`loading`, `error`, `items` refs hain). Server `/api/items` ke liye status 500 aur body `{\"error\": \"db down\"}` bhejta hai. `load()` khatam hone ke baad teeno refs ki value kya hogi?",
+          "code": "async function load() {\n    loading.value = true;\n    error.value = null;\n    try {\n        const res = await fetch(\"/api/items\");\n        items.value = await res.json();\n    } catch (e) {\n        error.value = e.message;\n    } finally {\n        loading.value = false;\n    }\n}",
+          "options": [
+            "`items` purana hi, `error` = \"db down\", `loading` = false",
+            "`items` purana hi, `error` = \"HTTP 500\", `loading` = false",
+            "`items` = `{ error: \"db down\" }`, `error` = null, `loading` = false",
+            "`items` = `{ error: \"db down\" }`, `error` = null, `loading` = true"
+          ],
+          "answer": 2,
+          "explanation": "500 par `fetch` reject nahi karta, aur `res.json()` error body ko bhi khushi se parse kar deta hai. Isliye koi exception nahi aata: `items` mein error object chala jaata hai, `catch` kabhi nahi chalta (`error` null rehta hai), aur `finally` `loading` ko false kar deta hai. Options A aur B ka trap hai sochna ki HTTP error apne aap `catch` tak pahunchega; iske liye `if (!res.ok) throw ...` chahiye. Option D ka trap hai `finally` ko bhool jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w5-q4",
+          "question": "Vue 3 search page mein har query change par `results.value = await search(q)` chalta hai. User \"vu\" type karta hai aur 50 ms baad \"vue\". \"vu\" ka response 900 ms mein aata hai aur \"vue\" ka 200 ms mein. Dono responses aane ke baad screen par kya dikhega, aur sahi fix kya hai?",
+          "options": [
+            "\"vue\" ke results, kyunki woh query baad mein type hui thi; koi fix nahi chahiye",
+            "Dono queries ke results mil kar, kyunki dono assignments ek hi array mein jodte hain",
+            "Error, kyunki ek ref par ek saath do pending requests allowed nahi",
+            "\"vu\" ke (stale) results, kyunki uska slow response baad mein aaya aur overwrite kar diya; fix: purani request abort karo ya sirf latest query ka response lagao"
+          ],
+          "answer": 3,
+          "explanation": "Timeline: \"vue\" ka response ~250 ms par aata hai aur results set karta hai; \"vu\" ka response 900 ms par aata hai aur use overwrite kar deta hai. Jo response sabse aakhir mein aaye wahi jeet-ta hai, chahe query purani ho. Fix: `AbortController` se pichhli request cancel karo, ya har request ki id rakho aur response tabhi lagao jab woh latest id ho. Option A ka trap hai sochna ki responses usi order mein aate hain jisme requests gayi thi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w5-q5",
+          "question": "Vue 3 mein `Parent.vue` apne template mein `<Child />` render karta hai. Dono ke `<script setup>` mein ye lines hain. App load hone par console mein order kya hoga?",
+          "code": "// Parent.vue (script setup)\nconsole.log(\"P setup\");\nonMounted(() => console.log(\"P mounted\"));\n\n// Child.vue (script setup)\nconsole.log(\"C setup\");\nonMounted(() => console.log(\"C mounted\"));",
+          "options": [
+            "P setup → P mounted → C setup → C mounted",
+            "P setup → C setup → P mounted → C mounted",
+            "C setup → C mounted → P setup → P mounted",
+            "P setup → C setup → C mounted → P mounted"
+          ],
+          "answer": 3,
+          "explanation": "Parent ka setup pehle chalta hai (child ka pata render ke dauran chalta hai). Parent render karte waqt child banta hai, to child ka setup aur phir child ka mount hota hai. Parent tabhi \"mounted\" maana jaata hai jab uske saare synchronous children mount ho chuke hon, isliye `P mounted` aakhir mein. Option B ka trap hai sochna ki parent ka mount child se pehle poora hota hai; option A ka trap hai sochna ki child parent ke mount ke baad hi banta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w5-q6",
+          "question": "Ek Vue 3 component `onMounted(() => { setInterval(poll, 5000); })` karta hai aur `onUnmounted` mein kuch nahi. User page par aata-jaata rehta hai: component kul 4 baar mount aur 3 baar unmount hua, aur abhi screen par hai. Ab kitne intervals chal rahe hain?",
+          "options": [
+            "1, kyunki Vue unmount par component ke saare timers apne aap band kar deta hai",
+            "4, kyunki har mount ne ek naya interval shuru kiya aur kisi ko band nahi kiya gaya",
+            "0, kyunki unmount hone par interval ka callback garbage collect ho jaata hai",
+            "1, kyunki naya `setInterval` purane interval ko replace kar deta hai"
+          ],
+          "answer": 1,
+          "explanation": "`setInterval` browser ka timer hai; Vue use track nahi karta, aur interval ka callback jab tak timer zinda hai tab tak reachable hai, isliye garbage collect nahi hota. Har mount ne ek naya interval joda: 4 intervals, yani `poll` har 5 s mein 4 baar. Fix: `const id = setInterval(...)` aur `onUnmounted(() => clearInterval(id))`. Option A ka trap hai sochna ki Vue saari cleanup khud karta hai (woh sirf apne effects aur template listeners saaf karta hai); option D ka trap hai `setInterval` ko ek global setting samajhna.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "Advanced Vue: Communication, Slots, Watchers and Routing",
+      "summary": "Is week aap Vue 3 mein component `v-model`, provide/inject, named aur scoped slots, computed vs watch ka sahi chunaav, aur Vue Router se SPA routing (params, history mode, navigation guards, lazy routes) seekhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Component v-model**: `<SearchBox v-model=\"query\" />` Vue 3 mein `:modelValue=\"query\"` aur `@update:modelValue=\"v => query = v\"` ka shortcut hai. Child `modelValue` prop leta hai aur badlaav ke liye `emit(\"update:modelValue\", nayiValue)` karta hai. Ek component par kai v-model ho sakte hain: `v-model:title` matlab prop `title` aur event `update:title`. One-way data flow toot-ta nahi; parent hi state badalta hai.",
+        "**provide / inject**: jab data bahut gehre child tak pahunchana ho (theme, logged-in user, form context), har beech wale component se prop pass karna (prop drilling) bojh banta hai. Ancestor `provide(\"theme\", themeRef)` karta hai aur koi bhi descendant `inject(\"theme\")` se le leta hai. Ref provide karoge to reactivity bani rehti hai. App-wide aur badalne wali shared state ke liye store (agla week) behtar hai.",
+        "**Slots**: parent child ke andar apna template bhej sakta hai. Default slot: child mein `<slot />` jahan parent ka content aata hai. Named slots: `<slot name=\"header\" />` aur parent mein `<template #header>`. Scoped slots: child slot ko data deta hai (`<slot :row=\"row\" />`) aur parent use le kar render karta hai (`<template #default=\"{ row }\">`). Isse ek generic table/list component bana sakte ho jiska layout child ka aur cell ka rendering parent ka ho.",
+        "**computed**: derived state ke liye (filtered list, total, full name). Getter pure hona chahiye: na API call, na doosri state badalna. Result cache hota hai aur sirf tab dobara banta hai jab uski reactive dependencies badlein; template mein 5 baar use karo to bhi ek hi baar calculate hota hai, jabki method har call par chalta hai.",
+        "**watch aur watchEffect**: side effects ke liye (state badle to API call karo, localStorage mein save karo, URL update karo). `watch(source, callback)` default lazy hai: pehli baar nahi chalta, sirf badlaav par; shuru mein bhi chalana ho to `{ immediate: true }`. Nested object ke andar ke badlaav ke liye `{ deep: true }` (ya getter se specific field watch karo). `watchEffect(fn)` turant chalta hai aur jo reactive cheezein padhta hai unhe khud track karta hai. Rule: value nikaalni hai to computed, kuch karna hai to watch.",
+        "**Vue Router**: SPA mein URL badalne par server se naya page nahi aata; router URL ko component se match karke `<RouterView />` mein dikhata hai. `<RouterLink to=\"/orders\">` bina reload ke navigate karta hai, code se `router.push(...)`. Dynamic segment `/users/:id` ki value `route.params.id` mein string ke roop mein milti hai, aur `?page=2` `route.query.page` mein. Nested routes `children` se, aur lazy routes `component: () => import(\"./views/Admin.vue\")` se, jisse woh code tabhi download hota hai jab route khule.",
+        "**History modes**: `createWebHistory()` saaf URLs deta hai (`/orders/42`) par refresh ya direct link par browser server se `/orders/42` maangta hai; server ko har unknown path par `index.html` lautana (fallback) configure karna padta hai, warna 404. `createWebHashHistory()` URLs mein `#` lagata hai (`/#/orders/42`); hash server tak jaata hi nahi, isliye server config nahi chahiye, par URLs kam saaf hain aur SEO kamzor.",
+        "**Navigation guards**: `router.beforeEach((to, from) => ...)` har navigation se pehle chalta hai; `false` return karo to navigation ruk jaata hai, route object return karo to redirect. `meta: { requiresAuth: true }` route par lagao; `to.meta` parent se child tak saare matched routes ke meta ko merge karta hai, isliye parent par laga meta children ko bhi cover karta hai. Ek hi route par component reuse hota hai (`/users/1` → `/users/2`), isliye `onMounted` dobara nahi chalta; param ko `watch` karo. Guards sirf UX hain, asli access control API par hota hai."
+      ],
+      "example": {
+        "problem": "Ek fictional HR app ke liye generic `DataTable` component chahiye jo layout (header, rows, empty state) khud sambhaale, par har row ki \"status\" cell kaise dikhe ye parent tay kare. Scoped slot se banao aur trace karo ki 2 rows (ek \"active\", ek \"left\") kaise render hongi.",
+        "steps": [
+          "`DataTable` `rows` prop leta hai aur har row ke liye `<slot name=\"status\" :row=\"row\">` render karta hai; fallback content `{{ row.status }}` hai.",
+          "Parent `<DataTable :rows=\"employees\">` ke andar `<template #status=\"{ row }\">` deta hai, yani child se `row` le kar apna markup banata hai.",
+          "Row 1 (status \"active\"): parent ka template `<span class=\"badge green\">` mein \"active\" dikhata hai.",
+          "Row 2 (status \"left\"): `:class` expression red badge chunta hai.",
+          "Agar `rows` khaali ho to child ka `v-if` \"No data\" dikhata hai; parent ko ye logic baar-baar nahi likhna padta.",
+          "Answer: data **child se slot props** ke through parent tak aata hai, aur rendering ka faisla **parent** karta hai; layout ek jagah, customisation doosri jagah."
+        ],
+        "code": "<!-- DataTable.vue -->\n<script setup>\ndefineProps({ rows: Array });\n</script>\n<template>\n    <p v-if=\"!rows.length\">No data</p>\n    <table v-else>\n        <tr v-for=\"row in rows\" :key=\"row.id\">\n            <td>{{ row.name }}</td>\n            <td><slot name=\"status\" :row=\"row\">{{ row.status }}</slot></td>\n        </tr>\n    </table>\n</template>\n\n<!-- Parent usage -->\n<DataTable :rows=\"employees\">\n    <template #status=\"{ row }\">\n        <span :class=\"row.status === 'active' ? 'badge green' : 'badge red'\">{{ row.status }}</span>\n    </template>\n</DataTable>"
+      },
+      "mistakes": [
+        "Computed getter ke andar API call ya doosri state badalna. Computed kab aur kitni baar chalega ye Vue tay karta hai; side effects `watch` mein daalo.",
+        "History mode deploy karke server fallback bhool jaana: app ke andar links chalte hain par refresh ya shared link 404 deta hai. Server par sab unknown paths ko `index.html` par bhejo (API routes chhod kar).",
+        "`/users/:id` page par sirf `onMounted` mein data load karna. Ek user se doosre par jaane par component reuse hota hai aur purana data dikhta rehta hai; `watch(() => route.params.id, load, { immediate: true })` likho."
+      ],
+      "revision": [
+        "Component v-model = `modelValue` prop + `update:modelValue` event.",
+        "Gehri prop drilling ke liye provide/inject; shared app state ke liye store.",
+        "Scoped slot: child data deta hai, parent render karta hai.",
+        "Computed cached aur pure; watch side effects ke liye aur default lazy (`immediate` se turant).",
+        "Web history ko server fallback chahiye; hash history ko nahi.",
+        "`to.meta` parent routes ka meta merge karta hai; guards UX hain, security API par."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w6-q1",
+          "question": "Vue 3 template mein `{{ total }}` teen jagah aur `{{ totalFn() }}` teen jagah likha hai. `total` ek computed hai aur `totalFn` ek method, dono same calculation karte hain. Ek render mein (koi dependency nahi badli) computed ka getter aur method kitni-kitni baar chalenge?",
+          "options": [
+            "Computed 1 baar, method 3 baar",
+            "Dono 3 baar",
+            "Dono sirf 1 baar",
+            "Computed 3 baar, method 1 baar"
+          ],
+          "answer": 0,
+          "explanation": "Computed ka result cache hota hai: pehli baar padhne par getter chalta hai, baaki do jagah wahi cached value milti hai jab tak dependencies na badlein. Method normal function hai, har `{{ totalFn() }}` par dobara chalta hai: 3 baar. Option B ka trap hai computed ko bas method ka doosra syntax samajhna, aur option C ka trap hai sochna ki Vue methods ko bhi cache karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w6-q2",
+          "question": "Vue 3 mein parent `<SearchBox v-model=\"query\" />` likhta hai. `SearchBox` ke andar input badalne par parent ki `query` update karne ke liye child ko kaunsa event emit karna chahiye?",
+          "options": [
+            "`input`",
+            "`update:modelValue`",
+            "`change`",
+            "`update:value`"
+          ],
+          "answer": 1,
+          "explanation": "Vue 3 mein component par `v-model` ka matlab hai prop `modelValue` aur event `update:modelValue`. Child `emit(\"update:modelValue\", nayiValue)` karta hai aur parent ka listener `query` ko set karta hai. Option A Vue 2 ka purana convention tha (`value` prop + `input` event), isliye migration mein ye sabse aam galti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w6-q3",
+          "question": "Ek Vue 3 SPA `createWebHistory()` ke saath ek static file server par deploy hai. App ke andar link se `/orders/42` kholna theek chalta hai, par usi page par browser refresh karne se server 404 deta hai. Sabse sahi wajah aur fix kya hai?",
+          "options": [
+            "Route `/orders/:id` galat likha hai; ise `/orders/*` karo",
+            "Browser ka cache kharab hai; users ko hard refresh karne ko kaho",
+            "Refresh par browser server se `/orders/42` file maangta hai jo exist nahi karti; server par fallback lagao jo unknown paths par `index.html` lautaye (ya hash history use karo)",
+            "Vue Router refresh par kaam nahi karta; har page ke liye alag HTML file banani padti hai"
+          ],
+          "answer": 2,
+          "explanation": "App ke andar navigation JavaScript (History API) karta hai, server tak request jaati hi nahi. Refresh ya direct link par browser poora URL server se maangta hai, aur static server ke paas `/orders/42` naam ki koi file nahi. Fallback ke saath server `index.html` deta hai, app load hoti hai aur router URL padh kar sahi page dikhata hai. Hash mode mein `#` ke baad wala hissa server tak jaata hi nahi. Option A ka trap hai ise client-side route ki galti samajhna, jabki route andar se kaam kar raha hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w6-q4",
+          "question": "Vue 3 component load hota hai jab `query` \"vue\" hai, aur baad mein user ek baar query badal kar \"pinia\" karta hai. `fetchResults` kitni baar call hoga: (i) neeche ke code mein, aur (ii) agar `watch` ko teesra argument `{ immediate: true }` diya jaaye?",
+          "code": "const query = ref(\"vue\");\nwatch(query, (q) => fetchResults(q));",
+          "options": [
+            "(i) 1, (ii) 2",
+            "(i) 2, (ii) 2",
+            "(i) 0, (ii) 1",
+            "(i) 1, (ii) 1"
+          ],
+          "answer": 0,
+          "explanation": "`watch` default lazy hai: shuruaati value \"vue\" par callback nahi chalta, sirf badlaav (\"pinia\") par: 1 call. `{ immediate: true }` ke saath callback watcher bante hi ek baar \"vue\" ke saath chalta hai, phir badlaav par dobara: 2 calls. Option B ka trap hai sochna ki `watch` shuru mein bhi chalta hai (ye `watchEffect` ka behaviour hai), aur option C ka trap hai sochna ki value badalne par bhi bina `immediate` ke kuch nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w6-q5",
+          "question": "Vue Router 4 mein route `{ path: \"/users/:id\", component: UserProfile }` hai. `UserProfile` sirf `onMounted(() => load(route.params.id))` mein data laata hai. User `/users/1` par hai aur `<RouterLink to=\"/users/2\">` click karta hai. URL badal jaata hai par screen par user 1 ka data hi rehta hai. Kyun?",
+          "options": [
+            "`route.params.id` number hai aur `load` string maangta hai",
+            "RouterLink sirf alag routes ke beech kaam karta hai, same route par nahi",
+            "Browser ne `/users/2` ka response cache kar liya",
+            "Dono URLs ek hi route se match karte hain, isliye router wahi component instance reuse karta hai aur `onMounted` dobara nahi chalta; `route.params.id` ko watch karna chahiye"
+          ],
+          "answer": 3,
+          "explanation": "Jab sirf params badalte hain, Vue Router component ko destroy karke dobara nahi banata (ye efficient hai). Isliye mount hooks dobara nahi chalte, aur data sirf pehli baar load hua tha. Fix: `watch(() => route.params.id, load, { immediate: true })`, ya `onBeforeRouteUpdate` guard. Option A ka trap ulta hai: params hamesha string hote hain. Option B ka trap hai sochna ki navigation hua hi nahi, jabki URL aur `route.params` dono badal chuke hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w6-q6",
+          "question": "Vue Router 4 ka ye config hai. Ek logged-out user (`auth.isLoggedIn` false) seedha `/admin/users?page=2` kholta hai. Kya hoga?",
+          "code": "const routes = [\n    { path: \"/login\", component: Login },\n    {\n        path: \"/admin\",\n        component: AdminLayout,\n        meta: { requiresAuth: true },\n        children: [\n            { path: \"users\", component: AdminUsers }\n        ]\n    }\n];\n\nrouter.beforeEach((to) => {\n    if (to.meta.requiresAuth && !auth.isLoggedIn) {\n        return { path: \"/login\", query: { next: to.fullPath } };\n    }\n});",
+          "options": [
+            "`AdminUsers` khul jaata hai, kyunki child route par `meta` nahi likha",
+            "`/login` par redirect hota hai aur `route.query.next` \"/admin/users?page=2\" hota hai",
+            "Infinite redirect loop, kyunki guard `/login` par bhi chalta hai",
+            "`/login` par redirect hota hai aur `route.query.next` \"/admin/users\" hota hai"
+          ],
+          "answer": 1,
+          "explanation": "`/admin/users` do routes match karta hai: parent `/admin` aur child `users`. `to.meta` saare matched routes ka meta parent se child tak merge karta hai, isliye `requiresAuth` true hai aur guard redirect karta hai. `to.fullPath` mein path ke saath query bhi hoti hai, isliye `next` = \"/admin/users?page=2\", login ke baad user wahin laut sakta hai. Loop nahi banta kyunki `/login` route par `requiresAuth` nahi. Option A ka trap hai sochna ki meta sirf usi route par lagta hai jahan likha hai; option D ka trap hai `fullPath` ko `path` samajhna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Centralised State with Pinia and Vuex",
+      "summary": "Is week aap samjhoge ki store kab chahiye, Pinia mein state/getters/actions kaise likhte hain, `storeToRefs` kyun zaroori hai, Vuex ke mutations aur actions ka farq, aur optimistic updates jaise patterns ko bina bug ke kaise likhein.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Store kyun**: jab ek hi data (logged-in user, cart, notifications) door-door ke components ko chahiye, to props neeche aur events upar ki lambi chain (prop drilling) mushkil ho jaati hai. Store ek centralised, reactive jagah hai jahan shared state rehti hai; jo bhi component use padhta hai woh badlaav par apne aap update hota hai. Ye \"single source of truth\" debugging aasaan karta hai.",
+        "**Pinia store**: `defineStore(\"cart\", { state, getters, actions })`. `state` ek function hai jo shuruaati object lautata hai. Getters computed jaise hain: derived values, cached, `state` ya `this` se doosre getters padh sakte hain. Actions normal (sync ya `async`) methods hain jo `this` se state badalte hain; Pinia mein state seedha action mein badal sakte ho, alag mutation ki zaroorat nahi. Setup syntax bhi hai: `ref` = state, `computed` = getter, function = action.",
+        "**Ek app, ek instance**: component mein `const cart = useCartStore()` likhte ho. Pehli call par store banta hai aur app ke andar har agli call wahi instance lautati hai, isliye Header aur ProductPage ek hi cart dekhte hain. (Server-side rendering mein har request ki alag Pinia instance hoti hai, taaki users ka data mix na ho.)",
+        "**storeToRefs**: store ek `reactive` object hai, isliye `const { count } = cart` primitive value ki plain copy deta hai jo kabhi update nahi hoti. State aur getters destructure karne ke liye `const { count } = storeToRefs(cart)` likho (refs milte hain). Actions seedha destructure ho sakte hain (`const { add } = cart`) kyunki Pinia unhe store se bind karta hai.",
+        "**Vuex ke concepts**: Vuex (Vue ka purana official store, Vuex 4 Vue 3 ke saath chalta hai) mein state sirf mutations se badalti hai, jo synchronous hone chahiye (`commit(\"setOrders\", data)`), taaki devtools har badlaav ka exact record rakh sake. Async kaam (API call) actions mein hota hai (`dispatch(\"fetchOrders\")`), jo kaam khatam hone par mutation commit karte hain. Getters derived state ke liye, aur modules bade store ko hisson mein baantne ke liye. Naye Vue 3 projects ke liye Pinia recommended hai.",
+        "**Store mein kya rakhein**: jo state kai jagah padhi/badli jaati hai, navigation ke baad bhi bachni chahiye, ya server se aaya shared data hai (current user aur roles, cart, cached lists). Jo sirf ek component ki hai (modal open/closed, input ka draft, hover state) woh local `ref` mein hi rahe. Sab kuch store mein daalne se store global variables ka dher ban jaata hai.",
+        "**Async actions aur optimistic updates**: action ke andar hi `loading`/`error` state rakho taaki har component ko ye logic na likhna pade. Optimistic update mein UI pehle badlo aur API fail ho to rollback karo. Rollback ke liye purani state ki asli copy chahiye (`[...this.items]`); sirf reference (`const backup = this.items`) rakha aur phir array ko in-place (`splice`) badla, to backup bhi badal jaata hai.",
+        "**Persistence aur reset**: page reload par store memory se mit jaata hai. Zaroori ho to `cart.$subscribe((mutation, state) => localStorage.setItem(...))` se save karo aur start par wapas bharo, par sensitive cheezein (tokens) wahan sochkar hi rakho. Logout par user-specific stores reset karo (options store mein `$reset()`), warna agle user ko pichhle ka data dikh sakta hai."
+      ],
+      "example": {
+        "problem": "Ek fictional e-commerce app ka Pinia cart store neeche hai. User pehle product A (₹250) ko 2 baar add karta hai (ek baar qty 1, phir qty 1), phir product B (₹99) qty 3, aur phir coupon \"FLAT50\" lagata hai (₹500 ya zyada par ₹50 off). `subtotal` aur `total` kya honge?",
+        "steps": [
+          "Pehla `add(A)`: cart mein A nahi hai, isliye `{ ...A, qty: 1 }` push hota hai.",
+          "Doosra `add(A)`: line mil gayi, `line.qty` 2 ho jaata hai; nayi line nahi banti. Line ek reactive object hai, isliye in-place badlaav bhi track hota hai.",
+          "`add(B, 3)`: nayi line `{ ...B, qty: 3 }`.",
+          "Getter `subtotal` = 250 × 2 + 99 × 3 = 500 + 297 = 797.",
+          "`applyCoupon(\"FLAT50\")` state badalta hai; `total` getter dobara calculate hota hai kyunki uski dependency `coupon` badli.",
+          "Subtotal 797 ≥ 500, isliye off = 50: total = 797 − 50 = 747.",
+          "Answer: **subtotal ₹797, total ₹747**. Header aur checkout page dono ek hi store padhte hain, isliye dono jagah same numbers dikhte hain."
+        ],
+        "code": "// stores/cart.js\nimport { defineStore } from \"pinia\";\n\nexport const useCartStore = defineStore(\"cart\", {\n    state: () => ({ items: [], coupon: null }),\n    getters: {\n        subtotal: (state) => state.items.reduce((s, i) => s + i.price * i.qty, 0),\n        total() {\n            const off = this.coupon === \"FLAT50\" && this.subtotal >= 500 ? 50 : 0;\n            return this.subtotal - off;\n        }\n    },\n    actions: {\n        add(product, qty = 1) {\n            const line = this.items.find(i => i.id === product.id);\n            if (line) line.qty += qty;\n            else this.items.push({ ...product, qty });\n        },\n        applyCoupon(code) {\n            this.coupon = code;\n        }\n    }\n});"
+      },
+      "mistakes": [
+        "`const { items, total } = useCartStore()` likhna. Ye values ek baar copy ho jaati hain aur UI update nahi hota; `storeToRefs` use karo (actions seedha nikaal sakte ho).",
+        "Vuex mutation ke andar `await` ya API call karna. Mutations synchronous rakho; async kaam action mein karo aur result ke saath mutation commit karo.",
+        "Har chhoti UI state store mein daalna. Store tab use karo jab state sach mein shared ho; baaki local `ref` mein rakho."
+      ],
+      "revision": [
+        "Store = shared reactive state, single source of truth.",
+        "Pinia: `state` (function), `getters` (cached derived), `actions` (sync/async, state seedha badlo).",
+        "`useXStore()` app mein hamesha same instance deta hai.",
+        "State/getters destructure karne ke liye `storeToRefs`; actions seedha.",
+        "Vuex: mutations sync (`commit`), actions async (`dispatch`).",
+        "Rollback ke liye copy rakho, reference nahi."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w7-q1",
+          "question": "Vuex 4 app mein API se orders laa kar store ki state mein rakhne ka sahi tareeka kya hai?",
+          "options": [
+            "Component ek action `dispatch` kare; action API call kare aur result ke saath ek mutation `commit` kare jo state badle",
+            "Mutation ke andar `await fetch(...)` karo, kyunki state badalne ka kaam mutations ka hai",
+            "Getter ke andar API call karo taaki result cache ho jaaye",
+            "Component seedha `store.state.orders = data` assign kare"
+          ],
+          "answer": 0,
+          "explanation": "Vuex mein state sirf mutations badalte hain aur mutations synchronous hone chahiye, taaki devtools har badlaav ko sahi order mein record kar sake. Async kaam actions ke liye hai: action API ka intezaar karta hai, phir `commit(\"setOrders\", data)`. Option B ka trap hai \"state mutation mein badalti hai\" ko aadha yaad rakhna aur async kaam bhi wahin daal dena; option D store ke rules bypass karta hai (strict mode mein error deta hai).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w7-q2",
+          "question": "Pinia cart store mein cart ka total (sab items ka price × qty) dikhana hai, jo items badalte hi sahi rehna chahiye. Sabse sahi jagah kaunsi hai?",
+          "options": [
+            "State mein ek `total` field rakho aur har add/remove action mein use haath se update karo",
+            "Ek getter: `total: (state) => state.items.reduce((s, i) => s + i.price * i.qty, 0)`",
+            "Ek action jo total return kare, aur template har render par use call kare",
+            "Har component mein apna local `ref` jo total rakhe"
+          ],
+          "answer": 1,
+          "explanation": "Total derived state hai: items se nikalta hai. Getter computed ki tarah kaam karta hai, items badalne par apne aap dobara banta hai aur beech mein cached rehta hai. Option A ka trap hai derived value ko alag state mein copy karna; koi ek action update bhool gaya to total aur items alag-alag sach bolenge. Option C mein caching nahi aur actions ka kaam state badalna hai, value derive karna nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w7-q3",
+          "question": "Pinia store mein `count` state shuru mein 0 hai aur action `addItem()` use 1 badhata hai. Component mein ye code hai aur phir `addItem()` call hota hai. Template mein `{{ count }}` aur `{{ c2 }}` kya dikhaenge?",
+          "code": "const store = useCartStore();\nconst { count } = store;\nconst { count: c2 } = storeToRefs(store);\nconst { addItem } = store;\naddItem();",
+          "options": [
+            "1 aur 1",
+            "0 aur 0",
+            "0 aur 1",
+            "1 aur 0"
+          ],
+          "answer": 2,
+          "explanation": "Store ek reactive object hai; seedha destructure karne par `count` us waqt ki value 0 ki plain copy hai, isliye woh 0 hi rehta hai. `storeToRefs` har state property ka ref deta hai jo store se juda rehta hai, isliye `c2` 1 dikhata hai. `addItem` ko destructure karna safe hai kyunki Pinia actions ko store se bind karta hai, isliye state sach mein badhti hai. Option A ka trap hai seedhe destructuring ko reactive samajhna; option B ka trap hai sochna ki destructure kiya hua action store ko badal hi nahi sakta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w7-q4",
+          "question": "Ek Vue 3 app mein inme se kaunsi state centralised store (Pinia) mein rakhna sabse sahi hai?",
+          "options": [
+            "Ek modal ka open/closed flag jo sirf usi component mein use hota hai",
+            "Search input ka draft text jo sirf us form ke andar hai",
+            "Ek `v-for` loop ka current index",
+            "Logged-in user ki profile aur roles, jinhe navbar, route guards aur settings page teeno padhte hain"
+          ],
+          "answer": 3,
+          "explanation": "Store un cheezon ke liye hai jo kai, aapas mein door components ko chahiye aur jinka ek hi sach hona chahiye. User profile aur roles navbar, guards aur settings sab padhte hain, aur login/logout par sab jagah ek saath badalna chahiye. Options A aur B local UI state hain: unhe store mein daalna har component ki private state ko global bana deta hai. Option C to state hi nahi, sirf template ka loop variable hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w7-q5",
+          "question": "Vue 3 app mein `Header.vue` aur `ProductPage.vue` dono `const cart = useCartStore()` likhte hain. ProductPage `cart.addItem(p)` call karta hai. Header ke `{{ cart.count }}` ka kya hoga?",
+          "options": [
+            "Turant update ho jaata hai, kyunki app ke andar `useCartStore()` hamesha ek hi store instance deta hai",
+            "Update nahi hota, kyunki har component ko store ki apni alag copy milti hai",
+            "Tabhi update hota hai jab Header page reload kare",
+            "Tabhi update hota hai jab ProductPage ek event emit kare jise Header sune"
+          ],
+          "answer": 0,
+          "explanation": "Pinia store pehli `useCartStore()` call par banta hai aur us app ke andar har agli call wahi instance lautati hai. State reactive hai, isliye ProductPage ka badlaav Header ka template apne aap re-render karwata hai. Option B ka trap hai `useCartStore()` ko constructor (har baar naya object) samajhna; option D wahi events-ki-chain wala tareeka hai jise hatane ke liye store banaya gaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w7-q6",
+          "question": "Is Pinia action mein optimistic delete hai. Item 2 delete karte waqt `api.remove` fail ho jaata hai (catch chalta hai). Action khatam hone ke baad `items` mein kaunsi ids hongi?",
+          "code": "export const useCartStore = defineStore(\"cart\", {\n    state: () => ({ items: [{ id: 1 }, { id: 2 }, { id: 3 }] }),\n    actions: {\n        async removeItem(id) {\n            const backup = this.items;\n            const idx = this.items.findIndex(i => i.id === id);\n            this.items.splice(idx, 1);\n            try {\n                await api.remove(id);\n            } catch (e) {\n                this.items = backup;\n            }\n        }\n    }\n});",
+          "options": [
+            "1,2,3",
+            "1,3",
+            "Koi nahi (khaali array)",
+            "Sirf 2"
+          ],
+          "answer": 1,
+          "explanation": "`const backup = this.items` copy nahi banata; `backup` aur `this.items` ek hi array ko point karte hain. `splice` usi array se item 2 nikaal deta hai, isliye backup bhi `[1, 3]` ban jaata hai. Catch mein `this.items = backup` wahi badla hua array wapas rakh deta hai, rollback chupchaap fail. Fix: `const backup = [...this.items]` (shallow copy kaafi hai kyunki item objects khud nahi badle). Option A ka trap hai maan lena ki variable mein rakhna snapshot leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Authentication, Authorisation and API Design",
+      "summary": "Is week aap sessions vs tokens, JWT ki banawat aur uske risks, role-based access control, browser ki same-origin policy aur CORS, aur ek saaf, versioned REST API design karna seekhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Authentication vs authorisation**: authentication batata hai \"aap kaun ho\" (login), authorisation batata hai \"aap kya kar sakte ho\" (permissions). Status codes isi farq ko dikhate hain: credentials missing ya invalid hon to **401 Unauthorized** (naam ke bawajood ye authentication failure hai); user pehchaana gaya par permission nahi to **403 Forbidden**.",
+        "**Session-based auth**: login par server ek session banata hai (memory, DB ya Redis mein) aur browser ko ek random session id cookie mein deta hai. Har request ke saath cookie apne aap jaati hai. Cookie flags: `HttpOnly` (JavaScript nahi padh sakta, XSS se bachav), `Secure` (sirf HTTPS), `SameSite=Lax/Strict` (cross-site requests par cookie rokna, CSRF se bachav). Fayda: logout ya ban par session delete karo, access turant khatam.",
+        "**JWT ki banawat**: JSON Web Token teen base64url hisson ka hota hai: `header.payload.signature`. Header mein algorithm (jaise HS256), payload mein claims (`sub` user id, `role`, `exp` expiry ka Unix time, `iat`). Signature = HMAC-SHA256(header + \".\" + payload, secret) (ya RS256 mein private key se sign). Payload encrypted nahi, sirf encoded hai: token jiske paas hai woh use padh sakta hai. Signature sirf ye guarantee deta hai ki content badla nahi gaya.",
+        "**JWT ke risks**: server stateless verify karta hai, isliye expiry se pehle token ko \"cancel\" karna mushkil hai: logout sirf client se token mitaata hai. Isliye access tokens short-lived rakho (jaise 15 min) aur naya lene ke liye refresh token (lambi expiry, server-side revoke ho sake). `localStorage` mein rakha token koi bhi XSS script padh sakta hai; `HttpOnly` cookie isse bachati hai par tab CSRF ka dhyaan rakhna padta hai. Server hamesha expected algorithm hi accept kare aur `exp` check kare.",
+        "**Role-based access control (RBAC)**: users ko roles milte hain (viewer, editor, admin) aur roles ko permissions. Har protected endpoint server par check kare, jaise Flask mein decorator `@roles_required(\"admin\")`. Frontend mein button chhupana sirf UX hai, security nahi: koi bhi seedha API call kar sakta hai. Role ke saath object-level check bhi zaroori: editor sirf apna document edit kare, kisi aur ka id badal kar nahi (IDOR bug).",
+        "**Same-origin policy aur CORS**: origin = scheme + host + port. Browser ek origin ke page ki JavaScript ko doosre origin ka response padhne nahi deta, jab tak server `Access-Control-Allow-Origin` header se allow na kare. JSON body (`Content-Type: application/json`), `Authorization` header ya PUT/DELETE wali requests se pehle browser ek `OPTIONS` preflight bhejta hai. Cookies ke saath requests (`credentials: \"include\"`) par `*` nahi chalta: exact origin aur `Access-Control-Allow-Credentials: true` chahiye. CORS browser mein users ko bachata hai; server ko nahi, `curl` CORS ko maanta hi nahi.",
+        "**REST API design**: resources ke naam (nouns) URL mein: `GET /api/v1/projects`, `POST /api/v1/projects`, `GET /api/v1/projects/7`, `PATCH`, `DELETE`. Sahi status codes: 200, 201 Created (naya resource), 204 No Content, 400 (galat request), 404, 409 Conflict, 422 (validation fail). Errors ka ek consistent JSON format rakho, jaise `{\"error\": {\"code\": \"...\", \"message\": \"...\"}}`, aur badi lists ke liye pagination.",
+        "**API versioning**: mobile apps aur doosri teams purane clients chalaati rehti hain, isliye breaking change (field hatana ya rename, type badalna, required field jodna) naye version mein jaata hai: `/api/v2/...` (URL) ya header se version. Naya optional field jodna non-breaking hai, same version mein chal sakta hai. Purane version ko deprecation notice aur ek tay samay ke baad hi band karo."
+      ],
+      "example": {
+        "problem": "Node mein ek demo HS256 JWT banao (payload: `sub` \"u42\", `role` \"editor\"), phir dikhao ki (1) bina secret ke payload padha ja sakta hai, aur (2) role ko \"admin\" karke purana signature rakha to verification fail hota hai. (Demo secret sirf example ke liye hai.)",
+        "steps": [
+          "Header `{\"alg\":\"HS256\",\"typ\":\"JWT\"}` aur payload ko JSON se base64url mein encode karo.",
+          "Signature = HMAC-SHA256(header + \".\" + payload) secret ke saath, base64url mein. Token = teeno ko \".\" se joda hua string.",
+          "Padhna: token ko \".\" par todo, beech wale hisse ko base64url decode karke `JSON.parse` karo. Koi secret nahi laga, aur `role` \"editor\" mil gaya.",
+          "Tampering: `role` \"admin\" wala naya payload banao aur purana signature rakho. Server header + naye payload ka HMAC nikaalta hai; ye purane signature se alag hai.",
+          "Isliye comparison false aata hai aur server ko 401 dena chahiye. Attacker ke paas secret nahi, to woh sahi signature bana nahi sakta.",
+          "Answer: output **editor** aur **false**. Payload public hai (secrets mat rakho); signature integrity deta hai, confidentiality nahi."
+        ],
+        "code": "const crypto = require(\"crypto\");\nconst b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString(\"base64url\");\nconst secret = \"demo-secret-only\";\nconst sign = (data) => crypto.createHmac(\"sha256\", secret).update(data).digest(\"base64url\");\n\nconst header = b64url({ alg: \"HS256\", typ: \"JWT\" });\nconst payload = b64url({ sub: \"u42\", role: \"editor\", exp: 1767225600 });\nconst token = header + \".\" + payload + \".\" + sign(header + \".\" + payload);\n\nconst [h, p, s] = token.split(\".\");\nconsole.log(JSON.parse(Buffer.from(p, \"base64url\").toString()).role);\n\nconst forged = b64url({ sub: \"u42\", role: \"admin\", exp: 1767225600 });\nconsole.log(sign(h + \".\" + forged) === s);"
+      },
+      "mistakes": [
+        "JWT payload mein password, OTP ya koi secret rakhna, ye soch kar ki token \"encrypted\" hai. Woh sirf encoded hai; koi bhi decode kar sakta hai.",
+        "Admin button frontend se chhupa kar endpoint ko unprotected chhod dena. Har API route server par role (aur ownership) check kare.",
+        "CORS error ko theek karne ke liye har jagah `Access-Control-Allow-Origin: *` laga dena. Cookies wali requests ke saath ye chalega hi nahi, aur private APIs ke liye sirf apne frontend ke origins allow karo."
+      ],
+      "revision": [
+        "401 = kaun ho pata nahi (login chahiye); 403 = pata hai, par permission nahi.",
+        "Session: server state + `HttpOnly`, `Secure`, `SameSite` cookie; revoke aasaan.",
+        "JWT = header.payload.signature; payload sirf encoded; signature integrity ke liye.",
+        "JWT logout se khatam nahi hota; short expiry + refresh token.",
+        "Origin = scheme + host + port; credentials ke saath `*` nahi chalta.",
+        "Breaking change = naya version (`/api/v2`); optional field jodna non-breaking."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w8-q1",
+          "question": "Ek logged-in user (valid token) jiska role \"viewer\" hai, `DELETE /api/v1/projects/7` call karta hai, jo sirf \"admin\" ke liye allowed hai. Server ko kaunsa status code bhejna chahiye?",
+          "options": [
+            "401 Unauthorized",
+            "403 Forbidden",
+            "400 Bad Request",
+            "500 Internal Server Error"
+          ],
+          "answer": 1,
+          "explanation": "User ki pehchaan ho chuki hai (token valid hai), bas uske role ko ye kaam karne ki permission nahi. Ye authorisation failure hai: 403 Forbidden. Option A ka trap naam mein hai: 401 \"Unauthorized\" asal mein authentication failure ke liye hai, jab token missing ya invalid ho aur dobara login karna pade. Option C galat hai kyunki request ka format theek hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w8-q2",
+          "question": "HS256 se signed (encrypted nahi) JWT ke payload ke baare mein kaunsi baat sahi hai?",
+          "options": [
+            "Payload encrypted hai, isliye secret ke bina koi use padh nahi sakta",
+            "Payload server ke database mein rehta hai; token mein sirf ek random id hoti hai",
+            "Signature payload ko chhupata hai, isliye usme password rakhna safe hai",
+            "Payload sirf base64url-encoded hai; token jiske paas hai woh use padh sakta hai, isliye usme secrets nahi rakhne chahiye"
+          ],
+          "answer": 3,
+          "explanation": "JWT ka beech wala hissa JSON ka base64url encoding hai; koi bhi use decode kar sakta hai, secret ki zaroorat nahi. Signature sirf ye check karne deta hai ki header aur payload badle nahi gaye (integrity), unhe chhupata nahi (confidentiality nahi). Options A aur C ka trap hai encoding ya signing ko encryption samajhna; option B session id ka description hai, JWT ka nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w8-q3",
+          "question": "Page `https://app.example.com/dashboard` par chal rahi JavaScript in URLs par `fetch` karti hai. Inme se kaunsi request cross-origin hai (jiske response ke liye CORS headers chahiye)?",
+          "options": [
+            "`https://app.example.com/api/v2/users`",
+            "`https://app.example.com:443/login`",
+            "`https://api.example.com/users`",
+            "`https://app.example.com/static/app.js?v=3`"
+          ],
+          "answer": 2,
+          "explanation": "Origin = scheme + host + port. `api.example.com` aur `app.example.com` alag hosts hain (same parent domain hone se same origin nahi bante), isliye option C cross-origin hai. Option B ka trap hai explicit port dekh kar ghabrana: HTTPS ka default port 443 hi hai, to origin same hai. Options A aur D mein sirf path ya query alag hai, jo origin ka hissa nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w8-q4",
+          "question": "Attacker apne HS256 JWT ke payload mein `role` ko \"editor\" se \"admin\" kar deta hai, naya payload base64url mein encode karta hai, aur header aur purana signature waisa hi rakhta hai. Server har request par signature verify karta hai. Kya hoga?",
+          "options": [
+            "Server token reject karega (401), kyunki signature header aur payload ka HMAC hai; naye payload ka HMAC purane signature se match nahi karega, aur secret ke bina naya signature nahi ban sakta",
+            "Request admin ki tarah chalegi, kyunki payload valid JSON hai aur `exp` abhi future mein hai",
+            "Server reject karega kyunki badla hua payload base64url decode hi nahi hoga",
+            "Request chalegi, par sirf tab tak jab tak user ka purana session cookie bhi bheja jaaye"
+          ],
+          "answer": 0,
+          "explanation": "Server `HMAC-SHA256(header + \".\" + payload, secret)` dobara nikaal kar token ke signature se compare karta hai. Payload ka ek bhi character badla to HMAC poori tarah badal jaata hai, aur secret ke bina attacker sahi signature nahi bana sakta, isliye verification fail aur 401. Option B ka trap hai sochna ki server sirf payload padhta hai aur use bharosemand maanta hai. Option C galat hai kyunki naya payload bhi sahi tarah encoded hai; fail signature check hota hai, decoding nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w8-q5",
+          "question": "Ek app 60 minute expiry wala JWT access token `localStorage` mein rakhti hai, aur server token ko sirf signature aur `exp` se verify karta hai (koi denylist nahi). Login ke 10 minute baad user logout karta hai aur frontend token delete kar deta hai. Par ek XSS script ne token pehle hi chura liya tha. Attacker us token se API kab tak use kar sakta hai?",
+          "options": [
+            "Logout hote hi access band ho jaata hai",
+            "Lagbhag 50 minute aur, jab tak token expire na ho",
+            "Hamesha ke liye, kyunki JWT kabhi expire nahi hota",
+            "Sirf jab tak user ka browser tab khula hai"
+          ],
+          "answer": 1,
+          "explanation": "Stateless verification mein server ke paas \"ye token logout ho chuka\" yaad rakhne ki koi jagah nahi; signature aur `exp` dono valid hain, isliye token 60 − 10 = 50 minute aur chalega. Logout ne sirf user ke browser se copy mitaayi. Bachav: short-lived access tokens + revoke ho sakne wale refresh tokens, server-side denylist ya token version, aur token ko `HttpOnly` cookie mein rakhna taaki XSS use padh na sake. Option A ka trap hai client-side logout ko server-side revocation samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w8-q6",
+          "question": "`https://app.example.com` ka frontend `fetch(\"https://api.example.com/me\", { credentials: \"include\" })` karta hai (simple GET). API ke response mein CORS ke liye sirf `Access-Control-Allow-Origin: *` header hai. Kya hoga?",
+          "options": [
+            "Sab theek chalega, kyunki `*` har origin ko allow karta hai",
+            "Server request reject karke 403 bhejega",
+            "Request server tak pahunch sakti hai, par browser response JavaScript ko nahi dega (CORS error); credentials ke saath server ko exact origin aur `Access-Control-Allow-Credentials: true` bhejna padta hai",
+            "Browser cookies hata kar request apne aap dobara bhej dega aur response de dega"
+          ],
+          "answer": 2,
+          "explanation": "Credentialed requests (cookies ke saath) ke liye CORS rules sakht hain: wildcard `*` allowed nahi, server ko `Access-Control-Allow-Origin: https://app.example.com` aur `Access-Control-Allow-Credentials: true` dono bhejne padte hain. Simple GET par preflight nahi hota, isliye request server tak jaa kar process ho sakti hai, par browser response ko page ki JavaScript se chhupa leta hai. Option A ka trap hai `*` ko \"sab kuch allowed\" samajhna; option B ka trap hai sochna ki CORS server lagata hai, jabki use browser enforce karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Background Jobs: Task Queues, Scheduling and Retries",
+      "summary": "Is week aap seekhoge ki lambe kaam web request se bahar kyun nikaalte hain, Celery-style system ke hisse (producer, broker, worker, result backend), job status ka 202 + polling pattern, scheduled jobs, aur retries ke saath idempotent tasks kaise likhte hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Background jobs kyun**: web request jaldi (milliseconds se kuch second) mein khatam honi chahiye. Report banana, hazaaron emails bhejna, video/image process karna ya slow third-party API call request ke andar karoge to gateway timeout, ghiri hui server threads aur kharab UX milta hai. Aise kaam task queue mein daal kar background workers se karwao, aur user ko turant jawab do.",
+        "**Hisse**: producer (Flask app) ek task message banata hai (task ka naam + arguments) aur broker (Redis ya RabbitMQ) ko deta hai. Broker message ko queue mein tab tak rakhta hai jab tak koi worker use na uthaye. Worker processes task chalate hain, aur result backend (Redis ya DB) har task ka state aur result store karta hai. Workers ki ginti badha kar throughput badhta hai, web servers ko chhuye bina.",
+        "**Celery ka pattern**: `@celery.task` se function task banta hai. `build_report.delay(user_id, month)` turant ek `AsyncResult` deta hai jiski `id` job id hai; `apply_async(args, countdown=60)` se der se chalana. States: PENDING, STARTED (agar tracking on ho), SUCCESS, FAILURE, RETRY. Dhyaan do: anjaan job id bhi PENDING dikhata hai, isliye job ids apne DB mein bhi record karo.",
+        "**202 + polling**: endpoint job enqueue karke `202 Accepted` aur `{\"job_id\": ...}` lautata hai. Client `GET /api/jobs/<id>` har kuch second poll karta hai (ya server WebSocket/email/webhook se batata hai). Kaam khatam hone par response mein download link ya result. UI mein \"processing\" state dikhao, aur polling ko backoff ke saath karo.",
+        "**Task arguments**: messages serialize hokar broker se jaate hain (default JSON). Isliye arguments chhote aur JSON-serializable rakho: ORM object ki jagah uski id bhejo. Worker task chalte waqt DB se taaza data padhta hai, kyunki enqueue aur execute ke beech data badal sakta hai. Bade files broker mein mat daalo; storage mein rakh kar path/key bhejo.",
+        "**At-least-once aur idempotency**: zyaadatar queues at-least-once delivery deti hain: worker ne kaam kar diya par acknowledge karne se pehle crash hua, to message dobara deliver hoga. Isliye task idempotent hona chahiye: do baar chalne par bhi result ek baar jaisa. Tareeke: idempotency key ya `order_id` par UNIQUE constraint, \"increment\" ki jagah \"set status = PAID\", aur kaam karne se pehle check karna ki ho chuka ya nahi.",
+        "**Retries aur backoff**: sirf transient errors (network timeout, 503, deadlock) par retry karo; galat input (400) par retry bekaar hai. Exponential backoff: delay = base × 2ⁿ (n = ab tak ke retries), jaise 3, 6, 12, 24, 48 s; saath mein random jitter taaki hazaaron failed tasks ek hi pal mein dobara server par na tooten. `max_retries` ke baad task FAILURE mein jaaye aur alert/dead-letter queue mein dikhe. Har task par time limit lagao taaki atka hua task worker ko hamesha na ghere.",
+        "**Scheduled jobs**: periodic kaam (raat 2 baje backup, roz 18:00 par reminders, mahine ki pehli tareekh ko report) ke liye Celery beat jaisa scheduler time aane par task enqueue karta hai; kaam phir bhi workers karte hain. Crontab jaise schedule: `crontab(minute=0, hour=18)` roz 18:00. Scheduler ka sirf ek instance chalao, warna har job duplicate hogi, aur timezone explicitly set karo."
+      ],
+      "example": {
+        "problem": "Ek fictional analytics app mein user monthly sales report (CSV) maangta hai jisme ~2 minute lagte hain. Flask + Celery se flow banao: request turant jawab de, job status poll ho sake, aur DB connection error par backoff ke saath max 5 retries hon. Retry delays aur success path trace karo.",
+        "steps": [
+          "User \"Generate\" dabata hai: `POST /api/reports` `build_report.delay(user_id, month)` karta hai aur turant `202` ke saath `{\"job_id\": \"...\"}` lautata hai. Arguments sirf id aur month string hain.",
+          "Broker (Redis db 0) message rakhta hai; ek free worker use uthata hai aur state STARTED/PENDING se aage badhta hai.",
+          "Frontend har 3 s `GET /api/jobs/<id>` poll karta hai aur \"Processing...\" dikhata hai.",
+          "Maan lo DB `ConnectionError` deta hai: `self.retry` countdown = 3 × 2^retries deta hai. Pehle retry se pehle 3 s, phir 6, 12, 24, 48 s (max 5 retries).",
+          "Doosre attempt par query chal jaati hai: CSV likhi jaati hai aur task `{\"path\": ..., \"rows\": ...}` return karta hai; result backend (Redis db 1) mein state SUCCESS.",
+          "Agla poll SUCCESS dekhta hai aur UI download link dikhata hai.",
+          "Answer: request **202 + job id** par khatam, kaam worker mein; retry delays **3, 6, 12, 24, 48 s** (sab fail hon to total 93 s wait ke baad FAILURE)."
+        ],
+        "code": "# tasks.py\nfrom celery import Celery\n\ncelery = Celery(\"app\", broker=\"redis://localhost:6379/0\",\n                backend=\"redis://localhost:6379/1\")\n\n@celery.task(bind=True)\ndef build_report(self, user_id, month):\n    try:\n        rows = fetch_orders(user_id, month)          # slow DB query\n        path = write_csv(rows, f\"report-{user_id}-{month}.csv\")\n        return {\"path\": path, \"rows\": len(rows)}\n    except ConnectionError as exc:\n        raise self.retry(exc=exc, countdown=3 * 2 ** self.request.retries, max_retries=5)\n\n# app.py (Flask)\n@app.post(\"/api/reports\")\ndef start_report():\n    job = build_report.delay(current_user.id, request.json[\"month\"])\n    return {\"job_id\": job.id}, 202\n\n@app.get(\"/api/jobs/<job_id>\")\ndef job_status(job_id):\n    res = build_report.AsyncResult(job_id)\n    return {\"state\": res.state, \"result\": res.result if res.successful() else None}"
+      },
+      "mistakes": [
+        "Task ko ORM object ya bada data dena (`send_invoice.delay(order)`). JSON serialize nahi hoga, aur ho bhi jaaye to worker ko purana snapshot milega; id bhejo.",
+        "Non-idempotent task par retries lagana, jaise `balance = balance - 500`. Duplicate delivery par paisa do baar katega; unique key ya status check se task idempotent banao.",
+        "Celery beat ke do instances chala dena (jaise har web server par ek). Har scheduled job do baar enqueue hogi; scheduler sirf ek jagah chalao."
+      ],
+      "revision": [
+        "Lamba kaam = queue mein daalo, `202` + job id lautao, status poll karo.",
+        "Producer → broker (queue) → worker; result backend mein state/result.",
+        "Arguments chhote aur JSON-serializable: ids bhejo, objects nahi.",
+        "At-least-once delivery ⇒ tasks idempotent hone chahiye.",
+        "Backoff: base × 2ⁿ + jitter; sirf transient errors par retry; `max_retries`.",
+        "Scheduler (beat) sirf enqueue karta hai, ek hi instance; crontab mein timezone dhyaan se."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w9-q1",
+          "question": "Ek Flask endpoint ek report banwata hai jisme lagbhag 2 minute lagte hain. Production ke liye sabse sahi design kya hai?",
+          "options": [
+            "Request ke andar hi report banao aur 200 ke saath file bhejo",
+            "Job task queue mein daalo aur turant 202 Accepted ke saath job id lautao; client status endpoint poll kare",
+            "Client aur load balancer ka timeout 5 minute kar do",
+            "Request ke andar ek naya thread shuru karo aur bina job id ke 200 lauta do"
+          ],
+          "answer": 1,
+          "explanation": "202 Accepted ka matlab hai \"request mili, kaam baad mein poora hoga\". Job id se client status aur result pooch sakta hai, aur kaam workers karte hain jinhe alag se scale kiya ja sakta hai. Option C ka trap hai timeout badha kar problem chhupana: har lambi request ek server worker ko 2 minute gheri rakhegi. Option D mein na status pata chalega, na retry hoga, aur server restart par kaam kho jaayega.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w9-q2",
+          "question": "Celery-style background job system mein broker (jaise Redis ya RabbitMQ) ka kaam kya hai?",
+          "options": [
+            "Har task ka state aur return value store karna",
+            "Task ka code execute karna",
+            "Aane wali web requests ko servers mein baantna",
+            "Producer se aaye task messages ko queue mein rakhna jab tak koi worker unhe utha na le"
+          ],
+          "answer": 3,
+          "explanation": "Broker ek message queue hai: web app task message daalta hai aur workers wahan se uthate hain, isliye dono ek doosre ka intezaar kiye bina alag chalte hain. Option A result backend ka kaam hai (wahi Redis dono ka kaam kar sakta hai, isliye ye confusion aam hai). Option B workers karte hain, aur option C load balancer ka kaam hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w9-q3",
+          "question": "Ek task fail hone par exponential backoff se retry hota hai: pehle retry se pehle 3 s ka wait, aur har agle retry par wait double. Max 5 retries hain. Agar har attempt fail ho, to pehle failure se aakhri attempt shuru hone tak kul kitna wait hua?",
+          "options": [
+            "48 s",
+            "93 s",
+            "96 s",
+            "45 s"
+          ],
+          "answer": 1,
+          "explanation": "5 retries ke waits: 3, 6, 12, 24, 48 s. Total = 3 + 6 + 12 + 24 + 48 = 93 s (yaani 3 × (2⁵ − 1)). Option A ka trap hai sirf aakhri wait lena; option C ka trap hai 3 × 2⁵ = 96 nikaalna (ek extra doubling); option D sirf 4 retries jodta hai (3 + 6 + 12 + 24 = 45).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w9-q4",
+          "question": "Flask view mein `send_invoice.delay(order)` likha hai, jahan `order` ek SQLAlchemy model object hai aur Celery default JSON serializer use karta hai. Kya problem hai aur fix kya hai?",
+          "options": [
+            "Model object JSON mein serialize nahi hoga (error), aur agar kisi aur serializer se chala bhi jaaye to worker ko enqueue ke waqt ka purana snapshot milega; `order.id` bhejo aur worker DB se taaza row padhe",
+            "Koi problem nahi; Celery object ko worker tak waise hi bhej deta hai jaise function call mein",
+            "Worker object ko apne aap DB se refresh kar leta hai, isliye sirf thoda slow hoga",
+            "Ye sirf Redis broker ke saath fail hota hai; RabbitMQ par chal jaayega"
+          ],
+          "answer": 0,
+          "explanation": "Task message broker ke through doosre process (aksar doosri machine) tak jaata hai, isliye arguments serialize hone chahiye; JSON ko SQLAlchemy object samajh nahi aata. Pickle jaise serializer se bhejoge to bhi worker ko ek copy milegi jo DB session se judi nahi aur purani ho sakti hai. Id bhejna message ko chhota rakhta hai aur worker hamesha current data padhta hai. Option B ka trap hai `.delay()` ko normal function call samajhna; option D ka trap hai serialization ko broker ki problem samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w9-q5",
+          "question": "Task `charge_wallet(order_id)` user ke wallet se ₹500 kaat-ta hai. Queue at-least-once delivery deti hai, isliye kabhi-kabhi wahi task do baar chal jaata hai. Kaunsa implementation idempotent hai (do baar chalne par bhi sirf ₹500 kate)?",
+          "options": [
+            "`UPDATE wallets SET balance = balance - 500 WHERE user_id = ?`",
+            "Pehle balance padho, phir `balance - 500` wapas likh do",
+            "Ek transaction mein `payments` table mein `order_id` (UNIQUE) ke saath row insert karo, aur balance tabhi ghatao jab insert naya ho; duplicate par kuch mat karo",
+            "Task ke shuru mein 1 second `sleep` karo taaki duplicate message expire ho jaaye"
+          ],
+          "answer": 2,
+          "explanation": "UNIQUE `order_id` wala insert duplicate run ko pehchaan leta hai: doosri baar insert fail hota hai aur balance dobara nahi ghatta. Same transaction mein hone se \"insert hua par paisa nahi kata\" jaisi aadhi halat bhi nahi banti. Option A har run par 500 ghatata hai: do runs = ₹1000. Option B mein race condition bhi hai aur duplicate bhi dobara kaatega. Option D ka trap hai sochna ki duplicates timing se rukte hain; redelivery kabhi bhi ho sakti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w9-q6",
+          "question": "Celery beat schedule mein ek task `crontab(minute=\"*/15\", hour=\"9-17\")` par set hai (ek hi beat instance, sahi timezone). Ek din mein ye task kitni baar enqueue hoga?",
+          "options": [
+            "33",
+            "32",
+            "36",
+            "9"
+          ],
+          "answer": 2,
+          "explanation": "`hour=\"9-17\"` mein 9 se 17 tak dono shamil hain: 9 ghante (9, 10, ..., 17). Har ghante mein `*/15` = minute 0, 15, 30, 45, yani 4 runs. Total 9 × 4 = 36, pehla 09:00 aur aakhri 17:45. Option B ka trap hai 17 − 9 = 8 ghante ginna (8 × 4 = 32); option A ka trap hai sochna ki schedule 17:00 par ruk jaata hai (32 + 1 = 33).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Messaging Between Services: Queues, Pub/Sub and Webhooks",
+      "summary": "Is week aap services ko message queues aur pub/sub se jodna, delivery guarantees (at-most-once, at-least-once, effectively-once), duplicates aur out-of-order messages sambhaalna, aur webhooks ko sahi tarah receive aur HMAC se verify karna seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Synchronous coupling ki problem**: service A seedha B ko HTTP call kare to B down ya slow hone par A bhi fail ya slow hota hai, aur har naye consumer ke liye A ka code badalna padta hai. Messaging mein A ek message chhod kar aage badh jaata hai; consumers apni speed se padhte hain. Isse services time aur availability dono mein decoupled ho jaati hain, aur traffic spikes queue mein absorb ho jaate hain.",
+        "**Message queue (point-to-point)**: har message sirf ek consumer process karta hai. Ek queue par kai identical workers lagao (competing consumers) to kaam baant jaata hai aur throughput badhta hai. Consumer kaam ke baad message acknowledge (ack) karta hai; ack na aaye (crash, timeout) to message dobara deliver hota hai. Baar-baar fail hone wala message (poison message) kuch attempts ke baad dead-letter queue (DLQ) mein jaata hai taaki baaki queue na ruke.",
+        "**Publish/subscribe**: producer ek topic (jaise `order.created`) par event publish karta hai, aur har subscriber ko apni alag copy milti hai: email service, analytics, inventory sab ek hi event par apna kaam karte hain. Naya subscriber jodne ke liye producer ko badalna nahi padta. Har subscriber group ke andar phir competing consumers ho sakte hain.",
+        "**Delivery guarantees**: at-most-once (processing se pehle ack: message kho sakta hai, duplicate nahi), at-least-once (processing ke baad ack: kuch khoyega nahi, par duplicates aa sakte hain), exactly-once (distributed systems mein bahut mehenga/mushkil). Practical tareeka: at-least-once + idempotent consumer = \"effectively once\". Har message ki unique id rakho aur processed ids (DB mein unique constraint ke saath) yaad rakho.",
+        "**Ordering**: order aam taur par sirf ek queue/partition ke andar milta hai, aur kai consumers ya retries ke saath woh bhi toot sakta hai. Isliye events mein version ya sequence number bhejo; consumer purane version wale event ko ignore kare. \"shipped (v4)\" ke baad der se aaya \"packed (v3)\" state ko peeche nahi le jaana chahiye.",
+        "**Webhooks**: ek service (payment provider, Git host) event hone par aapke diye URL par HTTP POST karti hai. Achha handler: signature verify karo → event store/enqueue karo → turant 2xx lautao; bhaari kaam background job mein. Provider non-2xx ya timeout par backoff ke saath retry karta hai, isliye duplicates aur out-of-order events normal hain: event id se dedupe karo. Webhook server-to-server hai; browser tak live update ke liye polling, SSE ya WebSockets.",
+        "**Webhook signing**: sender aur receiver ek shared secret rakhte hain. Sender HMAC-SHA256(secret, timestamp + \".\" + raw body) nikaal kar header mein bhejta hai. Receiver wahi calculation **raw request bytes** par karta hai (parse karke dobara stringify kiya to whitespace ya key order badal kar hash alag ho jaayega) aur constant-time compare (`crypto.timingSafeEqual`, Python mein `hmac.compare_digest`) se milaata hai. Timestamp ko tolerance window (jaise 5 minute) se check karo taaki purana captured request replay na ho sake.",
+        "**Design checklist**: messages chhote aur self-describing rakho (type, id, version, timestamp, payload); schema badlo to backward-compatible tareeke se; DLQ aur queue length par monitoring aur alerts lagao; consumers ko idempotent banao; aur secrets ko rotate karne ka raasta rakho (ek waqt par do valid secrets)."
+      ],
+      "example": {
+        "problem": "Ek fictional payment provider webhook bhejta hai jiska raw body `{\"id\": \"evt_101\", \"type\": \"payment.succeeded\", \"amount\": 49900}` hai (keys ke baad spaces ke saath). Node mein dikhao ki raw body par HMAC verify karne se signature match hota hai, par body ko parse karke `JSON.stringify` se dobara banane par nahi. (Secret sirf demo ke liye hai.)",
+        "steps": [
+          "Sender signed string banata hai: timestamp + \".\" + raw body, aur HMAC-SHA256 ka hex digest header mein bhejta hai.",
+          "Receiver ke paas wahi secret hai. Woh raw body (bytes jaise aaye) par wahi calculation karta hai: digest same aata hai.",
+          "Compare `timingSafeEqual` se: ye har byte compare karne mein barabar time leta hai, isliye attacker timing se signature ka andaza nahi laga sakta.",
+          "Galat tareeka: framework ne body parse kar di, aur code `JSON.stringify(JSON.parse(raw))` par HMAC nikaalta hai. Stringify spaces hata deta hai, string badal gayi, hash bilkul alag.",
+          "Isliye pehli comparison true aur doosri false aati hai.",
+          "Answer: output **true false**. Signature hamesha raw request body par verify karo, aur timestamp ko 5 minute jaisi window mein check karo."
+        ],
+        "code": "const crypto = require(\"crypto\");\nconst secret = \"whsec_demo_only\";\nconst ts = \"1767225600\";\nconst raw = '{\"id\": \"evt_101\", \"type\": \"payment.succeeded\", \"amount\": 49900}';\nconst sign = (body) => crypto.createHmac(\"sha256\", secret).update(ts + \".\" + body).digest(\"hex\");\n\nconst header = sign(raw);                                 // sent by the provider\nconst fromRaw = sign(raw);                                // receiver, raw bytes\nconst fromParsed = sign(JSON.stringify(JSON.parse(raw))); // receiver, re-serialized\nconst safeEqual = (a, b) => crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));\nconsole.log(safeEqual(header, fromRaw), fromParsed === header);"
+      },
+      "mistakes": [
+        "Webhook handler mein pura bhaari kaam karke der se 200 lautana. Provider timeout maan kar retry karega aur duplicates badhenge; store/enqueue karke turant 2xx do.",
+        "At-least-once system mein consumer ko idempotent na banana. Duplicate message par email do baar jaayega ya stock do baar ghatega; event id se dedupe karo.",
+        "Signature ko `==` se compare karna ya parsed JSON par verify karna. Constant-time compare aur raw body use karo, aur timestamp check se replay roko."
+      ],
+      "revision": [
+        "Queue: har message ek consumer; pub/sub: har subscriber ko copy.",
+        "At-least-once + idempotent consumer = effectively once.",
+        "Order sirf queue/partition ke andar; version number se stale events ignore karo.",
+        "Webhook: verify → store/enqueue → turant 2xx; retries ke duplicates dedupe karo.",
+        "HMAC raw body (+ timestamp) par; constant-time compare; timestamp window se replay rokna."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w10-q1",
+          "question": "Topic `order.created` par 3 alag services subscribe hain (email, analytics, inventory). Ek alag work queue par 3 identical worker processes lage hain. Ek event topic par publish hota hai aur ek job queue mein daala jaata hai. Event aur job kitni-kitni baar process honge?",
+          "options": [
+            "Event 3 baar, job 1 baar",
+            "Event 1 baar, job 3 baar",
+            "Event 3 baar, job 3 baar",
+            "Event 1 baar, job 1 baar"
+          ],
+          "answer": 0,
+          "explanation": "Pub/sub mein har subscriber ko event ki apni copy milti hai, isliye teeno services use process karti hain: 3 baar. Work queue par workers competing consumers hain: ek message sirf ek worker ko milta hai, taaki kaam baante, duplicate na ho: 1 baar. Option B ka trap hai dono models ko ulta yaad rakhna; option C ka trap hai sochna ki queue bhi har worker ko copy deti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w10-q2",
+          "question": "Payment provider ka webhook aata hai. Har event par aapko invoice PDF banana aur email bhejna hai, jisme ~30 s lagte hain. Provider 10 s mein jawab na mile to retry karta hai. Handler ko kya karna chahiye?",
+          "options": [
+            "Poora 30 s ka kaam karo, phir 200 lautao",
+            "Pehle 500 lautao taaki provider baad mein dobara bheje jab server free ho",
+            "Webhook ko ignore karo aur har minute provider ki API poll karo",
+            "Signature verify karo, event ko store karke background job enqueue karo, aur turant 2xx lautao"
+          ],
+          "answer": 3,
+          "explanation": "Provider ko sirf ye jaanna hai ki event mil gaya. Verify + store + enqueue milliseconds mein ho jaata hai, aur PDF/email worker baad mein karta hai. Option A ka trap hai sochna ki kaam khatam hone par hi 200 dena \"sahi\" hai: 10 s timeout ke baad provider retry karega aur aapko duplicate events milenge. Option B jaan-boojh kar retries aur delay paida karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w10-q3",
+          "question": "Express webhook receiver mein JSON body parser pehle se laga hai, aur code `const body = JSON.stringify(req.body)` par HMAC-SHA256 nikaal kar header ke signature se compare karta hai. Secret bilkul sahi hai, phir bhi zyaadatar requests par signature mismatch aata hai. Sabse sambhav wajah?",
+          "options": [
+            "SHA-256 ek hi input par har baar alag output deta hai",
+            "Secret ko pehle base64 encode karna zaroori tha",
+            "Sender ne HMAC raw bytes par banaya tha; parse karke dobara stringify karne se whitespace, key order ya number format badal sakta hai, isliye hash alag aata hai. HMAC raw body par nikaalo",
+            "HMAC signature sirf GET requests par kaam karta hai"
+          ],
+          "answer": 2,
+          "explanation": "HMAC exact bytes par chalta hai: ek space ka farq bhi poora digest badal deta hai. Sender ne jo body bheji (jaise `\"id\": \"evt_101\"` spaces ke saath) woh `JSON.stringify` ke baad `\"id\":\"evt_101\"` ban jaati hai, to receiver alag string ka hash nikaal raha hai. Raw body (jaise `express.raw()` ya parser ke `verify` hook se) par verify karo. Option A ka trap hai hashing ko random samajhna; SHA-256 deterministic hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w10-q4",
+          "question": "Ek at-least-once queue ka consumer neeche diya gaya hai. Network issues ki wajah se kuch events dobara deliver hue. Output kya hoga?",
+          "code": "const seen = new Set();\nlet total = 0;\nfunction handle(evt) {\n    if (seen.has(evt.id)) return;\n    seen.add(evt.id);\n    total += evt.amount;\n}\nconst deliveries = [\n    { id: \"e1\", amount: 100 },\n    { id: \"e2\", amount: 50 },\n    { id: \"e1\", amount: 100 },\n    { id: \"e3\", amount: 25 },\n    { id: \"e2\", amount: 50 }\n];\ndeliveries.forEach(handle);\nconsole.log(total, seen.size);",
+          "options": [
+            "350 5",
+            "175 3",
+            "350 3",
+            "175 5"
+          ],
+          "answer": 1,
+          "explanation": "Handler event id se dedupe karta hai: e1 (100) aur e2 (50) pehli baar jude, dobara aaye e1 aur e2 `seen.has` par laut gaye, e3 (25) naya tha. Total = 100 + 50 + 25 = 175, aur set mein 3 unique ids. Option A ka trap hai har delivery ko naya event maanna (bina dedupe ke 350 hota). Option D ka trap hai sochna ki `Set` mein duplicate ids bhi gine jaate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w10-q5",
+          "question": "Ek attacker HTTPS ke bawajood kisi tarah ek valid signed webhook request (body + signature header) capture kar leta hai aur ek ghante baad use hubahu dobara bhejta hai. Signature sirf body par HMAC hai. Is replay attack se bachne ka sahi tareeka kya hai?",
+          "options": [
+            "Kuch nahi kiya ja sakta; signature valid hai to request accept karni hi padegi",
+            "Signed content mein timestamp shamil karo aur receiver use tolerance window (jaise 5 minute) se purana hone par reject kare; saath mein event id se dedupe karo",
+            "HTTPS replay attacks ko apne aap rok deta hai, isliye koi aur kadam nahi chahiye",
+            "Har request ke baad shared secret badal do"
+          ],
+          "answer": 1,
+          "explanation": "Sirf body ka HMAC ye nahi batata ki request kab bani, isliye purani request bhi valid lagti hai. Timestamp signed content ka hissa ho to attacker use badal nahi sakta (badla to signature toot jaayega), aur receiver ek ghante purani request reject kar deta hai. Window ke andar ke replay event-id dedupe se pakde jaate hain. Option C ka trap hai HTTPS (transport encryption) ko replay protection samajhna; option D practical nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w10-q6",
+          "question": "Order service events ko version number ke saath consume karta hai. Retries ki wajah se events is order mein pahunche. Output kya hoga?",
+          "code": "const order = { status: \"created\", version: 1 };\nlet applied = 0;\nfunction apply(evt) {\n    if (evt.version <= order.version) return;   // stale or duplicate\n    order.status = evt.status;\n    order.version = evt.version;\n    applied++;\n}\nconst arrivals = [\n    { status: \"paid\", version: 2 },\n    { status: \"shipped\", version: 4 },\n    { status: \"packed\", version: 3 },\n    { status: \"paid\", version: 2 }\n];\narrivals.forEach(apply);\nconsole.log(order.status, order.version, applied);",
+          "options": [
+            "paid 2 4",
+            "packed 3 3",
+            "shipped 4 2",
+            "shipped 4 3"
+          ],
+          "answer": 2,
+          "explanation": "Shuru mein version 1. \"paid v2\": 2 > 1, apply (applied = 1). \"shipped v4\": 4 > 2, apply (applied = 2). \"packed v3\": 3 ≤ 4, purana event, ignore; isi se state \"shipped\" se peeche \"packed\" par nahi jaati. Doosra \"paid v2\": duplicate, ignore. Final: shipped, version 4, applied 2. Option D ka trap hai der se aaye \"packed\" ko bhi apply hua ginna; option A arrival order mein bina guard ke aakhri event lagane jaisa hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Performance: Measuring, Caching and Efficient Data Access",
+      "summary": "Is week aap latency percentiles aur throughput naapna, browser/CDN/Redis caching ke layers, cache invalidation, N+1 queries pakadna aur theek karna, offset vs keyset pagination, aur frontend par lazy loading seekhoge.",
+      "readMinutes": 19,
+      "concepts": [
+        "**Pehle naapo**: andaze se optimise mat karo. Latency (ek request kitni der leti hai) ko average se nahi, percentiles se dekho: p50 (median) aam user ka anubhav, p95/p99 sabse dheeme users ka (tail latency). Kuch bahut slow requests average ko bigaad dete hain par median ko nahi. Throughput = requests per second jo system sambhaal sake. Browser DevTools (Network, Performance), Lighthouse, server logs/APM aur load testing tools se naapo.",
+        "**Little ka niyam**: L = λ × W, yani system mein ek saath chal rahi requests (concurrency) = throughput × average latency. 200 req/s aur 150 ms latency ka matlab lagbhag 30 requests ek saath in-flight. Isse workers, DB connections aur thread pools ka size andaza lagta hai: latency badhi to utne hi traffic ke liye zyada workers chahiye.",
+        "**Browser caching**: `Cache-Control` header tay karta hai. `max-age=600` = 10 minute tak bina pooche reuse. `no-cache` = store kar sakte ho par har baar server se revalidate karo (ETag + `If-None-Match` → body ke bina `304 Not Modified`). `no-store` = kahin store hi mat karo (bank statement jaise sensitive pages). Build tools JS/CSS filenames mein content hash daalte hain (`app.3f9a1c.js`), isliye unhe saal bhar (`max-age=31536000, immutable`) cache kar sakte ho, jabki `index.html` ko `no-cache` rakho taaki naya deploy turant dikhe.",
+        "**CDN**: duniya bhar ke edge servers par static assets (JS, CSS, images, videos) ki copies, jo user ke paas se serve hoti hain: kam round-trip time aur origin server par kam load. Personalised responses (jinme user ka data hai) ko shared cache mein mat jaane do (`Cache-Control: private`). Naye deploy par hashed filenames ya cache purge se purani files hatti hain.",
+        "**Server-side caching (Redis)**: cache-aside pattern: pehle cache dekho; hit to wahi lautao; miss to DB se padho, cache mein TTL ke saath rakho, phir lautao. Write par DB update karke cache key delete karo (invalidation); bhool gaye to TTL khatam hone tak stale data dikhega. Key mein woh sab shamil karo jis par result depend karta hai (user id, filters, page). Bahut popular key expire ho to hazaaron requests ek saath DB par girti hain (cache stampede); lock ya pehle hi refresh se bachao.",
+        "**N+1 queries**: list ke liye 1 query, phir har item ke related data ke liye ek-ek query: 50 posts = 1 + 50 = 51 queries. ORMs ki lazy loading (jaise SQLAlchemy mein `post.author` loop ke andar) ye chupchaap karti hai. Fix: eager loading: `joinedload` (JOIN se 1 query) ya `selectinload` (2 queries: posts, phir `WHERE author_id IN (...)`). Development mein har request ki query count log karo, aur filter/join wale columns par index lagao.",
+        "**Pagination**: poori table kabhi mat bhejo. OFFSET/LIMIT simple hai, par bade offset par DB ko utni rows padh kar phenkni padti hain, aur beech mein naye rows aaye to items doosre page par repeat ya miss ho jaate hain. Keyset (cursor) pagination aakhri dikhe item ke baad se shuru karta hai: `WHERE created_at < :last ORDER BY created_at DESC LIMIT 20`; index ke saath har page tez aur naye inserts se stable. Ties se bachne ke liye sort key mein unique id bhi jodo.",
+        "**Frontend performance**: route-level code splitting (`component: () => import(\"./views/Reports.vue\")`) se pehla bundle chhota; images par `loading=\"lazy\"`; search input par debounce (jaise 300 ms) se kam API calls; hazaaron rows ke liye virtual scrolling; gzip/brotli compression; aur bundle analyser se bhaari libraries pakdo."
+      ],
+      "example": {
+        "problem": "Ek fictional product API par 1000 req/s aate hain. Redis cache hit par response 2 ms mein aata hai, aur miss par DB se 50 ms mein. Cache hit ratio 90% hai. Average latency aur DB par per second kitni queries jaati hain? (Miss ka cache write time ignore karo.)",
+        "steps": [
+          "Average latency = hit ratio × hit latency + miss ratio × miss latency.",
+          "= 0.9 × 2 + 0.1 × 50 = 1.8 + 5 = 6.8 ms.",
+          "DB sirf misses dekhta hai: 1000 × 0.1 = 100 queries/s. Bina cache ke 1000 queries/s hoti, yani DB load 10 guna kam.",
+          "Dhyaan do: miss latency hi dominate karti hai (5 ms ka hissa 6.8 mein se), isliye hit ratio 90% se 99% karna DB ko aur bhi bachata hai.",
+          "Answer: average **6.8 ms** aur DB par **100 queries/s**."
+        ],
+        "code": "const reqPerSec = 1000, hitRatio = 0.9, hitMs = 2, missMs = 50;\nconst avgMs = hitRatio * hitMs + (1 - hitRatio) * missMs;\nconst dbQps = reqPerSec * (1 - hitRatio);\nconsole.log(avgMs.toFixed(1), Math.round(dbQps));"
+      },
+      "mistakes": [
+        "Average latency dekh kar khush hona. 1% requests 5 s le rahi hon to bhi average theek dikh sakta hai; p95/p99 track karo.",
+        "Cache lagakar invalidation bhool jaana. DB update ke baad cache key delete karo, ya TTL itna chhota rakho ki stale data acceptable ho.",
+        "Loop ke andar related object access karna (`post.author.name`) aur sochna ki ek hi query chal rahi hai. Query count dekho aur eager loading use karo."
+      ],
+      "revision": [
+        "Percentiles (p50, p95, p99) > average; throughput = req/s.",
+        "Little: concurrency = throughput × latency.",
+        "`no-cache` = revalidate; `no-store` = store hi nahi; hashed assets ko lamba cache.",
+        "Cache-aside: miss par DB + TTL; write par key delete.",
+        "N+1 = 1 + N queries; fix `joinedload`/`selectinload`.",
+        "Keyset pagination tez aur inserts se stable; OFFSET mein repeats/misses."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w11-q1",
+          "question": "SQLAlchemy mein `author` relationship default lazy loading par hai, aur 50 posts mein har post ka author alag hai. Is code se database par kitni queries jaayengi?",
+          "code": "posts = Post.query.order_by(Post.id.desc()).limit(50).all()\nfor p in posts:\n    print(p.title, p.author.name)",
+          "options": [
+            "1",
+            "2",
+            "50",
+            "51"
+          ],
+          "answer": 3,
+          "explanation": "Pehli query 50 posts laati hai. Loop mein `p.author` pehli baar access hote hi har post ke liye alag query chalti hai (authors alag hain, isliye koi cache nahi bachata): 50 aur. Total 1 + 50 = 51, yahi N+1 problem hai. Option A `joinedload` ke saath hota (JOIN se ek query), option B `selectinload` ke saath (posts + ek `IN` query). Option C ka trap hai list wali pehli query ginna bhool jaana.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w11-q2",
+          "question": "Online banking ka account statement page bahut sensitive hai; browser ya kisi shared cache ko iski copy bilkul store nahi karni chahiye. Kaunsa header sahi hai?",
+          "options": [
+            "`Cache-Control: no-cache`",
+            "`Cache-Control: max-age=0`",
+            "`Cache-Control: no-store`",
+            "`Cache-Control: public, max-age=31536000`"
+          ],
+          "answer": 2,
+          "explanation": "`no-store` ka matlab hai response ko kisi bhi cache mein save hi mat karo. Option A ka trap naam mein hai: `no-cache` store karne deta hai, bas har reuse se pehle server se revalidate karwata hai, isliye copy disk par reh sakti hai. Option B bhi turant stale maan kar revalidate karwata hai par store rokta nahi. Option D to saal bhar ke liye public caching hai, sensitive data ke liye bilkul ulta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w11-q3",
+          "question": "Ek API endpoint ke 10 response times (ms) hain: 120, 95, 110, 105, 900, 100, 115, 98, 102, 1200. Nearest-rank method use karo (sorted list mein position ⌈p/100 × n⌉). p50, p90 aur mean kya hain?",
+          "options": [
+            "p50 = 105, p90 = 900, mean = 294.5",
+            "p50 = 110, p90 = 1200, mean = 294.5",
+            "p50 = 294.5, p90 = 900, mean = 105",
+            "p50 = 105, p90 = 1200, mean = 110"
+          ],
+          "answer": 0,
+          "explanation": "Sorted: 95, 98, 100, 102, 105, 110, 115, 120, 900, 1200 (n = 10). p50: position ⌈0.5 × 10⌉ = 5, value 105. p90: position ⌈0.9 × 10⌉ = 9, value 900. Mean = 2945 / 10 = 294.5. Do slow requests ne mean ko median se lagbhag 3 guna kar diya, isliye latency percentiles mein dekhi jaati hai. Option B ka trap hai position ek aage ginna (6th aur 10th), aur option C mean aur median ko ulta rakhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w11-q4",
+          "question": "Ek service steady state mein 200 requests/second sambhaalti hai aur average latency 150 ms hai. Little ke niyam se ek samay par average kitni requests system ke andar (in-flight) hoti hain?",
+          "options": [
+            "1333",
+            "30",
+            "3",
+            "300"
+          ],
+          "answer": 1,
+          "explanation": "L = λ × W = 200 req/s × 0.150 s = 30. Units milao: ms ko seconds mein badalna zaroori hai. Option A ka trap hai 200 / 0.150 karna (divide), aur option D ka trap hai 150 ms ko 1.5 s maan lena. Iska matlab: kam se kam ~30 concurrent workers/connections chahiye, warna requests queue mein ruk kar latency aur badhayengi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w11-q5",
+          "question": "Cache-aside pattern mein product price t = 0 s par cache hua (value ₹999, TTL 300 s). t = 120 s par admin DB mein price ₹899 kar deta hai, par cache key delete nahi hoti. t = 200 s aur t = 310 s par price padhne par kya milega?",
+          "options": [
+            "₹899, ₹899",
+            "₹999, ₹999",
+            "₹999, ₹899",
+            "₹899, ₹999"
+          ],
+          "answer": 2,
+          "explanation": "t = 200 par cache entry abhi valid hai (expiry 300 par), isliye cache hit: purana ₹999 (stale). t = 310 par entry expire ho chuki hai, miss hota hai, DB se naya ₹899 aata hai aur dobara cache hota hai. Option A ka trap hai sochna ki DB update apne aap cache tak pahunch jaata hai; invalidation na ho to stale window TTL jitni lambi ho sakti hai. Isliye write par `DEL key` karo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w11-q6",
+          "question": "Feed API posts ko newest-first `ORDER BY created_at DESC LIMIT 20 OFFSET ?` se deti hai. User ne page 1 (OFFSET 0) aur page 2 (OFFSET 20) dekh liye. Ab 5 naye posts ban jaate hain, aur phir user page 3 (OFFSET 40) kholta hai. Page 3 ke kitne posts woh hain jo page 2 par pehle hi dikh chuke the?",
+          "options": [
+            "0",
+            "5",
+            "15",
+            "20"
+          ],
+          "answer": 1,
+          "explanation": "5 naye posts sabse upar judte hain, isliye har purana post 5 position neeche khisak jaata hai. Pehle page 2 par positions 21–40 the; ab OFFSET 40 positions 41–60 deta hai, jinme purane 36–55 hain. Purane 36–40 page 2 par dikh chuke the: 5 repeats (aur dusri taraf koi item miss bhi ho sakta hai jab rows delete hon). Keyset pagination (`WHERE created_at < :last_seen`) aakhri dikhe item se aage chalta hai, isliye 0 repeats. Option A ka trap hai OFFSET ko stable maan lena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Putting It Together: Full-Stack Architecture Review",
+      "summary": "Is week aap poore course ko ek real app ke architecture mein jodoge: Vue SPA, Pinia, REST API, auth, Redis cache, Celery jobs aur webhooks, ek request ka end-to-end flow, config aur security checklist, aur capacity ka andaza, saath mein mixed revision.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Reference architecture**: Vue SPA (Vite se build hokar static files, CDN se serve) ↔ REST API (jaise Flask, reverse proxy jaise nginx ke peeche) ↔ database (SQLite/PostgreSQL). Redis do kaam karta hai: cache aur Celery broker. Celery workers lambe kaam karte hain aur beat scheduled jobs enqueue karta hai. Bahar ki duniya se webhooks aate hain aur emails/notifications jaate hain. Har hissa alag scale aur deploy ho sakta hai.",
+        "**Frontend ka dhaancha**: `views/` (har route ka page), `components/` (reusable UI), `stores/` (Pinia: `auth`, aur domain stores jaise `cart`, `projects`), aur ek `api` client module jo base URL, `Authorization` header, JSON parsing, `res.ok` check aur 401 par logout/redirect ek hi jagah sambhaale. Isse har component mein `fetch` ka boilerplate nahi dohraana padta.",
+        "**Backend ka dhaancha**: versioned routes (`/api/v1/...`) blueprints/resources mein, models alag, har input ki server-side validation, auth decorators (`@login_required`, `@roles_required`), consistent error JSON, aur `tasks.py` mein Celery tasks. Business logic ko views se bahar functions mein rakho taaki API aur tasks dono use reuse kar sakein aur test kar sakein.",
+        "**Ek request ka safar**: user login karta hai → API password hash verify karke token/session deta hai → auth store user aur roles rakhta hai → router guard protected route kholne deta hai → page store action se `GET /api/v1/projects?page=1` bhejta hai → API token aur role check karta hai → Redis cache dekhta hai, miss par DB (eager loading ke saath) → JSON → store update → Vue re-render. Har kadam par galti kahan pakdi jaati hai, ye jaanna debugging ki chaabi hai.",
+        "**Async features**: CSV export, bulk emails, image processing: API `202` + job id deta hai, Celery worker kaam karta hai, frontend poll karta hai (ya notification). Daily reminders beat se. Har task idempotent, retries backoff ke saath, aur payment jaise webhooks signature verify + dedupe ke saath.",
+        "**Config aur secrets**: secret key, DB URL, Redis URL, webhook secrets environment variables se aate hain, code ya git mein nahi. Development aur production ke alag configs: production mein debug off, CORS allowlist mein sirf apna frontend origin, HTTPS, aur cookies par `Secure`/`HttpOnly`/`SameSite`.",
+        "**Capacity ka andaza**: Little ka niyam workers par bhi lagta hai: zaroori parallel workers ≈ arrival rate × har kaam ka time. 200 reports/minute aur 4 s har report ⇒ (200/60) × 4 ≈ 13.3, yani kam se kam 14 worker processes, warna queue lagatar badhti rahegi. Headroom (jaise 30–50%) ke saath plan karo aur queue length monitor karo.",
+        "**Security aur quality checklist**: passwords sirf strong hash (bcrypt/argon2) mein; har endpoint par role + ownership check; login par rate limiting; user content ke saath `v-html` nahi; structured logs mein request id; p95 latency aur error rate ke metrics; stores aur API ke unit tests aur main flows ke end-to-end tests."
+      ],
+      "example": {
+        "problem": "Ek fictional project-management app mein \"Export tasks as CSV\" feature banana hai. Ek project mein lakhon rows ho sakti hain. Click se download tak poora flow design karo, aur peak par 200 exports/minute (har export ~4 s) ke liye worker count nikaalo.",
+        "steps": [
+          "Frontend: button `projects` store ka action `startExport(projectId)` chalata hai, jo `POST /api/v1/projects/42/exports` bhejta hai aur button disable kar deta hai.",
+          "API: token verify, phir check ki user is project ka member hai (ownership) aur role export kar sakta hai. Phir `export_csv.delay(project_id, user_id)` aur `202` + `{\"job_id\": ...}`.",
+          "Worker: DB se rows batches mein padhta hai (poori table memory mein nahi), CSV object storage mein likhta hai, aur job ka status + file key result backend mein rakhta hai. Task idempotent hai: same job id dobara chale to wahi file overwrite hoti hai.",
+          "Frontend har 3 s `GET /api/v1/jobs/<id>` poll karta hai; SUCCESS par ek short-lived download link milta hai, aur FAILURE par error message aur Retry button.",
+          "Capacity: arrival rate = 200 / 60 ≈ 3.33 per second; har export 4 s ⇒ in-flight ≈ 3.33 × 4 ≈ 13.3.",
+          "Answer: flow **click → 202 + job id → worker → poll → download link**, aur kam se kam **14** worker processes (headroom ke saath ~20)."
+        ],
+        "code": "const exportsPerMin = 200;\nconst secondsEach = 4;\nconst inFlight = (exportsPerMin / 60) * secondsEach;   // Little's law\nconsole.log(Math.ceil(inFlight));"
+      },
+      "mistakes": [
+        "Har component mein alag-alag `fetch` likhna, kahin `res.ok` check aur kahin nahi. Ek API client module banao jo headers, errors aur 401 handling ek jagah kare.",
+        "Security sirf frontend par (hidden buttons, router guards) rakhna. Guards UX hain; asli check har API endpoint par hona chahiye.",
+        "Secrets (DB password, JWT secret, webhook secret) code ya git mein commit karna. Environment variables ya secret manager use karo aur leak hone par turant rotate karo."
+      ],
+      "revision": [
+        "SPA (CDN) ↔ API ↔ DB; Redis = cache + broker; workers + beat.",
+        "Ek API client module; stores mein shared state; views mein page logic.",
+        "Server par validation, role aur ownership check; frontend checks sirf UX.",
+        "Lamba kaam: `202` + job id + polling; tasks idempotent.",
+        "Workers ≈ arrival rate × time per job (Little), upar round karo + headroom.",
+        "Secrets env mein; production mein debug off, CORS allowlist, secure cookies."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w12-q1",
+          "question": "Ek Vue + Flask app mein sirf admins projects delete kar sakte hain. Ye rule asli mein kahan enforce hona chahiye?",
+          "options": [
+            "Sirf frontend mein: non-admins ke liye delete button chhupa do",
+            "Sirf Vue Router ke `beforeEach` guard mein",
+            "Server par DELETE endpoint mein (role check); frontend mein button chhupana sirf UX ke liye hai",
+            "Pinia store ke `isAdmin` flag mein"
+          ],
+          "answer": 2,
+          "explanation": "Browser mein chalne wala har code user ke control mein hai: woh DevTools se store badal sakta hai, guard skip kar sakta hai, ya `curl` se seedha API call kar sakta hai. Isliye authorisation server par hi hoti hai, jahan request aate hi role (aur ownership) check ho. Options A, B aur D ka trap hai UX checks ko security samajhna; woh achhe hain, par sirf user ko galat button dikhne se bachate hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w12-q2",
+          "question": "Is code ka output kya hoga?",
+          "code": "const total = [3, 1, 2]\n    .map(x => x * 2)\n    .filter(x => x > 2)\n    .reduce((a, b) => a + b, 0);\nconsole.log(total);",
+          "options": [
+            "12",
+            "10",
+            "6",
+            "[6, 4]"
+          ],
+          "answer": 1,
+          "explanation": "`map` har element double karta hai: [6, 2, 4]. `filter` sirf 2 se bade rakhta hai: [6, 4] (2 > 2 false hai). `reduce` 0 se jodta hai: 6 + 4 = 10. Option A ka trap hai filter ko skip karna (6 + 2 + 4 = 12); option D ka trap hai `reduce` ko bhool kar filter ka result likh dena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w12-q3",
+          "question": "Is code mein lines kis order mein print hongi?",
+          "code": "async function placeOrder() {\n    console.log(\"a1\");\n    await save();\n    console.log(\"a2\");\n}\nfunction save() {\n    console.log(\"b\");\n    return 1;\n}\nsetTimeout(() => console.log(\"t\"), 0);\nplaceOrder();\nPromise.resolve().then(() => console.log(\"p\"));\nconsole.log(\"s\");",
+          "options": [
+            "a1 → b → s → a2 → p → t",
+            "a1 → b → a2 → s → p → t",
+            "a1 → s → b → p → a2 → t",
+            "a1 → b → s → t → a2 → p"
+          ],
+          "answer": 0,
+          "explanation": "`placeOrder()` synchronously \"a1\" print karta hai aur `save()` ko turant call karta hai: \"b\". `await` par function rukta hai aur \"a2\" wala hissa microtask queue mein jaata hai. Phir `Promise.resolve().then` \"p\" ko us microtask ke peeche queue karta hai, aur \"s\" sync print hota hai. Microtasks FIFO order mein: \"a2\", phir \"p\". Aakhir mein timer task \"t\". Option B ka trap hai sochna ki `save()` sync hai to `await` rukta hi nahi; option D ka trap hai timer ko microtasks se pehle chalana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w12-q4",
+          "question": "Users 2 GB tak ke videos upload karte hain jinhe kai resolutions mein transcode karna hai (har video mein kai minute lagte hain). Is course ke tools ke saath sabse sahi design kya hai?",
+          "options": [
+            "Upload request ke andar hi transcode karo aur khatam hone par 200 lautao",
+            "Browser mein JavaScript se transcode karke saari files upload karo",
+            "Upload request khuli rakho aur frontend har second poll kare ki woh khatam hui ya nahi",
+            "File object storage mein save karo, Celery task enqueue karke 202 + job id lautao; worker transcode kare aur status update kare, frontend poll kare ya notification paaye"
+          ],
+          "answer": 3,
+          "explanation": "Kai minute ka CPU-heavy kaam request-response cycle mein fit nahi hota: timeouts aur ghiri hui web workers. Upload ke baad file storage mein, aur bada data broker mein nahi, sirf file ki key task argument mein jaati hai. Worker apni speed se transcode karta hai, retries ho sakti hain, aur workers alag se scale hote hain. Option A ka trap hai sync design ko \"simple\" samajhna; option C khuli request ke saath wahi timeout problem rakhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w12-q5",
+          "question": "Settings page `PUT /api/v1/me` se naam badalta hai; server 200 ke saath updated user JSON lautata hai, aur Settings component use apne local `ref` mein rakh leta hai. Navbar naam Pinia `auth` store ke `user.name` se dikhata hai. Navbar page reload tak purana naam kyun dikhata hai?",
+          "options": [
+            "Browser ne PUT response cache kar liya",
+            "Pinia store ka data reactive nahi hota",
+            "Response sirf Settings ke local `ref` mein gaya; store ka `user` kabhi update nahi hua. Update ko auth store ke action se karo jo response se `this.user` set kare",
+            "Naam badalte hi JWT expire ho gaya"
+          ],
+          "answer": 2,
+          "explanation": "Navbar store padhta hai, aur store tak koi naya data pahuncha hi nahi: Settings ne result apne paas rakh liya, isliye shared state ke do alag \"sach\" ban gaye. Reload par store server se fresh user laata hai, isliye tab sahi dikhta hai. Fix: shared data ko store action se badlo, taaki har padhne wala component apne aap update ho. Option B ka trap ulta hai: store reactive hai, problem ye hai ki use badla hi nahi gaya. Option A galat hai kyunki PUT responses browser cache nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w12-q6",
+          "question": "Peak time par 200 report jobs per minute aate hain aur har job ek worker process ko 4 s gherta hai (ek process ek samay par ek job). Queue lagatar badhne se bachane ke liye kam se kam kitne worker processes chahiye?",
+          "options": [
+            "14",
+            "13",
+            "50",
+            "800"
+          ],
+          "answer": 0,
+          "explanation": "Arrival rate = 200 / 60 ≈ 3.33 jobs/s. Little ke niyam se ek saath chal rahe jobs ≈ 3.33 × 4 ≈ 13.33. Worker aadhe nahi hote, aur 13 workers sirf 13 / 4 = 3.25 jobs/s nipta sakte hain jo 3.33 se kam hai, isliye upar round karke 14. Option B ka trap hai neeche round karna; option C 200 / 4 karta hai (per minute aur seconds mila diye); option D 200 × 4 karta hai.",
           "difficulty": "hard"
         }
       ]

@@ -500,6 +500,983 @@
           "id": "dbms-w4-q6"
         }
       ]
+    },
+    {
+      "week": 5,
+      "title": "Functional Dependencies, Closures and Keys",
+      "summary": "Is week aap redundancy se aane wali anomalies, functional dependencies aur Armstrong's axioms, attribute closure ka algorithm, candidate keys systematically dhoondhna, aur 1NF, 2NF, 3NF ki exact tests seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Redundancy se anomalies**: agar `order_line` mein har line ke saath customer ka city bhi likha hai to (1) **update anomaly**: city badli to saari rows badalni padengi, ek chhooti to data inconsistent; (2) **insertion anomaly**: naya customer tab tak add nahi kar sakte jab tak uska koi order na ho; (3) **deletion anomaly**: aakhri order delete kiya to customer ki city bhi gayab. Normalisation ka goal inhe hatana hai.",
+        "**Functional dependency (FD)** X → Y ka matlab: koi bhi do tuples jo X par barabar hain, woh Y par bhi barabar honge. FD schema ka niyam hai (business rule), kisi ek instance se sirf violate hota dikh sakta hai, prove nahi. X → Y **trivial** hai agar Y ⊆ X, jaise AB → A.",
+        "**Armstrong's axioms**: **reflexivity** (Y ⊆ X ⇒ X → Y), **augmentation** (X → Y ⇒ XZ → YZ), **transitivity** (X → Y, Y → Z ⇒ X → Z). Ye **sound** (galat FD nahi dete) aur **complete** (har implied FD de dete hain) hain. Inse derived rules: **union** (X → Y, X → Z ⇒ X → YZ), **decomposition** (X → YZ ⇒ X → Y), **pseudotransitivity** (X → Y, WY → Z ⇒ WX → Z).",
+        "**Attribute closure X⁺**: X se shuru karo; jab bhi kisi FD L → R ka poora L result mein ho, R jod do; tab tak dohraao jab tak kuch naya na jude. Uses: X → Y implied hai agar Y ⊆ X⁺; X **superkey** hai agar X⁺ = saare attributes. F⁺ (saare implied FDs) exponential ho sakta hai, isliye practice mein X⁺ hi nikaalte hain.",
+        "**Candidate keys dhoondhna**: jo attribute kisi FD ke right side par kabhi nahi aata, woh har key mein hona hi chahiye (core). Jo sirf right side par aata hai, woh kisi key mein nahi hoga. Core ka closure lo; poora R aa gaya to wahi akeli key, warna core mein baaki attributes ek-ek karke jodo aur minimality check karo. Kisi bhi candidate key ka hissa attribute **prime** kehlata hai.",
+        "**1NF**: har attribute ka domain **atomic** ho: ek cell mein list, set ya repeating group nahi (jaise phones = '98..., 99...'). Relational model mein har relation by definition 1NF mein maana jaata hai.",
+        "**2NF**: 1NF + koi bhi **non-prime** attribute kisi candidate key ke **proper subset** par depend na kare (partial dependency nahi). Agar saari candidate keys single-attribute hain to relation automatically 2NF mein hai. Example: key (order_id, product_id) aur order_id → cust_id: partial dependency, 2NF toota.",
+        "**3NF**: har non-trivial FD X → A (F⁺ mein) ke liye ya to X superkey ho, ya A prime attribute ho. Isse non-prime attributes ki **transitive dependency** (key → C → D) hat jaati hai. 3NF ⇒ 2NF ⇒ 1NF; ulta zaroori nahi."
+      ],
+      "example": {
+        "problem": "Fictional e-commerce table `order_line(order_id, product_id, cust_id, cust_city, prod_name, unit_price, qty)` par FDs: order_id → cust_id; cust_id → cust_city; product_id → prod_name, unit_price; (order_id, product_id) → qty. Key aur highest normal form nikaalo, aur 3NF tables banao. Closure ka code neeche hai.",
+        "steps": [
+          "order_id aur product_id kisi FD ke right side par nahi aate, isliye dono har key mein honge.",
+          "(order_id, product_id)⁺: order_id se cust_id, phir cust_city; product_id se prod_name, unit_price; dono se qty. Saare 7 attributes aa gaye (code ka pehla output), to ye superkey hai. Akele order_id ka closure sirf 3 attributes deta hai (doosra output). Isliye candidate key sirf **(order_id, product_id)**.",
+          "Prime attributes: order_id, product_id. Baaki sab non-prime.",
+          "order_id → cust_id mein LHS key ka proper subset hai aur cust_id non-prime: partial dependency. product_id → prod_name bhi. Isliye 2NF nahi; relation sirf **1NF** mein hai.",
+          "Partial dependencies alag karo: `orders(order_id, cust_id, ...)`, `product(product_id, prod_name, unit_price)`, `order_line(order_id, product_id, qty)`. Ab sab 2NF.",
+          "`orders` mein order_id → cust_id → cust_city transitive hai, isliye `customer(cust_id, cust_city)` alag karo.",
+          "Answer: **key (order_id, product_id), relation 1NF; 3NF tables: order_line(order_id, product_id, qty), orders(order_id, cust_id), customer(cust_id, cust_city), product(product_id, prod_name, unit_price)**."
+        ],
+        "code": "def closure(attrs, fds):\n    result = set(attrs)\n    changed = True\n    while changed:\n        changed = False\n        for lhs, rhs in fds:\n            if lhs <= result and not rhs <= result:\n                result |= rhs\n                changed = True\n    return result\n\nfds = [({\"order_id\"}, {\"cust_id\"}),\n       ({\"cust_id\"}, {\"cust_city\"}),\n       ({\"product_id\"}, {\"prod_name\", \"unit_price\"}),\n       ({\"order_id\", \"product_id\"}, {\"qty\"})]\n\nprint(sorted(closure({\"order_id\", \"product_id\"}, fds)))\nprint(sorted(closure({\"order_id\"}, fds)))"
+      },
+      "mistakes": [
+        "Closure nikaalte waqt ek hi pass karke ruk jaana. Ek FD se naya attribute aane ke baad koi pehle wali FD ab lag sakti hai; tab tak loop chalao jab tak result badalna band na ho.",
+        "Sirf ek candidate key dhoondh kar ruk jaana. Ek relation mein kai keys ho sakti hain; har prime attribute pata hona 2NF/3NF test ke liye zaroori hai.",
+        "2NF ko 'koi attribute key ke hisse par depend na kare' padhna. Rule sirf **non-prime** attributes par lagta hai; prime attribute ki partial dependency 2NF nahi todti."
+      ],
+      "revision": [
+        "X → Y: X par same ⇒ Y par same. Trivial: Y ⊆ X.",
+        "Armstrong: reflexivity, augmentation, transitivity (sound + complete).",
+        "X⁺ = R ⇒ X superkey; minimal superkey = candidate key.",
+        "Right side par kabhi na aane wala attribute har key mein hota hai.",
+        "2NF: non-prime ki partial dependency nahi. 3NF: X superkey ya A prime."
+      ],
+      "questions": [
+        {
+          "question": "R(A, B, C, D, E, F) par F = { A → B, B → C, CD → E, E → F }. {A, D}⁺ kya hai?",
+          "options": [
+            "{A, B, C, D, E, F}",
+            "{A, B, C, D}",
+            "{A, B, C, D, E}",
+            "{A, D}"
+          ],
+          "answer": 0,
+          "explanation": "{A, D} se shuru: A → B se B, B → C se C. Ab C aur D dono hain, to CD → E se E, phir E → F se F. Result {A, B, C, D, E, F}. Option B ka trap ek pass mein ruk jaana hai: C aane ke baad CD → E dobara check karna padta hai. Option C E → F wala aakhri step bhool jaata hai.",
+          "difficulty": "easy",
+          "id": "dbms-w5-q1"
+        },
+        {
+          "question": "Inmein se kaunsi functional dependency trivial hai?",
+          "options": [
+            "AB → BC",
+            "AB → A",
+            "A → B",
+            "AB → AC"
+          ],
+          "answer": 1,
+          "explanation": "X → Y trivial tab hai jab Y ⊆ X, kyunki tab ye har relation par apne aap sach hai (reflexivity). AB → A mein {A} ⊆ {A, B}. Option A ka trap: B to AB mein hai, par C nahi, isliye AB → BC trivial nahi. Option D mein bhi C bahar hai.",
+          "difficulty": "easy",
+          "id": "dbms-w5-q2"
+        },
+        {
+          "question": "R(A, B, C, D, E) par F = { A → B, BC → D, D → A, E → C }. R ki saari candidate keys kaunsi hain?",
+          "options": [
+            "Sirf {A, E}",
+            "{A, E}, {B, E}, {C, E}, {D, E}",
+            "{A, E}, {B, E}, {D, E}",
+            "Sirf {E}"
+          ],
+          "answer": 2,
+          "explanation": "E kisi right side par nahi aata, isliye har key mein E hoga. E⁺ = {E, C}: kaafi nahi. AE⁺: A → B, E → C, BC → D = sab. BE⁺: C, phir BC → D, D → A = sab. DE⁺: A, C, phir B = sab. CE⁺ = {C, E} hi rehta hai, isliye option B galat hai. Option A ka trap pehli key milte hi ruk jaana hai; option D E ko akele key maan leta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w5-q3"
+        },
+        {
+          "question": "F = { A → B, BC → D } diya hai. Inmein se kaunsi FD F se Armstrong's axioms dwara **infer NAHI** ki ja sakti?",
+          "options": [
+            "AC → D",
+            "AC → BD",
+            "AC → ABCD",
+            "A → D"
+          ],
+          "answer": 3,
+          "explanation": "A⁺ = {A, B}. D ke liye BC → D chahiye, aur C nahi hai, isliye A → D infer nahi hota. Baaki teeno ke liye AC⁺ = {A, C, B, D} kaafi hai: AC → D pseudotransitivity hai (A → B aur BC → D se AC → D), aur AC → BD, AC → ABCD union se milte hain. Option A tempting hai kyunki ye 'chain' jaisi nahi dikhti, par C ko augment karke milti hai.",
+          "difficulty": "medium",
+          "id": "dbms-w5-q4"
+        },
+        {
+          "question": "R(A, B, C, D, E) par F = { AB → C, C → D, D → E }. R ka highest normal form kya hai?",
+          "options": [
+            "1NF",
+            "3NF",
+            "2NF",
+            "BCNF"
+          ],
+          "answer": 2,
+          "explanation": "A aur B kabhi right side par nahi aate, aur AB⁺ = sab, isliye akeli key AB hai; prime = {A, B}. A⁺ = {A}, B⁺ = {B}, to koi non-prime attribute key ke hisse par depend nahi karta: 2NF theek hai. Par C → D mein C superkey nahi aur D prime nahi (transitive AB → C → D), isliye 3NF toota. Option B ka trap ye sochna hai ki 'partial dependency nahi to 3NF'; 3NF transitive dependency bhi mana karta hai. Option A tab sahi hota jab A ya B akele kuch non-prime decide karte.",
+          "difficulty": "medium",
+          "id": "dbms-w5-q5"
+        },
+        {
+          "question": "R(A, B, C, D, E) par F = { A → BC, CD → E, B → D, E → A }. R ki kitni candidate keys hain?",
+          "options": [
+            "2",
+            "3",
+            "5",
+            "4"
+          ],
+          "answer": 3,
+          "explanation": "A⁺: B, C, phir B → D, CD → E = sab, to {A} key. E⁺: A, phir sab, to {E} key. Ab A ya E ke bina do-attribute sets: BC⁺: D (B → D), phir CD → E, E → A = sab, to {B, C} key. CD⁺: E, A, B = sab, to {C, D} key. BD⁺ = {B, D} hi rehta hai, aur {B, C, D} mein {B, C} pehle se hai, isliye woh minimal nahi. Keys: {A}, {E}, {B, C}, {C, D} = 4. Option A ka trap sirf single-attribute keys ginna hai; option B CD → E se shuru hone wali key {C, D} miss kar deta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w5-q6"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "title": "BCNF, Decomposition and Minimal Covers",
+      "summary": "Is week aap BCNF, lossless-join aur dependency-preserving decomposition ki tests, BCNF decomposition aur 3NF synthesis algorithms, minimal cover nikaalna, aur multivalued dependencies ke saath 4NF ka intro seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**BCNF (Boyce–Codd Normal Form)**: har non-trivial FD X → Y (F⁺ mein) ke liye X **superkey** ho. 3NF wali 'A prime ho to chalega' chhoot yahan nahi hai, isliye BCNF ⇒ 3NF, par ulta nahi. Do attributes wali har relation BCNF mein hoti hai. Test karne ke liye har given FD ka LHS closure nikaalo: X⁺ poora R nahi diya to violation.",
+        "**Lossless-join decomposition**: R ko R1, R2 mein todo to R1 ⋈ R2 theek R hona chahiye. Lossy decomposition data 'khota' nahi, balki join par **spurious (nakli) tuples** jod deta hai, jisse sahi information pehchaanna namumkin ho jaata hai. Binary test: R1 ∩ R2 → R1 ya R1 ∩ R2 → R2 (F⁺ mein), yaani common attributes kam se kam ek hisse ki superkey hon. Teen ya zyada hisson ke liye chase (tableau) test lagta hai.",
+        "**Dependency preservation**: har FD ko kisi ek table ke andar hi check kar paana chahiye, join kiye bina. Formal: projected FDs F1 ∪ F2 ∪ ... ka closure F⁺ ke barabar ho. Test: har X → Y ke liye X⁺ sirf projected FDs se nikaalo; Y aa gaya to preserved. Na ho to har INSERT par join karke check karna padega, jo mehenga hai.",
+        "**BCNF decomposition algorithm**: koi violating FD X → Y dhoondho (X superkey nahi); R ko (X ∪ Y) aur (R − (Y − X)) mein todo; har hisse par dohraao jab tak sab BCNF mein na aa jaayein. Har step binary lossless test pass karta hai (common = X, aur X → XY), isliye result hamesha **lossless**; par kuch FDs **preserve nahi** bhi ho sakti.",
+        "**Minimal (canonical) cover**: F ke barabar (equivalent) sabse saaf set. Steps: (1) har RHS single attribute karo (A → BC ko A → B, A → C); (2) har LHS se **extraneous** attribute hatao (AB → C mein agar A⁺ mein hi C hai to B faaltu); (3) **redundant** FD hatao (jo baaki FDs se infer ho jaati hai). Minimal cover unique hona zaroori nahi.",
+        "**3NF synthesis algorithm**: minimal cover ki har FD X → A ke liye relation XA banao (same LHS wali FDs ek table mein); agar kisi relation mein R ki candidate key nahi hai to ek relation sirf key ka jodo; jo relation kisi doosri ka subset hai use hata do. Result hamesha **lossless aur dependency-preserving** hota hai, isliye jab BCNF dependency kho de, 3NF practical fallback hai.",
+        "**3NF vs BCNF trade-off**: R(student, course, teacher) jahan (student, course) → teacher aur teacher → course. Keys: (student, course) aur (student, teacher); course prime hai, isliye 3NF theek. Par teacher superkey nahi, isliye BCNF nahi. BCNF ke liye todo to (student, course) → teacher kisi ek table mein check nahi hoti. Choice: thodi redundancy (3NF) ya mehenga constraint check (BCNF).",
+        "**MVD aur 4NF (intro)**: multivalued dependency X ↠ Y ka matlab hai X ki har value ke liye Y values ka set baaki attributes (Z) se independent hai. Jaise trainer ↠ skill aur trainer ↠ language: ek table mein rakhoge to har skill × har language ka combination likhna padega. Har FD ek MVD bhi hai. **4NF**: har non-trivial MVD X ↠ Y mein X superkey ho; 4NF ⇒ BCNF. Upar wale case ka fix: (trainer, skill) aur (trainer, language) alag tables."
+      ],
+      "example": {
+        "problem": "R(A, B, C, D, E) par F = { A → BC, B → C, CD → E }. Minimal cover nikaalo aur 3NF synthesis se lossless, dependency-preserving decomposition banao.",
+        "steps": [
+          "Single RHS: A → B, A → C, B → C, CD → E.",
+          "Extraneous LHS: CD → E mein C⁺ = {C} aur D⁺ = {D}, dono E nahi dete, to C aur D dono zaroori.",
+          "Redundant FD: A → C baaki se milta hai (A → B, B → C), isliye hatao. Minimal cover = { A → B, B → C, CD → E }.",
+          "Candidate key: A aur D kabhi RHS par nahi, aur AD⁺ = {A, D, B, C, E} = sab. Key = AD.",
+          "Har FD se relation: R1(A, B), R2(B, C), R3(C, D, E).",
+          "Kisi relation mein key AD nahi hai, isliye R4(A, D) jodo. Iske bina join lossy hota.",
+          "Har relation BCNF mein bhi hai (R1 key A, R2 key B, R3 key CD, R4 key AD).",
+          "Answer: **{ R1(A, B), R2(B, C), R3(C, D, E), R4(A, D) }: lossless aur saari FDs preserved**."
+        ]
+      },
+      "mistakes": [
+        "Ye sochna ki lossy decomposition join par kam rows deta hai. Ulta hota hai: extra spurious tuples aate hain, aur wahi information ka nuksaan hai, kyunki ab pata nahi kaunsi row asli hai.",
+        "Maan lena ki BCNF decomposition saari FDs preserve karta hai. Sirf lossless ki guarantee hai; dependency preservation alag se test karo, aur zaroorat ho to 3NF synthesis use karo.",
+        "3NF synthesis mein key wali relation jodna bhool jaana. Agar koi relation candidate key contain nahi karti to decomposition lossy ho sakta hai."
+      ],
+      "revision": [
+        "BCNF: har non-trivial X → Y mein X superkey. BCNF ⇒ 3NF.",
+        "Binary lossless test: R1 ∩ R2 kisi ek hisse ki superkey ho.",
+        "Lossy = spurious tuples, data kam nahi.",
+        "BCNF decomposition: lossless hamesha, preservation nahi.",
+        "Minimal cover: single RHS → extraneous LHS hatao → redundant FD hatao.",
+        "3NF synthesis: lossless + dependency-preserving, key relation zaroor jodo."
+      ],
+      "questions": [
+        {
+          "question": "R(A, B, C) par F = { A → B, B → C }. Kya R BCNF mein hai?",
+          "options": [
+            "Haan, kyunki A candidate key hai",
+            "Nahi, kyunki B → C mein B superkey nahi hai",
+            "Nahi, kyunki A → B mein A superkey nahi hai",
+            "Haan, kyunki har FD ka LHS ek hi attribute hai"
+          ],
+          "answer": 1,
+          "explanation": "A⁺ = {A, B, C}, to A key hai aur A → B theek hai. B⁺ = {B, C}, jo poora R nahi, isliye B superkey nahi; B → C BCNF todti hai. Option A ka trap sirf key wali FD dekhna hai: BCNF har non-trivial FD ka LHS superkey maangta hai. Option D galat hai kyunki single-attribute LHS se kuch guarantee nahi hota.",
+          "difficulty": "easy",
+          "id": "dbms-w6-q1"
+        },
+        {
+          "question": "R(A, B, C) par sirf ek FD hai: A → B. Inmein se kaunsa decomposition lossless-join hai?",
+          "options": [
+            "R1(A, B), R2(A, C)",
+            "R1(A, B), R2(B, C)",
+            "R1(A, C), R2(B, C)",
+            "R1(A), R2(B, C)"
+          ],
+          "answer": 0,
+          "explanation": "Binary test: common attributes kam se kam ek hisse ki superkey hone chahiye. Option A mein common = A, aur A → B se A⁺ ⊇ {A, B} = R1: lossless. Option B mein common = B, par B⁺ = {B}, kisi hisse ki key nahi: lossy. Ye sabse tempting trap hai kyunki A → B 'dikhti' hai, par common attribute B us FD ka RHS hai, LHS nahi. Option C mein common C, option D mein kuch common hi nahi (Cartesian product).",
+          "difficulty": "easy",
+          "id": "dbms-w6-q2"
+        },
+        {
+          "question": "F = { A → BC, B → C, AB → C } ka minimal cover kya hai?",
+          "options": [
+            "{ A → BC }",
+            "{ A → B, A → C, B → C }",
+            "{ A → B, AB → C }",
+            "{ A → B, B → C }"
+          ],
+          "answer": 3,
+          "explanation": "Single RHS: A → B, A → C, B → C, AB → C. AB → C mein A extraneous hai (B → C pehle se hai), to ye B → C ban jaati hai, duplicate. A → C redundant hai kyunki A → B aur B → C se transitivity se milti hai. Bacha { A → B, B → C }. Option B ka trap redundant A → C rakh lena hai. Option A equivalent hi nahi: usse B → C infer nahi hoti. Option C mein AB → C ka A faaltu hai.",
+          "difficulty": "medium",
+          "id": "dbms-w6-q3"
+        },
+        {
+          "question": "R(A, B, C, D) par F = { A → B, B → C, C → D }. R ko R1(A, B), R2(A, C), R3(A, D) mein toda gaya. Ye decomposition kaisa hai?",
+          "options": [
+            "Lossless aur dependency-preserving",
+            "Lossless, par dependency-preserving nahi",
+            "Lossy, par dependency-preserving",
+            "Lossy aur dependency-preserving bhi nahi"
+          ],
+          "answer": 1,
+          "explanation": "A⁺ = {A, B, C, D}, to A poore R ki key hai aur teeno hisse A share karte hain; A se har hissa join hokar R wapas deta hai: lossless. Projections par sirf A → B, A → C, A → D (aur unke combinations) bachti hain. B → C ke liye B⁺ in projected FDs se sirf {B} hai, isliye B → C (aur C → D) preserve nahi hoti. Option A ka trap ye maan lena hai ki lossless hone se dependencies bhi bach jaati hain; dono properties alag hain.",
+          "difficulty": "medium",
+          "id": "dbms-w6-q4"
+        },
+        {
+          "question": "Fictional coaching institute ki relation R(student, course, teacher) par rules hain: (student, course) → teacher, aur teacher → course (har teacher sirf ek course padhata hai). R ke baare mein kya sahi hai?",
+          "options": [
+            "R BCNF mein hai, isliye 3NF mein bhi",
+            "R 2NF mein hai, par 3NF mein nahi",
+            "R 3NF mein hai, par BCNF mein nahi",
+            "R sirf 1NF mein hai"
+          ],
+          "answer": 2,
+          "explanation": "Keys: student kabhi RHS par nahi. (student, course)⁺ = sab, aur (student, teacher)⁺ mein teacher → course se course aata hai = sab. Dono keys, isliye student, course, teacher teeno prime hain. teacher → course mein teacher superkey nahi, par course prime hai, isliye 3NF theek; BCNF ki shart (LHS superkey) tooti. Option B ka trap teacher → course ko transitive dependency samajhna hai; 3NF prime RHS ko allow karta hai. Option A BCNF ki shart ko halka kar deta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w6-q5"
+        },
+        {
+          "question": "R(A, B, C) par F = { AB → C, C → B }. BCNF decomposition C → B par todta hai aur result R1(B, C), R2(A, C) deta hai. Kaunsa statement sahi hai?",
+          "options": [
+            "Lossless hai aur F ki saari FDs preserve hoti hain",
+            "Lossy hai, kyunki common attribute C kisi bhi hisse ki key nahi",
+            "Lossless hai, par AB → C kisi bhi ek table ke andar check nahi ho sakti",
+            "Dono hisse BCNF mein nahi hain, isliye aur todna padega"
+          ],
+          "answer": 2,
+          "explanation": "Common attribute C hai, aur C → B se C⁺ ⊇ {B, C} = R1, isliye lossless. R1(B, C) mein C → B (C key), R2(A, C) mein koi non-trivial FD nahi: dono BCNF. Par AB → C ke liye A, B, C ek saath kisi table mein nahi hain; projected FDs (C → B) se AB⁺ = {A, B}, to ye FD preserve nahi hoti. Option A ka trap ye maanna hai ki BCNF algorithm dependencies bhi bachata hai. Option B C → B ko bhool jaata hai, jo C ko R1 ki key banati hai.",
+          "difficulty": "hard",
+          "id": "dbms-w6-q6"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "title": "Database Application Programming",
+      "summary": "Is week aap Python DB-API se database ko program se chalana, transactions ko commit/rollback karna, SQL injection kaise hota hai aur parameterised queries se kaise rukta hai, aur triggers, stored procedures aur ORMs ki jagah samjhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Application architecture**: 2-tier mein client seedha database se baat karta hai; 3-tier mein browser/mobile app → application server (business logic, API) → database. Production systems 3-tier hote hain: database credentials sirf server ke paas, aur server **connection pool** se kuch connections ko baar-baar reuse karta hai kyunki naya connection banana mehenga hai.",
+        "**Python DB-API (PEP 249)**: har driver (sqlite3, psycopg2 PostgreSQL ke liye, mysql-connector) ek hi pattern deta hai: `connect()` se connection, `con.cursor()` se cursor, `cur.execute(sql, params)`, phir `fetchone()` (ek tuple ya **None**), `fetchmany(n)`, `fetchall()` (list of tuples), aur end mein `commit()`/`rollback()`/`close()`. Badi result sets ke liye cursor par loop ya fetchmany use karo, sab memory mein mat laao.",
+        "**Transactions in code**: DB-API connections default mein autocommit nahi karte: pehle data-changing statement par transaction shuru hota hai aur changes `commit()` tak doosre connections ko nahi dikhte. `rollback()` pichhle commit ke baad ka sab kuch undo karta hai. Pattern: kaam `try` mein, success par commit, `except` mein rollback aur error aage bhejo.",
+        "**SQL injection**: query ko string jod kar banana, jaise `\"... WHERE uname = '\" + uname + \"'\"`, user ko SQL likhne deta hai. Input `nobody' OR '1'='1` condition ko hamesha TRUE bana deta hai aur saari rows nikal aati hain; `'; DROP TABLE ...` jaise inputs aur bhi khatarnaak hain. Escaping khud likhna bharosemand nahi.",
+        "**Parameterised queries**: `cur.execute(\"... WHERE uname = ?\", (uname,))`. Driver SQL aur values ko alag bhejta hai, isliye value kabhi SQL code nahi banti. Placeholder style driver par depend karta hai: sqlite3 mein `?`, psycopg2 mein `%s` (ye Python ka `%` formatting nahi hai). Params hamesha **sequence** mein do: ek value ke liye `(x,)` comma ke saath. Table/column naam parameter nahi ban sakte; unke liye fixed whitelist rakho. Bulk insert: `executemany`.",
+        "**Triggers**: event–condition–action rule jo INSERT/UPDATE/DELETE par apne aap chalta hai, `BEFORE` ya `AFTER`. **Row-level** (`FOR EACH ROW`) har affected row ke liye ek baar chalta hai aur `NEW`/`OLD` values dekh sakta hai; **statement-level** (`FOR EACH STATEMENT`) har statement par ek baar, chahe 0 rows badlein. Uses: audit log, derived columns, complex constraints. Risk: chhupi hui logic aur trigger-chains debug karna mushkil.",
+        "**Stored procedures aur functions**: code jo database server ke andar store hokar chalta hai, jaise PostgreSQL mein `CREATE FUNCTION ... LANGUAGE plpgsql` aur `CALL proc(...)`. Fayde: kam network round trips, logic ek jagah, aur user ko sirf `EXECUTE` permission dekar tables chhupa sakte ho. Nuksaan: version control, testing aur ek vendor se bandh jaana (lock-in).",
+        "**Impedance mismatch aur ORM**: program objects aur loops mein sochta hai, SQL sets mein. ORM (SQLAlchemy, Django ORM) classes ko tables se map karta hai. Classic trap **N+1 queries**: 100 orders laakar har order ke customer ke liye alag query = 101 queries; ek JOIN (ya ORM ka eager loading) ek query mein kaam kar deta."
+      ],
+      "example": {
+        "problem": "Ek fictional IoT pipeline sensor readings ko database mein bulk-load karti hai aur ek device ki reading count aur average temperature nikaalti hai (code dekho). Output kya hoga, aur code mein kaunsi achhi practices hain?",
+        "steps": [
+          "`executemany` 5 tuples ko ek hi parameterised INSERT se daalta hai; `CHECK` constraint galat temperature ko reject karta.",
+          "Insert `try` mein hai: sab theek to `commit()`, koi error to `rollback()` taaki aadha batch na bache.",
+          "Query mein `device` user input hai, isliye string jodne ki jagah `?` placeholder aur `(device,)` tuple diya.",
+          "dev-1 ki readings: 21.5, 22.5, 23.0, to COUNT = 3.",
+          "AVG = (21.5 + 22.5 + 23.0) / 3 = 67 / 3 = 22.333..., `round(avg, 2)` = 22.33.",
+          "`fetchone()` ek tuple deta hai jise `n, avg` mein unpack kiya.",
+          "Answer: **`3 22.33`**."
+        ],
+        "code": "import sqlite3\n\nrows = [(\"dev-1\", 21.5), (\"dev-2\", 19.0), (\"dev-1\", 22.5),\n        (\"dev-2\", 20.0), (\"dev-1\", 23.0)]\n\ncon = sqlite3.connect(\":memory:\")\ncur = con.cursor()\ncur.execute(\"\"\"CREATE TABLE reading (\n    device TEXT NOT NULL,\n    temp   REAL CHECK (temp BETWEEN -40 AND 85))\"\"\")\ntry:\n    cur.executemany(\"INSERT INTO reading VALUES (?, ?)\", rows)\n    con.commit()\nexcept sqlite3.Error:\n    con.rollback()\n    raise\n\ndevice = \"dev-1\"                      # maan lo ye user input se aaya\ncur.execute(\"SELECT COUNT(*), AVG(temp) FROM reading WHERE device = ?\",\n            (device,))\nn, avg = cur.fetchone()\nprint(n, round(avg, 2))\ncon.close()"
+      },
+      "mistakes": [
+        "f-string ya `+` se user input ko SQL mein jodna, chahe input 'trusted' lage. Hamesha placeholders use karo; ye performance ke liye bhi achha hai kyunki plan reuse ho sakta hai.",
+        "Ek value ko tuple banaye bina dena: `execute(sql, name)`. String khud ek sequence hai, isliye `\"Asha\"` 4 alag parameters ban jaata hai aur error aata hai. Likho `(name,)`.",
+        "`commit()` bhool jaana. Program khatam hone par uncommitted changes gayab ho jaate hain, aur jab tak commit nahi hua doosre users ko woh dikhte bhi nahi."
+      ],
+      "revision": [
+        "DB-API: connect → cursor → execute(sql, params) → fetch → commit/rollback.",
+        "`fetchone()` row na ho to `None` deta hai.",
+        "Params hamesha sequence: `(x,)`; sqlite3 `?`, psycopg2 `%s`.",
+        "String jodna = SQL injection; placeholders = safe.",
+        "Row trigger: har row; statement trigger: har statement ek baar (0 rows par bhi).",
+        "N+1 queries se bacho: JOIN ya eager loading."
+      ],
+      "questions": [
+        {
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import sqlite3\ncon = sqlite3.connect(\":memory:\")\ncur = con.cursor()\ncur.execute(\"CREATE TABLE item (id INTEGER PRIMARY KEY, name TEXT)\")\ncur.execute(\"INSERT INTO item VALUES (1, 'pen')\")\ncur.execute(\"SELECT name FROM item WHERE id = ?\", (2,))\nprint(cur.fetchone())",
+          "options": [
+            "None",
+            "()",
+            "('pen',)",
+            "IndexError aayega"
+          ],
+          "answer": 0,
+          "explanation": "id = 2 wali koi row nahi hai. DB-API mein `fetchone()` agli row ka tuple deta hai, aur row na ho to `None` lautata hai; koi exception nahi aata. Option B ka trap ye sochna hai ki khaali result ek khaali tuple hoga (khaali list `[]` `fetchall()` deta hai). Option C id ko ignore kar deta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w7-q1"
+        },
+        {
+          "question": "Python `sqlite3` mein `email` user ke form se aata hai. Inmein se kaunsi line SQL injection se safe hai?",
+          "options": [
+            "`cur.execute(f\"SELECT * FROM users WHERE email = '{email}'\")`",
+            "`cur.execute(\"SELECT * FROM users WHERE email = '%s'\" % email)`",
+            "`cur.execute(\"SELECT * FROM users WHERE email = ?\", (email,))`",
+            "`cur.execute(\"SELECT * FROM users WHERE email = '\" + email.strip() + \"'\")`"
+          ],
+          "answer": 2,
+          "explanation": "Option C parameterised query hai: SQL text aur value driver ko alag-alag milte hain, isliye `email` mein kuch bhi likha ho woh sirf ek value rahega. Options A, B aur D teeno value ko SQL string mein jod dete hain. Option D ka trap ye sochna hai ki `strip()` se input saaf ho gaya; woh sirf spaces hataata hai, quote `'` nahi. Option B ka `%` Python string formatting hai, driver ka placeholder nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w7-q2"
+        },
+        {
+          "question": "Is code mein Line A aur Line B kya print karengi?",
+          "code": "import sqlite3\ncon = sqlite3.connect(\":memory:\")\ncur = con.cursor()\ncur.execute(\"CREATE TABLE users (id INTEGER, uname TEXT)\")\ncur.executemany(\"INSERT INTO users VALUES (?, ?)\",\n                [(1, \"asha\"), (2, \"ravi\"), (3, \"neha\"), (4, \"omar\")])\n\nuname = \"nobody' OR '1'='1\"           # login form se aaya input\n\nsql = \"SELECT id FROM users WHERE uname = '\" + uname + \"'\"\ncur.execute(sql)\nprint(len(cur.fetchall()))            # Line A\n\ncur.execute(\"SELECT id FROM users WHERE uname = ?\", (uname,))\nprint(len(cur.fetchall()))            # Line B",
+          "options": [
+            "A: 0, B: 0",
+            "A: 4, B: 0",
+            "A: 4, B: 4",
+            "A: 1, B: 0"
+          ],
+          "answer": 1,
+          "explanation": "Line A ki query banti hai `WHERE uname = 'nobody' OR '1'='1'`. `'1'='1'` har row ke liye TRUE hai, isliye saari 4 rows aati hain: classic SQL injection. Line B mein poora input ek string value ki tarah compare hota hai, aur kisi user ka naam literally `nobody' OR '1'='1` nahi hai, isliye 0. Option A ka trap ye maanna hai ki 'nobody' naam ka user nahi hai to kuch nahi milega; injected `OR` condition ko badal deta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w7-q3"
+        },
+        {
+          "question": "Is code ka output kya hoga?",
+          "code": "import sqlite3\ncon = sqlite3.connect(\":memory:\")\ncur = con.cursor()\ncur.execute(\"CREATE TABLE log (msg TEXT)\")\ncur.execute(\"INSERT INTO log VALUES ('a')\")\ncon.commit()\ncur.execute(\"INSERT INTO log VALUES ('b')\")\ncur.execute(\"INSERT INTO log VALUES ('c')\")\ncon.rollback()\ncur.execute(\"INSERT INTO log VALUES ('d')\")\ncon.commit()\ncur.execute(\"SELECT COUNT(*) FROM log\")\nprint(cur.fetchone()[0])",
+          "options": [
+            "4",
+            "1",
+            "3",
+            "2"
+          ],
+          "answer": 3,
+          "explanation": "'a' commit ho chuka hai. 'b' aur 'c' ke baad `rollback()` pichhle commit ke baad ka sab kuch undo karta hai, isliye dono hat jaate hain. 'd' naye transaction mein insert hokar commit hota hai. Bache 'a' aur 'd' = 2. Option A ka trap rollback ko ignore karna hai; option B ye sochta hai ki rollback committed 'a' ko bhi mita deta hai, jo nahi hota.",
+          "difficulty": "medium",
+          "id": "dbms-w7-q4"
+        },
+        {
+          "question": "Is code ka result kya hoga?",
+          "code": "import sqlite3\ncon = sqlite3.connect(\":memory:\")\ncur = con.cursor()\ncur.execute(\"CREATE TABLE emp (name TEXT, salary INTEGER)\")\ncur.execute(\"INSERT INTO emp VALUES ('Asha', 72000)\")\n\nname = \"Asha\"\ncur.execute(\"SELECT salary FROM emp WHERE name = ?\", name)\nprint(cur.fetchall())",
+          "options": [
+            "`[(72000,)]` print hoga",
+            "`ProgrammingError`, kyunki string \"Asha\" ko 4 alag parameters maana gaya",
+            "`[]` print hoga, kyunki name ko quotes nahi mile",
+            "Query SQL injection ka shikaar ho jaati hai aur saari rows aati hain"
+          ],
+          "answer": 1,
+          "explanation": "`execute` ka doosra argument parameters ka sequence hona chahiye. String bhi ek sequence hai, isliye \"Asha\" ke 4 characters 4 parameters ban jaate hain, jabki query mein ek hi `?` hai: sqlite3 `ProgrammingError` (incorrect number of bindings) deta hai. Option A tab sahi hota jab `(name,)` likha hota. Option C ka trap ye sochna hai ki placeholder ko quotes chahiye; driver value ko khud sahi type mein bhejta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w7-q5"
+        },
+        {
+          "question": "PostgreSQL mein `emp` table par do AFTER UPDATE triggers hain (code dekho). Phir do UPDATE statements chalte hain: pehla 3 rows badalta hai, doosra 0 rows. Dono statements ke baad `audit_row()` aur `audit_stmt()` kul kitni baar chale?",
+          "code": "-- PostgreSQL, fictional HR database\nCREATE TRIGGER t_row  AFTER UPDATE ON emp\n    FOR EACH ROW       EXECUTE FUNCTION audit_row();\nCREATE TRIGGER t_stmt AFTER UPDATE ON emp\n    FOR EACH STATEMENT EXECUTE FUNCTION audit_stmt();\n\nUPDATE emp SET salary = salary + 1000 WHERE dept = 'Data';  -- 3 rows match\nUPDATE emp SET salary = salary + 1000 WHERE dept = 'HR';    -- 0 rows match",
+          "options": [
+            "audit_row: 3, audit_stmt: 2",
+            "audit_row: 3, audit_stmt: 1",
+            "audit_row: 4, audit_stmt: 2",
+            "audit_row: 2, audit_stmt: 2"
+          ],
+          "answer": 0,
+          "explanation": "Row-level trigger har affected row ke liye ek baar chalta hai: 3 + 0 = 3. Statement-level trigger har statement ke liye ek baar chalta hai, chahe koi row na badle: 1 + 1 = 2. Option B ka trap ye maanna hai ki 0 rows wale UPDATE par statement trigger nahi chalta; chalta hai, kyunki woh statement ke event par juda hai, rows par nahi. Option D row trigger ko bhi statement ki tarah ginta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w7-q6"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "title": "Storage, File Organisation and Buffer Management",
+      "summary": "Is week aap storage hierarchy, disk access time ka hisaab, blocks aur blocking factor, records ko pages mein rakhne ke tareeke, file organisations, aur buffer manager ki replacement policies (LRU, MRU) seekhoge, numbers ke saath.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Storage hierarchy**: cache aur main memory (volatile, nanoseconds), flash/SSD (non-volatile, random read lagbhag tens of microseconds), magnetic disk (milliseconds), aur tape/archival (sasta, sirf sequential). Upar jaao to tez aur mehenga, neeche jaao to sasta aur slow. Database ka data non-volatile storage par rehta hai aur kaam ke liye memory mein laaya jaata hai.",
+        "**Disk access time** = seek time (head ko sahi track tak le jaana) + **rotational latency** (sector ke head ke neeche aane ka intezaar) + transfer time. Average rotational latency = aadhi rotation: 7200 rpm par ek rotation 60000 / 7200 = 8.33 ms, to average 4.17 ms. Seek aur rotation har random access par lagte hain, isliye **sequential I/O random I/O se kai guna tez** hai.",
+        "**SSD**: koi moving part nahi, isliye seek/rotation nahi; random reads HDD se bahut sasti. Par flash ko likhne se pehle poora erase block mitana padta hai, isliye controller (FTL) writes ko remap karta hai aur wear-leveling karta hai. Sequential access SSD par bhi random se tez rehta hai.",
+        "**Blocks (pages)**: disk aur memory ke beech transfer ki unit, aam taur par 4–16 KB. DBMS mein cost **block transfers** mein gini jaati hai. Fixed-length records aur unspanned storage mein **blocking factor** bfr = ⌊B / R⌋ (block size / record size) aur file ke blocks = ⌈n / bfr⌉. Block ka bacha hua tukda waste hota hai.",
+        "**Record formats**: fixed-length records mein delete hui jagah ko **free list** se track karte hain. Variable-length records (VARCHAR) ke liye **slotted page**: header mein slot array (har record ka offset aur length), records page ke end se upar badhte hain. Bahar ke pointers slot ko point karte hain, isliye page ke andar record khiskaane par bhi pointer theek rehta hai.",
+        "**File organisations**: **heap file** (record kahin bhi; insert sasta, search ke liye poora scan, average b/2 blocks), **sequential file** (search key par sorted; binary search ⌈log₂ b⌉ blocks, par insert mehenga, overflow blocks lagte hain), **hash file** (bucket = h(key)), aur **multitable clustering** (related rows ek block mein). Analytics ke liye **column-oriented** storage sirf zaroori columns padhta hai aur compress achhe se hota hai.",
+        "**Buffer manager**: memory mein frames ka **buffer pool**. Block maanga gaya: pool mein hai to wahi do, warna kisi frame ko replace karke disk se laao. **Pin count** wala block evict nahi ho sakta; **dirty** block evict karne se pehle disk par likhna padta hai. Policies: **LRU** (sabse purana use hua block nikaalo), **MRU** (sabse haal mein use hua nikaalo, jo nested-loop join jaise baar-baar ke sequential scans mein behtar hai), toss-immediate. Recovery ke liye **forced output** bhi hota hai.",
+        "**RAID (short)**: kai disks ko ek jaisa dikhana. RAID 0 = striping (speed, koi redundancy nahi), RAID 1 = mirroring (har block ki copy), RAID 5 = block striping + distributed parity (ek disk fail ho to data wapas ban jaata hai). Database logs aksar RAID 1 par rakhe jaate hain kyunki woh write-heavy hain."
+      ],
+      "example": {
+        "problem": "Ek fictional ride-sharing company ki `trips` table mein 2,000,000 fixed-length records hain, har record 200 bytes. Block size 8192 bytes, unspanned. Disk par ek random block access ka seek + rotation = 8 ms aur ek block transfer = 0.04 ms. (a) bfr aur blocks nikaalo. (b) Poori file ek baar sequentially padhne ka time. (c) Agar 1% records (20,000) ek-ek karke random block reads se laaye jaayein to time.",
+        "steps": [
+          "bfr = ⌊8192 / 200⌋ = ⌊40.96⌋ = 40 records per block.",
+          "Blocks = ⌈2,000,000 / 40⌉ = 50,000.",
+          "Sequential scan: ek baar seek + rotation (8 ms) + 50,000 × 0.04 ms = 8 + 2000 = 2008 ms ≈ 2 s.",
+          "Random reads: har record ke liye alag block, 20,000 × (8 + 0.04) ms = 160,800 ms ≈ 161 s.",
+          "Sirf 1% data random tareeke se laana poori table sequentially padhne se lagbhag 80 guna slow hai. Isliye optimizer kam selectivity par bhi kabhi-kabhi index chhod kar full scan chunta hai.",
+          "Answer: **bfr = 40, 50,000 blocks; full scan ≈ 2.008 s; 20,000 random reads ≈ 160.8 s**."
+        ]
+      },
+      "mistakes": [
+        "Average rotational latency mein poori rotation ka time le lena. Average aadhi rotation hai: 0.5 × (60 / rpm) seconds.",
+        "Blocking factor ko round up karna ya bytes ko seedha block size se divide karke blocks nikaalna. Unspanned mein bfr = ⌊B / R⌋ (neeche round), phir blocks = ⌈n / bfr⌉ (upar round).",
+        "Ye maan lena ki LRU hamesha sabse achha hai. Buffer se bade relation ko baar-baar sequentially scan karne par LRU har request par miss deta hai; wahan MRU behtar hai."
+      ],
+      "revision": [
+        "Access time = seek + rotational latency + transfer; avg latency = aadhi rotation.",
+        "Sequential I/O random I/O se bahut tez (seek/rotation ek hi baar).",
+        "bfr = ⌊B / R⌋, blocks = ⌈n / bfr⌉.",
+        "Heap search avg b/2; sorted file binary search ⌈log₂ b⌉.",
+        "Pinned block evict nahi; dirty block pehle likho.",
+        "Repeated scan > buffer: LRU sab miss, MRU behtar."
+      ],
+      "questions": [
+        {
+          "question": "Ek disk 7200 rpm par ghoomti hai. Average rotational latency kitni hai?",
+          "options": [
+            "8.33 ms",
+            "4.17 ms",
+            "0.14 ms",
+            "2.08 ms"
+          ],
+          "answer": 1,
+          "explanation": "Ek rotation = 60 / 7200 s = 8.33 ms. Average mein sector ko aadhi rotation ka intezaar karna padta hai: 8.33 / 2 = 4.17 ms. Option A ka trap poori rotation ka time lena hai (woh worst case hai). Option D ne do baar aadha kar diya.",
+          "difficulty": "easy",
+          "id": "dbms-w8-q1"
+        },
+        {
+          "question": "Ek file mein 10,000 fixed-length records hain, har record 150 bytes. Block size 4096 bytes hai aur records blocks ke beech nahi tootte (unspanned). Blocking factor aur file ke blocks kitne hain?",
+          "options": [
+            "bfr 28, 358 blocks",
+            "bfr 27, 370 blocks",
+            "bfr 27.3, 367 blocks",
+            "bfr 27, 371 blocks"
+          ],
+          "answer": 3,
+          "explanation": "bfr = ⌊4096 / 150⌋ = ⌊27.3⌋ = 27 (aadha record block mein nahi aa sakta). Blocks = ⌈10,000 / 27⌉ = ⌈370.4⌉ = 371; 370 blocks mein sirf 9990 records aate. Option A ka trap bfr ko upar round karna hai. Option C total bytes ko block size se divide karta hai, jo spanned storage maan leta hai. Option B ne blocks ko neeche round kar diya.",
+          "difficulty": "easy",
+          "id": "dbms-w8-q2"
+        },
+        {
+          "question": "Ek HDD ka average seek time 4 ms hai, speed 10,000 rpm, aur ek block ka transfer 0.02 ms. (i) 100 random (bikhre hue) blocks padhne mein, aur (ii) disk par lagaatar rakhe 100 blocks ek saath padhne mein kitna time lagega? (Average rotational latency lo.)",
+          "options": [
+            "(i) 702 ms, (ii) 9 ms",
+            "(i) 702 ms, (ii) 702 ms",
+            "(i) 1002 ms, (ii) 12 ms",
+            "(i) 402 ms, (ii) 6 ms"
+          ],
+          "answer": 0,
+          "explanation": "10,000 rpm par ek rotation 6 ms, average latency 3 ms. Random: har block par seek + latency + transfer = 4 + 3 + 0.02 = 7.02 ms, × 100 = 702 ms. Sequential: seek aur latency sirf ek baar, phir 100 transfers: 4 + 3 + 100 × 0.02 = 9 ms. Option C ka trap poori rotation (6 ms) lena hai; option D rotational latency bhool jaata hai; option B sequential aur random ko barabar maanta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w8-q3"
+        },
+        {
+          "question": "Ek file 1000 blocks ki hai aur search key ek unique key hai; maangi gayi record file mein maujood hai. Heap (unordered) file par linear search mein average kitne blocks padhne padenge, aur agar file isi key par sorted ho to binary search mein worst case kitne?",
+          "options": [
+            "Heap 1000, sorted 10",
+            "Heap 500, sorted 500",
+            "Heap 500, sorted 10",
+            "Heap 1000, sorted 1"
+          ],
+          "answer": 2,
+          "explanation": "Unique key aur record maujood hai, isliye heap scan record milte hi ruk jaata hai; average aadhi file = 1000 / 2 = 500 blocks. Sorted file par blocks par binary search: ⌈log₂ 1000⌉ = 10 block reads. Option A ka trap heap ka worst case (ya non-key search) lena hai, jahan poori 1000 blocks padhni padti hain. Option B sort hone ka fayda hi nahi uthata.",
+          "difficulty": "medium",
+          "id": "dbms-w8-q4"
+        },
+        {
+          "question": "Buffer pool mein 3 frames hain, shuru mein khaali. Blocks is order mein maange jaate hain: 1, 2, 3, 1, 4, 1, 2, 5, 1, 3. LRU replacement ke saath kitne misses (disk reads) honge?",
+          "options": [
+            "8",
+            "7",
+            "6",
+            "10"
+          ],
+          "answer": 1,
+          "explanation": "1, 2, 3: 3 misses. 1: hit. 4: miss, LRU = 2 nikla → {1, 3, 4}. 1: hit. 2: miss, LRU = 3 → {1, 4, 2}. 5: miss, LRU = 4 → {1, 2, 5}. 1: hit. 3: miss, LRU = 2 → {1, 5, 3}. Kul 7 misses. Option A FIFO ka answer hai (FIFO 1 ko pehle aane ki wajah se nikaal deta hai, chahe woh baar-baar use ho raha ho). Option C MRU ka answer hai.",
+          "difficulty": "medium",
+          "id": "dbms-w8-q5"
+        },
+        {
+          "question": "Nested-loop join mein ek 4-block relation ko do baar poora scan kiya jaata hai: requests 1, 2, 3, 4, 1, 2, 3, 4. Buffer mein 3 frames hain, shuru mein khaali. LRU aur MRU replacement mein kramashah kitne misses honge?",
+          "options": [
+            "LRU 8, MRU 5",
+            "LRU 5, MRU 8",
+            "LRU 8, MRU 8",
+            "LRU 6, MRU 5"
+          ],
+          "answer": 0,
+          "explanation": "LRU: 1, 2, 3 miss; 4 par LRU = 1 nikla; phir 1 maanga to woh abhi-abhi nikla tha, miss, aur 2 nikla; isi tarah har request miss: 8. MRU: 1, 2, 3 miss; 4 par MRU = 3 nikla → {1, 2, 4}; 1 hit, 2 hit; 3 miss, MRU = 2 nikla → {1, 4, 3}; 4 hit. Misses = 5. Option B dono ko ulta karta hai; option C ka trap ye sochna hai ki 4 blocks 3 frames mein fit hi nahi hote to policy se fark nahi padta. Sequential scan buffer se bada ho to LRU sabse bura kaam karta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w8-q6"
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "title": "Indexing: B+ Trees and Hashing",
+      "summary": "Is week aap ordered indices (clustering, secondary, dense, sparse, multi-level), B+ tree ka structure, order aur height ka hisaab, insertion mein node split, aur static aur extendible hashing seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Index ka kaam**: index (search key, pointer) entries ka chhota structure hai jo poori file scan kiye bina record tak pahunchata hai. Do family: **ordered indices** (sorted keys, range queries ke liye bhi) aur **hash indices** (sirf equality ke liye tez). Har index ka kharcha: extra space, aur har INSERT/UPDATE/DELETE par index bhi update karna. Isliye 'har column par index' achha idea nahi.",
+        "**Clustering vs secondary index**: **clustering (primary) index** ki search key wahi hai jis order mein file sorted hai, isliye ek table par ek hi ho sakta hai, aur range scan lagaatar blocks padhta hai. **Secondary index** file ke order se alag key par hota hai; usse range scan har record ke liye alag random block padh sakta hai, jo bahut mehenga hai.",
+        "**Dense vs sparse**: **dense index** mein har search-key value ki entry hoti hai; **sparse index** mein sirf kuch values ki (aam taur par har block ki pehli key), aur key dhoondh kar us block se aage scan karte ho. Sparse sirf clustering index ke liye kaam karta hai kyunki file sorted honi chahiye; secondary index hamesha dense hota hai. Bada index khud memory mein na aaye to us par ek aur sparse index: **multi-level index**.",
+        "**B+ tree structure**: balanced tree jisme **saari leaves ek hi depth** par hain. Order n wala node: zyada se zyada n pointers aur n − 1 keys. Root ke alawa internal node mein kam se kam ⌈n/2⌉ children, leaf mein kam se kam ⌈(n − 1)/2⌉ keys; root ke kam se kam 2 children (jab tak woh khud leaf na ho). Leaves aapas mein linked hoti hain, isliye range query ek leaf dhoondh kar aage chalti jaati hai.",
+        "**Order aur height ka hisaab**: node ek disk block mein fit ho: n·P + (n − 1)·K ≤ B (P = pointer size, K = key size). 4 KB block, 8-byte pointer, 12-byte key par n = 205. Fan-out itna bada hota hai ki height ≤ ⌈log_⌈n/2⌉(K)⌉ crores keys par bhi 3–4 rehti hai. Point lookup = height jitne node reads + 1 data block.",
+        "**Insertion aur deletion**: sahi leaf dhoondho, key sorted jagah daalo. Leaf overflow ho to use do mein todo (pehle ⌈n/2⌉ keys left mein) aur right leaf ki pehli key parent mein **copy** karo. Internal node overflow ho to beech ki key parent mein **push up** hoti hai (copy nahi). Root toota to height 1 badhti hai: B+ tree upar ki taraf badhta hai. Delete par underflow ho to sibling se keys udhaar lo ya merge karo.",
+        "**Static hashing**: bucket = h(key) mod N. Equality lookup lagbhag 1–2 block reads. Do problem: keys ek bucket mein jama ho jaayein (skew, jaise sab keys mod 7 par 1) ya data badh jaaye, to **overflow chains** lambi ho jaati hain. Hash index range query (`BETWEEN`) mein madad nahi karta, kyunki hashing order tod deti hai.",
+        "**Extendible hashing**: directory mein 2^d pointers (**global depth** d), har bucket ki apni **local depth** d′ ≤ d. Bucket overflow par: agar d′ < d to sirf bucket todo aur directory pointers theek karo; agar d′ = d to pehle directory **double** karo (d + 1), phir bucket todo. Bas ek bucket split hota hai, poori file rehash nahi. SQL mein: `CREATE INDEX idx_pay_user ON payment(user_id);` aur composite index (a, b) sirf leftmost prefix (a) wali queries mein kaam aata hai."
+      ],
+      "example": {
+        "problem": "Ek fictional payments table mein 5,000,000 records hain (100 bytes each), aur `txn_id` (8-byte key) par B+ tree hai. Block 8192 bytes, pointer 8 bytes. Order n, tree ki levels (sab nodes full maano), ek lookup ka I/O, aur full table scan ke blocks nikaalo.",
+        "steps": [
+          "n·8 + (n − 1)·8 ≤ 8192 ⇒ 16n ≤ 8200 ⇒ n = 512. Leaf mein n − 1 = 511 keys.",
+          "Leaves = ⌈5,000,000 / 511⌉ = 9785.",
+          "Ek level upar = ⌈9785 / 512⌉ = 20 nodes; uske upar ⌈20 / 512⌉ = 1, yaani root. Total 3 levels.",
+          "Point lookup: 3 node reads (root → internal → leaf) + 1 data block = 4 block reads.",
+          "Full scan: bfr = ⌊8192 / 100⌋ = 81, blocks = ⌈5,000,000 / 81⌉ = 61,729.",
+          "Answer: **n = 512, 3 levels, lookup = 4 I/Os, jabki full scan 61,729 blocks padhega**."
+        ]
+      },
+      "mistakes": [
+        "B+ tree order nikaalte waqt 4096 / (P + K) karke neeche round kar dena. Sahi inequality n·P + (n − 1)·K ≤ B hai, kyunki keys pointers se ek kam hoti hain; 8/12 bytes par ye 204 nahi, 205 deta hai.",
+        "Leaf split aur internal split ko ek jaisa samajhna. Leaf split mein separator key parent mein copy hoti hai aur leaf mein bhi rehti hai; internal split mein beech ki key upar chali jaati hai aur dono hisson se hat jaati hai.",
+        "Extendible hashing mein har overflow par directory double kar dena. Doubling tabhi chahiye jab bucket ki local depth global depth ke barabar ho."
+      ],
+      "revision": [
+        "Clustering index: file usi key par sorted; ek hi ho sakta hai. Secondary: hamesha dense.",
+        "Sparse sirf clustering index ke saath.",
+        "Order: n·P + (n − 1)·K ≤ B.",
+        "Lookup cost = height + 1 data block; height ≤ ⌈log_⌈n/2⌉(K)⌉.",
+        "Leaf split: copy up; internal split: push up; root split height badhata hai.",
+        "Extendible: local = global depth ho tabhi directory double."
+      ],
+      "questions": [
+        {
+          "question": "Sparse index kis condition mein use kiya ja sakta hai?",
+          "options": [
+            "Jab search key unique ho, file ka order kuch bhi ho",
+            "Jab file heap (unordered) ho",
+            "Jab file isi search key par sorted ho (clustering index)",
+            "Sirf jab index hash structure ho"
+          ],
+          "answer": 2,
+          "explanation": "Sparse index mein har key ki entry nahi hoti; hum sabse paas wali chhoti entry se block par jaakar aage sequentially dhoondhte hain. Ye tabhi sahi hai jab records search key ke order mein rakhe hon, yaani clustering index. Option A ka trap ye hai ki uniqueness kaafi lagti hai, par unsorted file mein key ka block entry se pata hi nahi chalega. Option B ke heap file par sirf dense index chalega.",
+          "difficulty": "easy",
+          "id": "dbms-w9-q1"
+        },
+        {
+          "question": "Static hash index mein 7 buckets hain aur h(k) = k mod 7. Keys 15, 22, 8, 29, 36, 10, 3 insert ki gayi. Bucket 1 mein kitni keys hongi?",
+          "options": [
+            "5",
+            "1",
+            "7",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "15, 22, 8, 29, 36 sabka 7 se remainder 1 hai (15 = 14 + 1, 22 = 21 + 1, 8 = 7 + 1, 29 = 28 + 1, 36 = 35 + 1), aur 10, 3 ka remainder 3. Isliye bucket 1 mein 5 keys. Ye skew ka example hai: buckets 7 hain par keys do mein hi jama, to overflow chains banti hain. Option B ka trap ye maanna hai ki hashing keys ko barabar baant degi.",
+          "difficulty": "easy",
+          "id": "dbms-w9-q2"
+        },
+        {
+          "question": "B+ tree ka ek node ek disk block (4096 bytes) mein fit hona chahiye. Search key 12 bytes ki hai aur pointer 8 bytes ka. Node ka maximum order n (pointers ki sankhya) kya hoga?",
+          "options": [
+            "204",
+            "206",
+            "341",
+            "205"
+          ],
+          "answer": 3,
+          "explanation": "Node mein n pointers aur n − 1 keys: 8n + 12(n − 1) ≤ 4096 ⇒ 20n ≤ 4108 ⇒ n ≤ 205.4, to n = 205 (8 × 205 + 12 × 204 = 4088 ≤ 4096; 206 par 4108 > 4096). Option A ka trap 4096 / (8 + 12) = 204.8 ko neeche round karna hai, yaani keys ko bhi n maan lena. Option C sirf keys gin kar 4096 / 12 karta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w9-q3"
+        },
+        {
+          "question": "Ek B+ tree 2,000,000 records ko index karta hai. Har leaf mein 100 record-pointers aate hain aur har internal node ka fan-out 120 hai; maano saare nodes poore bhare hain. Leaf level ko bhi ek level gino. Tree mein kitne levels honge, aur ek key ke record tak pahunchne mein kitne block reads lagenge (data block samet)?",
+          "options": [
+            "3 levels, 4 reads",
+            "4 levels, 5 reads",
+            "4 levels, 4 reads",
+            "5 levels, 6 reads"
+          ],
+          "answer": 1,
+          "explanation": "Leaves = 2,000,000 / 100 = 20,000. Upar ka level = ⌈20,000 / 120⌉ = 167 nodes, phir ⌈167 / 120⌉ = 2 nodes, phir 1 root. Levels: leaf, 167 wala, 2 wala, root = 4. Lookup = 4 node reads + 1 data block = 5. Option A ka trap 167 → 2 wala level miss karna hai (167 ek node mein fit nahi hote). Option C data block padhna bhool jaata hai.",
+          "difficulty": "medium",
+          "id": "dbms-w9-q4"
+        },
+        {
+          "question": "Extendible hashing mein global depth 2 hai (directory mein 4 entries). Ek bucket jiski local depth 2 hai, naya record aane par overflow hota hai. Split ke baad directory mein kitni entries hongi aur do naye buckets ki local depth kya hogi?",
+          "options": [
+            "8 entries; dono buckets ki local depth 3",
+            "4 entries; dono buckets ki local depth 3",
+            "8 entries; dono buckets ki local depth 2",
+            "6 entries; dono buckets ki local depth 3"
+          ],
+          "answer": 0,
+          "explanation": "Local depth (2) global depth (2) ke barabar hai, matlab is bucket ko sirf ek directory entry point kar rahi hai; bucket ko todne ke liye ek aur hash bit chahiye. Isliye directory double hoti hai: global depth 3, 2³ = 8 entries. Bucket ke records teesre bit ke hisaab se do buckets mein jaate hain, dono ki local depth 3. Option B ka trap local < global wala case hai, jahan bina doubling ke split ho jaata. Directory hamesha 2^d hoti hai, isliye 6 (option D) possible nahi.",
+          "difficulty": "medium",
+          "id": "dbms-w9-q5"
+        },
+        {
+          "question": "Order n = 4 ka khaali B+ tree hai (har node mein max 4 pointers, yaani leaf mein max 3 keys). Leaf mein 4th key aate hi woh split hota hai: pehli 2 keys left leaf mein, baaki 2 right leaf mein, aur right leaf ki pehli key parent mein copy hoti hai. Keys 10, 20, 30, 40, 50, 60, 70, 80, 90 isi order mein insert ki gayi. Ant mein kitne leaf nodes hain aur root mein kaunsi keys hain?",
+          "options": [
+            "3 leaves; root [40, 70]",
+            "5 leaves; root [30, 50, 70, 90]",
+            "4 leaves; root [30, 50, 70]",
+            "4 leaves; root [20, 40, 60]"
+          ],
+          "answer": 2,
+          "explanation": "10, 20, 30 ek leaf. 40 aate hi [10, 20] | [30, 40], root [30]. 50 → [30, 40, 50]; 60 par split [30, 40] | [50, 60], root [30, 50]. 70 → [50, 60, 70]; 80 par split [50, 60] | [70, 80], root [30, 50, 70]. 90 → [70, 80, 90], abhi 3 keys hain, split nahi. Isliye 4 leaves aur root [30, 50, 70] (root mein 4 pointers, full par overflow nahi). Option D ka trap left leaf ki aakhri key ko separator banana hai; option B mein root ke paas 4 keys hain, jo order 4 mein possible hi nahi (max 3); option A 3 : 1 split karta hai. (Dhyaan do: ascending inserts se leaves sirf aadhi bharti hain.)",
+          "difficulty": "hard",
+          "id": "dbms-w9-q6"
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "title": "Transactions and Serializability",
+      "summary": "Is week aap transaction aur ACID properties ka matlab, transaction states, schedules, conflict serializability aur precedence graph, view serializability, aur recoverable, cascadeless aur strict schedules seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Transaction**: kaam ki ek logical unit jo kai reads/writes se banti hai aur ya to poori `COMMIT` hoti hai ya `ROLLBACK`. Theory mein ise read(X)/write(X) operations ki sequence maante hain, jaise transfer = read(A), A = A − 500, write(A), read(B), B = B + 500, write(B).",
+        "**ACID**: **Atomicity**: sab ya kuch nahi; crash ke baad adhoora kaam log se undo hota hai (recovery manager). **Consistency**: ek sahi state se doosri sahi state; constraints + application logic ki zimmedari. **Isolation**: saath chal rahe transactions ka result kisi serial order jaisa dikhe (concurrency control). **Durability**: commit hua to crash ke baad bhi rahega (log stable storage par).",
+        "**Transaction states**: active → (aakhri statement ke baad) partially committed → committed. Beech mein error aaya to failed → aborted: changes rollback, phir transaction restart ya kill. Jab tak log stable storage par na pahunche, partially committed transaction committed nahi maana jaata.",
+        "**Schedule**: kai transactions ke operations ka time order. **Serial** schedule mein ek transaction poora hone ke baad hi doosra shuru hota hai: hamesha sahi, par slow. Concurrent schedules throughput aur response time sudhaarte hain, par galat interleaving se **lost update**, **dirty read** (uncommitted data padhna) aur **unrepeatable read** jaisi problems aati hain.",
+        "**Conflicting operations**: do operations conflict karte hain agar (1) alag transactions ke hain, (2) same data item par hain, aur (3) kam se kam ek write hai (R-W, W-R, W-W). Non-conflicting adjacent operations ko swap karke jo schedule mile woh **conflict-equivalent** hai. Schedule **conflict serializable** hai agar woh kisi serial schedule ke conflict-equivalent ho.",
+        "**Precedence graph**: har transaction ek node; Ti → Tj edge agar Ti ka koi operation Tj ke kisi conflicting operation se pehle aata hai. Graph **acyclic** ⇔ conflict serializable. Equivalent serial order(s) graph ke **topological sort** se milte hain; ek se zyada bhi ho sakte hain.",
+        "**View serializability**: do schedules view-equivalent hain agar (1) har item ka initial read same transaction kare, (2) har read same writer se padhe (reads-from), (3) har item ka final write same transaction kare. Har conflict-serializable schedule view-serializable hai; ulta sirf **blind writes** (bina padhe likhna) ki wajah se toot sakta hai. View serializability test karna NP-complete hai, isliye systems conflict serializability use karte hain.",
+        "**Recoverability**: **recoverable** schedule: agar Tj ne Ti ka likha data padha to Ti, Tj se pehle commit kare (warna Tj commit ho chuka aur Ti abort hua to undo namumkin). **Cascadeless**: transactions sirf committed data padhein, taaki ek abort se doosron ka **cascading rollback** na ho. **Strict**: jab tak aakhri writer commit/abort na kare, us item ko na koi padhe na likhe. Strict ⊂ cascadeless ⊂ recoverable."
+      ],
+      "example": {
+        "problem": "Schedule S: R1(A), R2(A), W1(B), R3(B), W2(C), W3(A). Precedence graph banao (code dekho), batao S conflict serializable hai ya nahi, aur saare equivalent serial orders do.",
+        "steps": [
+          "Har pair dekho jo alag transactions ka, same item par, aur kam se kam ek write ho.",
+          "R1(A) … W3(A): T1 → T3. R2(A) … W3(A): T2 → T3.",
+          "W1(B) … R3(B): T1 → T3 (pehle wala edge hi). W2(C) se kisi ka conflict nahi, kyunki C koi aur use nahi karta.",
+          "R1(A) aur R2(A) dono reads hain, conflict nahi; isliye T1 aur T2 ke beech koi edge nahi.",
+          "Edges { T1 → T3, T2 → T3 }: koi cycle nahi, to S conflict serializable hai.",
+          "Topological orders: T3 aakhri hona chahiye, T1 aur T2 kisi bhi order mein.",
+          "Answer: **conflict serializable; equivalent serial orders T1 → T2 → T3 aur T2 → T1 → T3** (code output `[(1, 3), (2, 3)]`)."
+        ],
+        "code": "schedule = [(\"R\", 1, \"A\"), (\"R\", 2, \"A\"), (\"W\", 1, \"B\"),\n            (\"R\", 3, \"B\"), (\"W\", 2, \"C\"), (\"W\", 3, \"A\")]\n\nedges = set()\nfor i, (op1, t1, x1) in enumerate(schedule):\n    for op2, t2, x2 in schedule[i + 1:]:\n        # conflict: alag transactions, same item, kam se kam ek write\n        if t1 != t2 and x1 == x2 and \"W\" in (op1, op2):\n            edges.add((t1, t2))\n\nprint(sorted(edges))"
+      },
+      "mistakes": [
+        "Do reads ko conflict maan lena. R1(A) aur R2(A) ko swap karne se kuch nahi badalta; conflict ke liye kam se kam ek write chahiye.",
+        "Ek hi transaction ke operations par edge bana dena. Edge hamesha alag transactions ke beech hota hai; ek transaction ka apna order to hamesha wahi rehta hai.",
+        "Recoverable ko cascadeless samajh lena. Recoverable sirf commit order ki shart hai; uncommitted data padhna phir bhi allowed hai, isliye cascading rollback ho sakta hai."
+      ],
+      "revision": [
+        "ACID: Atomicity (undo), Consistency, Isolation (concurrency control), Durability (log).",
+        "Conflict = alag txn + same item + kam se kam ek write.",
+        "Precedence graph acyclic ⇔ conflict serializable; topo sort = serial order.",
+        "Conflict serializable ⇒ view serializable; ulta blind writes se toot sakta hai.",
+        "Recoverable: writer pehle commit. Cascadeless: sirf committed padho.",
+        "Strict ⊂ cascadeless ⊂ recoverable."
+      ],
+      "questions": [
+        {
+          "question": "Ek fictional bank mein transfer ke dauraan account A se ₹500 kat gaye, par B mein jama hone se pehle server crash ho gaya. Restart par DBMS ne A ka debit undo kar diya. Ye kaunsi ACID property ki guarantee hai?",
+          "options": [
+            "Consistency",
+            "Atomicity",
+            "Isolation",
+            "Durability"
+          ],
+          "answer": 1,
+          "explanation": "Transaction commit nahi hua tha, isliye 'sab ya kuch nahi' ke niyam se uska adhoora kaam undo hua: ye atomicity hai. Option D ka trap crash/restart dekh kar durability bolna hai; durability committed transactions ke changes bachane ki baat hai. Consistency (option A) result hai jo atomicity ki madad se bachti hai, par jo mechanism undo karta hai woh atomicity ka hai.",
+          "difficulty": "easy",
+          "id": "dbms-w10-q1"
+        },
+        {
+          "question": "Inmein se kaunsa operations ka pair conflicting hai?",
+          "options": [
+            "R1(A) aur R2(A)",
+            "R1(A) aur W2(B)",
+            "W1(A) aur R1(A)",
+            "R1(A) aur W2(A)"
+          ],
+          "answer": 3,
+          "explanation": "Conflict ke liye teeno shartein chahiye: alag transactions, same item, kam se kam ek write. R1(A) aur W2(A) teeno poori karte hain. Option A mein dono reads hain (swap karne se kuch nahi badalta); option B mein items alag hain; option C ka trap ye hai ki write aur read same item par hain, par dono ek hi transaction T1 ke hain.",
+          "difficulty": "easy",
+          "id": "dbms-w10-q2"
+        },
+        {
+          "question": "Schedule S: R1(A), R2(A), W1(A), W2(A). S ke baare mein kya sahi hai?",
+          "options": [
+            "Conflict serializable hai, T1 → T2 ke equivalent",
+            "Conflict serializable hai, T2 → T1 ke equivalent",
+            "Conflict serializable nahi hai: precedence graph mein T1 → T2 aur T2 → T1 dono edges hain",
+            "Ye serial schedule hai, isliye serializable hai"
+          ],
+          "answer": 2,
+          "explanation": "R1(A) … W2(A) se T1 → T2, aur R2(A) … W1(A) se T2 → T1. Cycle hai, isliye conflict serializable nahi. Ye classic lost update hai: dono ne purani A padhi, aur T2 ka write T1 ka update mita deta hai. Option A ka trap sirf W1(A) … W2(A) wala edge dekh kar T1 → T2 bol dena hai, R2(A) … W1(A) wala ulta edge bhool kar. Operations interleaved hain, isliye ye serial bhi nahi (option D).",
+          "difficulty": "medium",
+          "id": "dbms-w10-q3"
+        },
+        {
+          "question": "Schedule S: R3(B), R1(A), W1(B), W1(A), R2(A), W2(A). S kis serial order ke conflict-equivalent hai?",
+          "options": [
+            "T1 → T2 → T3",
+            "T3 → T1 → T2",
+            "T1 → T3 → T2",
+            "Kisi ke nahi; S conflict serializable nahi hai"
+          ],
+          "answer": 1,
+          "explanation": "B par: R3(B) … W1(B) se T3 → T1. A par: R1(A) … W2(A), W1(A) … R2(A), W1(A) … W2(A) teeno se T1 → T2. Edges { T3 → T1, T1 → T2 }, koi cycle nahi, aur topological order sirf T3 → T1 → T2. Option A ka trap transactions ko numbering ya pehle operation ke hisaab se lagana hai; T3 ka read T1 ke write se pehle hai, isliye T3 ko pehle aana hi hoga.",
+          "difficulty": "medium",
+          "id": "dbms-w10-q4"
+        },
+        {
+          "question": "Schedule S: W1(A), R2(A), W2(B), C1, C2 (C = commit). S ke baare mein kya sahi hai?",
+          "options": [
+            "Recoverable hai, par cascadeless nahi",
+            "Recoverable nahi hai",
+            "Cascadeless hai, par strict nahi",
+            "Strict hai"
+          ],
+          "answer": 0,
+          "explanation": "T2 ne A ko T1 ke likhne ke baad padha (T2 reads from T1), aur T1 (C1) T2 (C2) se pehle commit hota hai: recoverable. Par T2 ne A tab padha jab T1 ne abhi commit nahi kiya tha, yaani uncommitted data; agar T1 C1 se pehle abort hota to T2 ko bhi rollback karna padta. Isliye cascadeless nahi, aur strict bhi nahi. Option B ka trap uncommitted read dekhte hi 'recoverable nahi' bol dena hai; recoverability sirf commit order dekhti hai.",
+          "difficulty": "medium",
+          "id": "dbms-w10-q5"
+        },
+        {
+          "question": "Schedule S: R1(A), W2(A), W1(A), W3(A). S ke baare mein kya sahi hai?",
+          "options": [
+            "Conflict serializable bhi hai aur view serializable bhi",
+            "View serializable hai (T1 → T2 → T3 ke view-equivalent), par conflict serializable nahi",
+            "Na conflict serializable, na view serializable",
+            "Conflict serializable hai, par view serializable nahi"
+          ],
+          "answer": 1,
+          "explanation": "Conflicts: R1(A) … W2(A) se T1 → T2, aur W2(A) … W1(A) se T2 → T1: cycle, isliye conflict serializable nahi. View check serial T1 → T2 → T3 se: dono mein A ka initial read T1 karta hai, koi aur read nahi, aur final write T3 ka hai. Teeno shartein milti hain, to view serializable. Yahan W2(A) aur W3(A) blind writes hain jinka likha koi nahi padhta. Option C ka trap cycle dekhte hi 'serializable nahi' bolna hai. Option D possible hi nahi, kyunki har conflict-serializable schedule view-serializable hota hai.",
+          "difficulty": "hard",
+          "id": "dbms-w10-q6"
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "title": "Concurrency Control and Recovery",
+      "summary": "Is week aap shared/exclusive locks, two-phase locking aur uske strict/rigorous roop, deadlock prevention aur detection, aur log-based recovery (WAL, undo/redo, checkpoints) ke saath backup aur restore seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Lock-based concurrency control**: read ke liye **shared (S)** lock, write ke liye **exclusive (X)** lock. Compatibility: S ke saath S chal sakta hai; X kisi ke saath nahi. Lock manager ek lock table aur har item ki wait queue rakhta hai. Sirf locks lena kaafi nahi: agar transaction jaldi unlock karke baad mein phir lock le, to non-serializable schedule ban sakta hai.",
+        "**Two-phase locking (2PL)**: har transaction pehle **growing phase** mein sirf locks leta hai, phir **shrinking phase** mein sirf chhodta hai; ek baar koi lock chhoda to naya lock nahi le sakta. Jis pal aakhri lock mila woh **lock point** hai. 2PL **conflict serializability** guarantee karta hai (serial order = lock points ka order), par deadlock aur cascading rollback nahi rokta.",
+        "**Strict aur rigorous 2PL**: **strict 2PL** mein X locks commit/abort tak pakde rehte hain, isliye koi uncommitted data nahi padh sakta: schedules cascadeless (aur strict) bante hain. **Rigorous 2PL** mein saare locks commit tak; serial order = commit order. Zyaadatar DBMS strict 2PL use karte hain. **Lock upgrade** (S → X) sirf growing phase mein, downgrade sirf shrinking phase mein.",
+        "**Deadlock**: T1 ko T2 ka lock chahiye aur T2 ko T1 ka: dono hamesha intezaar karenge. **Prevention**: saare items ek fixed order mein lock karo, ya timestamps (chhota timestamp = purana transaction): **wait-die** (non-preemptive): purana requester wait karta hai, naya requester die (rollback) hota hai; **wound-wait** (preemptive): purana requester naye holder ko wound (rollback) karta hai, naya requester wait karta hai. Rollback hua transaction apna purana timestamp lekar restart hota hai, taaki starvation na ho.",
+        "**Deadlock detection**: **wait-for graph** mein Ti → Tj agar Ti, Tj ke lock ka intezaar kar raha hai. Graph mein cycle = deadlock. Cycle ke transactions mein se ek **victim** (kam se kam kaam kiya hua, kam locks) rollback hota hai. Timeout ek saste aur kam accurate alternative hai. Bahut se modern systems (jaise PostgreSQL) **MVCC** bhi use karte hain jahan readers writers ko block nahi karte.",
+        "**Log aur WAL**: failures: transaction failure, system crash (memory gayi, disk bachi), disk failure. Log records: `<Ti start>`, `<Ti, X, old, new>`, `<Ti commit>`, `<Ti abort>`. **Write-ahead logging (WAL)**: kisi data page ko disk par likhne se pehle uske log records stable storage par hone chahiye, aur transaction tab committed hai jab `<Ti commit>` log disk par pahunch jaaye. Isliye commit par sirf log force karna padta hai, saare data pages nahi.",
+        "**Crash recovery**: **undo(Ti)** log ko peeche ki taraf padh kar old values wapas likhta hai; **redo(Ti)** aage ki taraf new values likhta hai; dono idempotent hain. Crash ke baad: jis transaction ka `<start>` aur `<commit>` (ya `<abort>`) dono log mein hain use **redo**, jiska sirf `<start>` hai use **undo**. Immediate modification mein undo aur redo dono chahiye; deferred modification (commit se pehle disk par kuch nahi) mein sirf redo.",
+        "**Checkpoints aur backup**: checkpoint par log aur dirty pages disk par flush karke `<checkpoint L>` likhte hain (L = us waqt active transactions). Recovery sirf aakhri checkpoint (aur L ke transactions) tak peeche dekhti hai; checkpoint se pehle commit hue transactions ko kuch nahi karna. Disk failure ke liye **backup**: periodic full dump (archival), incremental backups, aur restore ke baad archived log replay karke **point-in-time recovery**; zaroori systems remote backup site bhi rakhte hain."
+      ],
+      "example": {
+        "problem": "Wait-die scheme mein T1 (timestamp 1) aur T2 (timestamp 2) strict 2PL use karte hain. T1 pehle X(A) leta hai, T2 X(B) leta hai. Phir T1 X(B) maangta hai aur T2 X(A) maangta hai. Kya hoga, aur wait-die ke bina kya hota?",
+        "steps": [
+          "Timestamp chhota = purana: T1 purana hai, T2 naya.",
+          "T1 X(B) maangta hai jo T2 (naye) ke paas hai. Wait-die: purana requester **wait** karta hai.",
+          "T2 X(A) maangta hai jo T1 (purane) ke paas hai. Wait-die: naya requester **die** karta hai: T2 rollback, B ka lock chhoot jaata hai.",
+          "T1 ko B mil jaata hai, woh apna kaam karke commit karta hai aur strict 2PL ke hisaab se tabhi A, B chhodta hai.",
+          "T2 apne purane timestamp 2 ke saath restart hota hai aur ab A, B dono le leta hai.",
+          "Bina wait-die ke: wait-for graph mein T1 → T2 aur T2 → T1, cycle = deadlock; detector ko ek victim chunna padta.",
+          "Application-level fix: har transaction A aur B ko hamesha ek hi order (pehle A, phir B) mein lock kare, to cycle ban hi nahi sakta.",
+          "Answer: **T2 rollback hota hai, T1 pehle commit hota hai; effective serial order T1 → T2**."
+        ]
+      },
+      "mistakes": [
+        "Wait-die aur wound-wait ko ulta yaad rakhna. Dono mein purana transaction kabhi rollback ke liye 'request' karke nahi marta: wait-die mein purana wait karta hai, wound-wait mein purana doosre ko hata deta hai. Naya transaction wait-die mein marta hai, wound-wait mein wait karta hai.",
+        "Ye maan lena ki basic 2PL cascading rollback rokta hai. Basic 2PL mein shrinking phase commit se pehle shuru ho sakta hai, to doosra transaction uncommitted data padh sakta hai; iske liye strict 2PL chahiye.",
+        "Recovery mein checkpoint se pehle commit hue transactions ko bhi redo list mein daalna, ya committed transactions ko undo kar dena. Committed = redo (ya checkpoint se pehle ho to kuch nahi), incomplete = undo."
+      ],
+      "revision": [
+        "S–S compatible; X kisi ke saath nahi.",
+        "2PL: growing phir shrinking; conflict serializable, deadlock-free nahi.",
+        "Strict 2PL: X locks commit tak ⇒ cascadeless.",
+        "Wait-die: purana wait, naya die. Wound-wait: purana wound, naya wait.",
+        "WAL: pehle log, phir data; commit = commit record disk par.",
+        "Crash: start+commit ⇒ redo; sirf start ⇒ undo; checkpoint tak hi peeche."
+      ],
+      "questions": [
+        {
+          "question": "T1 ke paas item A par shared (S) lock hai. Ab T2 A par S lock maangta hai aur T3 A par exclusive (X) lock. Lock manager kya karega?",
+          "options": [
+            "T2 ko lock turant mil jaayega; T3 ko wait karna padega",
+            "T2 aur T3 dono ko wait karna padega",
+            "T2 aur T3 dono ko lock turant mil jaayega",
+            "T2 ko wait karna padega; T3 ko lock mil jaayega"
+          ],
+          "answer": 0,
+          "explanation": "S aur S compatible hain, kyunki kai transactions ek saath padh sakte hain: T2 ko mil jaata hai. X kisi bhi doosre lock ke saath compatible nahi, isliye T3 tab tak wait karega jab tak T1 (aur T2) apne S locks na chhod dein. Option B ka trap har lock ko exclusive jaisa maanna hai; option C X ko bhi shareable maan leta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w11-q1"
+        },
+        {
+          "question": "Inmein se kis transaction ka lock/unlock sequence two-phase locking (2PL) todta hai?",
+          "options": [
+            "lock-S(A), lock-X(B), unlock(A), unlock(B)",
+            "lock-S(A), lock-S(B), unlock(B), unlock(A)",
+            "lock-X(A), unlock(A), lock-S(B), unlock(B)",
+            "lock-X(A), lock-X(B), unlock(A), unlock(B)"
+          ],
+          "answer": 2,
+          "explanation": "2PL mein pehla unlock hote hi shrinking phase shuru ho jaata hai, uske baad koi naya lock nahi liya ja sakta. Option C mein unlock(A) ke baad lock-S(B) liya gaya: violation. Baaki teeno mein saare locks kisi bhi unlock se pehle liye gaye hain. Option A ka trap ye sochna hai ki 'B ka lock A ke unlock se pehle chhodna chahiye tha'; 2PL unlock ka order nahi dekhta, bas ye ki unlock ke baad lock na ho.",
+          "difficulty": "easy",
+          "id": "dbms-w11-q2"
+        },
+        {
+          "question": "T1 ka timestamp 5 hai aur T2 ka 10 (chhota = purana). T1 ek item ka lock maangta hai jo T2 ke paas hai. Wait-die aur wound-wait schemes mein kya hoga?",
+          "options": [
+            "Wait-die: T1 rollback hota hai; wound-wait: T1 wait karta hai",
+            "Wait-die: T2 rollback hota hai; wound-wait: T1 wait karta hai",
+            "Dono schemes mein T1 wait karta hai",
+            "Wait-die: T1 wait karta hai; wound-wait: T2 rollback hota hai"
+          ],
+          "answer": 3,
+          "explanation": "Requester T1 purana hai (5 < 10). Wait-die mein purana requester wait karta hai (sirf naya requester 'die' karta hai). Wound-wait mein purana requester naye holder ko 'wound' karta hai, yaani T2 rollback hota hai aur lock T1 ko milta hai. Option A dono schemes ko ulta kar deta hai. Option C ka trap ye hai ki wait-die ka hissa sahi hai, par wound-wait preemptive hai, wahan purana wait nahi karta.",
+          "difficulty": "medium",
+          "id": "dbms-w11-q3"
+        },
+        {
+          "question": "Wait-for graph mein edges hain: T1 → T2, T2 → T3, T3 → T1, T4 → T2, T5 → T4 (Ti → Tj = Ti, Tj ka intezaar kar raha hai). Kaunse transactions deadlock cycle mein hain, jinme se victim chuna jaayega?",
+          "options": [
+            "T1, T2, T3, T4, T5",
+            "T1, T2, T3",
+            "T2, T4",
+            "Koi deadlock nahi hai"
+          ],
+          "answer": 1,
+          "explanation": "T1 → T2 → T3 → T1 ek cycle hai, isliye T1, T2, T3 deadlocked hain aur victim inhi mein se chuna jaata hai. T4 aur T5 bhi abhi ruke hain, par woh cycle mein nahi hain; cycle tootte hi (jaise T2 ya T3 ka kaam poora hote hi) unka intezaar khatam ho sakta hai. Option A ka trap har waiting transaction ko deadlocked maanna hai. Option C sirf T2 par aane wale edges dekhta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w11-q4"
+        },
+        {
+          "question": "Immediate-modification log neeche hai (`<T, item, old, new>`). Crash ke baad classic undo/redo recovery aakhri checkpoint tak peeche scan karti hai. Kaunse transactions redo list mein aur kaunse undo list mein jaayenge?",
+          "code": "<T1 start>\n<T1, A, 100, 80>\n<T2 start>\n<T1 commit>\n<T2, B, 50, 70>\n<checkpoint {T2}>\n<T3 start>\n<T3, C, 30, 40>\n<T3 commit>\n<T2, A, 80, 60>\n--- crash ---",
+          "options": [
+            "Redo: T1, T3; undo: T2",
+            "Redo: T3; undo: T2",
+            "Redo: T3; undo: T1, T2",
+            "Redo: koi nahi; undo: T2, T3"
+          ],
+          "answer": 1,
+          "explanation": "Checkpoint par active list {T2} hai. Checkpoint ke baad T3 start aur commit dono hue: redo. T2 checkpoint par active tha aur uska commit log mein nahi: undo (A = 60 se wapas 80, B = 70 se wapas 50). T1 checkpoint se pehle commit ho chuka tha, uske changes checkpoint par disk par flush ho gaye, isliye kuch nahi karna. Option A ka trap checkpoint ko ignore karke T1 ko bhi redo karna hai; option C committed T1 ko undo kar deta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w11-q5"
+        },
+        {
+          "question": "Neeche immediate-modification log hai (`<T, item, old, new>`) aur iske baad system crash hua. Recovery poori hone ke baad X, Y aur Z ki values kya hongi? (Crash ke waqt disk par in items ki koi bhi purani ya nayi value ho sakti hai.)",
+          "code": "<T1 start>\n<T1, X, 10, 20>\n<T2 start>\n<T2, Y, 5, 15>\n<T1 commit>\n<T3 start>\n<T3, X, 20, 30>\n<T2, Z, 7, 9>\n<T2 commit>\n<T3, Y, 15, 25>\n--- crash ---",
+          "options": [
+            "X = 20, Y = 15, Z = 9",
+            "X = 30, Y = 25, Z = 9",
+            "X = 10, Y = 5, Z = 7",
+            "X = 10, Y = 15, Z = 9"
+          ],
+          "answer": 0,
+          "explanation": "T1 aur T2 committed hain: redo, yaani X = 20, Y = 15, Z = 9. T3 ka commit nahi: undo, peeche ki taraf: Y wapas 15, X wapas 20 (T3 ke records ki old values). Final X = 20, Y = 15, Z = 9; disk par crash ke waqt kuch bhi ho, log se yahi banta hai. Option B ka trap T3 ko undo na karna hai. Option D ka trap X ko log ke pehle record ki old value 10 par le jaana hai; undo T3 ki old value (20) use karta hai. Option C committed transactions ko bhi undo kar deta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w11-q6"
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "title": "Query Processing, Optimisation and Wrap-up",
+      "summary": "Is week aap query ke parse se execution tak ke steps, block transfers mein cost ka hisaab, selection aur join algorithms ki cost, equivalence rules, heuristic aur cost-based optimisation, size estimation, aur poore course ka saar seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Query processing ke steps**: (1) **parsing aur translation**: syntax check, catalog se table/column names check, aur query ko relational-algebra expression mein badalna; (2) **optimisation**: kai equivalent expressions aur har operation ke algorithms mein se sabse sasta **evaluation plan** chunna; (3) **evaluation**: execution engine plan chalata hai. PostgreSQL mein `EXPLAIN` chuna hua plan dikhata hai.",
+        "**Cost measure**: disk I/O sabse mehenga hai, isliye cost = (block transfers × t_T) + (seeks × t_S); CPU ko aksar ignore karte hain. Cost buffer memory M par bahut depend karti hai. Notation: n_r = r ke tuples, b_r = r ke blocks, V(A, r) = A ki distinct values.",
+        "**Selection algorithms**: **linear scan**: b_r transfers + 1 seek (unique key par equality ho to average b_r / 2). **B+ tree clustering index**, key par equality: (h + 1) transfers aur seeks (h = tree height). **Secondary index** non-key par: har matching record alag block mein ho sakta hai, isliye bahut matches hon to ye linear scan se bhi mehenga pad sakta hai.",
+        "**Join algorithms** (r outer): **nested-loop** worst case n_r × b_s + b_r transfers; **block nested-loop** b_r × b_s + b_r, aur M buffer blocks ke saath ⌈b_r / (M − 2)⌉ × b_s + b_r, isliye chhoti relation ko outer rakho; **indexed nested-loop** b_r + n_r × c (c = inner index lookup cost); **merge join** b_r + b_s (agar dono sorted hain, warna sort ki cost jodo); **hash join** lagbhag 3(b_r + b_s). Merge aur hash join sirf equi-joins ke liye.",
+        "**Equivalence rules**: σ_θ1∧θ2(E) = σ_θ1(σ_θ2(E)) (cascade), σ commutative hai, σ_θ(E1 × E2) = E1 ⋈_θ E2, joins commutative aur associative hain, aur agar θ sirf E1 ke attributes use karta hai to σ_θ(E1 ⋈ E2) = σ_θ(E1) ⋈ E2. Projection ko bhi neeche le ja sakte ho, bas join ke attributes bachaye rakho.",
+        "**Heuristic optimisation**: selections jitna jaldi ho sake (neeche) lagao, projections bhi jaldi, sabse restrictive selection/join pehle, aur Cartesian product se bacho. Intermediate results chhote honge to har agla operation sasta hoga.",
+        "**Cost-based optimisation aur statistics**: catalog stats (n_r, b_r, V(A, r), histograms) se sizes estimate hote hain: σ_A=v(r) ≈ n_r / V(A, r); r ⋈ s on A (A kisi ki key nahi) ≈ n_r × n_s / max(V(A, r), V(A, s)); agar A s ki key hai aur r ka foreign key, to result = n_r. n relations ke join orders (2(n − 1))! / (n − 1)! hote hain (3 ke 12, 7 ke 665,280), isliye optimisers dynamic programming aur left-deep trees use karte hain. Results ko disk par likhna (**materialisation**) ya seedha agle operator ko dena (**pipelining**) bhi plan ka hissa hai.",
+        "**Course wrap-up**: ek `SELECT` ki journey: SQL (weeks 2–3) jo achhe design (weeks 4–6) wale schema par likhi hai, application se parameterised query banke aati hai (week 7), optimiser plan banata hai (week 12), plan B+ tree indexes aur blocks padhta hai (weeks 8–9), buffer manager pages laata hai, aur ye sab ek transaction ke andar locks aur log ke saath chalta hai (weeks 10–11). Har layer ka trade-off samajhna hi DBMS ka asli skill hai."
+      ],
+      "example": {
+        "problem": "Fictional university: `student` (n = 20,000 tuples, 1,000 blocks, V(dept) = 20, roll key) aur `enrol` (n = 200,000 tuples, 5,000 blocks, roll foreign key). Query code mein hai. Buffer M = 52 blocks. Plan A (pehle join, phir σ) aur Plan B (pehle σ) ki block-transfer cost aur result size nikaalo.",
+        "steps": [
+          "Plan A: student ko outer rakh kar block nested-loop join: ⌈1000 / 50⌉ × 5000 + 1000 = 20 × 5000 + 1000 = 101,000 transfers (phir selection, aur intermediate result bhi bada).",
+          "Plan B, selection: student scan = 1,000 transfers. Estimate: 20,000 / 20 = 1,000 CS students; 20 tuples per block ke hisaab se lagbhag 50 blocks.",
+          "Ye 50 blocks M − 2 = 50 buffer blocks mein fit ho jaate hain, isliye enrol ko sirf ek baar scan karna hai: 5,000 transfers.",
+          "Plan B total = 1,000 + 5,000 = 6,000 transfers, Plan A se lagbhag 17 guna kam.",
+          "Result size: roll student ki key aur enrol ka foreign key hai, to har enrol tuple theek ek student se judta hai; CS ka hissa 1/20: 200,000 / 20 = 10,000 tuples.",
+          "Answer: **Plan A ≈ 101,000 transfers, Plan B ≈ 6,000 transfers; result ≈ 10,000 tuples. Selection ko neeche push karna jeetta hai**."
+        ],
+        "code": "SELECT s.name, e.course\nFROM student s JOIN enrol e ON s.roll = e.roll\nWHERE s.dept = 'CS';\n\n-- Plan A: σ_dept='CS'(student ⋈ enrol)\n-- Plan B: σ_dept='CS'(student) ⋈ enrol      (selection pushed down)"
+      },
+      "mistakes": [
+        "Block nested-loop join mein badi relation ko outer rakhna. Outer relation ke har chunk par inner poori padhi jaati hai, isliye chhoti relation outer ho to inner kam baar padhi jaati hai.",
+        "Selection ko join ke neeche push karte waqt galat side par le jaana. σ_θ sirf us relation par lag sakta hai jiske attributes θ mein hain; dono ke attributes hon to woh join condition ka hissa banta hai.",
+        "Join size estimate mein max ki jagah min V lena. Formula n_r × n_s / max(V(A, r), V(A, s)) hai; min lene se estimate zarurat se bada aata hai."
+      ],
+      "revision": [
+        "Steps: parse/translate → optimise (plan) → evaluate.",
+        "Cost = transfers × t_T + seeks × t_S; M buffers matter karte hain.",
+        "BNL = ⌈b_r / (M − 2)⌉ × b_s + b_r; chhoti relation outer.",
+        "Merge join b_r + b_s; hash join ≈ 3(b_r + b_s).",
+        "σ estimate n_r / V(A, r); join estimate n_r × n_s / max(V).",
+        "Selections aur projections jaldi; Cartesian product se bacho."
+      ],
+      "questions": [
+        {
+          "question": "Query σ_dept='CS'(student ⋈ enrol) hai, aur `dept` attribute sirf `student` mein hai. Heuristic optimiser ise kis equivalent expression mein badlega?",
+          "options": [
+            "student ⋈ σ_dept='CS'(enrol)",
+            "σ_dept='CS'(student × enrol)",
+            "π_dept(student) ⋈ enrol",
+            "σ_dept='CS'(student) ⋈ enrol"
+          ],
+          "answer": 3,
+          "explanation": "Rule: agar θ sirf E1 ke attributes use karta hai to σ_θ(E1 ⋈ E2) = σ_θ(E1) ⋈ E2. dept sirf student ka hai, isliye selection student par pehle lagti hai aur join chhoti relation ke saath hota hai. Option A ka trap selection ko galat relation par push karna hai: enrol mein dept hai hi nahi. Option B Cartesian product bana deta hai, jo heuristic ka ulta hai. Option C mein selection gayab hai aur projection join attribute (roll) bhi hata deta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w12-q1"
+        },
+        {
+          "question": "Relation `emp` mein 10,000 tuples hain aur `dept` attribute ki 50 distinct values hain (uniform distribution maano). σ_dept='Sales'(emp) ka estimated size kya hai?",
+          "options": [
+            "200",
+            "50",
+            "10,000",
+            "500"
+          ],
+          "answer": 0,
+          "explanation": "Uniform distribution mein har value ke barabar tuples hote hain: n_r / V(dept, emp) = 10,000 / 50 = 200. Option B ka trap distinct values ki ginti ko hi answer maan lena hai. Option C selection ko ignore karta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w12-q2"
+        },
+        {
+          "question": "Relation r mein 5,000 tuples aur 100 blocks hain; relation s mein 400 blocks. Memory mein har relation ka sirf ek block aa sakta hai (worst case) aur r outer hai. Tuple nested-loop join aur block nested-loop join mein kramashah kitne block transfers honge?",
+          "options": [
+            "500 aur 500",
+            "2,000,100 aur 40,100",
+            "40,100 aur 2,000,100",
+            "2,000,000 aur 40,000"
+          ],
+          "answer": 1,
+          "explanation": "Tuple nested-loop: r ke har tuple ke liye s poora padhna = n_r × b_s + b_r = 5,000 × 400 + 100 = 2,000,100. Block nested-loop: r ke har block ke liye s poora = b_r × b_s + b_r = 100 × 400 + 100 = 40,100. Option D ka trap outer relation r ko padhne ke 100 transfers bhool jaana hai. Option C dono ko ulta kar deta hai, aur option A merge join ki cost (b_r + b_s) hai.",
+          "difficulty": "medium",
+          "id": "dbms-w12-q3"
+        },
+        {
+          "question": "r(A, B) mein 10,000 tuples aur s(A, C) mein 5,000 tuples hain. V(A, r) = 100 aur V(A, s) = 500; A kisi bhi relation ki key nahi hai. r ⋈ s ka estimated size kya hai?",
+          "options": [
+            "500,000",
+            "50,000,000",
+            "100,000",
+            "10,000"
+          ],
+          "answer": 2,
+          "explanation": "Estimate = n_r × n_s / max(V(A, r), V(A, s)) = 10,000 × 5,000 / 500 = 50,000,000 / 500 = 100,000. Option A ka trap max ki jagah min (100) se divide karna hai, jo estimate ko 5 guna bada kar deta hai. Option B Cartesian product ka size hai. Option D tab sahi hota jab A s ki key hota aur r ka foreign key.",
+          "difficulty": "medium",
+          "id": "dbms-w12-q4"
+        },
+        {
+          "question": "Teen relations r1 ⋈ r2 ⋈ r3 ko join karne ke kitne alag join orders (koi bhi tree shape, sirf left-deep nahi; commutativity samet) hain?",
+          "options": [
+            "6",
+            "12",
+            "3",
+            "24"
+          ],
+          "answer": 1,
+          "explanation": "n relations ke join orders = (2(n − 1))! / (n − 1)!. n = 3 par 4! / 2! = 24 / 2 = 12. Har tree shape mein left aur right inputs swap ho sakte hain, isliye sirf permutations (3! = 6, option A) ginna kam padta hai. Option D 4! ko hi answer maan leta hai. Ye number tezi se badhta hai (n = 7 par 665,280), isliye optimisers dynamic programming use karte hain.",
+          "difficulty": "medium",
+          "id": "dbms-w12-q5"
+        },
+        {
+          "question": "Block nested-loop join r ⋈ s: b_r = 100 blocks, b_s = 400 blocks, aur buffer mein M = 12 blocks hain (ek inner input ke liye aur ek output ke liye, baaki outer ke liye). Kaunsi relation outer rakhni chahiye aur tab kitne block transfers honge?",
+          "options": [
+            "s outer: 4,400 transfers",
+            "r outer: 40,100 transfers",
+            "r outer: 4,100 transfers",
+            "r outer: 3,700 transfers"
+          ],
+          "answer": 2,
+          "explanation": "Outer ke liye M − 2 = 10 blocks. r outer: ⌈100 / 10⌉ × 400 + 100 = 10 × 400 + 100 = 4,100. s outer: ⌈400 / 10⌉ × 100 + 400 = 40 × 100 + 400 = 4,400. Isliye chhoti relation r outer, 4,100. Option D ka trap M − 2 ki jagah poore 12 blocks outer ko de dena hai (⌈100 / 12⌉ = 9, 9 × 400 + 100 = 3,700). Option B buffer ko ignore karke worst-case formula lagata hai, aur option A badi relation ko outer rakhta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w12-q6"
+        }
+      ]
     }
   ]
 }
