@@ -128,11 +128,12 @@ next-gen/
 - Only server routes that hold `SUPABASE_SERVICE_ROLE_KEY` can grant Pro.
 - Pro **content** (OPPE problems, End-term pools) is only sent by `/api/pro/*`, after `requirePro()` ([lib/server/pro-access.ts](lib/server/pro-access.ts)) has checked the access token and asked `public.is_pro()` as that student. The plan in localStorage only decides what the UI shows.
 
-**E. Programmes filter the lists, not the pages.**
+**E. The student's choice filters what they see, not which pages exist.**
 
 - `content/programmes.json` maps programme → levels → subject ids. Subjects are shared by id (English I/II are in Data Science and Electronic Systems), so progress never depends on the programme.
-- Each student chooses a level (`ds/foundation`, `es/foundation`, `ds/diploma-programming`, …) or `qualifier`, asked once by [programme-prompt.tsx](components/programme-prompt.tsx) after sign-up.
-- Pages are still pre-rendered for every subject. Components that list subjects call `useChoiceSubjects(subjects)` ([lib/programme-choice.ts](lib/programme-choice.ts)) to show only the chosen level's, with its programme's course codes.
+- Each student chooses a level (`ds/foundation`, `es/foundation`, `ds/diploma-programming`, …) or a qualifier (`qualifier/ds`, `qualifier/es`), asked once by [programme-prompt.tsx](components/programme-prompt.tsx) after sign-up. A qualifier choice's "level" is its four courses from `content/qualifier/qualifiers.json` (each section's `subjectId`), and only weeks 1–4 (`choice.weeks`).
+- Pages are still pre-rendered for every subject. Components that list subjects call `useChoiceSubjects(subjects)` ([lib/programme-choice.ts](lib/programme-choice.ts)) to show only the chosen level's, with its programme's course codes; components that list weeks use `useChoiceCatalog(catalog)`; anything that counts answers, mistakes or tests filters with `useInChoice()`.
+- Sidebar tools that only some choices have (Qualifier Prep, Mock Tests, Coding Lab, Grade Calculator) follow `choiceHas(choice, tool)` in [lib/programmes.ts](lib/programmes.ts). A page outside the choice still opens, under a notice from [choice-notice.tsx](components/choice-notice.tsx) that offers to switch. The full table of what each choice shows is in the README's Programmes section.
 - The choice is a `programme:<choice>` entry in the profile's `subjects` for logged-in students (anything reading `subjects` as subject ids goes through `termSubjects()`), and localStorage `nextgen-programme` for guests. Default: Data Science Foundation.
 
 ```
@@ -190,7 +191,8 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 
 **Layout everywhere** ([components/shell.tsx](components/shell.tsx)):
 
-- **Left sidebar** with 11 nav items (Qualifier Prep second), plus Admin for admins.
+- **Left sidebar** with the "Preparing for" switch and up to 11 nav items, plus Admin for admins. Which items show depends on the choice (`choiceHas()`): Qualifier Prep only for qualifier students; Mock Tests and Grade Calculator only for admitted students; Coding Lab only for levels with Python (Data Science Foundation). Before a visitor chooses, all of them show.
+- **Notice above the page** ([choice-notice.tsx](components/choice-notice.tsx)) when the page isn't part of the choice, with "Switch to …" and a way back.
 - **Bottom of the sidebar:** a "Log in to save progress" card (guests) or a "Go Pro" card (free users).
 - **Topbar:** breadcrumb, and an account menu showing the sync chip, plan chip, avatar, Profile, Progress, Billing and Logout.
 - On mobile the sidebar becomes a ☰ drawer.
@@ -201,8 +203,8 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 [components/dashboard.tsx](components/dashboard.tsx) shows, from top to bottom:
 
 - Announcements posted by admins
-- A hero with **"Continue {subject} week N"**, using `lastVisited`
-- 4 metrics: weeks done, questions attempted, accuracy, streak
+- A hero with **"Continue {subject} week N"**, using `lastVisited` when that week is part of the choice; qualifier students get "Take a qualifier mock" instead of "Take a mock test"
+- 4 metrics: weeks done, questions attempted, accuracy, streak, counting only the choice's subjects (and a qualifier's weeks 1–4)
 - Subject cards, with your profile's subjects sorted first
 - "Topics to revisit": weeks with at least 3 attempts and under 60% accuracy
 - Quick actions: mistakes due, exam plan, ask a doubt, practice
@@ -255,6 +257,7 @@ To add Pro content: put it behind a route under `app/api/pro/` that starts with 
 - Spaced repetition calculated from your answer history ([lib/progress/mistakes.ts](lib/progress/mistakes.ts)).
 - A wrong answer is due **straight away**. After one correct answer it comes back in **3 days**, after two in **7 days**, and three correct in a row clears it.
 - The page lists due mistakes grouped by subject and week, with "Revise" or "Revise all". On the right is a "Coming up" list with due dates.
+- Only mistakes from the choice's subjects (and a qualifier's weeks 1–4) are listed. The others aren't lost: they come back when the student switches back.
 - Questions are loaded from `/api/content/questions`.
 
 ### Mock tests (`/tests` → `/tests/[subject]/[test]`)
@@ -290,7 +293,7 @@ This section is for people preparing for the IITM BS qualifier exam, so it works
 - **Data Science**: Maths I, Stats I, CT and English I. The Management and Data Science programme uses the same four courses.
 - **Electronic Systems**: English I, Math for Electronics I, Electronic Systems Thinking and Circuits, and Intro to C. Aeronautics and Space Technology uses the same four.
 
-Each section is one course. A section with a `subjectId` links to that subject's week 1–4 notes and practice; only the DS courses have one.
+Each section is one course. A section with a `subjectId` links to that subject's week 1–4 notes and practice; every DS and ES section has one (ES: eng1, mfe1, estc, cprog), and it decides which subjects a qualifier choice shows.
 
 **Pages:**
 - `/qualifier` is the landing page. It has the countdown hero ([countdown.tsx](components/qualifier/countdown.tsx)), one card per qualifier, and the process and rules ([facts.tsx](components/qualifier/facts.tsx)).
@@ -354,7 +357,7 @@ Attempts are a `coding` `SyncOp` and sync to `coding_attempts` (migration 0007) 
 
    The tutor prompt (Hinglish, step by step, no exam cheating) is in [lib/server/ai/features/doubt.ts](lib/server/ai/features/doubt.ts).
 4. The answer is drawn with [rich-text.tsx](components/rich-text.tsx), a small safe markdown renderer that never inserts HTML.
-5. Below the chat is a static FAQ search.
+5. Below the chat is a static FAQ search ([doubt-search.tsx](components/doubt-search.tsx)). Each entry in `content/faqs.json` has a `subject`, and only the choice's subjects are shown; with none, the section is hidden.
 
 ### Exam Planner (`/planner`)
 
@@ -367,7 +370,7 @@ Attempts are a `coding` `SyncOp` and sync to `coding_attempts` (migration 0007) 
 
 ### My Progress (`/progress`)
 
-- Totals, a performance table per subject, weak weeks, mock test history and weeks saved for revision.
+- Totals, a performance table per subject, weak weeks, mock test history and weeks saved for revision, all for the choice only. A qualifier student's history shows their own qualifier's mocks.
 - **Reset my progress** wipes it, from the server too if you're logged in.
 
 ### Profile (`/profile`)

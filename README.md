@@ -6,7 +6,7 @@ An independent learning and exam-preparation site for IIT Madras online BS stude
 
 ## What's in Phase 1
 
-- **Programmes**: right after sign-up (and once for existing students) NEXT GEN asks "What are you preparing for?": a programme level (Data Science Foundation or a Diploma, Electronic Systems, Aeronautics or Management & Data Science Foundation) or the qualifier exam. From then on every page lists only that level's subjects. See [Programmes](#programmes) below.
+- **Programmes**: right after sign-up (and once for existing students) NEXT GEN asks "What are you preparing for?": a programme level (Data Science Foundation or a Diploma, Electronic Systems, Aeronautics or Management & Data Science Foundation) or a qualifier exam (Data Science or Electronic Systems). From then on the student sees only that choice's material: its subjects, its tools in the sidebar, and numbers that count only it. See [Programmes](#programmes) below.
 - **Study Library**: 12 weeks of original Hinglish notes per subject (concept, solved example, common mistakes, quick revision) for the Foundation level of all four programmes: Data Science (8), Electronic Systems (9 theory courses), Aeronautics (8) and Management & Data Science (8). Shared courses are written once, so that's 22 subjects and 1,584 questions. The Data Science Diplomas are listed as "coming soon". "Save as PDF" prints a clean copy.
 - **Practice Quiz**: MCQs with instant explanations (15 per week, 1,440 in total, in the 8 Data Science Foundation subjects; 6 per week elsewhere), in English or Hinglish: each student picks with the English / Hinglish switch on practice, mock tests, My Mistakes and search (English by default, remembered in the browser).
   - **Levels**: every Data Science Foundation week has at least 5 Easy, 5 Medium and 5 Hard questions. Students pick Easy, Medium, Hard or Mixed (all of the week's questions, easy first) on the practice pages; each level shows how many questions it has, and the choice is remembered in the browser.
@@ -187,12 +187,26 @@ Open http://localhost:3000.
 
 `content/programmes.json` lists each programme's levels (Foundation, Diplomas) and their subject ids. A subject used by two programmes (English I/II, the Electronic Systems courses Aeronautics shares) is one subject with one set of notes and one set of progress; `codes` gives the code each programme uses for it (English I is BSHS1001 in Data Science, HS1101 in Electronic Systems).
 
-- **Choosing**: a choice is `<programme>/<level>` (e.g. `es/foundation`) or `qualifier`.
-  - `components/programme-prompt.tsx` asks once: after sign-up (after the guest-progress import), to existing students with no choice (Data Science Foundation pre-selected, so confirming changes nothing), and to guests on the Overview. A guest's choice is copied to the account on sign-up instead of asking again. "Qualifier exam" goes to `/qualifier` (built on another branch).
+- **Choosing**: a choice is `<programme>/<level>` (e.g. `es/foundation`) or `qualifier/<ds|es>`. An older saved `qualifier` reads as `qualifier/ds`.
+  - `components/programme-prompt.tsx` asks once: after sign-up (after the guest-progress import), to existing students with no choice (Data Science Foundation pre-selected, so confirming changes nothing), and to guests on the Overview. A guest's choice is copied to the account on sign-up instead of asking again. A qualifier choice goes to `/qualifier/<id>`.
   - It can be changed any time with the sidebar's "Preparing for" menu or in My profile.
   - Storage: a logged-in student's choice is a `programme:<choice>` entry in their profile's `subjects` (an existing text[] column, so **no migration** and it syncs like the rest of the profile); anything reading `subjects` as subject ids uses `termSubjects()`. A guest's is localStorage `nextgen-programme`. With no choice, Data Science Foundation is shown.
-  - Code: `lib/programmes.ts` (choices, parsing, shared helpers) and `lib/programme-choice.ts` (`useChoice()`, `useChoiceSubjects()`).
-- **What's listed**: Overview, Study Library, Practice, Mock Tests, Exam Planner, Search, My Progress and the profile show only the chosen level's subjects (subjects without notes say "Notes coming soon"; when none of the level's subjects has notes, Overview, Planner and Search show a "coming soon" notice from `components/coming-soon.tsx`); the qualifier shows Data Science Foundation's, plus a link to `/qualifier`. Week, practice and test pages exist for every subject, whatever the choice. The admin editor and PDF uploads list every subject, grouped by programme and level.
+  - Code: `lib/programmes.ts` (choices, parsing, `inChoice`, `choiceHas`, shared helpers) and `lib/programme-choice.ts` (`useChoice()`, `useChoiceSubjects()`, `useChoiceCatalog()`, `useInChoice()`).
+- **What each choice shows**:
+
+  | Choice | Subjects and weeks | Sidebar tools beyond the shared ones |
+  |---|---|---|
+  | Data Science – Foundation | Its 8 subjects, all 12 weeks | Mock Tests, Coding Lab, Grade Calculator |
+  | Data Science – a Diploma | Its subjects ("coming soon" for now) | Mock Tests, Grade Calculator |
+  | Electronic Systems / Aeronautics / Management & DS – Foundation | That Foundation's subjects, all 12 weeks | Mock Tests, Grade Calculator |
+  | Qualifier – Data Science | Maths I, Stats I, CT, English I, weeks 1–4 only | Qualifier Prep (opens `/qualifier/ds`) |
+  | Qualifier – Electronic Systems | English I, Maths for Electronics I, Electronic Systems Thinking and Circuits, C Programming, weeks 1–4 only | Qualifier Prep (opens `/qualifier/es`) |
+
+  - Shared tools, for every choice: Overview, Study Library, Practice Quiz, My Mistakes, AI Doubt Solver, Exam Planner, My Progress. Qualifier Prep, Mock Tests, Coding Lab (it runs Python, so only levels with Python) and Grade Calculator follow `choiceHas()`. Until a visitor has chosen, every tool stays in the sidebar.
+  - Overview, Study Library (cards, PDF files, week list), Practice, Mock Tests, Exam Planner, Search (notes and questions), My Mistakes, My Progress, the formula sheets, the Doubt Solver's quick answers (each in `content/faqs.json` has a `subject`) and the profile show only the choice's subjects and weeks. Subjects without notes say "Notes coming soon"; when none of the level's subjects has notes, Overview, Planner and Search show a "coming soon" notice from `components/coming-soon.tsx`.
+  - Numbers count only the choice: questions attempted, accuracy, streak, weak weeks, mistakes due, mock test history (a qualifier student sees their own qualifier's mocks). Nothing is deleted: switching back brings the other numbers back. "Reset progress" still resets everything.
+  - **Direct links still open.** Week, practice, test and tool pages exist for every subject, so links from friends and Google keep working. When one isn't part of the student's choice (another programme's notes, the Coding Lab for an Electronic Systems student, week 7 for a qualifier student, the other qualifier), `components/choice-notice.tsx` shows a notice above the page with a button to switch to a choice that has it and a way back.
+  - The admin editor and PDF uploads list every subject, grouped by programme and level.
 - **Status**: in `content/subjects.json`, a subject without `status` has all 12 weeks; `"partial"` has weeks 1..n; `"planned"` has none yet.
 - **Coverage** and the research behind it (programmes, levels, official course codes, with sources): [docs/iitm-programmes.md](docs/iitm-programmes.md).
 

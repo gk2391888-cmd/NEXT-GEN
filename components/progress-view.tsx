@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { progress, useProgress } from '@/lib/progress/store';
 import { weekKey } from '@/lib/progress/types';
 import { percent, score, weakWeeks } from '@/lib/progress/insights';
-import { useChoiceSubjects } from '@/lib/programme-choice';
+import { useChoice, useChoiceCatalog, useChoiceSubjects, useInChoice } from '@/lib/programme-choice';
 import type { Subject, WeekRef } from '@/lib/types';
 import { getQualifierMock, QUALIFIER_TEST_SUBJECT } from '@/lib/qualifier';
 import { accuracyTone, ProgressBar, SubjectIcon, subjectColor } from '@/components/ui';
@@ -13,17 +13,23 @@ import { useConfirm } from '@/components/confirm-dialog';
 
 type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]>; testTitles: Record<string, string> };
 
-export function ProgressView({ subjects: allSubjects, catalog, testTitles }: Props) {
+export function ProgressView({ subjects: allSubjects, catalog: allWeeks, testTitles }: Props) {
   const state = useProgress();
+  const choice = useChoice();
   const subjects = useChoiceSubjects(allSubjects);
+  const catalog = useChoiceCatalog(allWeeks);
+  const inChoice = useInChoice();
   const { user } = useAuth();
   const { confirm, dialog } = useConfirm();
-  const totals = score(state.answers);
-  // Weak and saved weeks only from the chosen level's subjects; totals and test history stay whole.
-  const inChoice = new Set(subjects.map((s) => s.id));
-  const weak = weakWeeks(state.answers).filter((w) => inChoice.has(w.subjectId));
-  // Every subject, so tests from another programme still show their subject.
-  const subjectById = new Map(allSubjects.map((s) => [s.id, s]));
+  // Everything here counts only the choice: its subjects' answers, weeks and mock tests, or a qualifier's own mocks.
+  // Switching back shows the rest again; nothing is deleted.
+  const answers = state.answers.filter((a) => inChoice(a.subjectId, a.week));
+  const totals = score(answers);
+  const weak = weakWeeks(answers);
+  const tests = state.tests.filter((t) =>
+    t.subjectId === QUALIFIER_TEST_SUBJECT ? getQualifierMock(t.testId)?.qualifier === choice.qualifier : !choice.qualifier && inChoice(t.subjectId),
+  );
+  const subjectById = new Map(subjects.map((s) => [s.id, s]));
   const titleOf = (subjectId: string, week: number) => catalog[subjectId]?.find((w) => w.week === week)?.title ?? '';
   const saved = Object.entries(state.weeks)
     .filter(([, w]) => w.saved)
@@ -31,7 +37,7 @@ export function ProgressView({ subjects: allSubjects, catalog, testTitles }: Pro
       const [subjectId, week] = key.split(':');
       return { subjectId, week: Number(week) };
     })
-    .filter((w) => inChoice.has(w.subjectId));
+    .filter((w) => inChoice(w.subjectId, w.week));
 
   async function reset() {
     const where = user ? 'your account, on all your devices' : 'this browser';
@@ -50,7 +56,7 @@ export function ProgressView({ subjects: allSubjects, catalog, testTitles }: Pro
         <div className="metric"><strong>{totals.attempted}</strong><small>Questions attempted</small></div>
         <div className="metric"><strong>{totals.correct}</strong><small>Correct answers</small></div>
         <div className="metric"><strong className={totals.attempted ? accuracyTone(totals.accuracy) : undefined}>{totals.accuracy}%</strong><small>Overall accuracy</small></div>
-        <div className="metric"><strong>{state.tests.length}</strong><small>Mock tests taken</small></div>
+        <div className="metric"><strong>{tests.length}</strong><small>Mock tests taken</small></div>
       </div>
 
       <div className="grid grid-2 stack-laptop mt-lg">
@@ -63,7 +69,7 @@ export function ProgressView({ subjects: allSubjects, catalog, testTitles }: Pro
                 {subjects.map((s) => {
                   const weeks = catalog[s.id] ?? [];
                   const done = weeks.filter((w) => state.weeks[weekKey(s.id, w.week)]?.done).length;
-                  const sc = score(state.answers.filter((a) => a.subjectId === s.id));
+                  const sc = score(answers.filter((a) => a.subjectId === s.id));
                   return (
                     <tr key={s.id}>
                       <td><div className="subject-row"><SubjectIcon subject={s} size="sm" /><strong>{s.short}</strong></div></td>
@@ -116,14 +122,17 @@ export function ProgressView({ subjects: allSubjects, catalog, testTitles }: Pro
       <div className="grid grid-2 mt-lg">
         <section className="card">
           <h3 className="card-title">Mock test history</h3>
-          {state.tests.length === 0 ? (
-            <div className="empty"><div className="empty-icon">◷</div>You haven’t taken a mock test yet. <Link href="/tests">Start one →</Link></div>
+          {tests.length === 0 ? (
+            <div className="empty">
+              <div className="empty-icon">◷</div>You haven’t taken a mock test yet.{' '}
+              <Link href={choice.qualifier ? `/qualifier/${choice.qualifier}` : '/tests'}>Start one →</Link>
+            </div>
           ) : (
             <div className="table-scroll">
               <table className="table">
                 <thead><tr><th>Test</th><th>Date</th><th>Score</th></tr></thead>
                 <tbody>
-                  {[...state.tests].reverse().slice(0, 15).map((t) => {
+                  {[...tests].reverse().slice(0, 15).map((t) => {
                     // Qualifier mocks are stored as tests of the subject "qualifier".
                     const mock = t.subjectId === QUALIFIER_TEST_SUBJECT ? getQualifierMock(t.testId) : undefined;
                     return (

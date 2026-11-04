@@ -3,8 +3,8 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import { progress, useProgress } from './progress/store';
 import type { Profile } from './progress/types';
-import { choiceInProfile, choiceSubjects, DEFAULT_CHOICE, parseChoice, withChoice, type Choice } from './programmes';
-import type { Programme, Subject } from './types';
+import { choiceCatalog, choiceInProfile, choiceSubjects, DEFAULT_CHOICE, inChoice, parseChoice, withChoice, type Choice } from './programmes';
+import type { Programme, Subject, WeekRef } from './types';
 
 /**
  * What the student is preparing for (see `Choice`). A logged-in student's choice lives in their profile,
@@ -66,6 +66,13 @@ export function useChoice(): Choice {
   return parseChoice(choiceInProfile(state.profile?.subjects)) ?? parseChoice(local) ?? DEFAULT_CHOICE;
 }
 
+/** False until the student has picked (they see Data Science Foundation meanwhile), so nothing is hidden from them yet. */
+export function useChosen(): boolean {
+  const state = useProgress();
+  const local = useLocalChoice();
+  return Boolean(parseChoice(choiceInProfile(state.profile?.subjects)) ?? parseChoice(local));
+}
+
 export function useProgramme(): Programme {
   return useChoice().programme;
 }
@@ -79,4 +86,16 @@ export function useSubjectCode(subject: Subject): string {
 export function useChoiceSubjects(subjects: Subject[]): Subject[] {
   const choice = useChoice();
   return useMemo(() => choiceSubjects(choice, subjects), [choice.id, subjects]); // eslint-disable-line react-hooks/exhaustive-deps -- choice is rebuilt each render; its id identifies it
+}
+
+/** The catalogue cut to the weeks the choice covers (a qualifier's first four), for every page that lists weeks. */
+export function useChoiceCatalog(catalog: Record<string, WeekRef[]>): Record<string, WeekRef[]> {
+  const choice = useChoice();
+  return useMemo(() => choiceCatalog(choice, catalog), [choice.id, catalog]); // eslint-disable-line react-hooks/exhaustive-deps -- as above
+}
+
+/** Whether a subject, or a week of it, is part of the choice: for filtering answers, mistakes and tests. */
+export function useInChoice(): (subjectId: string, week?: number) => boolean {
+  const choice = useChoice();
+  return useMemo(() => (subjectId: string, week?: number) => inChoice(choice, subjectId, week), [choice.id]); // eslint-disable-line react-hooks/exhaustive-deps -- as above
 }

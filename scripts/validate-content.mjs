@@ -1,4 +1,4 @@
-// Checks content/programmes.json (every programme's levels point at real subjects), every
+// Checks content/programmes.json (every programme's levels point at real subjects; FAQ subjects; qualifier ids), every
 // content/weeks/<subject>.json against the shape the app expects, and that
 // content/weeks-en/<subject>.json has an English version of every question. Then checks the
 // qualifier mocks: content/qualifier/qualifiers.json and content/qualifier/mocks{,-en}/<mock>.json.
@@ -113,6 +113,14 @@ const bunched = (counts) => {
     }
   }
   for (const id of ids) if (!inProgramme.has(id)) errors.push(`subject "${id}" isn't in any programme in content/programmes.json`);
+  // Doubt Solver quick answers are shown only to choices with their subject.
+  const faqs = JSON.parse(readFileSync(join(root, 'content/faqs.json'), 'utf8'));
+  faqs.forEach((f, i) => {
+    if (!ids.has(f.subject)) errors.push(`content/faqs.json #${i + 1}: subject "${f.subject}" isn't in content/subjects.json`);
+  });
+  // A qualifier choice ("qualifier/es") uses the programme with the same id for its course codes.
+  const { qualifiers } = JSON.parse(readFileSync(join(root, 'content/qualifier/qualifiers.json'), 'utf8'));
+  for (const q of qualifiers ?? []) if (!programmeIds.has(q.id)) errors.push(`qualifier "${q.id}" needs a programme with the same id`);
   if (errors.length) {
     failures++;
     console.log(`✗ programmes: ${errors.length} problem(s)`);

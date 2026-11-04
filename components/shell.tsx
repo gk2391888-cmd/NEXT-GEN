@@ -9,18 +9,22 @@ import { PRICING, usePlan } from '@/lib/plan';
 import { RenewBanner } from './renew-banner';
 import { ProgrammeSwitch } from './programme-switch';
 import { ProgrammePrompt } from './programme-prompt';
+import { ChoiceNotice } from './choice-notice';
+import { useChoice, useChosen } from '@/lib/programme-choice';
+import { choiceHas, QUALIFIER_PATH, type Tool } from '@/lib/programmes';
 
-const NAV = [
+/** Items with a `tool` are shown only to the choices that have it (see `choiceHas`). */
+const NAV: { href: string; label: string; icon: string; tag?: string; tool?: Tool }[] = [
   { href: '/', label: 'Overview', icon: '◈' },
-  { href: '/qualifier', label: 'Qualifier Prep', icon: '★', tag: 'NEW' },
+  { href: QUALIFIER_PATH, label: 'Qualifier Prep', icon: '★', tag: 'NEW', tool: 'qualifier' },
   { href: '/library', label: 'Study Library', icon: '▣' },
   { href: '/practice', label: 'Practice Quiz', icon: '▤' },
   { href: '/mistakes', label: 'My Mistakes', icon: '↻' },
-  { href: '/tests', label: 'Mock Tests', icon: '◷' },
-  { href: '/lab', label: 'Coding Lab', icon: '⌘', tag: 'NEW' },
+  { href: '/tests', label: 'Mock Tests', icon: '◷', tool: 'tests' },
+  { href: '/lab', label: 'Coding Lab', icon: '⌘', tag: 'NEW', tool: 'lab' },
   { href: '/doubts', label: 'AI Doubt Solver', icon: '✦', tag: 'NEW' },
   { href: '/planner', label: 'Exam Planner', icon: '▦' },
-  { href: '/grades', label: 'Grade Calculator', icon: '∑', tag: 'NEW' },
+  { href: '/grades', label: 'Grade Calculator', icon: '∑', tag: 'NEW', tool: 'grades' },
   { href: '/progress', label: 'My Progress', icon: '▥' },
 ];
 
@@ -42,6 +46,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const { user, ready, isAdmin } = useAuth();
   const plan = usePlan();
+  const choice = useChoice();
+  // Until a student picks, every tool stays in the menu (Qualifier Prep is how many visitors arrive).
+  const chosen = useChosen();
+  const nav = NAV.filter((item) => !item.tool || !chosen || choiceHas(choice, item.tool));
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -61,10 +69,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <ProgrammeSwitch />
         <div className="side-eyebrow">WORKSPACE</div>
         <nav>
-          {NAV.map((item) => {
+          {nav.map((item) => {
             const active = isActive(pathname, item.href);
+            // A qualifier student goes straight to their own qualifier.
+            const href = item.tool === 'qualifier' && choice.qualifier ? `${QUALIFIER_PATH}/${choice.qualifier}` : item.href;
             return (
-              <Link key={item.href} href={item.href} className={`nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
+              <Link key={item.href} href={href} className={`nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
                 <span className="nav-icon" aria-hidden="true">{item.icon}</span>
                 {item.label}
                 {item.tag && <span className="nav-tag">{item.tag}</span>}
@@ -120,6 +130,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="content" id="content">
           <RenewBanner />
+          <ChoiceNotice />
           {children}
           <ProgrammePrompt />
         </main>

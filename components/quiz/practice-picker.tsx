@@ -4,16 +4,17 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useProgress } from '@/lib/progress/store';
 import { scoresByWeek } from '@/lib/progress/insights';
-import { useChoiceSubjects } from '@/lib/programme-choice';
+import { useChoiceCatalog, useChoiceSubjects } from '@/lib/programme-choice';
 import { countByLevel, levelCount, levelLabel, type LevelCounts } from '@/lib/levels';
 import { setPracticeLevel, usePracticeLevel } from '@/lib/practice-level';
 import type { Subject, WeekRef } from '@/lib/types';
 import { accuracyTone, SubjectIcon } from '@/components/ui';
 import { availableLevel, LevelSwitch } from './level-switch';
 
-export function PracticePicker({ subjects: allSubjects, catalog }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
+export function PracticePicker({ subjects: allSubjects, catalog: allWeeks }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
   const subjects = useChoiceSubjects(allSubjects);
+  const catalog = useChoiceCatalog(allWeeks);
   // Falls back to the programme's first subject when the last one visited is in another programme.
   const [subjectId, setSubjectId] = useState(state.lastVisited?.subjectId ?? subjects[0].id);
   const subject = subjects.find((s) => s.id === subjectId) ?? subjects[0];
