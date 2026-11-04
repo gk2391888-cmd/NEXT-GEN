@@ -1,0 +1,245 @@
+{
+  "subjectId": "tds",
+  "questions": {
+    "tds-w1-q1": {
+      "question": "What actually changes when you run `source .venv/bin/activate`?",
+      "options": [
+        "The `.venv/bin` directory is put at the front of `PATH`, so `python` and `pip` resolve to the venv's copies",
+        "All packages of the system Python are copied into `.venv`",
+        "A new container starts in which the project runs",
+        "The global `site-packages` permanently starts pointing at the venv"
+      ],
+      "explanation": "The activation script mainly changes `PATH` (and shows the name in the prompt). So when you type `python`/`pip`, the venv's executables are found first, and they use their own separate site-packages. Option B is wrong: a venv starts empty and nothing is copied. Option D's trap is thinking activation changes a global setting; it only affects the current shell session and ends with `deactivate` or a new terminal."
+    },
+    "tds-w1-q2": {
+      "question": "`PATH` is `/opt/tools/bin:/usr/local/bin:/usr/bin`. An executable named `python` exists in both `/usr/local/bin` and `/usr/bin`, but not in `/opt/tools/bin`. Which one runs when you type `python`?",
+      "options": [
+        "`/usr/bin/python`, because system directories get priority",
+        "The shell reports an error because the name exists in two places",
+        "`/usr/local/bin/python`, because it comes first in `PATH`",
+        "Whichever has the newer version number"
+      ],
+      "explanation": "The shell checks the `PATH` directories left to right and runs the first match. `/opt/tools/bin` has no `python`; the next one is `/usr/local/bin`, where it is found, so the search stops there. Option A's trap is assuming `/usr/bin` wins for being the 'system' directory; for the shell only the order matters. Option D is wrong because the shell never compares versions."
+    },
+    "tds-w1-q3": {
+      "question": "A directory has no file named `missing.txt`. What does this bash line print?",
+      "options": [
+        "absent / 1 (two lines)",
+        "found / 0 (two lines)",
+        "absent / 0 (two lines)",
+        "only 1"
+      ],
+      "explanation": "`test -f missing.txt` fails (status 1), so `&& echo found` is skipped and `|| echo absent` runs, printing 'absent'. `$?` always holds the status of the MOST RECENT command, which was `echo absent`, and it succeeded, so 0 is printed. Option A's trap is thinking `$?` still remembers the 1 from `test`."
+    },
+    "tds-w1-q4": {
+      "question": "`requirements.txt` contains `pandas~=1.5.2` (the PEP 440 compatible-release operator). Which of these versions satisfies the specifier?",
+      "options": [
+        "1.5.1",
+        "1.6.0",
+        "2.0.0",
+        "1.5.3"
+      ],
+      "explanation": "`~=1.5.2` means `>=1.5.2` and `==1.5.*`: the last component may grow but you cannot leave the `1.5` series. 1.5.3 meets both conditions. 1.5.1 is below the lower bound (option A). Option B's trap is reading `~=` as 'keep only the major version'; that would be the rule for `~=1.5` (two components), not `~=1.5.2`."
+    },
+    "tds-w1-q5": {
+      "question": "Project layout: `/home/u/proj/data/raw.csv` and `/home/u/proj/src/load.py`. `load.py` contains `open(\"data/raw.csv\")`. You run `cd /home/u/proj/src` and then `python load.py`. What happens?",
+      "options": [
+        "The file opens, because the path is resolved from the script's location",
+        "`FileNotFoundError`, because Python looks for `/home/u/proj/src/data/raw.csv`",
+        "Python searches parent directories for `data/` by itself",
+        "`PermissionError`, because files outside `src` cannot be read"
+      ],
+      "explanation": "A relative path is resolved against the current working directory (where the command was run), not against the script's location. The CWD is `/home/u/proj/src`, so Python looks for `src/data/raw.csv`, which does not exist. Option A is the most common misconception. Fix: run `python src/load.py` from the project root, or build the path like `Path(__file__).resolve().parent.parent / \"data\" / \"raw.csv\"`. Option C is wrong: Python does not search parent folders on its own."
+    },
+    "tds-w1-q6": {
+      "question": "These lines run in a fresh bash shell (A, B and C are not set beforehand). What is the output?",
+      "options": [
+        "A=1 B=2 C=3 / C=3",
+        "A= B=2 C=3 / C=",
+        "A= B=2 C= / C=",
+        "A=1 B=2 C=3 / C="
+      ],
+      "explanation": "`bash -c` is a child process; it only receives exported variables. A was not exported, so it is empty in the child; B was exported, so it is 2. `C=3 cmd` puts C into the environment of that one command only, so the child gets C=3 but C is never set in the parent shell, and the last line prints `C=`. Option D's trap is assuming every shell variable reaches the child; option A's trap is thinking `C=3 cmd` also sets C in the parent."
+    },
+    "tds-w2-q1": {
+      "question": "A teammate pushed 3 new commits to the remote `main`. On your local `main` you run `git fetch origin`. What is true right after this?",
+      "options": [
+        "All three commits are now in your local `main` and working tree",
+        "Git automatically created a merge commit",
+        "Nothing was downloaded; that needs `git pull`",
+        "The new commits are in `origin/main`, but your local `main` and your files are unchanged"
+      ],
+      "explanation": "`git fetch` only downloads objects from the remote and updates the remote-tracking branch `origin/main`. Your local branch changes only when you run `git merge origin/main` (or `git pull`, which is fetch + merge). Option A's trap is confusing fetch with pull. Option C is backwards: fetch is what downloads; pull just adds a merge on top of it."
+    },
+    "tds-w2-q2": {
+      "question": "You are on `main`, and after `git merge feature` this conflict appears in `report.py`. Which is the `main` branch's version?",
+      "options": [
+        "`threshold = 0.8`",
+        "`threshold = 0.75`",
+        "Both lines came from the `feature` branch",
+        "The markers don't tell you; you have to check `git log`"
+      ],
+      "explanation": "The part from `<<<<<<< HEAD` to `=======` belongs to HEAD, the currently checked-out branch. You are on `main`, so `threshold = 0.8` is main's version, and the part from `=======` to `>>>>>>> feature` (0.75) is from the `feature` branch being merged. Option B's trap is taking HEAD to mean the 'incoming' branch."
+    },
+    "tds-w2-q3": {
+      "question": "`a.txt` is tracked and its committed content is `v1`. These commands are run. What is the content of `a.txt` in the new commit, and what does `git status` show?",
+      "options": [
+        "Commit has `v3`; status is clean",
+        "Commit has `v2`; status shows `a.txt` modified (unstaged `v3`)",
+        "Commit has `v1`, because the file changed again before the commit",
+        "The commit fails because the staged and working versions differ"
+      ],
+      "explanation": "`git add` snapshots the content at that moment (`v2`) into the index. Writing `v3` afterwards only changes the working tree. `git commit` builds the commit from the index, so `v2` goes in and `v3` remains as an unstaged modification. Option A's trap is assuming `add` tracks the file's 'name' and commit takes the latest content."
+    },
+    "tds-w2-q4": {
+      "question": "`main` has commits C1, C2. A `feature` branch was created from C2 and got commits C3, C4, C5. Meanwhile C6 was committed on `main`. Now you run `git merge feature` on `main` (no conflicts). What does `git rev-list --count main` print?",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "4"
+      ],
+      "explanation": "Both branches moved on after C2, so a fast-forward is not possible; git does a three-way merge and creates a new merge commit with two parents (C6 and C5). Commits reachable from `main`: C1, C2, C3, C4, C5, C6 and the merge commit = 7. Option B's trap is forgetting the merge commit, which would be right only in a fast-forward case."
+    },
+    "tds-w2-q5": {
+      "question": "A buggy commit `a1b2c3d` has already been pushed to the shared `main`, and teammates have pulled work on top of it. What is the safest way to remove its effect?",
+      "options": [
+        "Run `git revert a1b2c3d` and push the new commit",
+        "Run `git reset --hard a1b2c3d~1` and then `git push --force`",
+        "Add the changed files to `.gitignore`",
+        "Delete the local repo and clone it again"
+      ],
+      "explanation": "`git revert` creates a new commit that reverses that commit's changes; existing history is untouched, so teammates can pull normally. Option B drops the commit from local history and the force-push rewrites shared history, making teammates' branches diverge. It is the most tempting trap because it looks 'clean' on your own machine. Option C has no effect on tracked files."
+    },
+    "tds-w2-q6": {
+      "question": "This `.gitignore` is at the repo root. Which of these untracked files will show up in `git status` (that is, is NOT ignored)?",
+      "options": [
+        "`data/raw.csv`",
+        "`build/main.o`",
+        "`src/build/main.o`",
+        "`app/logs/run.txt`"
+      ],
+      "explanation": "`/build` starts with a slash, so it only matches the `build` at the repo root; `src/build/` does not match, so `src/build/main.o` shows up. `data/raw.csv` is ignored by `*.csv` (the exception is only for `keep.csv`). `build/main.o` is in the root build, so it is ignored. `logs/` without a leading slash matches a `logs` directory at any level, so `app/logs/run.txt` is ignored too. Option D's trap is thinking `logs/` applies only at the root."
+    },
+    "tds-w3-q1": {
+      "question": "A client sends a valid token (the server has identified the user), but that user is not allowed to view `/admin/reports`. Which status code fits best?",
+      "options": [
+        "401 Unauthorized",
+        "404 Not Found",
+        "403 Forbidden",
+        "500 Internal Server Error"
+      ],
+      "explanation": "The user is already authenticated; the problem is only authorization (permission), which is what 403 is for. 401 is for missing or invalid credentials, when the server does not know who you are; because of its name 'Unauthorized', option A is the most tempting trap. 500 is for the server's own failure, and here the server is working correctly."
+    },
+    "tds-w3-q2": {
+      "question": "Which of these strings is valid JSON (Python's `json.loads` parses it without an error)?",
+      "options": [
+        "`{'a': 1}`",
+        "`{\"a\": 1,}`",
+        "`{\"a\": undefined}`",
+        "`{\"a\": [1, 2.5], \"b\": null, \"c\": \"x\"}`"
+      ],
+      "explanation": "In JSON keys/strings use double quotes, `null` is allowed, and numbers may be integers or decimals, so option D is valid. Option A looks like a Python dict, but single quotes are invalid in JSON; this is the common trap when people treat `str(dict)` as JSON. Option B has a trailing comma, and in option C `undefined` is a JavaScript concept, not JSON."
+    },
+    "tds-w3-q3": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `False`",
+        "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `True`",
+        "`{1: (2, 3), \"x\": None, \"y\": True}` / `True`",
+        "`TypeError`, because a tuple cannot be converted to JSON"
+      ],
+      "explanation": "`json.dumps` turns the int key 1 into the string `\"1\"`, the tuple into an array, `None` into `null` and `True` into `true`. After `loads` you get key `\"1\"` (a string) and the list `[2, 3]`, while the original had int key 1 and a tuple, so `back == d` is False. Option B's trap is assuming a JSON round-trip is lossless. Option D is wrong: a tuple is serialized, just as a list."
+    },
+    "tds-w3-q4": {
+      "question": "Because of a network timeout, the client does not know whether its request reached the server. By HTTP semantics, which methods are idempotent, so resending them is safe without worrying about side effects?",
+      "options": [
+        "Only GET",
+        "GET, PUT and DELETE",
+        "GET and POST",
+        "All methods, because the server detects duplicates"
+      ],
+      "explanation": "Idempotent means the server's final state is the same whether the request is sent once or many times. GET (safe), PUT (replaces the resource with the same value) and DELETE (the resource stays gone the second time, even if the response is 404) are idempotent. POST is not: sending it twice can create two records, so option C is wrong. Option A's trap is treating 'safe' and 'idempotent' as the same; PUT/DELETE are not safe but are idempotent."
+    },
+    "tds-w3-q5": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`KeyError: 'API_KEY'`",
+        "`None 8001`",
+        "`\"\" 80001` (a missing variable gives an empty string, as in the shell)",
+        "`None 80001`"
+      ],
+      "explanation": "`pop(\"API_KEY\", None)` removes the key (and raises no error if it is absent). `os.environ.get(\"API_KEY\")` returns `None` for a missing key; a `KeyError` would come only from square-bracket access like `os.environ[\"API_KEY\"]` (option A's trap). Environment values are strings, so `\"8000\" + \"1\"` concatenates to `\"80001\"`. Option B's trap is treating PORT as an integer and getting 8001."
+    },
+    "tds-w3-q6": {
+      "question": "What is the output of this Python code?",
+      "options": [
+        "`8443 /v1/items data%20science ['2', '3']`",
+        "`8443 /v1/items data science ['2', '3']`",
+        "`8443 /v1/items data science ['3']`",
+        "`443 /v1/items?tag=data%20science data science ['2', '3']`"
+      ],
+      "explanation": "The URL gives port 8443 explicitly, the path without the query string is `/v1/items`, and the fragment `#top` is not part of the query. `parse_qs` decodes percent-encoding (`%20` → space) and returns a LIST of values for each key; `page` appears twice, so `['2', '3']`. Option C's trap is assuming 'last value wins' as in a dict; option A's trap is assuming no decoding. Option D assumes the https default port even though the port is written in the URL."
+    },
+    "tds-w4-q1": {
+      "question": "You built an image `etl:1` and ran `docker run etl:1` three times (without `--rm`). Each time the script finished and the container exited. How many containers will `docker ps -a` show, and how many `etl` images are there?",
+      "options": [
+        "1 container, 1 image",
+        "3 containers, 1 image",
+        "3 containers, 3 images",
+        "0 containers (all exited), 1 image"
+      ],
+      "explanation": "Every `docker run` creates a new container from the same single image, so 3 containers and 1 image. After exiting, a container stays in the stopped state unless `--rm` was given or `docker rm` was run, and `docker ps -a` lists stopped containers too. Option D's trap is assuming 'exit = delete'; option C's trap is the idea that each run creates a new image."
+    },
+    "tds-w4-q2": {
+      "question": "Inside the container an API listens on port 5000 at `0.0.0.0`. You run `docker run -p 8080:5000 myapi`. At which URL does the host machine's browser reach the API?",
+      "options": [
+        "`http://localhost:5000`",
+        "`http://<container-IP>:8080`",
+        "Both `http://localhost:5000` and `http://localhost:8080`",
+        "`http://localhost:8080`"
+      ],
+      "explanation": "The `-p` format is `HOST:CONTAINER`: the host's 8080 is forwarded to the container's 5000, so from the host you open `localhost:8080`. Option A's trap is reading the order backwards (taking the container port as the host port); port 5000 was never published on the host. In option B, the container itself listens on 5000, not 8080."
+    },
+    "tds-w4-q3": {
+      "question": "An image is built from this Dockerfile and `docker run img` is run (no extra arguments). Which command runs when the container starts?",
+      "options": [
+        "`python serve.py`",
+        "`python train.py`",
+        "First `train.py`, then `serve.py`",
+        "`python setup_data.py`, then `serve.py`"
+      ],
+      "explanation": "Only the last `CMD` in a Dockerfile takes effect, so `python serve.py` runs at container start. `RUN python setup_data.py` already ran once at image BUILD time, not on each container start, so option D is wrong. Option C's trap is thinking several `CMD` lines run in order like a script."
+    },
+    "tds-w4-q4": {
+      "question": "A team is deploying its image-resize service as a serverless function. Which statement is correct design guidance?",
+      "options": [
+        "Keep a counter in the function's global variable; it is guaranteed to survive between requests",
+        "Serverless means there are no servers at all, so latency is always zero",
+        "Write the function stateless, keep state in a database/object storage, and expect a cold-start delay on the first request after idling",
+        "The function must start its own HTTP server and listen on a fixed port"
+      ],
+      "explanation": "A serverless platform creates and removes function instances as needed, so state in memory or on local disk cannot be relied on; after idling, creating a new instance costs a cold start. Option A is the most tempting trap because a warm instance sometimes keeps the value, but there is no guarantee and parallel instances each have their own counter. Option B is wrong: servers exist, the platform just manages them. Option D is container-style thinking; in serverless the platform delivers the request to the function."
+    },
+    "tds-w4-q5": {
+      "question": "A Flask app runs in a container with `app.run(host=\"127.0.0.1\", port=5000)`. After `docker run -p 5000:5000 img`, `curl http://localhost:5000` on the host gives a connection error, while `curl` from inside the container works. What is the most accurate cause and fix?",
+      "options": [
+        "`EXPOSE 5000` is missing; adding it to the Dockerfile fixes it",
+        "Port 5000 on the host is taken by something else; use `-p 5001:5000`",
+        "The app listens only on the container's loopback, while forwarded traffic arrives on the container's network interface; run the app with `host=\"0.0.0.0\"`",
+        "Flask does not work in containers; use serverless"
+      ],
+      "explanation": "The container's `127.0.0.1` is only the loopback inside the container. Port forwarding delivers traffic to the container's network interface (eth0), where the app is not listening, so curl works inside but not from outside. Binding to `0.0.0.0` makes the app listen on all interfaces. Option A is tempting, but `EXPOSE` is only documentation; `-p` already published the port. In option B, a port conflict would have made `docker run` itself fail at start."
+    },
+    "tds-w4-q6": {
+      "question": "An image has already been built once from this Dockerfile. Now you change only `app.py` (`requirements.txt` is unchanged) and run `docker build` again. Which steps are actually executed again?",
+      "options": [
+        "`FROM` through `RUN pip install` come from cache; `COPY . .` and the steps after it are rebuilt",
+        "All steps, because the build context changed",
+        "Only `RUN pip install`, because it depends on the code",
+        "Nothing; Docker returns the old image"
+      ],
+      "explanation": "Docker reuses each step from cache as long as the instruction and its inputs are unchanged. The input of `COPY requirements.txt .` (the requirements file) did not change, so it and `pip install` are cached. The input of `COPY . .` (which includes `app.py`) changed, so it is the first invalidated step and everything after it is rebuilt. Option B's trap is assuming any file change rebuilds everything; that would be true only if `COPY . .` came before `pip install`. Option D is wrong because the changed code must land in a new layer."
+    }
+  }
+}

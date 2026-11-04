@@ -1,0 +1,245 @@
+{
+  "subjectId": "dbms",
+  "questions": {
+    "dbms-w1-q1": {
+      "question": "A fictional college database has a `student(roll, name, cgpa)` table with 1250 rows today. Tomorrow 30 new students are INSERTed, and no CREATE/ALTER statement is run. Which statement is correct?",
+      "options": [
+        "The schema changed; the instance is the same",
+        "The instance changed; the schema is the same",
+        "Both the schema and the instance changed",
+        "Both are the same; only the data dictionary changed"
+      ],
+      "explanation": "INSERT changes the snapshot of stored data, i.e. the instance. The table's design (columns, types, constraints), i.e. the schema, changes only through DDL (CREATE/ALTER/DROP), which was not run here. Option A is reversed, and the trap in option C is thinking that more rows also change the table's 'structure'. The data dictionary holds schema metadata, so option D is wrong too."
+    },
+    "dbms-w1-q2": {
+      "question": "The DBA moved the `orders` table from an HDD to an SSD and created a new index on `customer_id`. All the application's SQL queries kept returning the same results without any change. This is an example of what?",
+      "options": [
+        "Logical data independence",
+        "Data redundancy",
+        "View-level security",
+        "Physical data independence"
+      ],
+      "explanation": "Changing the storage device and creating an index are physical (internal) level changes. The logical schema (tables, columns) stayed the same, so the queries did not change: this is physical data independence. Trap in option A: logical data independence would mean the logical schema changed (say, a table split) and views/applications still worked."
+    },
+    "dbms-w1-q3": {
+      "question": "In a fictional bus-booking app the remaining seats are kept in a shared CSV file. Two agents read the file at the same instant; both see `seats_left = 1`. Each sells one ticket and each writes `seats_left = 0` to the file. Two tickets were sold for one seat. Which problem of the file-processing approach does this show?",
+      "options": [
+        "Concurrent-access anomaly (one update overwrites the other)",
+        "Atomicity problem (a half-done update stopped in a crash)",
+        "Data isolation (data scattered in files of different formats)",
+        "Redundancy and inconsistency (two copies of a datum with different values)"
+      ],
+      "explanation": "Both agents read the same old value (1) and wrote without coordination; the two updates collapsed into one. This is a concurrent-access anomaly (lost update), which a DBMS prevents with concurrency control. Trap in option B: each agent's update completed and nothing crashed, so it is not an atomicity problem. Option D is wrong too, because there is only one copy of the data (one file)."
+    },
+    "dbms-w1-q4": {
+      "question": "The HR team should see only `name` and `dept` from `employee(emp_id, name, dept, salary)`, not `salary`. The DBA creates a view for this. At which level of the three-level architecture is this view, and which mapping is used when a query runs on it?",
+      "options": [
+        "Physical level; logical→physical mapping",
+        "Logical level; logical→physical mapping",
+        "View (external) level; view→logical mapping",
+        "Logical level; view→logical mapping"
+      ],
+      "explanation": "Showing a user group only part of the data is the job of the view (external) level. When HR queries the view, the DBMS uses the view→logical mapping to turn it into a query on the `employee` table (and then the logical→physical mapping to reach disk). Trap in option D: treating the view as 'one more table' at the logical level; a view is only a stored query, not part of the logical schema."
+    },
+    "dbms-w1-q5": {
+      "question": "A SELECT query runs. Three things happen: (i) the query is parsed into a relational-algebra expression, (ii) one plan is chosen among several equivalent plans by estimated cost, (iii) while the plan runs, the needed disk blocks are brought into main memory. Which components do these three jobs, in order?",
+      "options": [
+        "DDL interpreter, query evaluation engine, file manager",
+        "DML compiler, transaction manager, buffer manager",
+        "Query optimizer, DML compiler, authorization manager",
+        "DML compiler, query optimizer, buffer manager"
+      ],
+      "explanation": "SELECT is a DML statement, so parsing and translation are done by the DML compiler; picking the cheapest plan is the query optimizer's job; moving blocks between disk and memory is the buffer manager (part of the storage manager). Trap in option B: the transaction manager handles atomicity and concurrency, it does not choose plans. Option A is wrong because the DDL interpreter only processes statements like CREATE/ALTER."
+    },
+    "dbms-w1-q6": {
+      "question": "Consider four changes to a fictional university database: (i) creating a B+ tree index on `roll_no`; (ii) storing the `student` table as a hash file instead of a heap file; (iii) adding a new column `phone` to `student`; (iv) splitting `student` into two tables `student_core` and `student_contact`. Which of these change only the physical schema (the logical schema stays the same)?",
+      "options": [
+        "Only (i)",
+        "(i) and (ii)",
+        "(i), (ii) and (iii)",
+        "(i), (ii), (iii) and (iv)"
+      ],
+      "explanation": "An index and a file organisation both only describe how data is laid out and found on disk, so (i) and (ii) are physical changes. Adding a column (iii) and splitting a table (iv) change the design of the relations, i.e. the logical schema. Trap in option C: calling the new column physical because 'it does not break old queries'; old queries surviving is logical data independence, but the change itself is still logical. Option A counts the index but forgets the file organisation."
+    },
+    "dbms-w2-q1": {
+      "question": "What are the degree and cardinality of the `course` relation below?",
+      "options": [
+        "Degree 5, cardinality 4",
+        "Degree 4, cardinality 5",
+        "Degree 4, cardinality 6 (counting the header row too)",
+        "Degree 5, cardinality 5"
+      ],
+      "explanation": "Degree is the number of attributes (columns): code, title, credits, dept = 4. Cardinality is the number of tuples (rows) = 5. Option A swaps the two. The trap in option C is counting the header as a tuple; the header is the schema, not data."
+    },
+    "dbms-w2-q2": {
+      "question": "What does this query return on the `emp` table?",
+      "options": [
+        "Neha, Lina",
+        "Asha, Neha, Lina, Ravi",
+        "Ravi, Lina, Neha",
+        "Neha, Lina, Ravi"
+      ],
+      "explanation": "`BETWEEN 50000 AND 70000` includes both ends, so Ravi (50000) and Neha (70000) qualify, and Lina (61000) is inside anyway. Asha (72000) and Omar (49000) are out. `ORDER BY salary DESC` gives the order Neha 70000, Lina 61000, Ravi 50000. The trap in option A is treating BETWEEN as exclusive, and option C reads DESC as ascending."
+    },
+    "dbms-w2-q3": {
+      "question": "On the `enrol` relation, how many tuples does the RA expression π_course(σ_roll>101(enrol)) give, and how many rows does the SQL query (in the code) return?",
+      "options": [
+        "RA: 3 tuples, SQL: 5 rows",
+        "RA: 5 tuples, SQL: 5 rows",
+        "RA: 3 tuples, SQL: 3 rows",
+        "RA: 6 tuples, SQL: 5 rows"
+      ],
+      "explanation": "σ_roll>101 keeps five tuples (two for 102, two for 103, one for 104), with courses DBMS, PDSA, DBMS, MAD1, PDSA. RA's π produces a set, so only distinct courses remain: DBMS, PDSA, MAD1 = 3. SQL's `SELECT` returns a multiset, 5 rows with duplicates. The trap in option B is treating π like SQL; option C treats SQL as if it had DISTINCT."
+    },
+    "dbms-w2-q4": {
+      "question": "The tables are created as below (no `ON DELETE` clause on the foreign key). Run each statement separately on this same starting data. Which statements are rejected because of the foreign-key constraint?",
+      "options": [
+        "Only (i)",
+        "(i), (ii) and (iv)",
+        "(i) and (iv)",
+        "(iii) and (iv)"
+      ],
+      "explanation": "(i) `D4` is not in dept, so it is rejected. (ii) NULL is allowed in a foreign-key column (no NOT NULL), so it is accepted. (iii) No emp refers to D3, so it is deleted. (iv) Asha and Neha refer to D1; the default action (NO ACTION/RESTRICT) rejects the delete. The trap in option B is counting NULL as a violation; option A forgets that deleting a parent row can also break the constraint."
+    },
+    "dbms-w2-q5": {
+      "question": "How many rows does this query return on the `users` table? (All usernames are lowercase.)",
+      "options": [
+        "5",
+        "4",
+        "3",
+        "7"
+      ],
+      "explanation": "`'_a%a'` means: any one character first, `a` as the second character, anything (zero or more) in between, and `a` as the last character. Matches: tara, zara, jaya, sanya = 4. asha has `s` as its second character, and kabir and aman do not end in `a`. The trap in option A is treating `_` like `%`; then asha would match too and the count would be 5."
+    },
+    "dbms-w2-q6": {
+      "question": "Relation R(A, B, C, D) has the FDs A → BCD and BC → A. Its only candidate keys are {A} and {B, C}. How many superkeys does R have?",
+      "options": [
+        "8",
+        "12",
+        "10",
+        "2"
+      ],
+      "explanation": "Superkeys containing A: A with any subset of B, C, D, 2³ = 8. Superkeys containing {B, C}: B, C with any subset of A, D, 2² = 4. Sets counted in both (those containing A, B and C) are {A,B,C} and {A,B,C,D} = 2. Inclusion–exclusion: 8 + 4 − 2 = 10. The trap in option B is counting the common sets twice; option A counts only the superkeys with A, and option D mistakes candidate keys for all superkeys."
+    },
+    "dbms-w3-q1": {
+      "question": "What does this query return on the `orders` table?",
+      "options": [
+        "5, 5, 120",
+        "5, 3, 120",
+        "3, 3, 200",
+        "5, 3, 200"
+      ],
+      "explanation": "`COUNT(*)` counts all 5 rows. `COUNT(amount)` skips NULLs and counts 3. `AVG(amount)` also ignores NULLs: (100 + 300 + 200) / 3 = 200. The trap in option B is computing AVG as 600 / 5 = 120, i.e. treating NULL as 0. The trap in option C is thinking `COUNT(*)` also skips NULL rows."
+    },
+    "dbms-w3-q2": {
+      "question": "What does this query return on the `student` table?",
+      "options": [
+        "0",
+        "2",
+        "4",
+        "Syntax error"
+      ],
+      "explanation": "`mentor = NULL` gives UNKNOWN for every row (a comparison with NULL is never TRUE), and WHERE keeps only TRUE rows. So no row survives and `COUNT(*)` gives 0. The trap in option B is thinking `=` will find the two NULL rows; that needs `mentor IS NULL`. It is not a syntax error, so option D is wrong too."
+    },
+    "dbms-w3-q3": {
+      "question": "How many rows does this LEFT JOIN query return?",
+      "options": [
+        "4",
+        "5",
+        "6",
+        "20"
+      ],
+      "explanation": "D1 has two employees (2 rows), D2 has two (2 rows). D3 and D4 have none, but LEFT JOIN still gives each of them one row with `e.name` NULL (2 rows). Total 6. Lina's `dept_id` is NULL, so she matches no dept, and since the left table is `dept` her row does not appear. The trap in option A is counting only matches as in an inner join; option B counts Lina too; option D is the Cartesian product (4 × 5)."
+    },
+    "dbms-w3-q4": {
+      "question": "What output does this query give on the `emp` table?",
+      "options": [
+        "D1 (2, 52500), D2 (2, 49500)",
+        "D1 (3, 47666.67), D2 (2, 49500), D3 (2, 60000)",
+        "D1 (2, 52500), D2 (2, 49500), D3 (1, 90000)",
+        "D2 (2, 49500)"
+      ],
+      "explanation": "WHERE runs first: Ravi (38000) and Zoya (30000), at or below 40000, are removed. Remaining groups: D1 = Asha 60000, Vik 45000 (n = 2, avg 52500); D2 = Neha 52000, Omar 47000 (n = 2, avg 49500); D3 = only Lina (n = 1). HAVING `COUNT(*) >= 2` removes D3. The trap in option B is ignoring WHERE and aggregating the whole groups; option C forgets HAVING."
+    },
+    "dbms-w3-q5": {
+      "question": "How many rows do Query P and Query Q return, respectively?",
+      "options": [
+        "P: 6, Q: 3",
+        "P: 7, Q: 3",
+        "P: 7, Q: 4",
+        "P: 5, Q: 3"
+      ],
+      "explanation": "`UNION ALL` does not remove duplicates: 5 + 2 = 7 rows. `EXCEPT` is a set operation: from the distinct rolls of `dbms_reg`, {101, 102, 103, 104}, remove 103, leaving {101, 102, 104} = 3 rows. The trap in option C is keeping 102 twice (that is EXCEPT ALL's behaviour). Option A removes the duplicate 102 even in UNION ALL, and option D is the count for a distinct UNION."
+    },
+    "dbms-w3-q6": {
+      "question": "The placement cell wants the names of students who are not yet placed. What does this query return?",
+      "options": [
+        "Dev, Sam, Mia",
+        "Ira, Dev, Sam, Mia",
+        "No rows (empty result)",
+        "An error, because the subquery contains NULL"
+      ],
+      "explanation": "`roll NOT IN (101, NULL)` means `roll <> 101 AND roll <> NULL`. `roll <> NULL` is always UNKNOWN. For roll 101 the first part is FALSE, so the whole thing is FALSE; for everyone else it is TRUE AND UNKNOWN = UNKNOWN. WHERE keeps only TRUE, so no row comes back. Option A is tempting because it is the intended answer; you would get it with `NOT EXISTS` (or `WHERE roll IS NOT NULL` in the subquery). NULL does not cause an error, so option D is wrong."
+    },
+    "dbms-w4-q1": {
+      "question": "R(A, B, C) has 4 tuples and S(D, E) has 5 tuples. How many tuples does R × S have and what is its degree?",
+      "options": [
+        "9 tuples, degree 5",
+        "20 tuples, degree 6",
+        "4 tuples, degree 5",
+        "20 tuples, degree 5"
+      ],
+      "explanation": "The Cartesian product pairs every tuple of R with every tuple of S: 4 × 5 = 20 tuples. The degree is the sum of the degrees: 3 + 2 = 5. The trap in option A is adding the tuple counts (4 + 5), as if it were a union. Option B counts one extra attribute."
+    },
+    "dbms-w4-q2": {
+      "question": "In an ER diagram there is an M:N relationship `enrols` between `student` (PK `roll`) and `course` (PK `code`), with an attribute `grade`. What is the correct relational mapping of `enrols`?",
+      "options": [
+        "Add `code` and `grade` columns to the `student` table",
+        "A new table `enrols(roll, code, grade)` with primary key (`roll`, `code`)",
+        "A new table `enrols(roll, code, grade)` with primary key `roll` only",
+        "Add `roll` and `grade` columns to the `course` table"
+      ],
+      "explanation": "An M:N relationship gets its own table holding both entities' primary keys as foreign keys, together forming the primary key; the relationship attribute `grade` goes in it too. Trap in option C: with PK `roll` alone a student could take only one course, turning M:N into N:1. Options A and D apply the 1:N foreign-key rule to an M:N relationship, which would need many courses (or many students) in one row."
+    },
+    "dbms-w4-q3": {
+      "question": "A fictional bank's ER: strong entity sets `customer` (PK cust_id, multivalued attribute `phone`), `account` (PK acc_no) and `branch` (PK branch_id). `holds` is M:N between customer and account. `located_at` is N:1 from account to branch (each account in exactly one branch, total participation). Using the standard rules, what is the minimum number of tables?",
+      "options": [
+        "4",
+        "6",
+        "5",
+        "7"
+      ],
+      "explanation": "Three strong entities: customer, account, branch (3). customer_phone for the multivalued phone (4). A separate table for the M:N `holds` (5). The N:1 `located_at` needs no table of its own: a `branch_id` FK (NOT NULL) in `account` is enough. Total 5. The trap in option B is giving the N:1 relationship a table too; option A forgets the table for the multivalued attribute."
+    },
+    "dbms-w4-q4": {
+      "question": "What is the result of `takes` ÷ `req`?",
+      "options": [
+        "S1, S3",
+        "S1",
+        "S1, S2, S3",
+        "S2, S4"
+      ],
+      "explanation": "Division gives the `sid` values that appear in `takes` with every course in `req` (C1 and C2). S1 has C1, C2 (and an extra C3): included. S3 has C2, C1: included. S2 has only C1, S4 only C3: out. The trap in option B is thinking a student with an extra course (C3) drops out; division only looks for missing courses. Option C is the answer to 'at least one required course'."
+    },
+    "dbms-w4-q5": {
+      "question": "On relations `student(roll, name)` and `enrol(roll, course)`, what does this TRC query (in the code) return?",
+      "options": [
+        "Names of students enrolled in at least one course",
+        "Names of all students",
+        "Names of students enrolled in all courses",
+        "Names of students not enrolled in any course"
+      ],
+      "explanation": "t is a name for which some student s exists such that no tuple e in `enrol` has a roll equal to s's roll. So s has no enrolment at all: 'not enrolled in any course'. The trap in option A is missing the ¬ and reading it as ∃e. Option C would need ∀ (every course), which this query does not have."
+    },
+    "dbms-w4-q6": {
+      "question": "For R(sid, cid) and S(cid), which expression gives R ÷ S using only basic operators? (Sample data in the code: R = `takes`, S = `req`.)",
+      "options": [
+        "π_sid(R) − π_sid((π_sid(R) × S) − R)",
+        "π_sid(R) − π_sid(R − (π_sid(R) × S))",
+        "π_sid((π_sid(R) × S) − R)",
+        "π_sid(R ⋈ S)"
+      ],
+      "explanation": "π_sid(R) × S pairs every student with every required course, i.e. 'what should be there'. Subtracting R leaves only the missing pairs; their sids are the students who skipped some required course. Removing those from all students gives R ÷ S. Option C returns just those 'missing' students, the opposite answer. The trap in option B is writing the set difference the wrong way round: R − (π_sid(R) × S) gives the extra-course pairs, not the missing ones. Option D is 'at least one required course'. (On the sample data in the code: A = {S1, S3}, B = {S2, S3}, C = {S2, S4}, D = {S1, S2, S3}.)"
+    }
+  }
+}

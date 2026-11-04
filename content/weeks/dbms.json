@@ -1,0 +1,505 @@
+{
+  "subjectId": "dbms",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Why a DBMS: Data Models, Schemas and Architecture",
+      "summary": "Is week aap seekhoge ki plain files ki jagah DBMS kyun use hota hai, data model, schema aur instance ka farak, three-level architecture, physical aur logical data independence, aur ek DBMS ke andar ke main components.",
+      "readMinutes": 14,
+      "concepts": [
+        "**File-processing system ki dikkatein**: jab har team apni CSV/Excel files aur apne programs rakhti hai to (1) **redundancy aur inconsistency**: ek hi address do files mein, ek update hua doosra nahi; (2) har naye sawaal ke liye naya program likhna padta hai; (3) **data isolation**: data alag formats aur files mein bikhra; (4) integrity rules (jaise balance ≥ 0) code ke andar dabe rehte hain; (5) **atomicity** nahi: aadha kaam karke crash; (6) **concurrent-access anomalies**: do users ek saath update karke ek doosre ka kaam mita dete hain; (7) security: kisko kya dikhe, ye control karna mushkil.",
+        "**DBMS (Database Management System)** aapas mein jude data ka collection aur us data ko access karne wale programs ka set hai, jaise PostgreSQL, MySQL, SQLite. Database = data; DBMS = software. Ye declarative queries, transactions, concurrency control, crash recovery aur access control ek jagah deta hai, taaki har application ko ye khud na likhna pade.",
+        "**Data model** data, uske relationships, uske meaning aur constraints ko describe karne ke concepts ka set hai. **Relational model** (tables) aaj ka standard hai; **ER model** design ke liye; **semi-structured** (JSON, XML) jahan har record ke fields alag ho sakte hain; object-based models OOP ke kareeb. Network aur hierarchical models purane (historical) hain.",
+        "**Schema vs instance**: schema database ka design hai (kaunsi tables, columns, types, constraints) aur kam badalta hai; instance kisi ek pal par stored data ka snapshot hai aur har INSERT/UPDATE/DELETE ke saath badalta hai. Programming analogy: schema = variable ka type, instance = us waqt ki value.",
+        "**Three-level architecture**: **physical (internal) level** batata hai data disk par kaise stored hai (files, blocks, indexes); **logical (conceptual) level** batata hai kaunsa data hai aur relations kya hain (tables, keys, constraints); **view (external) level** har user group ko sirf uske kaam ka hissa dikhata hai. Levels ke beech **mappings** hoti hain (view→logical, logical→physical).",
+        "**Data independence**: ek level badlo bina upar wale level ko badle. **Physical data independence**: index banana, file organisation badalna, data SSD pe le jaana; logical schema aur queries waise hi chalti hain. Ye aam aur aasaan hai. **Logical data independence**: logical schema badlo (table split, column add) aur views/applications na tootein. Ye mushkil hai; views isme madad karte hain.",
+        "**Database languages**: **DDL** (CREATE, ALTER, DROP) schema aur constraints define karti hai, jo **data dictionary** (metadata catalog) mein store hote hain. **DML** (SELECT, INSERT, UPDATE, DELETE) data padhti/badalti hai. SQL **declarative** hai: aap batate ho kya chahiye, kaise laana hai ye DBMS tay karta hai.",
+        "**DBMS ke components**: **storage manager** (authorization aur integrity manager, transaction manager, file manager, buffer manager jo disk blocks ko memory mein laata hai) aur **query processor** (DDL interpreter, DML compiler jo query ko relational algebra plan banata hai, **query optimizer** jo sabse sasta plan chunta hai, aur evaluation engine jo plan chalata hai). DBA (database administrator) schema, storage structure, access rights aur backups sambhalta hai."
+      ],
+      "example": {
+        "problem": "Ek fictional wallet app mein Riya (₹2000) Kabir (₹1000) ko ₹500 bhejti hai. Pehle version mein dono balances alag files mein hain aur program pehle Riya ka balance ghatata hai, phir Kabir ka badhata hai. Pehli write ke baad server crash ho jaata hai. Kya galat hua, aur DBMS isse kaise bachata hai?",
+        "steps": [
+          "Transfer se pehle total paisa: 2000 + 1000 = ₹3000.",
+          "Crash ke baad files mein: Riya ₹1500, Kabir ₹1000; total ₹2500. ₹500 gayab ho gaye.",
+          "Ye **atomicity** ka violation hai: transfer ya to poora hona chahiye tha ya bilkul nahi. File system ke paas 'aadha kaam undo karo' ka koi mechanism nahi hai.",
+          "DBMS mein dono UPDATE ek **transaction** (`BEGIN` ... `COMMIT`) ke andar likhe jaate hain (code dekho). `CHECK (balance >= 0)` integrity rule schema mein hi likh diya, application code mein nahi.",
+          "Agar COMMIT se pehle crash ho, to recovery manager log ki madad se pehla UPDATE undo kar deta hai; balances wapas 2000 aur 1000 ho jaate hain.",
+          "COMMIT ho gaya to dono changes durable hain: 1500 aur 1500.",
+          "Answer: **dono cases mein total ₹3000 hi rehta hai; transaction 'sab ya kuch nahi' ki guarantee deta hai**."
+        ],
+        "code": "-- Fictional wallet app: dono updates ek transaction mein\nCREATE TABLE wallet (\n    user_id  VARCHAR(10) PRIMARY KEY,\n    balance  INTEGER NOT NULL CHECK (balance >= 0)\n);\nINSERT INTO wallet VALUES ('riya', 2000), ('kabir', 1000);\n\nBEGIN;\nUPDATE wallet SET balance = balance - 500 WHERE user_id = 'riya';\nUPDATE wallet SET balance = balance + 500 WHERE user_id = 'kabir';\nCOMMIT;\n\nSELECT SUM(balance) FROM wallet;   -- 3000, transfer se pehle bhi 3000"
+      },
+      "mistakes": [
+        "Rows badhne ko schema change samajhna. INSERT/DELETE sirf instance badalte hain; schema tab badalta hai jab CREATE/ALTER/DROP se structure badle.",
+        "Ye maan lena ki logical data independence bhi physical jitni aasaan hai. Column hatana ya table todna purani queries tod sakta hai; is jhatke ko views se absorb karo.",
+        "Database aur DBMS ko ek hi cheez bolna. Database stored data hai; DBMS (PostgreSQL, MySQL, SQLite) woh software hai jo use store, query, protect aur recover karta hai."
+      ],
+      "revision": [
+        "File systems ki dikkatein: redundancy, access, isolation, integrity, atomicity, concurrency, security.",
+        "Schema = design (kam badalta hai); instance = abhi ka snapshot.",
+        "Teen levels: physical, logical, view; beech mein mappings.",
+        "Physical independence: storage badlo, queries same. Logical independence: schema badlo, views/apps same.",
+        "DDL schema banati hai (data dictionary mein jaata hai), DML data padhti/badalti hai.",
+        "Storage manager (buffer, file, transaction, authorization) + query processor (compiler, optimizer, engine)."
+      ],
+      "questions": [
+        {
+          "question": "Ek fictional college database mein `student(roll, name, cgpa)` table hai jisme aaj 1250 rows hain. Kal 30 naye students INSERT hue, aur koi CREATE/ALTER statement nahi chala. Kaunsa statement sahi hai?",
+          "options": [
+            "Schema badal gaya, instance wahi hai",
+            "Instance badal gaya, schema wahi hai",
+            "Schema aur instance dono badal gaye",
+            "Dono wahi hain; sirf data dictionary badli"
+          ],
+          "answer": 1,
+          "explanation": "INSERT stored data ka snapshot, yaani instance, badalta hai. Table ka design (columns, types, constraints) yaani schema sirf DDL (CREATE/ALTER/DROP) se badalta hai, jo yahan nahi chala. Option A ulta hai, aur option C ka trap ye sochna hai ki rows badhne se table ka 'structure' bhi badal gaya. Data dictionary schema ka metadata rakhti hai, isliye option D bhi galat hai.",
+          "difficulty": "easy",
+          "id": "dbms-w1-q1"
+        },
+        {
+          "question": "DBA ne `orders` table ko HDD se SSD par move kiya aur `customer_id` par ek naya index banaya. Application ki saari SQL queries bina kisi change ke pehle jaisa result deti rahin. Ye kiska example hai?",
+          "options": [
+            "Logical data independence",
+            "Data redundancy",
+            "View-level security",
+            "Physical data independence"
+          ],
+          "answer": 3,
+          "explanation": "Storage device badalna aur index banana physical (internal) level ke changes hain. Logical schema (tables, columns) wahi raha, isliye queries nahi badlin: ye physical data independence hai. Option A ka trap: logical data independence tab hoti jab logical schema (jaise table split) badalta aur views/applications phir bhi chalte.",
+          "difficulty": "easy",
+          "id": "dbms-w1-q2"
+        },
+        {
+          "question": "Ek fictional bus-booking app mein bachi hui seats ek shared CSV file mein hain. Do agents ek hi pal mein file padhte hain; dono ko `seats_left = 1` dikhta hai. Dono ek-ek ticket bechte hain aur dono file mein `seats_left = 0` likh dete hain. Ek seat ke do ticket bik gaye. File-processing approach ki kaunsi problem yahan dikh rahi hai?",
+          "options": [
+            "Concurrent-access anomaly (ek update doosre ko overwrite kar deta hai)",
+            "Atomicity problem (aadha update crash mein ruk gaya)",
+            "Data isolation (data alag formats ki files mein bikhra hai)",
+            "Redundancy aur inconsistency (ek data ki do copies alag values par)"
+          ],
+          "answer": 0,
+          "explanation": "Dono agents ne ek purani value (1) padhi aur bina coordination ke likh di; dono updates ka asar ek ho gaya. Ye concurrent-access anomaly (lost update) hai, jise DBMS concurrency control se rokta hai. Option B ka trap: har agent ka update poora hua, koi crash nahi hua, isliye atomicity ki problem nahi hai. Option D bhi galat hai kyunki data ki sirf ek copy (ek file) hai.",
+          "difficulty": "medium",
+          "id": "dbms-w1-q3"
+        },
+        {
+          "question": "HR team ko `employee(emp_id, name, dept, salary)` mein se sirf `name` aur `dept` dikhne chahiye, `salary` nahi. DBA iske liye ek view banata hai. Three-level architecture mein ye view kis level par hai, aur query chalate waqt kaunsi mapping use hoti hai?",
+          "options": [
+            "Physical level; logical→physical mapping",
+            "Logical level; logical→physical mapping",
+            "View (external) level; view→logical mapping",
+            "Logical level; view→logical mapping"
+          ],
+          "answer": 2,
+          "explanation": "Kisi user group ko data ka sirf ek hissa dikhana view (external) level ka kaam hai. Jab HR is view par query karta hai, DBMS view→logical mapping se use `employee` table par query mein badalta hai (phir logical→physical mapping se disk tak). Option D ka trap: view ko 'ek aur table' samajh kar logical level par rakh dena; view sirf ek stored query hai, logical schema ka hissa nahi.",
+          "difficulty": "medium",
+          "id": "dbms-w1-q4"
+        },
+        {
+          "question": "Ek SELECT query chalti hai. Teen kaam hote hain: (i) query parse hokar relational-algebra expression banti hai, (ii) kai equivalent plans mein se estimated cost ke hisaab se ek plan chuna jaata hai, (iii) plan chalate waqt zaroori disk blocks main memory mein laaye jaate hain. Ye teen kaam kramashah kaunse components karte hain?",
+          "options": [
+            "DDL interpreter, query evaluation engine, file manager",
+            "DML compiler, transaction manager, buffer manager",
+            "Query optimizer, DML compiler, authorization manager",
+            "DML compiler, query optimizer, buffer manager"
+          ],
+          "answer": 3,
+          "explanation": "SELECT ek DML statement hai, isliye parsing aur translation DML compiler karta hai; plans mein se sasta plan chunna query optimizer ka kaam hai; disk aur memory ke beech blocks laana buffer manager (storage manager ka hissa) karta hai. Option B ka trap: transaction manager atomicity aur concurrency sambhalta hai, plan nahi chunta. Option A galat hai kyunki DDL interpreter sirf CREATE/ALTER jaise statements process karta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w1-q5"
+        },
+        {
+          "question": "Ek fictional university database par chaar changes socho: (i) `roll_no` par B+ tree index banana; (ii) `student` table ko heap file se hash file organisation mein store karna; (iii) `student` mein naya column `phone` add karna; (iv) `student` ko `student_core` aur `student_contact` do tables mein todna. Inmein se kaunse changes sirf physical schema badalte hain (logical schema wahi rehta hai)?",
+          "options": [
+            "Sirf (i)",
+            "(i) aur (ii)",
+            "(i), (ii) aur (iii)",
+            "(i), (ii), (iii) aur (iv)"
+          ],
+          "answer": 1,
+          "explanation": "Index aur file organisation dono sirf ye batate hain ki data disk par kaise rakha aur dhoondha jaata hai, isliye (i) aur (ii) physical changes hain. Column add karna (iii) aur table todna (iv) relations ka design badalte hain, yaani logical schema. Option C ka trap: 'naya column purani queries ko nahi todta' isliye use physical maan lena; queries na tootna logical data independence hai, change phir bhi logical hai. Option A index ko hi physical maanta hai aur file organisation bhool jaata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w1-q6"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "The Relational Model, Keys and First SQL",
+      "summary": "Is week aap relation, tuple, attribute aur domain ki exact definitions, superkey se foreign key tak saare keys, relational algebra ke basic operators, aur SQL ke DDL/DML ke saath SELECT-FROM-WHERE queries seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Relation, tuple, attribute, domain**: relation ek table hai, tuple ek row, attribute ek column, aur domain us column ki allowed values ka set. Relational model mein har value **atomic** hoti hai (ek cell mein list nahi). Attributes ki ginti **degree** (arity) hai aur tuples ki ginti **cardinality**. Schema likhte hain jaise `student(roll, name, dept)`.",
+        "**Relation ek set hai**: theory mein tuples ka koi order nahi hota aur duplicate tuple ho hi nahi sakta. SQL tables **multiset (bag)** hain: key na ho to duplicate rows aa sakti hain, aur `SELECT` duplicates nahi hataata jab tak `DISTINCT` na likho. Ye farak exams mein baar-baar pakda jaata hai.",
+        "**Keys**: **superkey** attributes ka koi bhi set jo har tuple ko uniquely pehchaane. **Candidate key** minimal superkey hai: usme se koi attribute hatao to woh superkey nahi rehta. **Primary key** designer ki chuni hui candidate key hai (unique + NOT NULL); baaki candidate keys par `UNIQUE` lagta hai. Key schema ka niyam hai; ek instance dekh kar key 'prove' nahi hoti, sirf disprove ho sakti hai.",
+        "**Foreign key aur referential integrity**: `emp.dept_id REFERENCES dept(dept_id)` ka matlab hai har non-NULL `emp.dept_id` value `dept` mein maujood honi chahiye. Galat value INSERT karna reject hota hai, aur kisi referenced parent row ko DELETE karna bhi default mein reject hota hai. `ON DELETE CASCADE` (child rows bhi hatao) ya `ON DELETE SET NULL` se ye behaviour badal sakte ho. Foreign key column mein NULL allowed hai jab tak `NOT NULL` na lagaya ho.",
+        "**Relational algebra (RA) basics**: σ (selection) rows chhaantta hai, π (projection) columns chunta hai aur **duplicates hata deta hai**, × (Cartesian product) har pair banata hai, ⋈ (natural join) common attributes par match karta hai, ∪ aur − ke liye dono relations **union-compatible** (same degree, matching domains) hone chahiye, ρ rename karta hai. Har operator ka output bhi relation hai, isliye operators ko chain kar sakte ho.",
+        "**SQL DDL**: `CREATE TABLE` mein har column ka type (`INT`, `VARCHAR(n)`, `DECIMAL(p,s)`, `DATE`) aur constraints (`PRIMARY KEY`, `NOT NULL`, `UNIQUE`, `CHECK`, `REFERENCES`) likhte hain. Composite key table-level constraint se: `PRIMARY KEY (member_id, isbn, loan_date)`. `ALTER TABLE` schema badalta hai, `DROP TABLE` table hi hata deta hai.",
+        "**SQL DML**: `INSERT INTO t VALUES (...)`, `UPDATE t SET col = expr WHERE ...`, `DELETE FROM t WHERE ...`. `WHERE` bhool gaye to UPDATE/DELETE **saari rows** par chalta hai. Har statement constraints ke against check hota hai; koi constraint toota to poora statement reject.",
+        "**SELECT-FROM-WHERE**: logically pehle `FROM` (tables), phir `WHERE` (row filter), phir `SELECT` (columns), phir `ORDER BY`. Ye RA mein π(σ(R)) jaisa hai, bas duplicates nahi hatte. `BETWEEN a AND b` dono ends include karta hai; `LIKE` mein `%` = koi bhi (zero ya zyada) characters, `_` = theek ek character; `AND` ki precedence `OR` se zyada hai."
+      ],
+      "example": {
+        "problem": "Ek fictional library ke liye `member` aur `loan` tables banao (code dekho). Batao: (a) `member` ki candidate keys, (b) `loan` ki primary key aur foreign key, (c) member M02 ne kaunsi books kab li, SQL aur RA dono mein.",
+        "steps": [
+          "`member_id` har member ko uniquely pehchaanta hai, aur `email` par `UNIQUE` hai, to dono candidate keys hain. `member_id` ko primary key chuna; `email` alternate key hai.",
+          "Ek member ek hi book alag dinon par dobara le sakta hai, isliye `loan` mein akela `(member_id, isbn)` unique nahi hai. Key banti hai `(member_id, isbn, loan_date)`.",
+          "`loan.member_id REFERENCES member(member_id)`: koi loan aise member ke naam nahi ho sakta jo `member` table mein nahi hai.",
+          "Query: `WHERE member_id = 'M02'` se do rows bachti hain, `SELECT isbn, loan_date` sirf do columns rakhta hai, `ORDER BY loan_date` date ke order mein lagata hai.",
+          "RA mein: π_isbn,loan_date(σ_member_id='M02'(loan)). Yahan dono rows alag hain, isliye π ka duplicate hataana kuch nahi badalta.",
+          "Answer: **(9780000000011, 2026-07-01) aur (9780000000028, 2026-07-09)**."
+        ],
+        "code": "CREATE TABLE member (\n    member_id  VARCHAR(5)  PRIMARY KEY,\n    name       VARCHAR(40) NOT NULL,\n    email      VARCHAR(60) UNIQUE\n);\nCREATE TABLE loan (\n    member_id  VARCHAR(5)  REFERENCES member(member_id),\n    isbn       CHAR(13),\n    loan_date  DATE,\n    PRIMARY KEY (member_id, isbn, loan_date)\n);\nINSERT INTO member VALUES ('M01', 'Ira', 'ira@example.com'),\n                          ('M02', 'Dev', 'dev@example.com');\nINSERT INTO loan VALUES ('M02', '9780000000011', '2026-07-01'),\n                        ('M01', '9780000000028', '2026-07-03'),\n                        ('M02', '9780000000028', '2026-07-09');\n\nSELECT isbn, loan_date FROM loan WHERE member_id = 'M02' ORDER BY loan_date;\n-- π_isbn,loan_date(σ_member_id='M02'(loan))"
+      },
+      "mistakes": [
+        "Table ke 4–5 rows dekh kar bolna 'name unique hai to name key hai'. Key ek business rule hai jo har possible instance par lagu hota hai; data se sirf ye dikh sakta hai ki koi set key NAHI hai.",
+        "`UPDATE emp SET salary = salary * 1.1;` bina WHERE chala dena: poori company ki salary badh jaati hai. Pehle wahi WHERE ek SELECT mein chala kar dekho ki kitni rows aa rahi hain.",
+        "SQL `SELECT dept FROM emp` ko RA ke π_dept jaisa samajhna. π duplicates hata deta hai, SQL nahi; same result ke liye `SELECT DISTINCT dept` likho."
+      ],
+      "revision": [
+        "Degree = columns, cardinality = rows; values atomic.",
+        "Superkey ⊇ candidate key (minimal); primary key = chuni hui candidate key, NOT NULL.",
+        "Foreign key: value parent mein ho ya NULL; referenced parent ka DELETE default mein reject.",
+        "π duplicates hataata hai; SQL SELECT nahi (DISTINCT chahiye).",
+        "`BETWEEN` inclusive; `LIKE`: `%` = 0+ chars, `_` = theek 1 char.",
+        "UPDATE/DELETE bina WHERE = saari rows."
+      ],
+      "questions": [
+        {
+          "question": "Neeche di gayi `course` relation ki degree aur cardinality kya hai?",
+          "code": "course\ncode  | title                | credits | dept\nCS101 | Intro to Programming | 4       | CS\nCS102 | Data Structures      | 4       | CS\nMA101 | Linear Algebra       | 3       | MA\nEE201 | Signals              | 3       | EE\nHS101 | Economics            | 2       | HS",
+          "options": [
+            "Degree 5, cardinality 4",
+            "Degree 4, cardinality 5",
+            "Degree 4, cardinality 6 (header row bhi gini)",
+            "Degree 5, cardinality 5"
+          ],
+          "answer": 1,
+          "explanation": "Degree attributes (columns) ki ginti hai: code, title, credits, dept = 4. Cardinality tuples (rows) ki ginti hai = 5. Option A dono ko ulta kar deta hai. Option C ka trap header ko bhi tuple ginna hai; header schema hai, data nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w2-q1"
+        },
+        {
+          "question": "`emp` table par ye query kya lautayegi?",
+          "code": "emp\nid | name | dept | salary\n1  | Asha | CS   | 72000\n2  | Ravi | EE   | 50000\n3  | Neha | CS   | 70000\n4  | Omar | ME   | 49000\n5  | Lina | EE   | 61000\n6  | Vik  | CS   | 85000\n\nSELECT name FROM emp\nWHERE salary BETWEEN 50000 AND 70000\nORDER BY salary DESC;",
+          "options": [
+            "Neha, Lina",
+            "Asha, Neha, Lina, Ravi",
+            "Ravi, Lina, Neha",
+            "Neha, Lina, Ravi"
+          ],
+          "answer": 3,
+          "explanation": "`BETWEEN 50000 AND 70000` dono ends include karta hai, isliye Ravi (50000) aur Neha (70000) bhi aate hain, Lina (61000) to beech mein hai hi. Asha (72000) aur Omar (49000) bahar. `ORDER BY salary DESC` se order: Neha 70000, Lina 61000, Ravi 50000. Option A ka trap BETWEEN ko exclusive samajhna hai, aur option C ne DESC ko ascending padh liya.",
+          "difficulty": "easy",
+          "id": "dbms-w2-q2"
+        },
+        {
+          "question": "`enrol` relation par RA expression π_course(σ_roll>101(enrol)) kitne tuples deta hai, aur SQL query (code mein) kitni rows lautati hai?",
+          "code": "enrol\nroll | course\n101  | DBMS\n102  | DBMS\n102  | PDSA\n103  | DBMS\n103  | MAD1\n104  | PDSA\n\nSELECT course FROM enrol WHERE roll > 101;",
+          "options": [
+            "RA: 3 tuples, SQL: 5 rows",
+            "RA: 5 tuples, SQL: 5 rows",
+            "RA: 3 tuples, SQL: 3 rows",
+            "RA: 6 tuples, SQL: 5 rows"
+          ],
+          "answer": 0,
+          "explanation": "σ_roll>101 paanch tuples rakhta hai (102 ke do, 103 ke do, 104 ka ek), jinke courses hain DBMS, PDSA, DBMS, MAD1, PDSA. RA ka π ek set banata hai, isliye distinct courses bachte hain: DBMS, PDSA, MAD1 = 3. SQL ka `SELECT` multiset lautata hai, duplicates ke saath 5 rows. Option B ka trap π ko SQL jaisa samajhna hai; option C SQL ko bhi DISTINCT maan leta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w2-q3"
+        },
+        {
+          "question": "Tables neeche ki tarah bani hain (foreign key par koi `ON DELETE` clause nahi). Har statement ko alag se, isi shuruaati data par chalao. Kaunse statements foreign-key constraint ki wajah se reject honge?",
+          "code": "CREATE TABLE dept (\n    dept_id  CHAR(2) PRIMARY KEY,\n    name     VARCHAR(30)\n);\nCREATE TABLE emp (\n    id       INT PRIMARY KEY,\n    name     VARCHAR(30),\n    dept_id  CHAR(2) REFERENCES dept(dept_id)\n);\n-- dept: ('D1','Sales'), ('D2','Ops'), ('D3','Legal')\n-- emp : (1,'Asha','D1'), (2,'Ravi','D2'), (3,'Neha','D1')\n\n(i) INSERT INTO emp VALUES (5, 'Meera', 'D4');\n(ii) INSERT INTO emp VALUES (6, 'Arjun', NULL);\n(iii) DELETE FROM dept WHERE dept_id = 'D3';\n(iv) DELETE FROM dept WHERE dept_id = 'D1';",
+          "options": [
+            "Sirf (i)",
+            "(i), (ii) aur (iv)",
+            "(i) aur (iv)",
+            "(iii) aur (iv)"
+          ],
+          "answer": 2,
+          "explanation": "(i) `D4` dept table mein nahi hai, isliye reject. (ii) foreign key column mein NULL allowed hai (NOT NULL nahi lagaya), to accept. (iii) D3 ko koi emp refer nahi karta, delete ho jaata hai. (iv) D1 ko Asha aur Neha refer karte hain; default action (NO ACTION/RESTRICT) delete ko reject karta hai. Option B ka trap NULL ko bhi violation maanna hai; option A bhool jaata hai ki parent row delete karna bhi constraint tod sakta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w2-q4"
+        },
+        {
+          "question": "`users` table par ye query kitni rows lautayegi? (Saare usernames lowercase hain.)",
+          "code": "users\nuname\nasha\nkabir\ntara\naman\nzara\njaya\nsanya\n\nSELECT uname FROM users WHERE uname LIKE '_a%a';",
+          "options": [
+            "5",
+            "4",
+            "3",
+            "7"
+          ],
+          "answer": 1,
+          "explanation": "`'_a%a'` ka matlab: pehla koi bhi ek character, doosra character `a`, beech mein kuch bhi (zero ya zyada), aur aakhri character `a`. Match: tara, zara, jaya, sanya = 4. asha ka doosra character `s` hai, kabir aur aman `a` par khatam nahi hote. Option A ka trap `_` ko `%` jaisa samajhna hai; tab asha bhi match ho jaati aur ginti 5 hoti.",
+          "difficulty": "medium",
+          "id": "dbms-w2-q5"
+        },
+        {
+          "question": "Relation R(A, B, C, D) par FDs hain: A → BCD aur BC → A. Iski candidate keys sirf {A} aur {B, C} hain. R ke kitne superkeys hain?",
+          "options": [
+            "8",
+            "12",
+            "10",
+            "2"
+          ],
+          "answer": 2,
+          "explanation": "A wale superkeys: A ke saath B, C, D mein se koi bhi subset, 2³ = 8. {B, C} wale superkeys: B, C ke saath A, D mein se koi bhi subset, 2² = 4. Dono mein common sets (jinme A, B, C teeno hain) {A,B,C} aur {A,B,C,D} = 2. Inclusion–exclusion: 8 + 4 − 2 = 10. Option B ka trap common sets ko do baar ginna hai; option A sirf A wale superkeys ginta hai, aur option D candidate keys ko superkeys samajh leta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w2-q6"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "SQL in Depth: Joins, Grouping, Subqueries and NULLs",
+      "summary": "Is week aap inner aur outer joins, GROUP BY/HAVING ke saath aggregates, correlated subqueries, set operations, NULL ki three-valued logic, views aur constraints ko real queries par chala kar seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Inner join**: `FROM emp e JOIN dept d ON e.dept_id = d.dept_id` sirf woh pairs rakhta hai jinka condition TRUE ho. `NATURAL JOIN` saare same-naam wale columns par khud join karta hai; agar dono tables mein galti se `name` jaisa common column ho to woh bhi match hoga, isliye production code mein `ON` ya `USING (dept_id)` safer hai.",
+        "**Outer joins**: `LEFT JOIN` left table ki har row rakhta hai; jiska match nahi mila uske right-side columns NULL ho jaate hain. `RIGHT JOIN` ulta, `FULL OUTER JOIN` dono taraf ke unmatched rows. Dhyaan do: right table ke column par condition `WHERE` mein likhi to NULL wali rows hat jaati hain aur outer join chupke se inner join ban jaata hai; aisi condition `ON` mein likho.",
+        "**Aggregates aur GROUP BY**: `COUNT(*)` rows ginta hai, `COUNT(col)`, `SUM`, `AVG`, `MIN`, `MAX` NULL values ko **ignore** karte hain. `GROUP BY dept_id` har group ki ek output row banata hai; SELECT mein jo column aggregate ke andar nahi hai woh GROUP BY mein hona chahiye (standard SQL aur PostgreSQL ye enforce karte hain).",
+        "**WHERE vs HAVING aur logical order**: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY. `WHERE` grouping se pehle individual rows filter karta hai (aggregate yahan nahi chal sakta); `HAVING` groups banne ke baad poore groups filter karta hai, jaise `HAVING COUNT(*) >= 2`.",
+        "**NULL aur three-valued logic**: NULL ka matlab 'value pata nahi/lagu nahi'. NULL ke saath har comparison (`=`, `<>`, `<` ...) TRUE ya FALSE nahi, **UNKNOWN** deta hai, aur WHERE sirf TRUE rows rakhta hai. Isliye `col = NULL` kabhi match nahi karta; `col IS NULL` likho. Rules: TRUE OR UNKNOWN = TRUE, FALSE AND UNKNOWN = FALSE, NOT UNKNOWN = UNKNOWN. `COALESCE(col, 0)` NULL ki jagah default deta hai.",
+        "**Subqueries**: `IN (SELECT ...)`, `EXISTS (SELECT ...)`, scalar subquery (ek value), aur **correlated subquery** jo outer row ke column ko use karti hai aur har outer row ke liye dobara evaluate hoti hai. Trap: `x NOT IN (subquery)` mein agar subquery koi NULL lautaye to har row ke liye result UNKNOWN banta hai aur output **khaali** ho jaata hai. `NOT EXISTS` NULL se aise nahi tootta.",
+        "**Set operations**: `UNION`, `INTERSECT`, `EXCEPT` dono queries ke union-compatible results par set ki tarah kaam karte hain aur **duplicates hata dete hain**. `UNION ALL` duplicates rakhta hai aur sort/dedupe na karne ki wajah se sasta bhi hai.",
+        "**Views aur constraints**: `CREATE VIEW v AS SELECT ...` ek naam wali stored query hai; data copy nahi hota (materialized view alag cheez hai). Views se security (columns chhupao) aur logical data independence milti hai. Constraints: `NOT NULL`, `UNIQUE`, `CHECK (salary > 0)` (dhyaan: CHECK sirf FALSE par reject karta hai, UNKNOWN yaani NULL par pass ho jaata hai), aur `FOREIGN KEY ... ON DELETE CASCADE`."
+      ],
+      "example": {
+        "problem": "Fictional analytics team ke `emp` table mein se woh employees nikaalo jinki salary apne hi department ki average salary se zyada hai (code dekho).",
+        "steps": [
+          "Ye correlated subquery hai: andar wali query `x.dept = e.dept` se outer row `e` ke department par depend karti hai.",
+          "Data department: average = (90000 + 70000 + 80000) / 3 = 80000.",
+          "Web department: average = (60000 + 50000) / 2 = 55000.",
+          "Asha 90000 > 80000 (haan), Ravi 70000 (nahi), Neha 80000 > 80000? Barabar hai, strictly bada nahi, isliye nahi.",
+          "Omar 60000 > 55000 (haan), Lina 50000 (nahi).",
+          "`ORDER BY e.dept, e.name` se pehle Data, phir Web.",
+          "Answer: **(Asha, Data, 90000) aur (Omar, Web, 60000)**."
+        ],
+        "code": "emp\nid | name | dept | salary\n1  | Asha | Data | 90000\n2  | Ravi | Data | 70000\n3  | Neha | Data | 80000\n4  | Omar | Web  | 60000\n5  | Lina | Web  | 50000\n\nSELECT e.name, e.dept, e.salary\nFROM emp e\nWHERE e.salary > (SELECT AVG(x.salary)\n                  FROM emp x\n                  WHERE x.dept = e.dept)\nORDER BY e.dept, e.name;"
+      },
+      "mistakes": [
+        "`WHERE manager = NULL` likhna. Ye hamesha UNKNOWN hai, koi row nahi aati, aur koi error bhi nahi milta. Sahi: `WHERE manager IS NULL`.",
+        "Aggregate ko WHERE mein daalna, jaise `WHERE COUNT(*) > 2`. WHERE grouping se pehle chalta hai; group par condition `HAVING` mein jaati hai.",
+        "`NOT IN (SELECT col ...)` likhna jab `col` mein NULL ho sakta hai. Result chupchaap khaali ho jaata hai; `NOT EXISTS` use karo ya subquery mein `WHERE col IS NOT NULL` lagao."
+      ],
+      "revision": [
+        "LEFT JOIN: left ki har row; unmatched right side = NULL.",
+        "COUNT(*) sab rows; COUNT(col), AVG, SUM NULL ignore karte hain.",
+        "Order: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY.",
+        "NULL comparison = UNKNOWN; `IS NULL` use karo.",
+        "NOT IN + NULL = khaali result; NOT EXISTS safe hai.",
+        "UNION/INTERSECT/EXCEPT duplicates hataate hain; UNION ALL nahi."
+      ],
+      "questions": [
+        {
+          "question": "`orders` table par ye query kya lautayegi?",
+          "code": "orders\nid | amount\n1  | 100\n2  | NULL\n3  | 300\n4  | NULL\n5  | 200\n\nSELECT COUNT(*), COUNT(amount), AVG(amount) FROM orders;",
+          "options": [
+            "5, 5, 120",
+            "5, 3, 120",
+            "3, 3, 200",
+            "5, 3, 200"
+          ],
+          "answer": 3,
+          "explanation": "`COUNT(*)` saari 5 rows ginta hai. `COUNT(amount)` NULL chhod kar 3 ginta hai. `AVG(amount)` bhi NULL ignore karta hai: (100 + 300 + 200) / 3 = 200. Option B ka trap AVG ko 600 / 5 = 120 nikaalna hai, yaani NULL ko 0 maan lena. Option C ka trap ye sochna hai ki `COUNT(*)` bhi NULL rows chhodta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w3-q1"
+        },
+        {
+          "question": "`student` table par ye query kya lautayegi?",
+          "code": "student\nroll | name | mentor\n101  | Ira  | Dr. Rao\n102  | Dev  | NULL\n103  | Sam  | Dr. Iyer\n104  | Mia  | NULL\n\nSELECT COUNT(*) FROM student WHERE mentor = NULL;",
+          "options": [
+            "0",
+            "2",
+            "4",
+            "Syntax error"
+          ],
+          "answer": 0,
+          "explanation": "`mentor = NULL` har row ke liye UNKNOWN deta hai (NULL se comparison kabhi TRUE nahi hota), aur WHERE sirf TRUE rows rakhta hai. Isliye koi row nahi bachti aur `COUNT(*)` 0 deta hai. Option B ka trap ye sochna hai ki `=` NULL wali do rows dhoondh lega; uske liye `mentor IS NULL` chahiye. Ye syntax error nahi hai, isliye option D bhi galat hai.",
+          "difficulty": "easy",
+          "id": "dbms-w3-q2"
+        },
+        {
+          "question": "Ye LEFT JOIN query kitni rows lautayegi?",
+          "code": "dept\ndept_id | dname\nD1      | Sales\nD2      | Ops\nD3      | Legal\nD4      | R&D\n\nemp\nid | name | dept_id\n1  | Asha | D1\n2  | Ravi | D2\n3  | Neha | D1\n4  | Omar | D2\n5  | Lina | NULL\n\nSELECT d.dname, e.name\nFROM dept d LEFT JOIN emp e ON d.dept_id = e.dept_id;",
+          "options": [
+            "4",
+            "5",
+            "6",
+            "20"
+          ],
+          "answer": 2,
+          "explanation": "D1 ke do employees (2 rows), D2 ke do (2 rows). D3 aur D4 ka koi employee nahi, par LEFT JOIN unhe bhi ek-ek row deta hai jisme `e.name` NULL hai (2 rows). Total 6. Lina ka `dept_id` NULL hai, woh kisi dept se match nahi karti, aur left table `dept` hai, isliye uski row nahi aati. Option A ka trap inner join ki tarah sirf matches ginna hai; option B Lina ko bhi gin leta hai; option D Cartesian product (4 × 5) hai.",
+          "difficulty": "medium",
+          "id": "dbms-w3-q3"
+        },
+        {
+          "question": "`emp` table par ye query kya output degi?",
+          "code": "emp\nid | name | dept_id | salary\n1  | Asha | D1      | 60000\n2  | Ravi | D1      | 38000\n3  | Neha | D2      | 52000\n4  | Omar | D2      | 47000\n5  | Lina | D3      | 90000\n6  | Vik  | D1      | 45000\n7  | Zoya | D3      | 30000\n\nSELECT dept_id, COUNT(*) AS n, AVG(salary) AS avg_sal\nFROM emp\nWHERE salary > 40000\nGROUP BY dept_id\nHAVING COUNT(*) >= 2\nORDER BY dept_id;",
+          "options": [
+            "D1 (2, 52500), D2 (2, 49500)",
+            "D1 (3, 47666.67), D2 (2, 49500), D3 (2, 60000)",
+            "D1 (2, 52500), D2 (2, 49500), D3 (1, 90000)",
+            "D2 (2, 49500)"
+          ],
+          "answer": 0,
+          "explanation": "Pehle WHERE chalta hai: 40000 se kam/barabar salary wale Ravi (38000) aur Zoya (30000) hat jaate hain. Bache groups: D1 = Asha 60000, Vik 45000 (n = 2, avg 52500); D2 = Neha 52000, Omar 47000 (n = 2, avg 49500); D3 = sirf Lina (n = 1). HAVING `COUNT(*) >= 2` D3 ko hata deta hai. Option B ka trap WHERE ko ignore karke poore groups par aggregate lagana hai; option C HAVING bhool jaata hai.",
+          "difficulty": "medium",
+          "id": "dbms-w3-q4"
+        },
+        {
+          "question": "Query P aur Query Q kramashah kitni rows lautati hain?",
+          "code": "dbms_reg\nroll\n101\n102\n102\n103\n104\n\npdsa_reg\nroll\n103\n105\n\n-- Query P\nSELECT roll FROM dbms_reg UNION ALL SELECT roll FROM pdsa_reg;\n\n-- Query Q\nSELECT roll FROM dbms_reg EXCEPT SELECT roll FROM pdsa_reg;",
+          "options": [
+            "P: 6, Q: 3",
+            "P: 7, Q: 3",
+            "P: 7, Q: 4",
+            "P: 5, Q: 3"
+          ],
+          "answer": 1,
+          "explanation": "`UNION ALL` duplicates nahi hataata: 5 + 2 = 7 rows. `EXCEPT` set operation hai: `dbms_reg` ke distinct rolls {101, 102, 103, 104} mein se 103 hatao, bache {101, 102, 104} = 3 rows. Option C ka trap 102 ko do baar rakhna hai (wo EXCEPT ALL ka behaviour hai). Option A UNION ALL mein bhi duplicate 102 hata deta hai, aur option D distinct UNION ginti hai.",
+          "difficulty": "medium",
+          "id": "dbms-w3-q5"
+        },
+        {
+          "question": "Placement cell un students ke naam chahta hai jo abhi placed nahi hain. Ye query kya lautayegi?",
+          "code": "student\nroll | name\n101  | Ira\n102  | Dev\n103  | Sam\n104  | Mia\n\nplaced\nroll\n101\nNULL\n\nSELECT name FROM student\nWHERE roll NOT IN (SELECT roll FROM placed);",
+          "options": [
+            "Dev, Sam, Mia",
+            "Ira, Dev, Sam, Mia",
+            "Koi row nahi (empty result)",
+            "Error, kyunki subquery mein NULL hai"
+          ],
+          "answer": 2,
+          "explanation": "`roll NOT IN (101, NULL)` ka matlab hai `roll <> 101 AND roll <> NULL`. `roll <> NULL` hamesha UNKNOWN hai. Roll 101 ke liye pehla hissa FALSE hai, to poora FALSE; baaki sab ke liye TRUE AND UNKNOWN = UNKNOWN. WHERE sirf TRUE rakhta hai, isliye koi row nahi aati. Option A tempting hai kyunki yahi intended answer tha; woh `NOT EXISTS` (ya subquery mein `WHERE roll IS NOT NULL`) se milta. NULL se koi error nahi aata, isliye option D galat hai.",
+          "difficulty": "hard",
+          "id": "dbms-w3-q6"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Relational Algebra, Tuple Calculus and ER Design",
+      "summary": "Is week aap relational algebra ke saare operators (division samet), tuple relational calculus mein queries padhna, ER model se database design karna, aur ER diagram ko systematic rules se relational tables mein badalna seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Fundamental RA operators**: σ (selection), π (projection), ∪ (union), − (set difference), × (Cartesian product) aur ρ (rename). Baaki sab inse ban jaate hain: R ∩ S = R − (R − S), theta join R ⋈_θ S = σ_θ(R × S), aur natural join. Agar R mein m aur S mein n tuples hain to R × S mein m·n tuples aur degree dono degrees ka jod hoti hai.",
+        "**Natural join**: R ⋈ S un tuple-pairs ko rakhta hai jo **saare common-naam wale attributes** par barabar hain, aur har common attribute ki ek hi copy rakhta hai. Koi common attribute na ho to natural join Cartesian product ban jaata hai. Result ka size 0 se m·n ke beech kuch bhi ho sakta hai.",
+        "**Division (÷)**: R(A, B) ÷ S(B) un A-values ko deta hai jo S ki **har** B-value ke saath R mein aati hain, jaise 'woh students jinhone saare required courses liye'. Extra courses lene se koi bahar nahi hota. Basic operators se: π_A(R) − π_A((π_A(R) × S) − R). Andar wala hissa 'kaunsa required pair missing hai' nikaalta hai.",
+        "**Tuple relational calculus (TRC)**: query ka roop {t | P(t)} hai: 'woh saare tuples t jinke liye predicate P sach hai'. P mein ∈, comparisons, ∧, ∨, ¬, ∃ (koi to hai) aur ∀ (har ek ke liye) aate hain. TRC declarative hai (kya chahiye), RA procedural (kaise). Expression **safe** hona chahiye: {t | ¬(t ∈ R)} unsafe hai kyunki uska result infinite hai.",
+        "**ER model**: **entity set** (jaise customer), **attributes**: simple ya composite (address = city + pin), single-valued ya **multivalued** (kai phone numbers), stored ya **derived** (age, date_of_birth se). **Relationship set** entities ko jodta hai aur uske apne attributes ho sakte hain (jaise `qty`).",
+        "**Cardinality aur participation**: mapping cardinality 1:1, 1:N, N:1 ya M:N hoti hai. **Total participation** (diagram mein double line) ka matlab har entity kam se kam ek relationship mein hai, jaise har order kisi customer ka hai; partial mein zaroori nahi.",
+        "**Weak entity set**: jiska apna key nahi hota, jaise `menu_item` jiska item_no sirf ek restaurant ke andar unique hai. Uski pehchaan owner ke primary key + **discriminator** (partial key) se hoti hai, **identifying relationship** se owner se judta hai, aur owner ke saath uski participation total hoti hai.",
+        "**ER → tables ke rules**: strong entity → ek table; composite attribute ke parts alag columns; multivalued attribute → alag table (owner key + value, dono milkar PK); derived attribute store nahi karte. **M:N** → alag table jiska PK dono taraf ke keys ka combination hai. **1:N** → alag table nahi, 'N' side par foreign key. **1:1** → kisi bhi side FK (total participation wali side behtar, NOT NULL laga sakte ho). Weak entity → table jiska PK = owner PK + discriminator, FK `ON DELETE CASCADE` ke saath."
+      ],
+      "example": {
+        "problem": "Ek fictional food-delivery app ka ER: `customer` (cust_id, name, composite address = city + pin, multivalued phone), `restaurant` (rest_id, name), weak entity `menu_item` (discriminator item_no, dish, price) jiska owner restaurant hai, `orders` (order_id, placed_at) jo N:1 se ek customer ka hai (total), aur orders–menu_item M:N relationship jisme `qty` hai. Isse tables banao.",
+        "steps": [
+          "Strong entities customer, restaurant, orders ki ek-ek table. customer ka address flatten hokar `city`, `pin` columns ban gaya.",
+          "Multivalued `phone` ke liye `customer_phone(cust_id, phone)`; PK dono milkar, kyunki ek customer ke kai phone ho sakte hain.",
+          "Weak entity `menu_item`: PK = (rest_id, item_no). rest_id restaurant ka FK hai `ON DELETE CASCADE` ke saath: restaurant gaya to uske items bhi.",
+          "orders → customer N:1 hai, isliye alag table nahi; `orders` mein `cust_id` FK, aur total participation ki wajah se `NOT NULL`.",
+          "orders–menu_item M:N hai, isliye `order_item(order_id, rest_id, item_no, qty)`; PK teeno key columns, aur (rest_id, item_no) composite FK menu_item ko point karta hai.",
+          "Answer: **6 tables: customer, customer_phone, restaurant, menu_item, orders, order_item** (DDL code mein)."
+        ],
+        "code": "CREATE TABLE customer (\n    cust_id   INT PRIMARY KEY,\n    name      VARCHAR(40) NOT NULL,\n    city      VARCHAR(30),          -- composite address flatten hua\n    pin       CHAR(6)\n);\nCREATE TABLE customer_phone (       -- multivalued attribute\n    cust_id   INT REFERENCES customer(cust_id),\n    phone     VARCHAR(15),\n    PRIMARY KEY (cust_id, phone)\n);\nCREATE TABLE restaurant (\n    rest_id   INT PRIMARY KEY,\n    name      VARCHAR(40) NOT NULL\n);\nCREATE TABLE menu_item (            -- weak entity, owner = restaurant\n    rest_id   INT REFERENCES restaurant(rest_id) ON DELETE CASCADE,\n    item_no   INT,                  -- discriminator\n    dish      VARCHAR(40),\n    price     DECIMAL(8,2),\n    PRIMARY KEY (rest_id, item_no)\n);\nCREATE TABLE orders (               -- N:1 se customer, total participation\n    order_id  INT PRIMARY KEY,\n    cust_id   INT NOT NULL REFERENCES customer(cust_id),\n    placed_at TIMESTAMP\n);\nCREATE TABLE order_item (           -- M:N orders-menu_item, attribute qty\n    order_id  INT REFERENCES orders(order_id),\n    rest_id   INT,\n    item_no   INT,\n    qty       INT CHECK (qty > 0),\n    PRIMARY KEY (order_id, rest_id, item_no),\n    FOREIGN KEY (rest_id, item_no) REFERENCES menu_item(rest_id, item_no)\n);"
+      },
+      "mistakes": [
+        "Division ko 'exactly wahi courses' samajhna. R ÷ S mein woh A-values bhi aati hain jinke paas S ke alawa extra B-values hain; shart sirf itni hai ki S ki koi value missing na ho.",
+        "1:N relationship ke liye alag table banana, ya FK galat side ('1' side) par rakhna. FK hamesha 'N' side par jaata hai, jahan har row ka theek ek partner hota hai.",
+        "Multivalued attribute ko ek column mein comma-separated string bana kar rakhna ('98..., 99...'). Ye atomic values ka niyam todta hai aur query karna mushkil karta hai; alag table banao."
+      ],
+      "revision": [
+        "Basic RA: σ, π, ∪, −, ×, ρ; baaki derived.",
+        "|R × S| = m·n; natural join common attributes par, ek copy.",
+        "R ÷ S = π_A(R) − π_A((π_A(R) × S) − R): 'har S value ke saath'.",
+        "TRC: {t | P(t)} declarative; unsafe = infinite result.",
+        "M:N → nayi table (dono keys PK); 1:N → FK 'N' side; multivalued → nayi table.",
+        "Weak entity PK = owner PK + discriminator."
+      ],
+      "questions": [
+        {
+          "question": "R(A, B, C) mein 4 tuples hain aur S(D, E) mein 5 tuples. R × S mein kitne tuples honge aur uski degree kya hogi?",
+          "options": [
+            "9 tuples, degree 5",
+            "20 tuples, degree 6",
+            "4 tuples, degree 5",
+            "20 tuples, degree 5"
+          ],
+          "answer": 3,
+          "explanation": "Cartesian product R ke har tuple ko S ke har tuple se jodta hai: 4 × 5 = 20 tuples. Degree dono degrees ka jod: 3 + 2 = 5. Option A ka trap tuples ko jodna (4 + 5) hai, jo union jaisa sochna hai. Option B ek extra attribute gin leta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w4-q1"
+        },
+        {
+          "question": "ER diagram mein `student` (PK `roll`) aur `course` (PK `code`) ke beech M:N relationship `enrols` hai jiska attribute `grade` hai. Relational schema mein `enrols` ka sahi mapping kya hai?",
+          "options": [
+            "`student` table mein `code` aur `grade` columns jod do",
+            "Nayi table `enrols(roll, code, grade)`, primary key (`roll`, `code`)",
+            "Nayi table `enrols(roll, code, grade)`, primary key sirf `roll`",
+            "`course` table mein `roll` aur `grade` columns jod do"
+          ],
+          "answer": 1,
+          "explanation": "M:N relationship ke liye alag table banti hai jisme dono entities ke primary keys foreign keys hain aur dono milkar primary key; relationship ka attribute `grade` bhi isi mein jaata hai. Option C ka trap: PK sirf `roll` ho to ek student ek hi course le paayega, jo M:N ko N:1 bana deta hai. Options A aur D 1:N wala FK rule M:N par laga dete hain, jisse ek row mein kai courses (ya kai students) rakhne padte.",
+          "difficulty": "easy",
+          "id": "dbms-w4-q2"
+        },
+        {
+          "question": "Fictional bank ka ER: strong entity sets `customer` (PK cust_id, multivalued attribute `phone`), `account` (PK acc_no) aur `branch` (PK branch_id). `holds` customer aur account ke beech M:N hai. `located_at` account se branch N:1 hai (har account theek ek branch mein, total participation). Standard rules se mapping karne par kam se kam kitni tables banengi?",
+          "options": [
+            "4",
+            "6",
+            "5",
+            "7"
+          ],
+          "answer": 2,
+          "explanation": "Teen strong entities: customer, account, branch (3). Multivalued phone ke liye customer_phone (4). M:N `holds` ke liye alag table (5). N:1 `located_at` ke liye alag table nahi chahiye: `account` mein `branch_id` FK (NOT NULL) kaafi hai. Total 5. Option B ka trap N:1 relationship ki bhi alag table banana hai; option A multivalued attribute ki table bhool jaata hai.",
+          "difficulty": "medium",
+          "id": "dbms-w4-q3"
+        },
+        {
+          "question": "`takes` ÷ `req` ka result kya hai?",
+          "code": "takes\nsid | cid\nS1  | C1\nS1  | C2\nS1  | C3\nS2  | C1\nS3  | C2\nS3  | C1\nS4  | C3\n\nreq\ncid\nC1\nC2",
+          "options": [
+            "S1, S3",
+            "S1",
+            "S1, S2, S3",
+            "S2, S4"
+          ],
+          "answer": 0,
+          "explanation": "Division un `sid` ko deta hai jo `req` ke har course (C1 aur C2) ke saath `takes` mein hain. S1 ke paas C1, C2 (aur extra C3) hain: shamil. S3 ke paas C2, C1: shamil. S2 ke paas sirf C1, S4 ke paas sirf C3: bahar. Option B ka trap ye sochna hai ki extra course (C3) wala student bahar ho jaata hai; division sirf missing courses dekhta hai. Option C 'kam se kam ek required course' wala answer hai.",
+          "difficulty": "medium",
+          "id": "dbms-w4-q4"
+        },
+        {
+          "question": "Relations `student(roll, name)` aur `enrol(roll, course)` par ye TRC query (code mein) kya nikaalti hai?",
+          "code": "{ t | ∃s ∈ student ( t[name] = s[name] ∧ ¬∃e ∈ enrol ( e[roll] = s[roll] ) ) }",
+          "options": [
+            "Un students ke naam jo kam se kam ek course mein enrolled hain",
+            "Saare students ke naam",
+            "Un students ke naam jo saare courses mein enrolled hain",
+            "Un students ke naam jo kisi bhi course mein enrolled nahi hain"
+          ],
+          "answer": 3,
+          "explanation": "t ek aisa naam hai jiske liye koi student s hai, aur `enrol` mein koi bhi tuple e nahi hai jiska roll s ke roll ke barabar ho. Yaani s ka ek bhi enrolment nahi: 'kisi course mein enrolled nahi'. Option A ka trap ¬ ko miss karke ∃e padh lena hai. Option C ke liye ∀ (har course) chahiye hota, jo is query mein nahi hai.",
+          "difficulty": "medium",
+          "id": "dbms-w4-q5"
+        },
+        {
+          "question": "R(sid, cid) aur S(cid) ke liye kaunsa expression sirf basic operators se R ÷ S deta hai? (Code mein sample data hai: R = `takes`, S = `req`.)",
+          "code": "takes\nsid | cid\nS1  | C1\nS1  | C2\nS1  | C3\nS2  | C1\nS3  | C2\nS3  | C1\nS4  | C3\n\nreq\ncid\nC1\nC2",
+          "options": [
+            "π_sid(R) − π_sid((π_sid(R) × S) − R)",
+            "π_sid(R) − π_sid(R − (π_sid(R) × S))",
+            "π_sid((π_sid(R) × S) − R)",
+            "π_sid(R ⋈ S)"
+          ],
+          "answer": 0,
+          "explanation": "π_sid(R) × S har student ke saath har required course ka pair banata hai, yaani 'kya hona chahiye'. Usme se R ghatao to sirf missing pairs bachte hain; unke sid woh students hain jinka koi required course chhoota. Saare students mein se unhe hatao to R ÷ S. Option C sirf woh 'missing' students deta hai, yaani ulta answer. Option B ka trap set difference ko ulta likhna hai: R − (π_sid(R) × S) extra courses wale pairs deta hai, missing wale nahi. Option D 'kam se kam ek required course' hai. (Code wale data par: A = {S1, S3}, B = {S2, S3}, C = {S2, S4}, D = {S1, S2, S3}.)",
+          "difficulty": "hard",
+          "id": "dbms-w4-q6"
+        }
+      ]
+    }
+  ]
+}

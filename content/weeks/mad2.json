@@ -1,0 +1,511 @@
+{
+  "subjectId": "mad2",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "JavaScript Core: Types, Coercion and Scope",
+      "summary": "Is week aap JavaScript ke types, implicit coercion, `==` vs `===`, `var`/`let`/`const` ka scope, hoisting aur objects/arrays ki reference semantics seekhoge, taaki koi bhi chhota snippet dekh kar uska output bata sako.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Types**: JavaScript mein 7 primitive types hain: `string`, `number`, `bigint`, `boolean`, `undefined`, `null`, `symbol`. Baaki sab (arrays, functions, dates) `object` hain. `typeof` ke do mashhoor quirks: `typeof null` \"object\" deta hai (purana bug jo kabhi fix nahi hua) aur `typeof function` \"function\" deta hai. Array check karne ke liye `Array.isArray(x)` use karo, `typeof` nahi.",
+        "**Number**: saare numbers 64-bit IEEE 754 floating point hain, alag integer type nahi hai. Isliye `0.1 + 0.2 === 0.3` false hai, `7 / 2` 3.5 deta hai (integer division ke liye `Math.floor` ya `Math.trunc`), aur galat maths ka result `NaN` hota hai. `NaN` kisi ke barabar nahi, khud ke bhi nahi: check ke liye `Number.isNaN(x)`. Paison ka hisaab paise (integer) mein rakho, rupaye ke decimal mein nahi.",
+        "**Implicit coercion**: `+` operator mein agar koi ek side string hai to dono string ban kar jud jaate hain (`\"5\" + 2` → \"52\"). Baaki arithmetic operators (`-`, `*`, `/`) dono sides ko number banate hain (`\"5\" - 2` → 3, `\"abc\" * 2` → NaN). Form inputs hamesha string dete hain, isliye jodne se pehle `Number(x)` karo.",
+        "**== vs ===**: `===` (strict equality) type aur value dono match karta hai, koi conversion nahi. `==` pehle types convert karta hai: `\"\" == 0` true, `\"1\" == 1` true. Special rule: `null == undefined` true hai par `null == 0` false. Production code mein `===` default rakho; `x == null` sirf tab jab jaan-boojh kar null aur undefined dono pakadne hon.",
+        "**Truthy aur falsy**: sirf ye values falsy hain: `false`, `0`, `-0`, `0n`, `\"\"`, `null`, `undefined`, `NaN`. Baaki sab truthy, jaise `\"0\"`, `\"false\"`, `[]` aur `{}`. Isliye `if (items.length)` sahi hai par `if (items)` empty array ke liye bhi true hoga. `??` (nullish coalescing) sirf `null`/`undefined` par default deta hai, jabki `||` har falsy par: `0 || 10` → 10 par `0 ?? 10` → 0.",
+        "**var, let, const**: `var` function-scoped hai aur block (`if`, `for`) ke bahar bhi dikhta hai; `let` aur `const` block-scoped hain. `const` sirf binding ko lock karta hai (dobara assign nahi kar sakte), value ko nahi: `const` object ki property badal sakte ho aur `const` array mein `push` kar sakte ho. Default `const` rakho, reassign karna ho to `let`; `var` naye code mein mat likho.",
+        "**Hoisting aur TDZ**: execution se pehle declarations \"upar uth jaate\" hain. `var` hoist hota hai aur `undefined` se initialise hota hai, isliye declaration se pehle padhne par `undefined` milta hai. `let`/`const` bhi hoist hote hain par initialise nahi hote: declaration line tak woh Temporal Dead Zone (TDZ) mein rehte hain aur padhne par `ReferenceError` aata hai. Function declaration poori hoist hoti hai (pehle call kar sakte ho), par `const f = () => ...` jaisi function expression nahi.",
+        "**Objects aur arrays reference se chalte hain**: `const b = a` copy nahi banata, dono ek hi object ko point karte hain. `===` objects ke liye reference compare karta hai, isliye `[1] === [1]` false hai. Spread (`{ ...a }`, `[...arr]`) shallow copy banata hai: top-level properties nayi, par andar ke nested objects/arrays abhi bhi shared. Deep copy ke liye `structuredClone(a)`."
+      ],
+      "example": {
+        "problem": "Ek fictional checkout form se `qty` aur `price` string ke roop mein aate hain (\"2\" aur \"150\"), aur ek optional `discount` field khaali ho sakta hai (value 0 ya null). Neeche ka code kya print karega, aur kaunsi line bug hai?",
+        "steps": [
+          "`qty + price`: dono strings hain, `+` concatenation karta hai: \"2\" + \"150\" = \"2150\". Ye bug hai, form inputs ko pehle `Number()` se convert karna chahiye.",
+          "`qty * price`: `*` dono ko number banata hai: 2 × 150 = 300. Isliye ye line \"sahi\" lagti hai, par sirf coincidence se.",
+          "`discountA = 0 || 10`: `||` 0 ko falsy maanta hai aur default 10 de deta hai, jabki user ne jaan-boojh kar 0 discount diya tha. Ye doosra bug hai.",
+          "`discountB = 0 ?? 10`: `??` sirf null/undefined par default deta hai, isliye 0 hi rehta hai. Sahi tareeka yahi hai.",
+          "`total = Number(qty) * Number(price) - discountB` = 300 − 0 = 300.",
+          "Answer: output **2150 300 10 0 300**. Fix: inputs ko `Number()` se convert karo aur numeric defaults ke liye `??` use karo."
+        ],
+        "code": "const qty = \"2\";\nconst price = \"150\";\nconst discountA = 0 || 10;\nconst discountB = 0 ?? 10;\nconst total = Number(qty) * Number(price) - discountB;\nconsole.log(qty + price, qty * price, discountA, discountB, total);"
+      },
+      "mistakes": [
+        "Form ya query-string values ko seedha jodna: `\"2\" + \"150\"` \"2150\" deta hai. Pehle `Number(value)` karo aur `Number.isNaN` se invalid input pakdo.",
+        "`const` ko \"immutable\" samajhna. `const user = {}` ke baad `user.name = \"x\"` bilkul valid hai; sirf `user = {}` (reassignment) mana hai. Freeze chahiye to `Object.freeze`, woh bhi shallow.",
+        "Object copy karne ke liye `const copy = original` likhna, ya spread ko deep copy samajhna. Nested data ke liye `structuredClone` use karo, warna copy badalne par original bhi badal jaayega."
+      ],
+      "revision": [
+        "`typeof null` → \"object\"; array check: `Array.isArray`.",
+        "`+` mein ek string ho to concatenation; `-`, `*`, `/` number banate hain.",
+        "`===` default; `null == undefined` true, `null == 0` false; `NaN` kisi ke barabar nahi.",
+        "Falsy: `false`, `0`, `\"\"`, `null`, `undefined`, `NaN` (aur `-0`, `0n`); `[]` aur `\"0\"` truthy.",
+        "`var` function-scoped aur `undefined` se hoist; `let`/`const` block-scoped aur TDZ mein `ReferenceError`.",
+        "Spread shallow copy hai; nested objects shared rehte hain."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w1-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log(\"5\" + 2, \"5\" - 2);",
+          "options": [
+            "7 3",
+            "52 3",
+            "52 NaN",
+            "7 52"
+          ],
+          "answer": 1,
+          "explanation": "`+` mein ek operand string hai, isliye 2 bhi string ban jaata hai aur \"5\" + \"2\" = \"52\" (concatenation). `-` ka koi string version nahi hai, isliye \"5\" number 5 ban jaata hai aur 5 − 2 = 3. Option A ka trap hai dono ko arithmetic samajhna, aur option C ka trap hai sochna ki string se minus karne par hamesha NaN aata hai (NaN tabhi aata jab string number na ban sake, jaise \"abc\").",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w1-q2",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log(typeof null, typeof [], typeof (() => 1), typeof NaN);",
+          "options": [
+            "null array function number",
+            "object object object NaN",
+            "null object function NaN",
+            "object object function number"
+          ],
+          "answer": 3,
+          "explanation": "`typeof null` historical quirk ki wajah se \"object\" deta hai. Array bhi object hai, isliye `typeof []` \"object\" (array pehchaanne ke liye `Array.isArray`). Functions ke liye `typeof` khaas \"function\" deta hai. Aur `NaN` \"Not a Number\" naam ke bawajood number type ki value hai. Option A ka trap hai `typeof` se \"null\" aur \"array\" ki ummeed karna, aur option B ka trap hai NaN ko alag type samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w1-q3",
+          "question": "Is code ko chalane par kya hoga?",
+          "code": "function test() {\n    console.log(x);\n    var x = 1;\n    console.log(y);\n    let y = 2;\n}\ntest();",
+          "options": [
+            "`undefined` print hoga, phir `y` waali line par ReferenceError",
+            "`undefined` aur `undefined` print honge",
+            "Pehli line par hi `x` ke liye ReferenceError",
+            "1 aur 2 print honge"
+          ],
+          "answer": 0,
+          "explanation": "`var x` hoist hota hai aur function shuru hote hi `undefined` se initialise ho jaata hai, isliye pehla `console.log` `undefined` print karta hai. `let y` bhi hoist hota hai par initialise nahi hota; declaration line tak woh TDZ mein hai, isliye `console.log(y)` ReferenceError deta hai. Option B ka trap hai `let` ko bhi `var` jaisa samajhna, aur option C ka trap hai sochna ki `var` hoist hi nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w1-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "const cfg = { retries: 2 };\ncfg.retries = 3;\nconst list = [1, 2];\nlist.push(3);\nconsole.log(cfg.retries, list.length);",
+          "options": [
+            "TypeError: Assignment to constant variable",
+            "2 2",
+            "3 3",
+            "3 2"
+          ],
+          "answer": 2,
+          "explanation": "`const` sirf variable ki binding lock karta hai: `cfg` aur `list` hamesha unhi objects ko point karenge. Object ki property badalna aur array mein `push` karna binding nahi badalta, isliye dono allowed hain: `cfg.retries` 3 aur `list.length` 3. TypeError tab aata jab `cfg = {}` jaisa reassignment hota, isliye option A trap hai: `const` ko immutable value samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w1-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log(null == undefined, null == 0, \"\" == 0, NaN == NaN);",
+          "options": [
+            "true true true false",
+            "false false true false",
+            "true false false false",
+            "true false true false"
+          ],
+          "answer": 3,
+          "explanation": "`null == undefined` loose equality ka special rule hai: true. Par `null` loose equality mein sirf `undefined` (aur khud) ke barabar hota hai, number mein convert nahi hota, isliye `null == 0` false. `\"\" == 0` mein empty string number 0 ban jaati hai, isliye true. `NaN` kisi ke barabar nahi, khud ke bhi nahi: false. Option A ka trap hai sochna ki null bhi 0 ban jaata hai (jaise `null + 1` mein hota hai), aur option C ka trap hai empty string ko number mein convert na karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w1-q6",
+          "question": "Is code ka output kya hoga?",
+          "code": "const a = { tags: [\"x\"], n: 1 };\nconst b = { ...a };\nb.n = 2;\nb.tags.push(\"y\");\nconsole.log(a.n, a.tags.length);",
+          "options": [
+            "1 2",
+            "2 2",
+            "1 1",
+            "2 1"
+          ],
+          "answer": 0,
+          "explanation": "Spread `{ ...a }` ek naya object banata hai jisme top-level properties copy hoti hain. `n` ek number (primitive) hai, isliye `b.n = 2` sirf `b` ko badalta hai aur `a.n` 1 rehta hai. Par `tags` ek array hai: copy mein sirf uska reference gaya, dono objects ek hi array share karte hain, isliye `push` ke baad `a.tags.length` bhi 2. Option C ka trap hai spread ko deep copy samajhna, aur option B ka trap hai sochna ki `b` aur `a` ek hi object hain.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Functions in Depth: Closures, this, Classes and Array Methods",
+      "summary": "Is week aap closures, `this` ke binding rules, prototype chain aur `class`, `map`/`filter`/`reduce`/`sort` jaise higher-order methods, destructuring aur ES modules seekhoge, jo har Vue codebase ki neev hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Closure**: function apne bante waqt ke lexical scope ke variables ko yaad rakhta hai, chahe bahar wala function return ho chuka ho. Isse private state banti hai: `makeCounter()` har call par apna alag `count` rakhta hai. Har baar outer function call hone par naya scope (naya closure) banta hai, isliye do counters ki state alag hoti hai.",
+        "**Loop aur closure**: `for (var i ...)` mein poore loop ka ek hi `i` hota hai (function-scoped), isliye loop ke andar bane saare callbacks baad mein last value dekhte hain. `for (let i ...)` har iteration ke liye nayi binding banata hai, isliye har callback apni value yaad rakhta hai. Event handlers aur `setTimeout` ke saath ye bug bahut aam hai.",
+        "**this ke rules**: `this` function ke likhe jaane se nahi, call hone ke tareeke se tay hota hai. `obj.method()` mein `this` = `obj`. Method ko variable mein nikaal kar plain call karo (`const f = obj.method; f()`) to strict mode mein `this` = `undefined`. `new` ke saath naya object. `call`/`apply` this ko explicitly set karte hain aur `bind` ek naya function deta hai jiska `this` hamesha fixed rehta hai.",
+        "**Arrow functions** ka apna `this` nahi hota: woh bahar wale scope ka `this` use karte hain (lexical this). Isliye method ke andar `this.items.map(x => this.prefix + x)` sahi chalta hai. Par object ka method hi arrow bana diya (`greet: () => this.name`) to `this` object nahi hoga. Callbacks ke liye arrow, methods ke liye normal function syntax.",
+        "**Prototypes aur class**: har object ka ek hidden link `[[Prototype]]` hota hai; property na mile to JavaScript chain mein upar dhundhta hai. `class` isi prototype system ka saaf syntax hai: methods `Class.prototype` par rehte hain, `extends` chain jodta hai, `super` parent ka method/constructor bulata hai. Class body hamesha strict mode mein chalti hai. Child class ka method parent ke same naam wale method ko override karta hai, aur parent ke andar `this.speak()` bhi child wala version chalata hai.",
+        "**Higher-order array methods**: `map` (har element badlo, same length), `filter` (condition wale rakho), `reduce` (sab ko ek value mein samet lo, initial value hamesha do), `find`, `some`, `every`. Ye original array nahi badalte. Par `sort` in-place sort karta hai aur bina comparator ke elements ko string bana kar compare karta hai: numbers ke liye `(a, b) => a - b` do, aur original bachana ho to `[...arr].sort(...)`.",
+        "**Destructuring, spread, rest**: `const { id, role = \"viewer\", ...rest } = user` properties nikaalta hai; default sirf tab lagta hai jab value `undefined` ho (`null` par nahi). `...rest` baaki properties ka naya object banata hai. Function parameters mein bhi destructuring chalti hai: `({ city, amt }) => ...`. Optional chaining `user?.address?.pin` beech mein null/undefined milne par error ki jagah `undefined` deta hai.",
+        "**ES modules**: har file ka apna scope hota hai; `export` se cheezein bahar do aur `import { a } from \"./x.js\"` (named) ya `import x from \"./x.js\"` (default) se lo. Modules automatically strict mode mein chalte hain aur ek app mein sirf ek baar evaluate hote hain; har importer ko wahi instance milta hai. Isi wajah se ek module mein bana store ya API client poori app mein shared rehta hai."
+      ],
+      "example": {
+        "problem": "Ek fictional shop ka sales data hai. Har SKU ka total revenue (qty × price) nikaalo aur revenue ke ghatte order mein \"SKU:amount\" format mein print karo.",
+        "steps": [
+          "`reduce` ek khaali object `{}` se shuru hota hai aur har sale ko destructure karta hai: `{ sku, qty, price }`.",
+          "A1: 3 × 200 = 600 aur 2 × 200 = 400, total 1000. B7: 1 × 950 = 950. C3: 10 × 40 = 400.",
+          "`acc[sku] ?? 0` pehli baar SKU milne par 0 deta hai; `||` bhi yahan chalta, par `??` ka intent saaf hai.",
+          "`Object.entries` object ko `[sku, amount]` pairs ki array banata hai.",
+          "Comparator `([, a], [, b]) => b - a` sirf amount compare karta hai aur bade ko pehle rakhta hai. Bina comparator ke `sort` strings compare karta, jo galat hota.",
+          "`map` har pair ko \"SKU:amount\" string bana deta hai.",
+          "Answer: **A1:1000 B7:950 C3:400**."
+        ],
+        "code": "const sales = [\n    { sku: \"A1\", qty: 3, price: 200 },\n    { sku: \"B7\", qty: 1, price: 950 },\n    { sku: \"A1\", qty: 2, price: 200 },\n    { sku: \"C3\", qty: 10, price: 40 }\n];\nconst revenue = sales.reduce((acc, { sku, qty, price }) => {\n    acc[sku] = (acc[sku] ?? 0) + qty * price;\n    return acc;\n}, {});\nconst top = Object.entries(revenue)\n    .sort(([, a], [, b]) => b - a)\n    .map(([sku, amt]) => sku + \":\" + amt);\nconsole.log(top.join(\" \"));"
+      },
+      "mistakes": [
+        "Numbers ki array par bina comparator `sort()` chalana: `[10, 9, 1].sort()` → `[1, 10, 9]` kyunki strings compare hoti hain. Hamesha `(a, b) => a - b` do.",
+        "Method ko callback ki tarah pass karna, jaise `button.addEventListener(\"click\", obj.save)`: call ke waqt `this` obj nahi rehta. `obj.save.bind(obj)` ya `() => obj.save()` pass karo.",
+        "`reduce` mein initial value bhool jaana ya callback se `acc` return na karna. Initial value ke bina khaali array par TypeError aata hai, aur return bhoolne par agle step mein `acc` `undefined` ho jaata hai."
+      ],
+      "revision": [
+        "Closure = function + uske bante waqt ka scope; har outer call naya scope.",
+        "`var` loop mein ek shared binding, `let` har iteration nayi.",
+        "`this` call-site se tay hota hai; arrow ka apna `this` nahi hota.",
+        "`class` = prototype ka syntax; class body strict mode mein chalti hai.",
+        "`sort` in-place hai aur default string comparison karta hai.",
+        "Destructuring default sirf `undefined` par lagta hai; modules ek hi baar evaluate hote hain."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w2-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "function makeCounter() {\n    let count = 0;\n    return () => ++count;\n}\nconst c1 = makeCounter();\nconst c2 = makeCounter();\nc1();\nc1();\nconsole.log(c1(), c2());",
+          "options": [
+            "1 1",
+            "3 3",
+            "3 1",
+            "2 0"
+          ],
+          "answer": 2,
+          "explanation": "Har `makeCounter()` call ek naya scope banata hai, isliye `c1` aur `c2` ke `count` alag hain. `c1` teesri baar chala to uska count 3 hai; `c2` pehli baar chala to 1. `++count` pehle badhata hai phir nayi value deta hai. Option B ka trap hai sochna ki dono counters ek hi `count` share karte hain, aur option D post-increment (`count++`) jaisa purani value return hona maan leta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w2-q2",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log([10, 9, 1, 100].sort().join(\",\"));",
+          "options": [
+            "1,10,100,9",
+            "1,9,10,100",
+            "100,10,9,1",
+            "10,9,1,100"
+          ],
+          "answer": 0,
+          "explanation": "Bina comparator ke `sort` har element ko string bana kar dictionary order mein compare karta hai: \"1\" < \"10\" < \"100\" < \"9\", kyunki pehla character \"1\" hai jo \"9\" se chhota hai. Option B ka trap hai ummeed karna ki numbers apne aap numerically sort honge; uske liye `sort((a, b) => a - b)` likhna padta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w2-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "const fns = [];\nfor (var i = 0; i < 3; i++) {\n    fns.push(() => i);\n}\nconst gs = [];\nfor (let j = 0; j < 3; j++) {\n    gs.push(() => j);\n}\nconsole.log(fns.map(f => f()).join(\",\"), gs.map(g => g()).join(\",\"));",
+          "options": [
+            "0,1,2 0,1,2",
+            "3,3,3 3,3,3",
+            "0,1,2 3,3,3",
+            "3,3,3 0,1,2"
+          ],
+          "answer": 3,
+          "explanation": "`var i` poore loop (balki poore scope) ke liye ek hi variable hai. Teeno arrow functions usi `i` ko closure mein rakhte hain, aur jab woh baad mein chalte hain tab loop khatam ho chuka hai aur `i` 3 hai: \"3,3,3\". `let j` har iteration ke liye nayi binding banata hai, isliye har function apni value 0, 1, 2 yaad rakhta hai. Option A ka trap hai sochna ki closure value ki copy leta hai; closure variable ko pakadta hai, value ko nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w2-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "class Counter {\n    constructor() { this.n = 0; }\n    inc() { this.n++; return this.n; }\n}\nconst c = new Counter();\nconst inc = c.inc;\nlet status = \"ok\";\ntry {\n    inc();\n} catch (e) {\n    status = e.name;\n}\nconsole.log(c.inc(), status);",
+          "options": [
+            "1 ok",
+            "1 TypeError",
+            "2 ok",
+            "NaN ok"
+          ],
+          "answer": 1,
+          "explanation": "`const inc = c.inc` sirf function nikaalta hai, object ke saath uska rishta nahi. Plain call `inc()` mein `this` kuch set nahi karta, aur class body hamesha strict mode mein hoti hai, isliye `this` `undefined` hai aur `this.n` padhne par TypeError aata hai. `c.n` abhi bhi 0 hai, isliye `c.inc()` 1 deta hai. Option C ka trap hai sochna ki nikaala hua method `c` se bound rehta hai, aur option A non-strict code jaisa `this` = global object maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w2-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "const user = { id: 7, name: \"Ravi\", role: undefined, team: \"ops\" };\nconst { id, role = \"viewer\", ...rest } = user;\nconsole.log(id, role, Object.keys(rest).join(\",\"));",
+          "options": [
+            "7 viewer name,team",
+            "7 undefined name,team",
+            "7 viewer name,role,team",
+            "7 undefined name,role,team"
+          ],
+          "answer": 0,
+          "explanation": "Destructuring default tab lagta hai jab property ki value `undefined` ho, aur yahan `role` explicitly `undefined` hai, isliye `role` = \"viewer\". `...rest` mein sirf woh properties jaati hain jo pehle nahi nikaali gayi: `id` aur `role` nikal chuke hain, to rest = `{ name, team }`. Option B ka trap hai sochna ki property maujood hone par default nahi lagta (default `null` par nahi lagta, `undefined` par lagta hai), aur option C ka trap hai `role` ko rest mein bhi ginna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w2-q6",
+          "question": "Is code ka output kya hoga?",
+          "code": "class Animal {\n    speak() { return \"...\"; }\n    intro() { return \"I say \" + this.speak(); }\n}\nclass Dog extends Animal {\n    speak() { return \"woof\"; }\n}\nconst d = new Dog();\nconst grandParent = Object.getPrototypeOf(Object.getPrototypeOf(d));\nconsole.log(d.intro(), grandParent === Animal.prototype);",
+          "options": [
+            "I say ... true",
+            "I say woof false",
+            "I say woof true",
+            "TypeError: this.speak is not a function"
+          ],
+          "answer": 2,
+          "explanation": "`d.intro()`: `intro` Dog par nahi mila, chain mein `Animal.prototype` par mila. Call `d.intro()` hai, isliye `this` = `d`, aur `this.speak()` lookup phir `d` se shuru hota hai, jahan `Dog.prototype.speak` pehle milta hai: \"woof\". Chain hai `d` → `Dog.prototype` → `Animal.prototype`, isliye do baar `getPrototypeOf` karne par `Animal.prototype` milta hai: true. Option A ka trap hai sochna ki parent ka method parent ka hi `speak` chalayega, aur option B ka trap hai sochna ki `d` ka seedha prototype `Animal.prototype` hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "The Browser Runtime: DOM, Events, Event Loop and Promises",
+      "summary": "Is week aap DOM ko JavaScript se padhna-badalna, events ka capture/bubble flow aur delegation, event loop mein tasks vs microtasks, promises, `async`/`await` aur `fetch` ka sahi error handling seekhoge.",
+      "readMinutes": 18,
+      "concepts": [
+        "**DOM**: browser HTML ko objects ke ek tree mein badalta hai (Document Object Model). `document.querySelector(\"#id\")` se element milta hai, `el.textContent = \"...\"` se text badalta hai, `document.createElement` aur `append` se naye nodes jodte hain. User ka data dikhana ho to `textContent` use karo; `innerHTML` mein user input daalna XSS (script injection) ka raasta hai.",
+        "**Events aur propagation**: `el.addEventListener(\"click\", handler)` handler ko ek `event` object deta hai. Event teen phases mein chalta hai: capture (window se target tak neeche), target, aur bubble (target se window tak upar). Default listeners bubble phase mein chalte hain; `{ capture: true }` dene par capture phase mein. `event.stopPropagation()` aage jaana rokta hai aur `event.preventDefault()` browser ka default kaam (form submit, link open) rokta hai. Ye do alag cheezein hain.",
+        "**Event delegation**: 500 list items par 500 listeners lagane ki jagah parent `<ul>` par ek listener lagao aur `event.target.closest(\"li\")` se pata karo kis item par click hua. Bubbling ki wajah se ye kaam karta hai, aur baad mein jode gaye items bhi automatically cover ho jaate hain.",
+        "**Event loop**: JavaScript ek thread par chalta hai, ek call stack ke saath. Timers, network aur clicks ke callbacks task queue (macrotask) mein aate hain. Promise callbacks (`then`, `catch`, `await` ke baad ka code) microtask queue mein. Rule: current synchronous code poora khatam hota hai, phir microtask queue poori khaali hoti hai (beech mein naye microtasks bhi), phir hi agla task chalta hai. Isliye `setTimeout(fn, 0)` hamesha pending promise callbacks ke baad chalta hai.",
+        "**Promises**: ek promise pending, fulfilled ya rejected hota hai, aur ek baar settle hone ke baad badalta nahi. `then` jo return karta hai woh agle `then` ko milta hai; agar promise return karo to chain uska intezaar karti hai. Kisi bhi `then` mein `throw` hua to beech ke saare `then` skip hokar control agle `catch` par jaata hai, aur `catch` jo return kare usse chain phir normal chalti hai. `Promise.all` sab ke fulfil hone ka intezaar karta hai par ek bhi reject hua to turant reject; sab ka result chahiye to `Promise.allSettled`.",
+        "**async/await**: `async` function hamesha promise return karta hai. `await` ke pehle ka code synchronously chalta hai; `await` par function ruk jaata hai aur baaki hissa microtask ki tarah baad mein resume hota hai, tab tak caller aage chal chuka hota hai. Errors ke liye normal `try/catch`. Independent requests ko ek ke baad ek `await` karne ki jagah `await Promise.all([...])` se parallel chalao.",
+        "**fetch**: `fetch(url)` ek promise deta hai jo server ka response aate hi `Response` object se fulfil hota hai, chahe status 404 ya 500 ho. Reject sirf network failure (DNS, offline, CORS block) par hota hai. Isliye `res.ok` (status 200–299) khud check karna padta hai. `res.json()` bhi ek promise hai jise `await` karna hota hai. POST ke liye `method`, `headers: { \"Content-Type\": \"application/json\" }` aur `body: JSON.stringify(data)` do."
+      ],
+      "example": {
+        "problem": "Ek reusable `getJSON(url)` helper likho jo 2xx par parsed JSON de, non-2xx par status ke saath error throw kare, aur 5 second mein jawab na aaye to request cancel kar de. Teen cases trace karo: 200, 404, aur server jo kabhi jawab nahi deta.",
+        "steps": [
+          "`AbortController` banao aur `setTimeout(() => ctrl.abort(), 5000)` lagao; `fetch` ko `signal: ctrl.signal` do.",
+          "Case 200: `fetch` fulfil hota hai, `res.ok` true hai, `await res.json()` data deta hai. `finally` mein timer clear hota hai taaki baad mein abort na chale.",
+          "Case 404: `fetch` phir bhi fulfil hota hai (reject nahi!). `res.ok` false hai, isliye hum khud `throw new Error(\"HTTP 404\")` karte hain; caller ka `catch` ise pakadta hai.",
+          "Case hang: 5 s baad `abort()` chalta hai, `fetch` ka promise `AbortError` ke saath reject hota hai, aur caller ka `catch` timeout dikha sakta hai.",
+          "Caller mein `try { const user = await getJSON(\"/api/me\") } catch (e) { ... }` se teeno cases ek jagah handle hote hain.",
+          "Answer: **fetch HTTP errors par reject nahi karta**, isliye `res.ok` check aur timeout dono helper ki zimmedaari hain."
+        ],
+        "code": "async function getJSON(url, ms = 5000) {\n    const ctrl = new AbortController();\n    const timer = setTimeout(() => ctrl.abort(), ms);\n    try {\n        const res = await fetch(url, { signal: ctrl.signal });\n        if (!res.ok) throw new Error(\"HTTP \" + res.status);\n        return await res.json();\n    } finally {\n        clearTimeout(timer);\n    }\n}"
+      },
+      "mistakes": [
+        "`fetch(...).catch(...)` ko 404/500 ka handler samajhna. HTTP errors par promise fulfil hota hai; `if (!res.ok) throw ...` likhna padta hai.",
+        "Loop ke andar ek-ek karke `await` karna jab requests ek doosre par depend nahi karti: 5 requests × 200 ms = 1 s lagta hai, jabki `Promise.all` se lagbhag 200 ms.",
+        "`stopPropagation` aur `preventDefault` ko mila dena. Form ko reload hone se rokna hai to `preventDefault`; parent ke handler tak event pahunchne se rokna hai to `stopPropagation`."
+      ],
+      "revision": [
+        "User data ke liye `textContent`, `innerHTML` nahi (XSS).",
+        "Event flow: capture (neeche) → target → bubble (upar); default listener bubble par.",
+        "Sync code → saare microtasks → ek task → phir microtasks ...",
+        "`then` mein throw → agla `catch`; `catch` ki return value se chain aage chalti hai.",
+        "`await` ke baad ka code microtask hai; caller tab tak aage chal chuka hota hai.",
+        "`fetch` sirf network failure par reject karta hai; `res.ok` check karo."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w3-q1",
+          "question": "Is code mein lines kis order mein print hongi?",
+          "code": "console.log(\"A\");\nsetTimeout(() => console.log(\"B\"), 0);\nPromise.resolve().then(() => console.log(\"C\"));\nconsole.log(\"D\");",
+          "options": [
+            "A → B → C → D",
+            "A → D → C → B",
+            "A → D → B → C",
+            "A → C → D → B"
+          ],
+          "answer": 1,
+          "explanation": "Pehle saara synchronous code: \"A\" aur \"D\". Phir microtask queue khaali hoti hai: promise ka callback \"C\". Uske baad hi agla task, yaani timer ka callback \"B\". Option C ka trap hai sochna ki `setTimeout(..., 0)` pehle register hua to pehle chalega; 0 ms ka matlab \"abhi\" nahi, \"agle task mein\" hai, aur microtasks hamesha usse pehle. Option D ka trap hai `then` ko synchronous samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w3-q2",
+          "question": "Server `/api/users/99` ke liye 404 status aur ek JSON error body bhejta hai. Is code se console mein kya print hoga?",
+          "code": "fetch(\"/api/users/99\")\n    .then(res => console.log(\"then\", res.status, res.ok))\n    .catch(err => console.log(\"catch\", err.message));",
+          "options": [
+            "catch Not Found",
+            "catch 404",
+            "then 404 true",
+            "then 404 false"
+          ],
+          "answer": 3,
+          "explanation": "`fetch` ka promise tab fulfil hota hai jab server se koi bhi HTTP response aa jaaye, status chahe 404 ho. Isliye `then` chalta hai, `res.status` 404 hai aur `res.ok` (sirf 200–299 par true) false hai. Options A aur B ka trap hai sochna ki HTTP error par `fetch` reject karta hai; reject sirf network failure par hota hai. Option C ka trap hai `ok` ko \"response aaya\" samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w3-q3",
+          "question": "Page par `<div id=\"card\"><button id=\"buy\">Buy</button></div>` hai (body ke andar), aur ye listeners lage hain. User button par click karta hai. Console mein order kya hoga?",
+          "code": "const card = document.querySelector(\"#card\");\nconst buy = document.querySelector(\"#buy\");\ndocument.body.addEventListener(\"click\", () => console.log(\"body\"));\ncard.addEventListener(\"click\", () => console.log(\"card\"), { capture: true });\nbuy.addEventListener(\"click\", () => console.log(\"button\"));",
+          "options": [
+            "card → button → body",
+            "button → card → body",
+            "body → card → button",
+            "button → body → card"
+          ],
+          "answer": 0,
+          "explanation": "Click event pehle capture phase mein window se button ki taraf neeche aata hai. Raaste mein `card` ka listener `capture: true` wala hai, isliye woh sabse pehle chalta hai. Phir target (button) ka listener, phir bubble phase mein upar jaate hue body ka listener. Option B ka trap hai sab listeners ko bubble phase ka maan lena aur `capture: true` ko ignore karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w3-q4",
+          "question": "Is promise chain se kya print hoga?",
+          "code": "Promise.resolve(1)\n    .then(x => x + 1)\n    .then(x => { throw new Error(\"bad \" + x); })\n    .then(x => console.log(\"skipped\", x))\n    .catch(e => { console.log(e.message); return 10; })\n    .then(x => console.log(\"after\", x));",
+          "options": [
+            "bad 2 → after undefined",
+            "skipped undefined → bad 2 → after 10",
+            "bad 2 → after 10",
+            "bad 2"
+          ],
+          "answer": 2,
+          "explanation": "1 se shuru, pehla `then` 2 deta hai, doosra `then` \"bad 2\" ke saath throw karta hai. Rejection aage ke `then` (\"skipped\") ko skip karke `catch` tak jaata hai, jo \"bad 2\" print karke 10 return karta hai. `catch` ke baad chain phir fulfilled hai, isliye aakhri `then` ko 10 milta hai: \"after 10\". Option D ka trap hai sochna ki `catch` ke baad chain ruk jaati hai, aur option A ka trap hai `catch` ki return value ko ignore karna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w3-q5",
+          "question": "Is code mein lines kis order mein print hongi?",
+          "code": "async function job() {\n    console.log(\"1\");\n    await null;\n    console.log(\"2\");\n}\nconsole.log(\"3\");\njob();\nconsole.log(\"4\");",
+          "options": [
+            "1 → 2 → 3 → 4",
+            "3 → 1 → 2 → 4",
+            "3 → 4 → 1 → 2",
+            "3 → 1 → 4 → 2"
+          ],
+          "answer": 3,
+          "explanation": "Pehle \"3\". Phir `job()` call hota hai aur `await` tak uska code synchronously chalta hai: \"1\". `await` par function ruk jaata hai aur baaki hissa microtask ban jaata hai, isliye control caller ko wapas milta hai: \"4\". Synchronous code khatam hone par microtask chalta hai: \"2\". Option B ka trap hai `await null` ko bina rukne wala samajhna (await hamesha kam se kam ek microtask ka gap deta hai), aur option C ka trap hai sochna ki async function ka koi bhi hissa turant nahi chalta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w3-q6",
+          "question": "Is code mein lines kis order mein print hongi?",
+          "code": "setTimeout(() => console.log(\"T1\"), 0);\nPromise.resolve().then(() => {\n    console.log(\"P1\");\n    setTimeout(() => console.log(\"T2\"), 0);\n    Promise.resolve().then(() => console.log(\"P2\"));\n});\nconsole.log(\"S\");",
+          "options": [
+            "S → T1 → P1 → P2 → T2",
+            "S → P1 → P2 → T1 → T2",
+            "S → P1 → T1 → P2 → T2",
+            "S → P1 → T1 → T2 → P2"
+          ],
+          "answer": 1,
+          "explanation": "Sync code: \"S\". Ab microtask queue mein P1 wala callback hai: \"P1\" print hota hai, T2 task queue mein T1 ke peeche jaata hai, aur P2 naya microtask banta hai. Microtask queue tab tak khaali hoti rehti hai jab tak usme kuch hai, isliye P2 bhi turant chalta hai, kisi timer se pehle. Phir tasks apne order mein: T1, phir T2. Option C ka trap hai sochna ki microtask ke andar bana naya microtask agle round mein jaayega; option A ka trap hai T1 ko pehle register hone ki wajah se microtasks se pehle chalana.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Vue 3 Basics: Reactivity, Templates and Components",
+      "summary": "Is week aap Vue 3 ka reactivity model (`ref`, `reactive`), template syntax aur directives (`v-bind`, `v-on`, `v-if`, `v-show`, `v-for`), aur components ke beech props neeche aur events upar bhejna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Declarative rendering**: Vue mein aap DOM ko haath se nahi badalte; aap state likhte ho aur template batata hai ki us state se UI kaisa dikhe. State badli to Vue khud DOM update karta hai. App aise shuru hoti hai: `createApp(App).mount(\"#app\")`. Code aam taur par Single File Components (`.vue`) mein hota hai: `<template>`, `<script setup>` aur `<style>` ek file mein. Options API (`data`, `methods`, `computed`) bhi Vue 3 mein valid hai; is course ke examples Composition API (`<script setup>`) mein hain.",
+        "**ref()**: kisi bhi value (number, string, object) ko reactive banata hai. Script mein value `.value` se padhi aur badli jaati hai (`count.value++`), jabki template mein top-level ref automatically unwrap hota hai (`{{ count }}`). Vue `.value` ke get/set par nazar rakhta hai: padhne par dependency track hoti hai, likhne par jo bhi us par depend karta hai woh dobara chalta hai.",
+        "**reactive()**: sirf objects/arrays ke liye; ek Proxy deta hai jiski properties seedhe use hoti hain (`state.count++`, `.value` nahi). Do limitations: pura object replace karoge (`state = {...}`) to reactivity ka link toot jaata hai, aur primitive property ko destructure karoge (`let { count } = state`) to plain copy milti hai jo reactive nahi. Isliye bahut se teams har jagah `ref` use karti hain.",
+        "**Async DOM updates**: state badalne par DOM turant nahi badalta. Vue ek tick mein saare changes buffer karta hai aur phir ek baar render karta hai (10 changes = 1 update). Change ke turant baad updated DOM padhna ho to `await nextTick()` karo.",
+        "**Template syntax**: `{{ expr }}` text interpolation hai aur HTML ko escape karta hai (safe). Raw HTML ke liye `v-html` hai, jo user content ke saath XSS ka risk hai. `v-bind:href=\"url\"` (short `:href`) attribute ko expression se jodta hai, `:class=\"{ active: isActive }\"` class toggle karta hai. `v-on:click=\"save\"` (short `@click`) event sunta hai; modifiers jaise `@submit.prevent` aur `@click.stop` `preventDefault`/`stopPropagation` ka kaam karte hain.",
+        "**v-if vs v-show**: `v-if` false hone par element (aur uske andar ke components) DOM se hata deta hai, true hone par naya banata hai; `v-else-if`/`v-else` ke saath chain bana sakte ho. `v-show` element ko hamesha render karta hai aur sirf CSS `display: none` toggle karta hai. Baar-baar toggle hone wali cheez (dropdown) ke liye `v-show` sasta hai; kabhi-kabhi dikhne wali bhaari cheez (admin panel) ke liye `v-if`.",
+        "**v-for aur key**: `v-for=\"item in items\" :key=\"item.id\"` list render karta hai. Key se Vue har DOM node ki identity pehchaanta hai; list re-order ya delete hone par isi se tay hota hai ki kaunsa node kis item ka hai. Stable unique id do, array index nahi, khaas kar jab rows mein inputs ya child components ki apni state ho. Ek hi element par `v-if` aur `v-for` mat lagao (Vue 3 mein `v-if` pehle evaluate hota hai); pehle computed se filter karo.",
+        "**Components, props aur emits**: parent data child ko props se deta hai (`defineProps`), aur child parent ko events se batata hai (`defineEmits`, `emit(\"add\", id)`). Ye one-way data flow hai: props child ke liye readonly hain, child unhe badal nahi sakta. State jiski hai wahi use badalta hai; child sirf request bhejta hai. Isse bug dhundhna aasaan hota hai kyunki har state ka ek hi owner hota hai."
+      ],
+      "example": {
+        "problem": "Ek fictional store ke liye `ProductCard` component banao jo parent se `product` prop le, price dikhaye, aur \"Add\" click par parent ko product ki id ke saath `add` event bheje. Parent cart count rakhta hai. Click ka poora flow trace karo.",
+        "steps": [
+          "Parent `<ProductCard v-for=\"p in products\" :key=\"p.id\" :product=\"p\" @add=\"addToCart\" />` render karta hai. Har card ko apna `product` prop milta hai, key `p.id` hai.",
+          "Child `defineProps({ product: Object })` aur `defineEmits([\"add\"])` declare karta hai. Template mein `{{ product.name }}` aur ₹ price dikhta hai.",
+          "User \"Add\" dabata hai: child ka `@click` handler `emit(\"add\", product.id)` chalata hai. Child cart ko chhoota bhi nahi, kyunki cart uski state nahi.",
+          "Parent ka `addToCart(id)` chalta hai aur `cart.value.push(id)` karta hai. `cart` ek ref hai, isliye Vue ko pata chalta hai ki use padhne wala template badalna chahiye.",
+          "Next tick par Vue header ka `{{ cart.length }}` re-render karta hai.",
+          "Answer: data **props se neeche** jaata hai aur badlaav ki request **events se upar**; state sirf uska owner (parent) badalta hai."
+        ],
+        "code": "<!-- ProductCard.vue -->\n<script setup>\nconst props = defineProps({ product: Object });\nconst emit = defineEmits([\"add\"]);\n</script>\n\n<template>\n    <div class=\"card\">\n        <h3>{{ product.name }}</h3>\n        <p>₹{{ product.price }}</p>\n        <button @click=\"emit('add', product.id)\">Add</button>\n    </div>\n</template>"
+      },
+      "mistakes": [
+        "Script mein `ref` ko bina `.value` ke use karna (`count++` ya `if (count > 5)`). Ye ref object ke saath kaam karta hai, uski value ke saath nahi. Template mein `.value` nahi chahiye, script mein chahiye.",
+        "`v-for` mein `:key=\"index\"` dena jab list mein delete/re-order hota hai. Rows ki input state galat item ke saath chipak jaati hai; database id jaisi stable key do.",
+        "Child mein prop ko seedha badalna (`props.title = \"x\"`). Vue warning deta hai aur value nahi badalti; event emit karo ya prop se local `ref` banao agar sirf shuruaati value chahiye."
+      ],
+      "revision": [
+        "State badlo, Vue DOM badlega; DOM update agle tick par hota hai (`nextTick`).",
+        "`ref`: script mein `.value`, template mein automatic unwrap.",
+        "`reactive` ko destructure ya replace mat karo.",
+        "`v-if` DOM se hatata hai, `v-show` sirf `display: none`.",
+        "`v-for` ke saath stable unique `:key`.",
+        "Props neeche (readonly), events upar (`emit`)."
+      ],
+      "questions": [
+        {
+          "id": "mad2-w4-q1",
+          "question": "Vue 3 mein `open` false hai. `<div v-show=\"open\">` aur `<div v-if=\"open\">` ke saath DOM mein kya hota hai?",
+          "options": [
+            "Dono element ko DOM se hata dete hain",
+            "`v-show` element ko DOM mein rakh kar `display: none` lagata hai; `v-if` element (aur andar ke components) DOM se hata deta hai",
+            "`v-if` element ko `display: none` se chhupata hai; `v-show` use DOM se hata deta hai",
+            "Dono sirf CSS `visibility: hidden` lagate hain"
+          ],
+          "answer": 1,
+          "explanation": "`v-show` hamesha render karta hai aur sirf inline style `display: none` toggle karta hai, isliye toggle sasta hai. `v-if` conditional rendering hai: false par element aur uske child components destroy hote hain, true par dobara bante hain. Option C ka trap hai dono ke kaam ulte yaad rakhna; option A ka trap hai sochna ki dono ek jaise hain aur sirf naam alag hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w4-q2",
+          "question": "Vue 3 `<script setup>` component mein button click par count 1 se badhana hai. `inc` ke andar kya likhna sahi hai?",
+          "code": "<script setup>\nimport { ref } from \"vue\";\nconst count = ref(0);\nfunction inc() {\n    // ?\n}\n</script>\n\n<template>\n    <button @click=\"inc\">{{ count }}</button>\n</template>",
+          "options": [
+            "`count++`",
+            "`this.count++`",
+            "`count.set(count.get() + 1)`",
+            "`count.value++`"
+          ],
+          "answer": 3,
+          "explanation": "`ref()` ek wrapper object deta hai; script mein asli value `.value` par hoti hai, isliye `count.value++` likhte hain. Template mein `{{ count }}` likhna theek hai kyunki wahan top-level ref apne aap unwrap hota hai. Option A ka trap hai template wala syntax script mein use karna (`count` const hai aur ek object hai, number nahi). Option B Options API ki aadat hai; `<script setup>` mein `this` component nahi hota.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w4-q3",
+          "question": "Vue 3 todo list `v-for=\"(todo, i) in todos\" :key=\"i\"` se render hoti hai. Har row mein `{{ todo.text }}` aur ek `<input>` hai jisme koi `v-model` nahi; user har input mein notes type karta hai. Pehla todo delete karne par notes galat todos ke saamne dikhne lagte hain. Kyun, aur fix kya hai?",
+          "options": [
+            "Index key ke saath Vue rows ko position se match karta hai; delete ke baad bachi rows ki keys badal jaati hain, isliye DOM nodes (aur unke inputs ka typed text) reuse hokar galat todo ke saath dikhte hain. Fix: `:key=\"todo.id\"` jaisi stable key",
+            "Key ka is par koi asar nahi; ye Vue ka bug hai jo sirf page reload se theek hota hai",
+            "Same element par `v-if` lagane se Vue har row dobara banayega aur problem theek ho jaayegi",
+            "Index key sahi hai; problem ye hai ki `todos` ko `reactive` ki jagah `ref` mein rakha gaya"
+          ],
+          "answer": 0,
+          "explanation": "Key Vue ko batati hai ki kaunsa DOM node kis item ka hai. Index key ke saath delete ke baad keys 0, 1, 2 ... hi rehti hain, to Vue sochta hai pehli rows wahi hain, unka text patch kar deta hai aur aakhri node hata deta hai. Input mein type kiya text DOM node ki apni state hai, isliye woh position par reh jaata hai aur galat todo ke saamne aa jaata hai. Stable `todo.id` key se sahi node hatta hai. Option B ka trap hai ise random bug samajhna, aur option D ka trap hai `ref` vs `reactive` ko is identity problem ki wajah maanna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w4-q4",
+          "question": "Vue 3 child component mein ye code hai. Parent `<TitleEditor title=\"Draft\" />` render karta hai. `rename()` chalne par kya hoga?",
+          "code": "<script setup>\nconst props = defineProps([\"title\"]);\nfunction rename() {\n    props.title = \"Final\";\n}\n</script>",
+          "options": [
+            "Parent ki state bhi \"Final\" ho jaati hai, kyunki props two-way bound hote hain",
+            "Child mein title \"Final\" ho jaata hai par parent mein \"Draft\" rehta hai, bina kisi warning ke",
+            "Props readonly hain: Vue (development mode mein) warning deta hai aur value nahi badalti; sahi tareeka event emit karke parent se badalwana hai",
+            "Ye compile error hai, app build hi nahi hogi"
+          ],
+          "answer": 2,
+          "explanation": "Vue 3 mein `props` object readonly hai (one-way data flow). Use likhne ki koshish par development build \"props are readonly\" jaisi warning deta hai aur assignment ignore hota hai. Agar child ko title badalwana hai to `emit(\"update:title\", \"Final\")` jaisa event bheje aur parent apni state badle. Option A ka trap hai props ko `v-model` jaisa two-way samajhna, aur option B ka trap hai sochna ki prop ek local copy hai jise child chupchaap badal sakta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w4-q5",
+          "question": "Vue 3 component neeche diya gaya hai. User button par 3 baar click karta hai. Button par kya dikhega?",
+          "code": "<script setup>\nimport { reactive } from \"vue\";\nconst state = reactive({ count: 0 });\nlet { count } = state;\nfunction inc() {\n    count++;\n}\n</script>\n\n<template>\n    <button @click=\"inc\">{{ state.count }}</button>\n</template>",
+          "options": [
+            "3",
+            "0",
+            "1",
+            "Error: count is read-only"
+          ],
+          "answer": 1,
+          "explanation": "`let { count } = state` us samay ki value 0 ko ek alag local variable mein copy kar deta hai; uska `state` ke Proxy se koi rishta nahi bachta. `count++` sirf local variable badhata hai, `state.count` 0 hi rehta hai aur template ko re-render ka koi signal nahi milta. Option A ka trap hai destructuring ko reactive reference samajhna. Fix: `state.count++` likho, ya `toRefs(state)` se destructure karo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w4-q6",
+          "question": "Vue 3 component mein pehli baar button click hone par console mein kya print hoga?",
+          "code": "<script setup>\nimport { ref, nextTick } from \"vue\";\nconst count = ref(0);\nconst el = ref(null);\nasync function inc() {\n    count.value++;\n    const before = el.value.textContent;\n    await nextTick();\n    const after = el.value.textContent;\n    console.log(before, after);\n}\n</script>\n\n<template>\n    <p ref=\"el\">{{ count }}</p>\n    <button @click=\"inc\">+</button>\n</template>",
+          "options": [
+            "1 1",
+            "0 0",
+            "0 1",
+            "1 2"
+          ],
+          "answer": 2,
+          "explanation": "`count.value++` ke baad state turant 1 hai, par Vue DOM update ko agle tick tak buffer karta hai. Isliye `before` padhte waqt `<p>` mein abhi bhi purana text \"0\" hai. `await nextTick()` tab resolve hota hai jab Vue pending DOM update laga chuka hota hai, isliye `after` \"1\" hai. Option A ka trap hai sochna ki ref badalte hi DOM synchronously badal jaata hai; option B ka trap hai sochna ki click handler ke andar DOM kabhi update nahi hota.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

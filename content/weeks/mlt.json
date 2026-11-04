@@ -1,0 +1,483 @@
+{
+  "subjectId": "mlt",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Representation learning and PCA",
+      "summary": "Is week aap seekhoge ki unsupervised representation learning kya hai aur Principal Component Analysis (PCA) data ko center karke, covariance matrix ke eigenvectors se kam dimensions mein kaise represent karta hai.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Representation learning** ka goal hai data ko aisi compact form mein likhna jo uski zaroori structure bachaaye. n data points x₁, …, xₙ ∈ ℝᵈ hain; agar ye points kisi chhote subspace ke paas pade hain to har point ko d numbers ke bajaye k ≪ d coefficients se likh sakte hain. Labels ki zaroorat nahi, isliye ye unsupervised learning hai.",
+        "**Projection aur reconstruction**: unit vector w (‖w‖ = 1) ki direction mein point x ka projection (xᵀw)w hai aur scalar xᵀw ko score kehte hain. Reconstruction error ‖x − (xᵀw)w‖² = ‖x‖² − (xᵀw)² hai, isliye error kam karna aur projection ka square (yaani variance) badhaana ek hi problem hai.",
+        "**Centering**: pehle mean x̄ = (1/n) Σ xᵢ nikaal kar har point se ghatao. Bina centering ke pehli direction aksar sirf mean ki taraf point karti hai, spread ki taraf nahi. Is course ki convention: covariance C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ, jo d × d symmetric aur positive semi-definite hai.",
+        "**Principal directions**: unit w ke along data ka variance wᵀCw hai. Ise maximise karne par Cw = λw milta hai, yaani best direction C ka sabse bade eigenvalue wala eigenvector hai, aur us direction ka variance wahi eigenvalue λ₁ hai. Agli direction pichhli sab ke orthogonal hoti hai aur agle eigenvalue wali hoti hai.",
+        "**Variance explained**: k components rakhne par captured fraction = (λ₁ + … + λₖ) / (λ₁ + … + λ_d). Practice mein k wo sabse chhota number chuna jaata hai jisse ye fraction 90% ya 95% jaisa threshold paar kar le. Total variance = trace(C) = sab eigenvalues ka sum.",
+        "**Rank aur computation**: n centered points maximum n − 1 dimensional subspace span karte hain, isliye C ke at most n − 1 nonzero eigenvalues hote hain. Jab d ≫ n (jaise images ya gene data), d × d matrix ke bajaye n × n matrix XᵀX ka eigen-decomposition sasta padta hai; ye idea agle week kernel PCA ki neev hai.",
+        "**1/n vs 1/(n − 1)**: dono conventions mein eigenvectors same aate hain aur variance explained ka fraction bhi same; sirf eigenvalues ka scale badalta hai. Isliye directions aur percentages convention se independent hain, absolute eigenvalue nahi."
+      ],
+      "example": {
+        "problem": "Ek fictional sensor dataset ke 4 points hain: (5, 4), (−1, 2), (3, 6), (1, 0). PCA (1/n convention) se pehli principal direction, uska variance explained aur point (5, 4) ka 1-D reconstruction nikaalo.",
+        "steps": [
+          "Mean: x̄ = ((5 − 1 + 3 + 1)/4, (4 + 2 + 6 + 0)/4) = (2, 3).",
+          "Centered points: (3, 1), (−3, −1), (1, 3), (−1, −3).",
+          "C₁₁ = (9 + 9 + 1 + 1)/4 = 5, C₂₂ = 5, C₁₂ = (3 + 3 + 3 + 3)/4 = 3, to C = [[5, 3], [3, 5]].",
+          "Eigenvalues: trace 10, determinant 25 − 9 = 16, to λ² − 10λ + 16 = 0 ⇒ λ₁ = 8, λ₂ = 2. λ₁ ka eigenvector w₁ = (1, 1)/√2.",
+          "Variance explained by PC1 = 8 / (8 + 2) = 80%.",
+          "Point (5, 4): centered (3, 1), score = (3 + 1)/√2 = 2√2 ≈ 2.83, reconstruction = x̄ + score · w₁ = (2, 3) + (2, 2) = (4, 5).",
+          "**Answer**: w₁ = (1, 1)/√2, 80% variance explained, (5, 4) ka reconstruction (4, 5) aur squared error 1² + 1² = 2."
+        ],
+        "code": "pts = [(5, 4), (-1, 2), (3, 6), (1, 0)]\nn = len(pts)\nmx = sum(p[0] for p in pts) / n\nmy = sum(p[1] for p in pts) / n\nX = [(x - mx, y - my) for x, y in pts]\na = sum(x * x for x, y in X) / n\nb = sum(x * y for x, y in X) / n\nd = sum(y * y for x, y in X) / n\ntr, det = a + d, a * d - b * b\nl1 = tr / 2 + (tr * tr / 4 - det) ** 0.5\nl2 = tr - l1\nprint([[a, b], [b, d]], l1, l2, l1 / (l1 + l2))\n# [[5.0, 3.0], [3.0, 5.0]] 8.0 2.0 0.8"
+      },
+      "mistakes": [
+        "Centering bhool jaana: uncentered data par (1/n) Σ xxᵀ ka top eigenvector mean ki direction pakad leta hai. Hamesha pehle x̄ ghatao, aur reconstruction mein x̄ wapas jodo.",
+        "Eigenvalue ko 'percentage' samajh lena: λ₁ = 8 ka matlab 8% nahi. Fraction nikaalne ke liye sab eigenvalues ke sum se divide karo.",
+        "Unit vector na lena: w = (1, 1) se score 4 aayega jo galat hai. Projection ke liye w ko ‖w‖ = 1 par normalise karo, yahan (1, 1)/√2."
+      ],
+      "revision": [
+        "C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ, symmetric aur PSD.",
+        "Direction w ke along variance = wᵀCw; maximum λ₁ par, w = top eigenvector.",
+        "Variance explained (k) = (λ₁ + … + λₖ) / Σ λ.",
+        "Reconstruction error minimise karna = projected variance maximise karna.",
+        "n centered points ⇒ at most n − 1 nonzero eigenvalues."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w1-q1",
+          "question": "PCA mein covariance matrix banane se pehle data ko center (mean ghatana) kyun kiya jaata hai?",
+          "options": [
+            "Taaki har feature ki variance exactly 1 ho jaaye",
+            "Taaki principal directions data ke spread ko pakdein; bina centering ke top direction mean ki taraf jhuk jaati hai",
+            "Taaki covariance matrix ke eigenvalues negative na aayein",
+            "Taaki data ke dimensions apne aap kam ho jaayein"
+          ],
+          "answer": 1,
+          "explanation": "Variance mean ke around spread hai. Agar mean nahi ghataya, to (1/n) Σ xxᵀ ka top eigenvector mostly mean vector ki direction dikhata hai, spread ki nahi, isliye option B sahi hai. Option A ka trap: variance 1 karna standardization hai (har feature ko uske standard deviation se divide karna), centering nahi. Option C galat hai kyunki (1/n) Σ xxᵀ waise bhi PSD hai, centering ke bina bhi eigenvalues negative nahi hote.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w1-q2",
+          "question": "Ek 3-feature dataset ke covariance matrix ke eigenvalues 6, 3 aur 1 hain. Pehle do principal components total variance ka kitna hissa capture karte hain?",
+          "options": [
+            "60%",
+            "97.8%",
+            "66.7%",
+            "90%"
+          ],
+          "answer": 3,
+          "explanation": "Variance explained = (6 + 3) / (6 + 3 + 1) = 9/10 = 90%, isliye option D. Option A (60%) sirf pehla component hai. Option B eigenvalues ke squares lene se aata hai: (36 + 9)/46 ≈ 97.8%; eigenvalue khud hi variance hai, uska square nahi lena. Option C mein 6/9 liya gaya hai, jo total ke bajaye sirf pehle do ke sum se divide karna hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w1-q3",
+          "question": "Centered 2-D data ka covariance matrix C = [[4, 2], [2, 1]] hai. Pehli principal direction aur uska variance kya hai?",
+          "options": [
+            "Direction (2, 1)/√5, variance 5",
+            "Direction (1, 2)/√5, variance 5",
+            "Direction (1, 0), variance 4",
+            "Direction (1, −2)/√5, variance 0"
+          ],
+          "answer": 0,
+          "explanation": "Trace = 5, determinant = 4 − 4 = 0, to eigenvalues 5 aur 0. λ = 5 ke liye (C − 5I)v = 0 ⇒ −v₁ + 2v₂ = 0 ⇒ v = (2, 1)/√5; check: C(2, 1) = (10, 5) = 5(2, 1). Isliye option A. Option B mein components ulat gaye hain: C(1, 2) = (8, 4), jo (1, 2) ka multiple nahi. Option C sirf sabse badi diagonal entry (C₁₁ = 4) dekhta hai aur covariance term ignore karta hai. Option D doosri (zero-variance) direction hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w1-q4",
+          "question": "Ek centered point x = (3, 1) ko unit direction w = (1, 1)/√2 par project karke 1-D mein reconstruct kiya gaya. Squared reconstruction error ‖x − x̂‖² kitna hai?",
+          "options": [
+            "0",
+            "8",
+            "2",
+            "10"
+          ],
+          "answer": 2,
+          "explanation": "Score = xᵀw = (3 + 1)/√2 = 2√2. Reconstruction x̂ = (xᵀw)w = 2√2 · (1, 1)/√2 = (2, 2). Error = (3 − 2)² + (1 − 2)² = 2, isliye option C. Shortcut: ‖x‖² − (xᵀw)² = 10 − 8 = 2. Option B (8) projected part ka squared length (score²) hai, error nahi. Option D (10) poora ‖x‖² hai, jaise kuch project hi na kiya ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w1-q5",
+          "question": "Ek 5-feature dataset ke covariance eigenvalues (descending) 5.0, 2.5, 1.5, 0.6, 0.4 hain. Kam se kam 95% variance retain karne ke liye minimum kitne principal components chahiye?",
+          "options": [
+            "2",
+            "3",
+            "5",
+            "4"
+          ],
+          "answer": 3,
+          "explanation": "Total = 10. Cumulative fractions: k = 1 par 50%, k = 2 par 75%, k = 3 par 90%, k = 4 par 96%. 95% pehli baar k = 4 par paar hota hai, isliye option D. Option B (3) ka trap: 90% ko 'kaafi paas' maan lena; threshold strictly 95% hai. Option C (5) sab components rakhta hai, jo dimension reduction hi nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w1-q6",
+          "question": "Ek fictional gene-expression study mein n = 50 samples hain, har ek d = 1000 features ka. Data center karke (1/n) convention se 1000 × 1000 covariance matrix banaya. Is matrix ke maximum kitne eigenvalues nonzero ho sakte hain?",
+          "options": [
+            "49",
+            "50",
+            "1000",
+            "950"
+          ],
+          "answer": 0,
+          "explanation": "C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ, 50 rank-1 matrices ka sum hai, par centered vectors ka sum zero hai (Σ (xᵢ − x̄) = 0), isliye ve linearly dependent hain aur maximum 49 dimensional subspace span karte hain. Rank ≤ n − 1 = 49, isliye option A. Option B (50) centering se aayi ek extra dependency bhool jaata hai. Option C maan leta hai ki d × d matrix hamesha full rank hoga, jo d > n mein possible hi nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Kernels and kernel PCA",
+      "summary": "Is week aap seekhoge ki non-linear structure pakadne ke liye feature map φ kaise kaam karta hai, polynomial aur RBF kernels kya hain, kernel trick se φ bina banaye dot products kaise milte hain, aur kernel matrix ko center karke kernel PCA kaise chalta hai.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Linear PCA ki limit**: PCA sirf linear subspace dhoondhta hai. Agar data ek circle ya curve par pada hai, to koi bhi seedhi line usse achhe se represent nahi karti. Idea: pehle har point ko feature map φ: ℝᵈ → ℝᴰ se ek bade space mein le jao jahan structure linear ho jaaye, phir wahan PCA chalao.",
+        "**Feature map ka cost**: degree p ke saare monomials (constant term ke saath) ki ginti C(d + p, p) hai. d = 2, p = 2 par 6 features (1, x₁, x₂, x₁², x₂², x₁x₂), par d = 1000, p = 3 par lagbhag 1.7 × 10⁸. φ ko explicitly banana jaldi hi impractical ho jaata hai.",
+        "**Kernel function** k(x, y) = φ(x)ᵀφ(y) seedhe original space mein compute hota hai. Polynomial kernel: k(x, y) = (xᵀy + c)ᵖ (c = 0 homogeneous, c > 0 se lower-degree terms bhi aate hain). RBF/Gaussian kernel: k(x, y) = exp(−‖x − y‖²/(2σ²)); iska φ infinite-dimensional hai, phir bhi k ek number hai jo O(d) mein nikalta hai. RBF mein k(x, x) = 1 aur 0 < k ≤ 1.",
+        "**Kernel trick**: agar koi algorithm data ko sirf dot products xᵢᵀxⱼ ke through use karta hai, to har dot product ko k(xᵢ, xⱼ) se replace kar do. Saari information n × n kernel (Gram) matrix K mein aa jaati hai, Kᵢⱼ = k(xᵢ, xⱼ). Valid kernel (Mercer) ke liye K har dataset par symmetric aur PSD hona chahiye.",
+        "**PCA ko dot products mein likhna**: covariance C = (1/n) Σ φ(xᵢ)φ(xᵢ)ᵀ ka har eigenvector w data ka linear combination hai: w = Σ αᵢ φ(xᵢ). Isse problem Kα = μα (n × n eigenproblem) ban jaati hai. ‖w‖ = 1 ke liye αᵀKα = 1 chahiye, yaani unit eigenvector β ko α = β/√μ se scale karo.",
+        "**Kernel matrix centering**: feature space mein mean ghatana ho, par φ explicit nahi hai. Solution: K̃ = (I − 1ₙ)K(I − 1ₙ), jahan 1ₙ ki har entry 1/n hai. Entry-wise: K̃ᵢⱼ = Kᵢⱼ − (row i ka mean) − (column j ka mean) + (poore K ka mean). Kernel PCA hamesha K̃ par chalta hai.",
+        "**Projection**: naye ya training point x ka j-th kernel PC score Σᵢ αᵢ k(xᵢ, x) hai (centered kernel ke saath). Training point xᵢ ke liye ye (K̃α)ᵢ = μ αᵢ = √μ βᵢ ban jaata hai. Linear kernel k(x, y) = xᵀy lene par kernel PCA bilkul normal PCA ke scores deta hai."
+      ],
+      "example": {
+        "problem": "(a) x = (1, 2), y = (3, −1) ke liye polynomial kernel (xᵀy + 1)² nikaalo aur explicit feature map se check karo. (b) 1-D points 0, 1, 2 ka linear kernel matrix banao aur use center karo.",
+        "steps": [
+          "(a) xᵀy = 3 − 2 = 1, to k = (1 + 1)² = 4.",
+          "Explicit map: φ(x) = (1, √2x₁, √2x₂, x₁², x₂², √2x₁x₂). φ(1, 2) = (1, √2, 2√2, 1, 4, 2√2), φ(3, −1) = (1, 3√2, −√2, 9, 1, −3√2).",
+          "Dot product: 1 + 6 − 4 + 9 + 4 − 12 = 4. Same answer, par kernel ne 6-D vectors banaye hi nahi.",
+          "(b) Linear kernel Kᵢⱼ = xᵢxⱼ: K = [[0, 0, 0], [0, 1, 2], [0, 2, 4]].",
+          "Row means = (0, 1, 2), column means = (0, 1, 2), overall mean = 9/9 = 1.",
+          "K̃ᵢⱼ = Kᵢⱼ − rowᵢ − colⱼ + 1, jaise K̃₃₃ = 4 − 2 − 2 + 1 = 1 aur K̃₁₃ = 0 − 0 − 2 + 1 = −1.",
+          "**Answer**: k = 4, aur K̃ = [[1, 0, −1], [0, 0, 0], [−1, 0, 1]], jo centered points −1, 0, 1 ke dot products hi hain."
+        ]
+      },
+      "mistakes": [
+        "Kernel matrix ko center kiye bina eigenvectors nikaalna. Tab pehla component feature-space mean ko pakad leta hai; pehle K̃ = (I − 1ₙ)K(I − 1ₙ) banao.",
+        "α ko normalise na karna: K ka unit eigenvector β seedha use karne se w ka norm √μ ho jaata hai aur scores galat scale par aate hain. α = β/√μ lo.",
+        "Koi bhi similarity function ko kernel maan lena. Jaise (xᵀy − 1)² 1-D points 0 aur 1 par K = [[1, 1], [1, 0]] deta hai jiska determinant −1 hai, yaani PSD nahi, isliye valid kernel nahi."
+      ],
+      "revision": [
+        "k(x, y) = φ(x)ᵀφ(y); polynomial (xᵀy + c)ᵖ, RBF exp(−‖x − y‖²/(2σ²)).",
+        "Degree-p polynomial features (constant ke saath): C(d + p, p).",
+        "Kernel PCA: K̃α = μα, α = β/√μ taaki ‖w‖ = 1.",
+        "K̃ᵢⱼ = Kᵢⱼ − row mean − column mean + overall mean.",
+        "Training point ka score = √μ · βᵢ."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w2-q1",
+          "question": "RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)) mein kisi bhi point x ke liye k(x, x) ki value kya hai?",
+          "options": [
+            "0",
+            "σ²",
+            "1",
+            "‖x‖² par depend karta hai"
+          ],
+          "answer": 2,
+          "explanation": "x = y par ‖x − y‖² = 0, to k(x, x) = exp(0) = 1, chahe σ ya x kuch bhi ho, isliye option C. Har point ka feature-space norm 1 hai. Option D ka trap linear ya polynomial kernel se aata hai jahan k(x, x) = ‖x‖² ya (‖x‖² + c)ᵖ hota hai; RBF sirf distance par depend karta hai. Option A ulta hai: distance zero hone par similarity maximum hoti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w2-q2",
+          "question": "x = (1, 2) aur y = (3, −1) ke liye polynomial kernel k(x, y) = (xᵀy + 1)² ki value kya hai?",
+          "options": [
+            "4",
+            "1",
+            "36",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "xᵀy = 1·3 + 2·(−1) = 1, to k = (1 + 1)² = 4, isliye option A. Option B (1) homogeneous kernel (xᵀy)² hai, yaani +1 bhool gaye. Option C (36) tab aata hai jab −1 ka sign ignore karke xᵀy = 5 le liya. Option D (2) mein square hi nahi kiya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w2-q3",
+          "question": "x ∈ ℝ² ke liye kernel k(x, y) = (xᵀy + 1)³ kis dimension ke feature space ke dot product ke barabar hai (sab monomials degree ≤ 3, constant ke saath)?",
+          "options": [
+            "3",
+            "8",
+            "4",
+            "10"
+          ],
+          "answer": 3,
+          "explanation": "c > 0 hone se degree 0 se 3 tak ke saare monomials aate hain: count = C(d + p, p) = C(5, 3) = 10 (1 constant, 2 linear, 3 quadratic, 4 cubic). Isliye option D. Option C (4) sirf degree-3 monomials hain, jo homogeneous kernel (xᵀy)³ ka dimension hai. Option B (8) 2³ ordered products ginta hai jisme x₁x₂ aur x₂x₁ jaise duplicate shaamil hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w2-q4",
+          "question": "RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)) σ = 1 ke saath hai. x = (1, 2) aur y = (2, 0) ke liye k(x, y) lagbhag kitna hai?",
+          "options": [
+            "0.0067",
+            "0.082",
+            "0.327",
+            "0.287"
+          ],
+          "answer": 1,
+          "explanation": "‖x − y‖² = (1 − 2)² + (2 − 0)² = 1 + 4 = 5. k = exp(−5/2) = exp(−2.5) ≈ 0.082, isliye option B. Option A exp(−5) hai, yaani 2σ² wala factor 2 bhool gaye. Option C mein squared distance ki jagah distance √5 use hua. Option D mein 2σ² ko (2σ)² = 4 padh liya gaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w2-q5",
+          "question": "1-D points 0, 1, 2 ka linear kernel matrix K = [[0, 0, 0], [0, 1, 2], [0, 2, 4]] hai. Centered kernel K̃ = (I − 1ₙ)K(I − 1ₙ) ki (3, 3) entry kya hai?",
+          "options": [
+            "1",
+            "3",
+            "2",
+            "4"
+          ],
+          "answer": 0,
+          "explanation": "K̃₃₃ = K₃₃ − (row 3 mean) − (column 3 mean) + (overall mean) = 4 − 2 − 2 + 1 = 1, isliye option A. Check: centered points −1, 0, 1 hain aur 1·1 = 1. Option B (3) sirf overall mean ghatata hai. Option C (2) sirf row mean ghatata hai, jo one-sided centering hai. Option D (4) bina centering ki entry hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w2-q6",
+          "question": "Kernel PCA mein centered kernel matrix K̃ ka sabse bada eigenvalue μ = 4 hai, unit eigenvector β = (1/√2, 0, −1/√2) ke saath. Coefficients α ko is tarah scale kiya gaya hai ki feature-space direction w = Σ αᵢ φ(xᵢ) ka norm 1 ho. Training point x₁ ka is component par score (projection) kya hai?",
+          "options": [
+            "0.354",
+            "2.828",
+            "1.414",
+            "0.707"
+          ],
+          "answer": 2,
+          "explanation": "‖w‖² = αᵀK̃α = 1 ke liye α = β/√μ = β/2. Score of x₁ = Σⱼ αⱼ K̃₁ⱼ = (K̃α)₁ = μα₁ = √μ β₁ = 2 · (1/√2) = √2 ≈ 1.414, isliye option C. Option A (0.354) sirf α₁ hai, K̃ se multiply kiye bina. Option B (2.828) μβ₁ hai, yaani β ko normalise kiye bina use kiya. Option D (0.707) β₁ khud hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Clustering with k-means",
+      "summary": "Is week aap seekhoge ki k-means clustering ka objective kya hai, Lloyd's algorithm assignment aur update steps se use kaise ghatata hai, initialisation (k-means++) kyun matter karta hai, aur kernel k-means non-convex clusters kaise pakadta hai.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Clustering problem**: n points ko k groups mein baantna hai, bina labels ke, taaki ek group ke points aapas mein paas hon. k-means har cluster ko ek centroid (mean) μₖ se represent karta hai aur har point zᵢ ∈ {1, …, k} ek cluster ko assign hota hai.",
+        "**Objective (within-cluster sum of squares)**: J(z, μ) = Σᵢ ‖xᵢ − μ_zᵢ‖². Saare possible assignments try karna kⁿ options hain (NP-hard problem), isliye hum ek local search algorithm use karte hain.",
+        "**Lloyd's algorithm**: (1) Assignment step: har point ko nearest centroid do, zᵢ = argminₖ ‖xᵢ − μₖ‖². (2) Update step: har centroid ko apne points ka mean bana do, μₖ = (1/|Cₖ|) Σ_{i ∈ Cₖ} xᵢ. Jab tak assignments badalna band na ho, dohraate raho.",
+        "**Convergence**: dono steps J ko kabhi badhaate nahi (assignment step fixed μ par best z chunta hai, update step fixed z par mean hi squared error minimise karta hai). Assignments finite hain aur koi repeat nahi hota (agar J strictly ghatta hai), isliye algorithm finite steps mein rukta hai, par sirf local minimum par, global ki guarantee nahi.",
+        "**Initialisation aur k-means++**: alag initial centroids alag final clusterings de sakte hain. k-means++ pehla centre random point chunta hai, phir har agla centre point x ko probability ∝ D(x)² se, jahan D(x) = sabse paas wale chune hue centre ki distance. Isse centres door-door bikharte hain; practice mein kai random restarts karke sabse kam J wala result lete hain.",
+        "**k choose karna**: k badhaane se J hamesha ghatta hai (k = n par J = 0), isliye sirf J dekh kar k nahi chun sakte. Elbow method (J vs k ka 'mod') ya silhouette score jaise criteria use hote hain, aur domain knowledge bhi.",
+        "**Limitations aur kernel k-means**: k-means Voronoi (linear) boundaries banata hai, isliye concentric circles jaise non-convex clusters nahi pakadta, aur outliers se mean khinch jaata hai. Kernel k-means distance ko sirf kernel values se likhta hai: ‖φ(x) − μ_C‖² = k(x, x) − (2/|C|) Σ_{j ∈ C} k(x, xⱼ) + (1/|C|²) Σ_{i, j ∈ C} k(xᵢ, xⱼ), isliye φ explicit banaye bina feature space mein clustering ho jaati hai."
+      ],
+      "example": {
+        "problem": "Fictional delivery locations: A(1, 1), B(2, 1), C(1, 2), D(5, 4), E(6, 5), F(4, 5). k = 2, initial centroids μ₁ = A = (1, 1), μ₂ = B = (2, 1). Lloyd's algorithm chala kar final clusters aur objective J nikaalo.",
+        "steps": [
+          "Iteration 1, assignment: C ke liye d² = 1 (μ₁) vs 2 (μ₂) ⇒ μ₁. D ke liye 25 vs 18 ⇒ μ₂. E, F bhi μ₂. Clusters: {A, C} aur {B, D, E, F}.",
+          "Update: μ₁ = (1, 1.5), μ₂ = ((2 + 5 + 6 + 4)/4, (1 + 4 + 5 + 5)/4) = (4.25, 3.75). Is assignment par J = 20.",
+          "Iteration 2, assignment: B ke liye d² = 1 + 0.25 = 1.25 (μ₁) vs 5.0625 + 7.5625 = 12.625 (μ₂) ⇒ B μ₁ mein chala gaya. Baaki same.",
+          "Update: μ₁ = mean(A, B, C) = (4/3, 4/3) ≈ (1.33, 1.33), μ₂ = mean(D, E, F) = (5, 14/3) ≈ (5, 4.67).",
+          "Iteration 3: koi assignment nahi badla ⇒ converged.",
+          "J = cluster 1 (4/3) + cluster 2 (8/3) = 4.",
+          "**Answer**: clusters {A, B, C} aur {D, E, F}, centroids ≈ (1.33, 1.33) aur (5, 4.67), J = 4. Bura initialisation (dono centres ek hi group mein) bhi yahan 2 iterations mein theek ho gaya, par har baar aisa nahi hota."
+        ],
+        "code": "pts = [(1, 1), (2, 1), (1, 2), (5, 4), (6, 5), (4, 5)]\nmus = [(1, 1), (2, 1)]\n\ndef d2(p, q):\n    return (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2\n\nwhile True:\n    z = [min(range(len(mus)), key=lambda k: d2(p, mus[k])) for p in pts]\n    new = []\n    for k in range(len(mus)):\n        mem = [p for p, c in zip(pts, z) if c == k]\n        new.append((sum(p[0] for p in mem) / len(mem), sum(p[1] for p in mem) / len(mem)))\n    if new == mus:\n        break\n    mus = new\nsse = sum(d2(p, mus[c]) for p, c in zip(pts, z))\nprint(z, [(round(a, 2), round(b, 2)) for a, b in mus], round(sse, 2))\n# [0, 0, 0, 1, 1, 1] [(1.33, 1.33), (5.0, 4.67)] 4.0"
+      },
+      "mistakes": [
+        "Sochna ki Lloyd's algorithm global optimum deta hai. Ye sirf local minimum deta hai; kai initialisations (ya k-means++) chala kar sabse kam J wala result lo.",
+        "Features scale kiye bina k-means chalana. Agar ek feature rupees mein (lakhs) aur doosra years mein hai, to distance poora rupees wala feature decide karega; pehle standardise karo.",
+        "k chunne ke liye sabse kam J wala k lena. J k ke saath hamesha ghatta hai, isliye elbow ya silhouette jaisa criterion chahiye."
+      ],
+      "revision": [
+        "J = Σ ‖xᵢ − μ_zᵢ‖²; Lloyd's: assign to nearest, phir mean update.",
+        "J kabhi nahi badhta; finite steps mein local minimum.",
+        "k-means++: agla centre probability ∝ D(x)².",
+        "k badhao to J ghatega; k = n par J = 0.",
+        "Kernel k-means: ‖φ(x) − μ_C‖² sirf kernel values se."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w3-q1",
+          "question": "Lloyd's algorithm (k-means) ke baare mein kaunsa statement sahi hai?",
+          "options": [
+            "Har assignment aur update step objective J ko kabhi badhaata nahi, aur algorithm finite steps mein ek local minimum par ruk jaata hai",
+            "Algorithm hamesha J ka global minimum deta hai, chahe initialisation kuch bhi ho",
+            "Update step mein J badh sakta hai, sirf assignment step use ghatata hai",
+            "Algorithm sirf k = 2 ke liye converge karta hai"
+          ],
+          "answer": 0,
+          "explanation": "Assignment step fixed centroids par har point ka best cluster chunta hai aur update step fixed clusters par mean leta hai, jo squared distance ka exact minimiser hai; dono J ko non-increasing rakhte hain, aur assignments finite hain, isliye option A sahi hai. Option B sabse common trap hai: convergence ki guarantee local minimum tak hai, global tak nahi, isliye initialisation matter karta hai. Option C galat hai kyunki mean hi squared error ka minimiser hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w3-q2",
+          "question": "Assignment step ke baad ek cluster mein points (1, 2), (3, 4) aur (5, 0) hain. Update step ke baad iska naya centroid kya hoga?",
+          "options": [
+            "(3, 3)",
+            "(9, 6)",
+            "(3, 2)",
+            "(4.5, 3)"
+          ],
+          "answer": 2,
+          "explanation": "Centroid = mean = ((1 + 3 + 5)/3, (2 + 4 + 0)/3) = (9/3, 6/3) = (3, 2), isliye option C. Option B sirf sum hai, 3 se divide karna bhool gaye. Option D 2 se divide karta hai (galat count). Option A mein y-coordinate ka 0 ignore karke (2 + 4)/2 = 3 liya gaya hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w3-q3",
+          "question": "1-D points 0, 1, 3, 6 par k-means++ chal raha hai aur pehla centre 0 chuna gaya. Doosre centre ke roop mein point 6 ke chune jaane ki probability kya hai?",
+          "options": [
+            "0.25",
+            "0.783",
+            "0.6",
+            "0.196"
+          ],
+          "answer": 1,
+          "explanation": "Har point ki nearest centre (0) se distance D = 0, 1, 3, 6, to D² = 0, 1, 9, 36, sum = 46. P(6) = 36/46 ≈ 0.783, isliye option B. Option C (0.6) distance ke proportional hai (6/10), squared distance ke nahi. Option A (0.25) uniform random choice hai, jo plain random initialisation hai. Option D point 3 ki probability (9/46) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w3-q4",
+          "question": "k = 2 clustering: cluster 1 = {(0, 0), (2, 0), (1, 3)}, cluster 2 = {(6, 6), (8, 6)}, aur har centroid apne cluster ka mean hai. k-means objective J (within-cluster sum of squared distances) kitna hai?",
+          "options": [
+            "8",
+            "2",
+            "6.83",
+            "10"
+          ],
+          "answer": 3,
+          "explanation": "Cluster 1 ka mean (1, 1): squared distances 2, 2, 4 ⇒ 8. Cluster 2 ka mean (7, 6): squared distances 1, 1 ⇒ 2. J = 8 + 2 = 10, isliye option D. Option C (≈ 6.83) squared ke bajaye plain distances (√2 + √2 + 2 + 1 + 1) ka sum hai. Options A aur B sirf ek-ek cluster ka contribution hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w3-q5",
+          "question": "Kernel k-means mein cluster C = {a, b} hai. Kernel values: k(x, x) = 1, k(x, a) = 0.5, k(x, b) = 0.3, k(a, a) = k(b, b) = 1, k(a, b) = 0.4. Feature space mein ‖φ(x) − μ_C‖² kitna hai?",
+          "options": [
+            "0.2",
+            "0.9",
+            "1.6",
+            "0.7"
+          ],
+          "answer": 1,
+          "explanation": "‖φ(x) − μ_C‖² = k(x, x) − (2/|C|) Σ k(x, xⱼ) + (1/|C|²) Σᵢ Σⱼ k(xᵢ, xⱼ) = 1 − (2/2)(0.5 + 0.3) + (1/4)(1 + 1 + 0.4 + 0.4) = 1 − 0.8 + 0.7 = 0.9, isliye option B. Option A (0.2) teesra term (centroid ka apna norm²) bhool jaata hai. Option C (1.6) teesre term mein 1/|C|² ki jagah 1/|C| leta hai. Option D (0.7) double sum mein k(a, b) aur k(b, a) cross terms chhod deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w3-q6",
+          "question": "1-D points 1, 2, 3, 8, 9, 20 par k = 2 Lloyd's algorithm initial centroids 1 aur 2 se convergence tak chalaya. Final centroids kya honge?",
+          "options": [
+            "1 aur 8.4",
+            "4.6 aur 20",
+            "2 aur 12.33",
+            "2 aur 8.5"
+          ],
+          "answer": 2,
+          "explanation": "Iteration 1: sirf 1 centroid 1 ke paas hai, baaki 2, 3, 8, 9, 20 centroid 2 ke ⇒ update 1 aur (2 + 3 + 8 + 9 + 20)/5 = 8.4. Iteration 2: 1, 2, 3 centroid 1 ke paas (3 ke liye 4 vs 29.16), 8, 9, 20 centroid 8.4 ke ⇒ update 2 aur 37/3 ≈ 12.33. Iteration 3: assignments same ⇒ converged, isliye option C. Option A ek iteration ke baad ruk jaata hai. Option B ek alag local minimum hai (initial centroids 1 aur 20 se milta hai, J = 53.2 vs yahan 90.67), jo dikhata hai ki result initialisation par depend karta hai, par is run mein wahan nahi pahunchte. Option D outlier 20 ko ignore karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Estimation, mixture models and EM",
+      "summary": "Is week aap seekhoge ki maximum likelihood aur Bayesian estimation (prior, posterior, conjugacy, MAP) parameters kaise estimate karte hain, aur Gaussian mixture model ko EM algorithm ke E-step aur M-step se kaise fit karte hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Maximum likelihood estimation (MLE)**: i.i.d. data x₁, …, xₙ ke liye parameter θ wo chuno jo likelihood L(θ) = Π p(xᵢ; θ) ya log-likelihood ℓ(θ) = Σ log p(xᵢ; θ) ko maximise kare. Bernoulli: θ̂ = (successes)/n. Gaussian: μ̂ = sample mean, σ̂² = (1/n) Σ (xᵢ − μ̂)² (n se divide, n − 1 se nahi, isliye ye thoda biased hai).",
+        "**Bayesian estimation**: θ ko random variable maano jiska prior p(θ) hai. Data ke baad posterior p(θ | data) ∝ p(data | θ) · p(θ). Output ek poori distribution hai, sirf ek number nahi; isse uncertainty bhi pata chalti hai, aur kam data par prior estimate ko extreme hone se rokta hai.",
+        "**Conjugate prior**: jab posterior prior wali family mein hi rahe. Bernoulli likelihood + Beta(α, β) prior ⇒ h successes aur t failures ke baad posterior Beta(α + h, β + t). Prior ke α − 1, β − 1 ko 'pseudo-counts' ki tarah socho. Gaussian mean (known variance) ke liye Gaussian prior conjugate hai.",
+        "**Point estimates from posterior**: posterior mean (Beta ke liye α/(α + β)) aur MAP = posterior ka mode (Beta ke liye (α − 1)/(α + β − 2), jab α, β > 1). Uniform prior Beta(1, 1) par MAP = MLE. Data badhne par teeno estimates paas aa jaate hain.",
+        "**Gaussian mixture model (GMM)**: p(x) = Σₖ πₖ N(x; μₖ, Σₖ), πₖ ≥ 0, Σ πₖ = 1. Generative story: pehle latent cluster z ~ Categorical(π) chuno, phir x ~ N(μ_z, Σ_z). k-means ke hard assignment ke bajaye GMM har point ko har cluster mein ek probability deta hai (soft clustering), aur clusters elliptical aur alag size ke ho sakte hain.",
+        "**EM algorithm**: log-likelihood mein log ke andar sum hone se closed form nahi milta. E-step: responsibilities rᵢₖ = πₖ N(xᵢ; μₖ, Σₖ) / Σⱼ πⱼ N(xᵢ; μⱼ, Σⱼ). M-step: Nₖ = Σᵢ rᵢₖ, πₖ = Nₖ/n, μₖ = (1/Nₖ) Σ rᵢₖ xᵢ, Σₖ = (1/Nₖ) Σ rᵢₖ (xᵢ − μₖ)(xᵢ − μₖ)ᵀ. Har iteration log-likelihood ko kabhi ghatati nahi, par local maximum par ruk sakti hai.",
+        "**k-means se rishta**: agar sab components ka covariance σ²I ho aur σ → 0, to responsibilities 0 ya 1 ban jaati hain aur EM bilkul Lloyd's algorithm jaisa ho jaata hai. Practice mein GMM ko aksar k-means ke result se initialise karte hain."
+      ],
+      "example": {
+        "problem": "1-D data 0, 2, 3, 6 par 2-component GMM. Initial values: π₁ = π₂ = 0.5, μ₁ = 1, μ₂ = 5, dono σ = 2 (fixed rakho). Ek EM iteration chala kar responsibilities, naye π₁, μ₁, μ₂ aur log-likelihood ka badlav nikaalo.",
+        "steps": [
+          "Equal π aur σ hone se rᵢ₁ = 1 / (1 + exp(−[(xᵢ − 5)² − (xᵢ − 1)²]/8)); normalising constants cancel ho jaate hain.",
+          "E-step: x = 0 par exponent (25 − 1)/8 = 3 ⇒ r = 0.953; x = 2 par (9 − 1)/8 = 1 ⇒ r = 0.731; x = 3 par 0 ⇒ r = 0.5; x = 6 par −3 ⇒ r = 0.047.",
+          "N₁ = 0.953 + 0.731 + 0.5 + 0.047 = 2.231, N₂ = 4 − 2.231 = 1.769, to π₁ = 2.231/4 ≈ 0.558.",
+          "μ₁ = (0·0.953 + 2·0.731 + 3·0.5 + 6·0.047)/2.231 = 3.247/2.231 ≈ 1.455.",
+          "μ₂ = (0·0.047 + 2·0.269 + 3·0.5 + 6·0.953)/1.769 ≈ 4.383.",
+          "Log-likelihood −8.992 se badh kar −8.779 ho gaya, jaisa EM guarantee karta hai.",
+          "**Answer**: responsibilities (0.953, 0.731, 0.5, 0.047), π₁ ≈ 0.558, μ₁ ≈ 1.455, μ₂ ≈ 4.383. Point 3 dono clusters mein aadha-aadha baata gaya; k-means ise kisi ek mein daal deta."
+        ]
+      },
+      "mistakes": [
+        "M-step mein weighted mean ko n se divide karna. Cluster k ka mean Σ rᵢₖ xᵢ / Nₖ hai, jahan Nₖ = Σ rᵢₖ; n se divide sirf πₖ = Nₖ/n mein hota hai.",
+        "Responsibility nikaalte waqt prior πₖ ya Gaussian ka normalising factor 1/σ bhool jaana. Alag variance wale components mein 1/σ cancel nahi hota aur answer badal jaata hai.",
+        "MAP aur posterior mean ko same samajhna. Beta(11, 5) ka mean 11/16 = 0.6875 hai par mode (MAP) 10/14 ≈ 0.714 hai."
+      ],
+      "revision": [
+        "MLE: Bernoulli θ̂ = h/n; Gaussian σ̂² mein 1/n.",
+        "Beta(α, β) + h successes, t failures ⇒ Beta(α + h, β + t).",
+        "Beta mean α/(α + β), MAP (α − 1)/(α + β − 2).",
+        "E-step: rᵢₖ ∝ πₖ N(xᵢ; μₖ, Σₖ); M-step: πₖ = Nₖ/n, μₖ = Σ rᵢₖ xᵢ / Nₖ.",
+        "EM log-likelihood ko kabhi ghatata nahi; local optimum possible."
+      ],
+      "questions": [
+        {
+          "id": "mlt-w4-q1",
+          "question": "Data 2, 4, 6 ko Gaussian maan kar variance σ² ka maximum likelihood estimate kya hai?",
+          "options": [
+            "4",
+            "1.63",
+            "8",
+            "2.67"
+          ],
+          "answer": 3,
+          "explanation": "μ̂ = 4. MLE σ̂² = (1/n) Σ (xᵢ − μ̂)² = (4 + 0 + 4)/3 = 8/3 ≈ 2.67, isliye option D. Option A (4) n − 1 = 2 se divide karta hai; ye unbiased sample variance hai, MLE nahi. Option B (1.63) standard deviation √(8/3) hai, variance nahi. Option C (8) sirf squared deviations ka sum hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w4-q2",
+          "question": "Ek click-through probability θ par prior Beta(2, 2) hai. 10 impressions mein 7 clicks aur 3 non-clicks aaye (Bernoulli likelihood). Posterior distribution kya hai?",
+          "options": [
+            "Beta(7, 3)",
+            "Beta(9, 5)",
+            "Beta(5, 9)",
+            "Beta(9, 12)"
+          ],
+          "answer": 1,
+          "explanation": "Beta prior Bernoulli likelihood ke liye conjugate hai: Beta(α + h, β + t) = Beta(2 + 7, 2 + 3) = Beta(9, 5), isliye option B. Option C mein clicks aur non-clicks ulte jode gaye. Option A prior ko bilkul ignore karta hai. Option D β mein total trials (10) jodta hai, sirf failures (3) nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlt-w4-q3",
+          "question": "Prior Beta(3, 3) hai aur 10 Bernoulli trials mein 8 successes aaye. θ ka MAP estimate kya hai?",
+          "options": [
+            "0.8",
+            "0.6875",
+            "0.714",
+            "0.786"
+          ],
+          "answer": 2,
+          "explanation": "Posterior Beta(3 + 8, 3 + 2) = Beta(11, 5). MAP = mode = (α − 1)/(α + β − 2) = 10/14 ≈ 0.714, isliye option C. Option B (11/16 = 0.6875) posterior mean hai, mode nahi. Option A (0.8) MLE hai jo prior ignore karta hai. Option D (11/14) formula mein numerator ka −1 bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w4-q4",
+          "question": "1-D GMM ke do components hain: π₁ = 0.2, μ₁ = 0, σ₁ = 1 aur π₂ = 0.8, μ₂ = 3, σ₂ = 1. Point x = 1.5 ke liye component 1 ki responsibility r₁ kya hai?",
+          "options": [
+            "0.2",
+            "0.5",
+            "0.8",
+            "0.25"
+          ],
+          "answer": 0,
+          "explanation": "x = 1.5 dono means se barabar door hai aur σ same hai, to N(1.5; 0, 1) = N(1.5; 3, 1). Isliye r₁ = 0.2·N / (0.2·N + 0.8·N) = 0.2, option A. Option B ka trap: sirf distance dekh kar 0.5 bol dena aur mixing weights ignore karna. Option D (0.25) ratio π₁/π₂ hai, normalised probability nahi. Option C component 2 ki responsibility hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w4-q5",
+          "question": "Data 0, 2, 6 par E-step ke baad component 1 ki responsibilities (1, 0.5, 0) aayi. M-step mein μ₁ aur π₁ kya honge?",
+          "options": [
+            "μ₁ = 0.333, π₁ = 0.5",
+            "μ₁ = 1, π₁ = 0.5",
+            "μ₁ = 0.667, π₁ = 0.5",
+            "μ₁ = 0.667, π₁ = 1.5"
+          ],
+          "answer": 2,
+          "explanation": "N₁ = 1 + 0.5 + 0 = 1.5. μ₁ = (1·0 + 0.5·2 + 0·6)/1.5 = 1/1.5 ≈ 0.667 aur π₁ = N₁/n = 1.5/3 = 0.5, isliye option C. Option A weighted sum ko N₁ ke bajaye n = 3 se divide karta hai. Option B un points ka simple average (0 + 2)/2 leta hai jinki responsibility nonzero hai, weights ignore karke. Option D mein π₁ ko n se divide nahi kiya, jo probability ho hi nahi sakta (> 1).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlt-w4-q6",
+          "question": "1-D GMM: π₁ = π₂ = 0.5, dono means 0, par σ₁ = 1 aur σ₂ = 2. Point x = 2 ke liye component 1 ki responsibility r₁ lagbhag kitni hai?",
+          "options": [
+            "0.5",
+            "0.309",
+            "0.667",
+            "0.182"
+          ],
+          "answer": 1,
+          "explanation": "N(2; 0, 1) = e^(−2)/√(2π) ≈ 0.1353/√(2π) aur N(2; 0, 2) = e^(−0.5)/(2√(2π)) ≈ 0.3033/√(2π). r₁ = 0.1353/(0.1353 + 0.3033) ≈ 0.309, isliye option B. Wider component tails mein jeet jaata hai. Option A ka trap: same means dekh kar 0.5 bol dena. Option D (0.182) Gaussian ka 1/σ normalising factor bhool jaata hai, jo alag σ par cancel nahi hota. Option C (2/3) x = 0 par sahi hota, x = 2 par nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

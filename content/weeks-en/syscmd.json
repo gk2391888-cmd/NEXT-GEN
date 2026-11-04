@@ -1,0 +1,245 @@
+{
+  "subjectId": "syscmd",
+  "questions": {
+    "syscmd-w1-q1": {
+      "question": "You run `uname -r` on an Ubuntu server. What does it print?",
+      "options": [
+        "The distribution name and version, such as `Ubuntu 24.04 LTS`",
+        "The machine architecture, such as `x86_64`",
+        "The kernel release string, such as `6.8.0-45-generic`",
+        "The machine's hostname, such as `db-01`"
+      ],
+      "explanation": "`uname` reports on the kernel, and `-r` gives the kernel release, such as `6.8.0-45-generic`. Option B is the output of `uname -m` and option D of `uname -n`. The most common trap is option A: the distro name comes from `/etc/os-release` or `lsb_release -a`, not from `uname`."
+    },
+    "syscmd-w1-q2": {
+      "question": "You need a command that works with disk partitions but cannot remember its name. You only know the keyword 'partition'. Which command searches the installed manual pages by keyword?",
+      "options": [
+        "`man -k partition`",
+        "`man partition`",
+        "`whatis partition`",
+        "`type partition`"
+      ],
+      "explanation": "`man -k partition` (equivalent to `apropos partition`) searches the names and short descriptions of all man pages for the keyword, finding things like `fdisk` and `parted`. Option B tries to open a page literally named 'partition', which does not exist. The trap in option C: `whatis` gives the one-line description of an exact command name; it does not search by keyword. Option D tells you whether a name is a builtin or a binary."
+    },
+    "syscmd-w1-q3": {
+      "question": "On a server, `df -h /` reports 40G used on the root filesystem, but `sudo du -sh --one-file-system /` shows only 31G. Which of these can correctly explain the 9G gap?",
+      "options": [
+        "`du` does not count hidden files (names starting with `.`)",
+        "`df -h` divides by 1000 and `du -sh` by 1024, so the units differ",
+        "`df` also adds swap and RAM to the used space",
+        "Some large files have been deleted but a running process still holds them open"
+      ],
+      "explanation": "As long as a process keeps a file descriptor open on a deleted file, the kernel does not free its blocks. `df` shows the filesystem's real used space, while `du` only adds up files still visible in the directory tree, so they differ (for example a rotated log that is still open). Option A is wrong: `du` counts hidden files too. The trap in option B: `-h` uses powers of 1024 in both. Option C: `df` measures filesystems only, not RAM or swap."
+    },
+    "syscmd-w1-q4": {
+      "question": "On a machine, `nproc` prints 8 and `uptime` gives this output. What is the most accurate interpretation?",
+      "options": [
+        "Load is falling; the machine was overloaded over the last 15 minutes but is recovering now",
+        "Load is rising, and over the last 1 minute more tasks were waiting to run than there are CPUs",
+        "The CPU is 12.40% busy, so the machine is almost idle",
+        "Load must always stay below 1.0, so all three numbers show overload whatever the CPU count"
+      ],
+      "explanation": "The three numbers are the 1, 5 and 15 minute averages in that order: 6.05 → 9.10 → 12.40, so load is rising. Against 8 CPUs, 12.40 means about 4 tasks on average were waiting in the queue. Option A reads the order backwards (the first number is the most recent). The trap in option C: load average is a count of tasks, not a percentage. Option D's 1.0 rule applies only to a single-CPU machine; always compare with `nproc`."
+    },
+    "syscmd-w1-q5": {
+      "question": "The output of `lscpu` contains these lines. What will `nproc` print on this machine (with no CPU restrictions)?",
+      "options": [
+        "8",
+        "4",
+        "2",
+        "1"
+      ],
+      "explanation": "Logical CPUs = sockets × cores per socket × threads per core = 1 × 4 × 2 = 8. With hyper-threading each physical core shows up as two logical CPUs, and `nproc` counts logical CPUs. The trap in option B: counting only physical cores. Option C is the threads per core and option D the sockets."
+    },
+    "syscmd-w1-q6": {
+      "question": "Inside a Docker container, `uname -r` prints `6.8.0-45-generic`, while the container's `/etc/os-release` says `Debian GNU/Linux 12`. The host machine runs Ubuntu. What is the correct reason?",
+      "options": [
+        "Debian's own kernel has booted inside the container, and `uname` shows the host's name by mistake",
+        "`/etc/os-release` is wrong; the container is really running Ubuntu",
+        "The container shares the host's kernel; only the userland (files, libraries, tools) comes from the Debian image",
+        "Debian 12's default kernel version is also `6.8.0-45-generic`, so the two are the same"
+      ],
+      "explanation": "A container does not boot a separate OS; its processes run on the host's kernel (with namespaces and cgroups). So `uname -r` shows the host kernel's release, while `/etc/os-release` is read from the image's files, which are Debian's. The trap in option A is treating a container like a virtual machine; a VM has its own guest kernel, a container does not. Options B and D assume both facts come from the same source."
+    },
+    "syscmd-w2-q1": {
+      "question": "The shell has `umask 027` set. What is the permission string of a new file created with `touch report.csv`?",
+      "options": [
+        "`-rwxr-x---`",
+        "`-rw-r-----`",
+        "`-rw-r--r--`",
+        "`-r--r-x---`"
+      ],
+      "explanation": "Regular files start from base mode 666 (`touch` does not ask for execute bits). umask 027 removes write (2) from group and everything (7) from others: 666 → 640 = `-rw-r-----`. The trap in option A: using the directory base 777; 750 would be right for a directory, not a file. Option C is the result of umask 022."
+    },
+    "syscmd-w2-q2": {
+      "question": "The output of `ls -l /dev/null` starts with `crw-rw-rw- 1 root root 1, 3 ...`. What does the first character `c` tell you?",
+      "options": [
+        "The file is compressed",
+        "It is a socket that processes talk over",
+        "It is a configuration file",
+        "It is a character device, which the kernel handles as a byte stream"
+      ],
+      "explanation": "The first character of `ls -l` is the file type, and `c` means a character device: data flows as a byte stream (like `/dev/null` and terminals). `1, 3` are the device's major and minor numbers, not a size. The trap in option B: a socket's character is `s`. Options A and C tie the type to a name or extension, but Linux has no such type characters."
+    },
+    "syscmd-w2-q3": {
+      "question": "User `bob` runs `rm /srv/shared/report.txt`. The file `report.txt` is owned by bob and its permissions are `-rw-rw-rw-`. The directory `/srv/shared` shows `drwxr-xr-x alice alice`, and bob is not in group `alice`. What happens?",
+      "options": [
+        "`Permission denied`, because removing a file changes the directory and bob has no `w` on the directory",
+        "The file is removed, because bob owns the file",
+        "The file is removed, because the file is writable by everyone",
+        "The file becomes empty (0 bytes) but the directory entry stays"
+      ],
+      "explanation": "Deleting means removing the directory's entry, so you need both `w` and `x` on the directory. Bob falls under 'others', who get `r-x` on the directory and no `w`, so `rm` fails. The trap in options B and C is looking at the file's owner or the file's permissions; those matter for changing the file's content, not for removing its entry. `rm` has no half-way behaviour like option D."
+    },
+    "syscmd-w2-q4": {
+      "question": "A new directory `proj` has permissions `drwxr-xr-x`. After `chmod 2775 proj`, what permission string does `ls -ld proj` show?",
+      "options": [
+        "`drwsrwxr-x`",
+        "`drwxrwxr-t`",
+        "`drwxrwsr-x`",
+        "`drwxr-sr-x`"
+      ],
+      "explanation": "In a four-digit mode the first digit holds the special bits: 2 = setgid. The rest, 775, is `rwxrwxr-x`. setgid shows in the group's execute slot, and the group has x, so it is a lowercase `s`: `drwxrwsr-x` (without x it would be an uppercase `S`). Option A would be setuid (4), option B sticky (1). The trap in option D: adding setgid to the old mode 755; `chmod 2775` sets the whole mode, so the group gets `rwx`."
+    },
+    "syscmd-w2-q5": {
+      "question": "You ran `sudo apt remove nginx`. The binaries are gone but config files are still in `/etc/nginx/`. Which command removes the package completely along with its config files?",
+      "options": [
+        "`sudo apt autoremove nginx`",
+        "`sudo apt clean`",
+        "`sudo apt update --remove nginx`",
+        "`sudo apt purge nginx`"
+      ],
+      "explanation": "`apt purge` removes a package together with its configuration files; a package that was already `remove`d can still be purged. The trap in option A: `autoremove` removes dependencies that are no longer needed, not one package's config. Option B only clears the downloaded `.deb` cache (`/var/cache/apt/archives`). Option C is not a valid apt operation."
+    },
+    "syscmd-w2-q6": {
+      "question": "Directory `data` has permissions `drwx------` and the file inside it, `data/x.csv`, has `-rw-------`. After `chmod -R go+rX data`, what are the permissions of the two (`data` first, then `x.csv`)?",
+      "options": [
+        "`drwxr-xr-x` and `-rwxr-xr-x`",
+        "`drwxr-xr-x` and `-rw-r--r--`",
+        "`drwxr--r--` and `-rw-r--r--`",
+        "`drwx------` and `-rw-r--r--`"
+      ],
+      "explanation": "Both get `r` for group and others. Capital `X` adds execute only when the target is a directory or someone already has execute. `data` is a directory, so it gets `go+x`: `drwxr-xr-x`. `x.csv` is a regular file with no x for anyone, so only r is added: `-rw-r--r--`. The trap in option A: treating `X` like lowercase `x`. In option C the directory gets no x, which would block entering it, and that is exactly the mistake `X` fixes."
+    },
+    "syscmd-w3-q1": {
+      "question": "`PATH=/usr/local/bin:/usr/bin:/bin`, and an executable named `python3` exists in both `/usr/local/bin` and `/usr/bin`. There is no alias or function. Which file runs when you type `python3`?",
+      "options": [
+        "`/usr/bin/python3`, because the system directory gets priority",
+        "The shell reports that the name is ambiguous",
+        "Whichever file was installed most recently",
+        "`/usr/local/bin/python3`, because that directory comes first in PATH"
+      ],
+      "explanation": "The shell checks PATH directories from left to right and runs the first match. `/usr/local/bin` comes first, so its `python3` runs; this is how locally installed tools override system ones. The trap in option A: there is no built-in 'system priority', only PATH order. Option B is wrong: duplicate names are not an error, and in option C the install date plays no part."
+    },
+    "syscmd-w3-q2": {
+      "question": "These commands run in an empty directory on GNU/Linux (ext4). What does the last command print?",
+      "options": [
+        "`cat: b: No such file or directory`",
+        "`hi`",
+        "Nothing (the file is empty)",
+        "`b -> a`"
+      ],
+      "explanation": "`ln a b` (without `-s`) is a hard link: `a` and `b` are two names for the same inode and the link count becomes 2. `rm a` removes only one name, the count drops to 1, the data is safe, so `cat b` shows `hi`. The trap in option A: treating the hard link as a symlink; a symlink would dangle once its target was removed. Option D is the `ls -l` format of a symlink, not output of `cat`."
+    },
+    "syscmd-w3-q3": {
+      "question": "These commands run in an empty directory on GNU/Linux (ext4). What does `cat` print (`cur` first, then `hard`)?",
+      "options": [
+        "`v1` and `v1`",
+        "`v2` and `v2`",
+        "`v2` and `v1`",
+        "An error for `cur`, then `v1`"
+      ],
+      "explanation": "`hard` is tied to the old inode holding `v1`; after `rm data.csv` that inode lives on under the name `hard`. `cur` is a symlink that only stores the name `data.csv`; once a new `data.csv` (a new inode containing `v2`) exists, `cur` resolves to it. So `v2`, then `v1`. The trap in option D: the symlink was dangling for a moment, but at the time of `cat` the name exists again. Option A treats the symlink like a hard link."
+    },
+    "syscmd-w3-q4": {
+      "question": "On a GNU/Linux ext4 filesystem you run `mkdir p` and then `mkdir p/a p/b` in an empty place. What does `stat -c %h p` (the hard link count of directory `p`) print?",
+      "options": [
+        "4",
+        "2",
+        "3",
+        "1"
+      ],
+      "explanation": "Four names reach the inode of `p`: the entry `p` in its parent, its own `.` inside `p`, and the `..` inside both `p/a` and `p/b`. So the count is 4 (each new subdirectory adds 1). The trap in option B: an empty directory has count 2, which forgets the subdirectories' `..`. Option C counts only one subdirectory."
+    },
+    "syscmd-w3-q5": {
+      "question": "These lines run in a new bash shell (where `X` was not set before). What are the two lines of output?",
+      "options": [
+        "`1` and `1`",
+        "`2` and `1`",
+        "`2` and `2`",
+        "An empty line and `1`"
+      ],
+      "explanation": "Writing `X=2 bash -c ...` puts `X=2` into the environment of that one child process only, so the child prints `2`. The current shell's `X` is still `1`, so the second line is `1`. The trap in option C: thinking the prefix assignment also changes the current shell's value. The trap in option D: thinking the child gets nothing without `export`; the prefix assignment itself puts it in the environment."
+    },
+    "syscmd-w3-q6": {
+      "question": "These commands run in an empty directory on GNU/Linux (ext4). What does the last command print?",
+      "options": [
+        "4",
+        "2",
+        "5",
+        "3"
+      ],
+      "explanation": "Count the names of the inode: `touch f` → 1 (f); `ln f g` → 2; `ln g h` → 3 (g names the same inode); `rm f` → 2; `ln -s h s` is a symlink with its own inode, so the count does not change; `ln h f2` → 3; `mv g g2` only renames, the count stays. The answer is 3 (h, g2, f2). The trap in option A: counting the symlink `s` as a link. Option C forgets the decrease from `rm f`."
+    },
+    "syscmd-w4-q1": {
+      "question": "On an Ubuntu server, where are a web server's log files and its main executable usually found when it is installed with `apt` (per the FHS)?",
+      "options": [
+        "Logs in `/var/log`, the executable in `/usr/sbin` or `/usr/bin`",
+        "Logs in `/etc/log`, the executable in `/bin/local`",
+        "Logs in `/tmp`, the executable in `/home/root/bin`",
+        "Logs in `/proc/log`, the executable in `/opt/apt`"
+      ],
+      "explanation": "In the FHS, `/var` holds changing data and logs go to `/var/log` (for example `/var/log/nginx/`). Programs from the package manager live in `/usr/bin`, or `/usr/sbin` for admin daemons. The trap in option B: `/etc` is for configuration, not logs. Option D: `/proc` is the kernel's virtual filesystem where programs do not write logs, and `/opt` is for manually installed software, not apt packages."
+    },
+    "syscmd-w4-q2": {
+      "question": "In interactive bash you ran `mkdir -p /srv/data/raw`. The next command is `cd !$`. What command does bash turn this into and run?",
+      "options": [
+        "`cd -p`",
+        "`cd mkdir`",
+        "`cd /srv/data/raw`",
+        "`cd` to the home directory, because `!$` is an empty variable"
+      ],
+      "explanation": "`!$` is a history expansion that brings in the last argument of the previous command, here `/srv/data/raw`. So the command becomes `cd /srv/data/raw` (bash also prints the expanded line). The trap in option A: picking up the previous option or first argument. Option B confuses it with `!!` or the command name. The trap in option D: reading `!$` as a `$` variable; it is a history reference, not a variable."
+    },
+    "syscmd-w4-q3": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`asha /home/asha /bin/bash`",
+        "`asha:/home/asha:/bin/bash`",
+        "`asha:/home/asha`",
+        "`asha:Asha Rao:/home/asha:/bin/bash`"
+      ],
+      "explanation": "`-d:` sets the delimiter to a colon. `-f1,6-` selects field 1 (`asha`) and fields 6 to the end (`/home/asha`, `/bin/bash`). `cut` puts the same delimiter back in the output, giving `asha:/home/asha:/bin/bash`. The trap in option A: thinking fields are joined with spaces. Option C reads `6-` as only field 6. Option D also takes field 5."
+    },
+    "syscmd-w4-q4": {
+      "question": "In `ps -o pid,ppid,stat,cmd` a process shows state `Z` (zombie). It is still listed after you run `kill -9` on its PID. What is the best explanation and fix?",
+      "options": [
+        "The process caught and ignored SIGKILL; send `kill -15` instead",
+        "The process is stuck in disk I/O; wait for the disk to free up",
+        "A zombie can only be removed by a reboot",
+        "The process has already exited and only its exit status remains; the parent is not calling `wait`, so fix or stop the parent so that PID 1 can reap it"
+      ],
+      "explanation": "A zombie is a dead process whose entry stays until the parent reads its exit status with `wait()`. Signals mean nothing to a dead process, so `kill -9` is useless. Signal or fix the parent; if the parent exits, the zombie becomes a child of PID 1 (init/systemd) and is reaped. The trap in option A: SIGKILL cannot be caught or ignored. Option B describes state `D`, not `Z`. Option C goes much further than needed."
+    },
+    "syscmd-w4-q5": {
+      "question": "These two commands are run from a laptop. Where does `tail` run in each?",
+      "options": [
+        "On `db-01` in both",
+        "On the laptop in both",
+        "On `db-01` in the first, on the laptop in the second",
+        "On the laptop in the first, on `db-01` in the second"
+      ],
+      "explanation": "In the first command the whole pipeline is passed to ssh as one quoted argument, and the remote shell runs it, so `tail` runs on `db-01`. In the second the `|` is outside the quotes, so the laptop's shell builds the pipe first: the output of `ssh ... df -h /` flows into the laptop's `tail`. The visible output may be the same here, which is why this trap goes unnoticed. The trap in option A: thinking everything written after ssh goes to the remote."
+    },
+    "syscmd-w4-q6": {
+      "question": "With GNU coreutils, what is the output of this pipeline? (`seq 20` prints the numbers 1 to 20 on separate lines.)",
+      "options": [
+        "`8`, `9`, `10` (three lines)",
+        "`18`, `19`, `20` (three lines)",
+        "`12`, `13`, `14` (three lines)",
+        "`5`, `6`, `7` (three lines)"
+      ],
+      "explanation": "`tail -n +5` starts at line 5: 5 to 20, 16 lines in all. `head -n -10` drops the last 10 lines (11 to 20), leaving 5 to 10. `tail -n 3` takes the last three of these: 8, 9, 10. The trap in option B: ignoring `head -n -10` and taking the last three straight away. The trap in option C: reading `head -n -10` as `head -n 10` (the first 10 lines, 5 to 14), which gives a last three of 12, 13, 14. Option D takes the first three of the remaining lines instead."
+    }
+  }
+}

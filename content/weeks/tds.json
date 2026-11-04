@@ -1,0 +1,500 @@
+{
+  "subjectId": "tds",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Your Development Environment: Shell, Editors and Reproducible Setups",
+      "summary": "Is week aap terminal aur shell ko ek data engineer ki tarah use karna, `PATH` aur environment variables samajhna, virtual environments aur package managers se dependencies isolate karna, aur aisa setup banana seekhoge jo kisi doosre machine par bhi same result de.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Shell aur terminal**: terminal sirf ek window hai; uske andar chalne wala program (bash, zsh, PowerShell) shell hai jo aapki command padhta hai, programs dhoondhta hai aur chalata hai. Data work mein shell isliye zaroori hai kyunki files move karna, scripts chalana, logs dekhna aur servers par kaam karna sab yahin se scriptable aur repeatable hota hai, GUI clicks se nahi.",
+        "**PATH lookup**: jab aap `python` likhte ho, shell `PATH` variable ki directories ko left se right check karta hai aur jo pehla executable milta hai wahi chalata hai. `which python` (ya Windows par `where python`) batata hai ki asal mein kaunsa chal raha hai. 'Galat Python chal raha hai' wali zyaadatar problems isi order se aati hain.",
+        "**Exit status**: har command khatam hokar ek number deti hai, `0` matlab success, non-zero matlab failure. `$?` last command ka status deta hai. `a && b` mein b tabhi chalta hai jab a succeed kare, `a || b` mein b tabhi jab a fail kare. Scripts aur CI pipelines isi status se decide karte hain ki aage badhna hai ya rukna hai.",
+        "**Environment variables aur export**: `X=5` sirf current shell ka variable banata hai; child process (jaise `python script.py`) use tabhi dekhta hai jab `export X=5` kiya ho. `X=5 cmd` sirf us ek command ke environment mein X daalta hai. Config (API URL, debug flag) isi raaste program tak pahunchta hai.",
+        "**Virtual environment**: `python -m venv .venv` project ke liye alag folder banata hai jismein apna `python` aur apni `site-packages` hoti hai. Activate karne se koi magic nahi hota: bas `.venv/bin` (Windows par `.venv\\Scripts`) `PATH` ke shuru mein aa jaata hai, isliye `python` aur `pip` venv wale chalte hain. Isse do projects ke conflicting versions (ek ko library v1 chahiye, doosre ko v2) saath reh sakte hain.",
+        "**Package managers aur version specifiers**: `pip install -r requirements.txt` file mein likhe packages install karta hai. `==2.1.0` exact pin hai, `>=2.1,<3` range hai, aur `~=2.1.3` compatible release hai, matlab `>=2.1.3` aur `2.1.*` ke andar. Lock file (ya `pip freeze` ka output) har transitive dependency ka exact version record karta hai taaki kal ka install aaj jaisa ho.",
+        "**Reproducibility**: same code + same data + same environment + same random seed = same result. Iske liye dependencies pin karo, raw data ko read-only rakho, random seed set karo, paths ko project root ke relative rakho (hard-coded `C:\\Users\\...` nahi), aur README mein setup ke exact steps likho. Jo analysis sirf aapke laptop par chalta hai woh asal mein reproducible nahi hai.",
+        "**Editor aur tooling**: achha editor (koi bhi modern code editor) syntax highlighting, integrated terminal, debugger aur extensions deta hai. Formatter (code ko ek consistent style mein badalta hai) aur linter (bugs jaise unused variable ya undefined name pakadta hai) team mein style ki behas khatam karte hain. Inhe save par ya commit se pehle automatically chalana achhi aadat hai."
+      ],
+      "example": {
+        "problem": "Ek naye project mein aapko isolated environment banana hai, ek fixed version ki library daalni hai, aur aisa record rakhna hai ki teammate same setup bana sake. Steps aur har command ka kaam batao.",
+        "code": "python -m venv .venv\nsource .venv/bin/activate        # Windows: .venv\\Scripts\\activate\nwhich python                     # .../project/.venv/bin/python\npip install \"requests==2.31.0\"\npip freeze > requirements.txt\ndeactivate\n# teammate ki machine par:\npython -m venv .venv && source .venv/bin/activate\npip install -r requirements.txt",
+        "steps": [
+          "`python -m venv .venv` project folder ke andar `.venv` banata hai jismein alag interpreter aur khaali site-packages hai.",
+          "`activate` `.venv/bin` ko `PATH` ke aage jodta hai; isliye `which python` ab venv ka path dikhata hai.",
+          "`pip install \"requests==2.31.0\"` library aur uski dependencies sirf venv mein install karta hai, system Python ko chhua bhi nahi.",
+          "`pip freeze > requirements.txt` har installed package ka exact `name==version` file mein likhta hai, transitive dependencies samet.",
+          "`.venv` folder ko git mein commit nahi karte (woh bada aur machine-specific hai); sirf `requirements.txt` commit hota hai.",
+          "Answer: teammate **naya venv banakar `pip install -r requirements.txt` chalata hai** aur use bilkul wahi versions milte hain."
+        ]
+      },
+      "mistakes": [
+        "Venv activate kiye bina `pip install` chala dena. Package global Python mein chala jaata hai aur script venv mein 'ModuleNotFoundError' deti hai. Fix: pehle `which python`/`which pip` se check karo, ya `python -m pip install ...` use karo taaki pip usi interpreter ka ho.",
+        "`.venv` ya `__pycache__` ko git mein commit kar dena. Ye machine-specific hain aur repo ko bhaari banaate hain. Fix: inhe `.gitignore` mein daalo aur sirf `requirements.txt` (ya lock file) share karo.",
+        "Script mein relative path likh kar sochna ki woh script ki location se resolve hoga. Relative path current working directory se resolve hota hai. Fix: project root se chalao, ya Python mein `Path(__file__).parent` se path banao."
+      ],
+      "revision": [
+        "`PATH` left se right search hota hai; pehla match jeetta hai.",
+        "Exit status 0 = success; `&&` success par, `||` failure par chalta hai.",
+        "`export` ke bina variable child process tak nahi pahunchta.",
+        "Venv activate = venv ki bin directory `PATH` ke aage.",
+        "`~=2.1.3` ka matlab `>=2.1.3` aur `2.1.*`.",
+        "Reproducible = pinned deps + fixed seed + relative paths + documented steps."
+      ],
+      "questions": [
+        {
+          "id": "tds-w1-q1",
+          "question": "`source .venv/bin/activate` chalane par asal mein kya badalta hai?",
+          "options": [
+            "`.venv/bin` directory `PATH` ke shuru mein jud jaati hai, isliye `python` aur `pip` venv wale resolve hote hain",
+            "System Python ke saare packages `.venv` mein copy ho jaate hain",
+            "Ek naya container start hota hai jismein project chalta hai",
+            "Global `site-packages` permanently venv ki taraf point karne lagti hai"
+          ],
+          "answer": 0,
+          "explanation": "Activation script mainly `PATH` ko badalti hai (aur prompt mein naam dikhati hai). Isliye `python`/`pip` likhne par venv ke executables pehle milte hain, aur woh apni alag site-packages use karte hain. Option B galat hai: venv khaali shuru hota hai, kuch copy nahi hota. Option D ka trap ye sochna hai ki activation global setting badalta hai; woh sirf current shell session tak seemit hai, `deactivate` ya naya terminal kholte hi khatam.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w1-q2",
+          "question": "`PATH` ki value `/opt/tools/bin:/usr/local/bin:/usr/bin` hai. `python` naam ka executable `/usr/local/bin` aur `/usr/bin` dono mein hai, `/opt/tools/bin` mein nahi. Terminal mein `python` likhne par kaunsa chalega?",
+          "options": [
+            "`/usr/bin/python`, kyunki system directories ko priority milti hai",
+            "Shell error dega kyunki do jagah same naam hai",
+            "`/usr/local/bin/python`, kyunki `PATH` mein woh pehle aata hai",
+            "Jo version number mein naya ho, wahi"
+          ],
+          "answer": 2,
+          "explanation": "Shell `PATH` ki directories left se right check karta hai aur pehla match chala deta hai. `/opt/tools/bin` mein `python` nahi hai, agla `/usr/local/bin` hai jahan mil gaya, to search wahin ruk jaata hai. Option A ka trap ye maanna hai ki `/usr/bin` 'system' hone se jeetegi; shell ke liye sirf order matter karta hai. Option D galat hai kyunki shell versions compare hi nahi karta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w1-q3",
+          "question": "Ek directory mein `missing.txt` naam ki koi file nahi hai. Ye bash line kya print karegi?",
+          "code": "test -f missing.txt && echo found || echo absent; echo $?",
+          "options": [
+            "absent / 1 (do lines)",
+            "found / 0 (do lines)",
+            "absent / 0 (do lines)",
+            "sirf 1"
+          ],
+          "answer": 2,
+          "explanation": "`test -f missing.txt` fail hota hai (status 1), isliye `&& echo found` skip hota hai aur `|| echo absent` chalta hai, jo 'absent' print karta hai. `$?` hamesha SABSE AAKHRI command ka status hai, aur woh `echo absent` thi jo successful rahi, to 0 print hota hai. Option A ka trap ye sochna hai ki `$?` abhi bhi `test` ka 1 yaad rakhega.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w1-q4",
+          "question": "`requirements.txt` mein `pandas~=1.5.2` likha hai (PEP 440 compatible-release operator). Inmein se kaunsa version is specifier ko satisfy karta hai?",
+          "options": [
+            "1.5.1",
+            "1.6.0",
+            "2.0.0",
+            "1.5.3"
+          ],
+          "answer": 3,
+          "explanation": "`~=1.5.2` ka matlab hai `>=1.5.2` aur `==1.5.*`, yaani last component badh sakta hai par `1.5` series se bahar nahi ja sakte. 1.5.3 dono shartein poori karta hai. 1.5.1 lower bound se neeche hai (option A). Option B ka trap `~=` ko sirf 'major version same rahe' samajhna hai; woh rule `~=1.5` (do components) ka hota, `~=1.5.2` ka nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w1-q5",
+          "question": "Project layout: `/home/u/proj/data/raw.csv` aur `/home/u/proj/src/load.py`. `load.py` mein `open(\"data/raw.csv\")` likha hai. Aap `cd /home/u/proj/src` karke `python load.py` chalate ho. Kya hoga?",
+          "options": [
+            "File khul jaayegi, kyunki path script ki location se resolve hota hai",
+            "`FileNotFoundError`, kyunki Python `/home/u/proj/src/data/raw.csv` dhoondhega",
+            "Python khud parent directories mein `data/` dhoondh lega",
+            "`PermissionError`, kyunki `src` se bahar ki file nahi padh sakte"
+          ],
+          "answer": 1,
+          "explanation": "Relative path current working directory (jahan se command chalayi) ke against resolve hota hai, script ki location ke against nahi. CWD `/home/u/proj/src` hai, isliye Python `src/data/raw.csv` dhoondhta hai jo exist nahi karti. Option A sabse common galatfehmi hai. Fix: project root se `python src/load.py` chalao, ya `Path(__file__).resolve().parent.parent / \"data\" / \"raw.csv\"` jaisa path banao. Option C galat hai: Python apne aap parent folders search nahi karta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w1-q6",
+          "question": "Ek nayi bash shell mein (jahan A, B, C pehle se set nahi hain) ye lines chalayi gayi. Output kya hoga?",
+          "code": "A=1\nexport B=2\nC=3 bash -c 'echo \"A=$A B=$B C=$C\"'\necho \"C=$C\"",
+          "options": [
+            "A=1 B=2 C=3 / C=3",
+            "A= B=2 C=3 / C=",
+            "A= B=2 C= / C=",
+            "A=1 B=2 C=3 / C="
+          ],
+          "answer": 1,
+          "explanation": "`bash -c` ek child process hai; usse sirf exported variables milte hain. A export nahi hua, isliye child mein khaali; B export hua, isliye 2. `C=3 cmd` C ko sirf us ek command ke environment mein daalta hai, isliye child ko C=3 milta hai par parent shell mein C kabhi set hi nahi hua, to aakhri line `C=` deti hai. Option D ka trap ye maanna hai ki har shell variable child tak pahunchta hai; option A ka trap ye ki `C=3 cmd` parent mein bhi C set kar deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Version Control with Git and Team Workflows",
+      "summary": "Is week aap git ka internal model (working tree, staging area, commits, branches) samjhoge, merge aur conflicts handle karna, `.gitignore` likhna, mistakes ko safely undo karna aur pull request wala team workflow seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Teen areas**: working tree (disk par aapki files), staging area ya index (agle commit ka draft) aur repository (saved commits). `git add` file ka us waqt ka content index mein daalta hai, `git commit` index ka snapshot save karta hai. Isliye `add` ke baad file badli to woh naya badlaav commit mein nahi jaata jab tak dobara `add` na karo.",
+        "**Commit aur hash**: har commit poore project ka snapshot hai jismein author, message aur parent commit(s) ka pointer hota hai. Iska ID content se bana hash hai, isliye history badalne par hash bhi badal jaata hai. Commits ek chain (asal mein graph) banate hain jise `git log --oneline --graph` dikhata hai.",
+        "**Branch aur HEAD**: branch bas ek movable pointer hai jo kisi commit par point karta hai; naya commit karne par current branch aage khisak jaati hai. `HEAD` batata hai ki aap abhi kis branch (ya commit) par ho. `git switch -c feature` naya pointer banata hai, files copy nahi karta, isliye branch banana sasta hai.",
+        "**Merge ke do roop**: agar `main` branch banne ke baad aage nahi badhi, to `git merge feature` sirf pointer aage kar deta hai (fast-forward, koi naya commit nahi). Agar dono taraf naye commits hain, to git common ancestor se teen-tarfa (three-way) merge karke ek **merge commit** banata hai jiske do parents hote hain.",
+        "**Conflicts**: jab dono branches ne same file ki same lines alag tarah badli hon, git khud decide nahi karta aur file mein markers daal deta hai: `<<<<<<< HEAD` ke neeche aapki current branch ka version, `=======` ke baad merge ho rahi branch ka version, aur `>>>>>>> feature` par end. Aap sahi content rakhte ho, markers hataate ho, phir `git add` aur `git commit`.",
+        "**Remotes**: `origin` ek remote repository ka naam hai. `git fetch` remote ke naye commits download karke `origin/main` jaise remote-tracking branches update karta hai, par aapki local branch aur files ko nahi chhoota. `git pull` = fetch + merge (ya rebase) current branch mein. `git push` aapke commits remote par bhejta hai.",
+        "**.gitignore**: patterns jo untracked files ko `git status` aur `git add .` se chhupaate hain: `*.csv` har level par, `/build` sirf repo root ka build, `logs/` kisi bhi level ki logs directory, aur `!data/keep.csv` exception. Ye sirf untracked files par lagta hai; jo file pehle se tracked hai use `git rm --cached` se untrack karna padta hai.",
+        "**Undo aur PR workflow**: `git restore file` working tree ke badlaav hataata hai, `git restore --staged file` file ko unstage karta hai, `git revert <hash>` ek naya commit banata hai jo purane commit ka ulta karta hai (shared history safe rehti hai), jabki `git reset` branch pointer peeche le jaata hai (history rewrite). Team mein kaam feature branch par hota hai, push karke pull request kholte ho, review aur CI pass hone ke baad merge hota hai."
+      ],
+      "example": {
+        "problem": "Aap `main` par ho. Ek `feature` branch mein `config.py` ki line `rate = 0.07` ki gayi, aur isi beech `main` par wahi line `rate = 0.05` ki gayi. `git merge feature` chalane ke baad conflict ko kaise resolve karoge?",
+        "code": "git merge feature\n# CONFLICT (content): Merge conflict in config.py\ncat config.py\n<<<<<<< HEAD\nrate = 0.05\n=======\nrate = 0.07\n>>>>>>> feature\n# file edit karke sirf sahi line rakho, phir:\ngit add config.py\ngit commit",
+        "steps": [
+          "Dono branches ne common ancestor ke baad same line badli, isliye git automatic merge nahi kar sakta.",
+          "`<<<<<<< HEAD` aur `=======` ke beech `main` (current branch) ka version hai: `rate = 0.05`.",
+          "`=======` aur `>>>>>>> feature` ke beech merge ho rahi branch ka version hai: `rate = 0.07`.",
+          "Team se poochh kar sahi value decide karo (maan lo 0.07), aur teeno marker lines delete karo.",
+          "`git add config.py` git ko batata hai ki conflict resolve ho gaya; `git commit` merge commit banata hai jiske do parents hain.",
+          "Answer: **file mein sirf `rate = 0.07` rakho, markers hatao, `git add` + `git commit`**."
+        ]
+      },
+      "mistakes": [
+        "Pehle se tracked file (jaise `secrets.env`) ko `.gitignore` mein daal kar sochna ki ab git use ignore karega. Tracked files par ignore rules nahi lagte. Fix: `git rm --cached secrets.env`, commit karo, aur agar secret push ho chuka tha to use rotate karo (history mein woh abhi bhi hai).",
+        "Shared branch par `git reset --hard` karke force-push kar dena. Teammates ki history aur aapki history alag ho jaati hai aur unka kaam toot sakta hai. Fix: published commits ko `git revert` se undo karo.",
+        "Conflict resolve karte waqt `<<<<<<<`, `=======`, `>>>>>>>` markers file mein chhod dena. Code syntax error dega ya data file kharab hogi. Fix: commit se pehle `git diff --check` ya file search karke markers dhoondho."
+      ],
+      "revision": [
+        "`git add` us pal ka content stage karta hai; baad ke edits ke liye dobara add.",
+        "Branch = commit par movable pointer; HEAD = aap kahan ho.",
+        "Fast-forward mein naya commit nahi; three-way merge mein do parents wala merge commit.",
+        "`fetch` sirf download, `pull` = fetch + merge.",
+        "`.gitignore` sirf untracked files par; tracked ke liye `git rm --cached`.",
+        "Shared history ke liye `revert`, `reset` nahi."
+      ],
+      "questions": [
+        {
+          "id": "tds-w2-q1",
+          "question": "Teammate ne remote `main` par 3 naye commits push kiye. Aap apni local `main` par `git fetch origin` chalate ho. Iske turant baad kya sach hai?",
+          "options": [
+            "Aapki local `main` aur working tree mein teeno commits aa gaye",
+            "Git ne automatically ek merge commit bana diya",
+            "Kuch download nahi hua; uske liye `git pull` chahiye",
+            "Naye commits `origin/main` mein aa gaye, par local `main` aur aapki files wahi ki wahi hain"
+          ],
+          "answer": 3,
+          "explanation": "`git fetch` sirf remote se objects download karke remote-tracking branch `origin/main` ko update karta hai. Aapki local branch tab badlegi jab aap `git merge origin/main` karoge (ya `git pull`, jo fetch + merge hai). Option A ka trap fetch ko pull samajhna hai. Option C ulta galat hai: download fetch hi karta hai, pull bas uske upar merge jodta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w2-q2",
+          "question": "Aap `main` par ho aur `git merge feature` ke baad `report.py` mein ye conflict aaya. `main` branch ka version kaunsa hai?",
+          "code": "<<<<<<< HEAD\nthreshold = 0.8\n=======\nthreshold = 0.75\n>>>>>>> feature",
+          "options": [
+            "`threshold = 0.8`",
+            "`threshold = 0.75`",
+            "Dono lines `feature` branch se aayi hain",
+            "Markers se pata nahi chalta; `git log` dekhna padega"
+          ],
+          "answer": 0,
+          "explanation": "`<<<<<<< HEAD` se `=======` tak ka hissa HEAD, yaani current checked-out branch ka hai. Aap `main` par ho, isliye `threshold = 0.8` main ka version hai, aur `=======` se `>>>>>>> feature` tak wala (0.75) merge ho rahi `feature` branch ka. Option B ka trap HEAD ko 'nayi aane wali' branch samajhna hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w2-q3",
+          "question": "`a.txt` tracked hai aur committed content `v1` hai. Ye commands chalayi gayi. Naye commit mein `a.txt` ka content kya hoga, aur `git status` kya dikhayega?",
+          "code": "echo v2 > a.txt\ngit add a.txt\necho v3 > a.txt\ngit commit -m \"update\"",
+          "options": [
+            "Commit mein `v3`; status clean",
+            "Commit mein `v2`; status mein `a.txt` modified (unstaged `v3`)",
+            "Commit mein `v1`; kyunki commit se pehle file dobara badal gayi",
+            "Commit fail hoga kyunki staged aur working version alag hain"
+          ],
+          "answer": 1,
+          "explanation": "`git add` us waqt ka content (`v2`) index mein snapshot kar leta hai. Uske baad `v3` likhna sirf working tree badalta hai. `git commit` index se commit banata hai, isliye commit mein `v2` jaata hai, aur `v3` ek unstaged modification ke roop mein bacha rehta hai. Option A ka trap ye maanna hai ki `add` file ka 'naam' track karta hai aur commit latest content le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w2-q4",
+          "question": "`main` par commits C1, C2 hain. `feature` branch C2 se bani aur usmein C3, C4, C5 commit hue. Isi beech `main` par C6 commit hua. Ab `main` par `git merge feature` chalaya (koi conflict nahi). `git rev-list --count main` kya dega?",
+          "options": [
+            "5",
+            "6",
+            "7",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "Dono branches C2 ke baad alag-alag aage badhi hain, isliye fast-forward possible nahi; git three-way merge karke ek naya merge commit banata hai jiske do parents (C6 aur C5) hain. `main` se reachable commits: C1, C2, C3, C4, C5, C6 aur merge commit = 7. Option B ka trap merge commit ko bhool jaana hai, jo fast-forward wale case mein sahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w2-q5",
+          "question": "Ek buggy commit `a1b2c3d` pehle hi shared `main` par push ho chuka hai aur teammates ne uske upar kaam pull kar liya hai. Iska effect hatane ka sabse safe tareeka kaunsa hai?",
+          "options": [
+            "`git revert a1b2c3d` karke naya commit push karna",
+            "`git reset --hard a1b2c3d~1` karke `git push --force`",
+            "`.gitignore` mein badli hui files daal dena",
+            "Local repo delete karke dobara clone karna"
+          ],
+          "answer": 0,
+          "explanation": "`git revert` ek naya commit banata hai jo us commit ke changes ko ulta karta hai; purani history nahi badalti, isliye teammates normal pull kar sakte hain. Option B local history mein se commit hata deta hai aur force-push shared history rewrite karta hai, jisse teammates ke branches diverge ho jaate hain. Ye sabse tempting trap hai kyunki apni machine par 'saaf' dikhta hai. Option C ka tracked files par koi asar nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w2-q6",
+          "question": "Repo root par ye `.gitignore` hai. Inmein se kaunsi untracked file `git status` mein dikhegi (yaani ignore NAHI hogi)?",
+          "code": "*.csv\n!data/keep.csv\n/build\nlogs/",
+          "options": [
+            "`data/raw.csv`",
+            "`build/main.o`",
+            "`src/build/main.o`",
+            "`app/logs/run.txt`"
+          ],
+          "answer": 2,
+          "explanation": "`/build` ke shuru mein slash hai, isliye ye sirf repo root wali `build` ko match karta hai; `src/build/` match nahi hota, to `src/build/main.o` dikhegi. `data/raw.csv` ko `*.csv` ignore karta hai (exception sirf `keep.csv` ke liye hai). `build/main.o` root ki build mein hai, ignored. `logs/` bina leading slash ke kisi bhi level ki `logs` directory match karta hai, isliye `app/logs/run.txt` bhi ignored. Option D ka trap ye sochna hai ki `logs/` sirf root par lagta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "HTTP APIs, JSON and Serving a Small Python App",
+      "summary": "Is week aap HTTP request-response ka poora structure, status codes aur methods ke semantics, JSON ke exact rules, ek chhoti Python web API kaise serve hoti hai, aur config/secrets ko environment variables se kaise sambhalte hain, ye seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**HTTP request ka structure**: method (GET, POST, PUT, PATCH, DELETE), URL, headers aur optional body. URL ke hisse: scheme (`https`), host (`api.example.com`), port (`:8443`, na likho to https ke liye 443), path (`/v1/items`), query string (`?page=2&tag=x`) aur fragment (`#top`, jo browser mein hi rehta hai, server tak nahi jaata). Response mein status code, headers (jaise `Content-Type: application/json`) aur body aati hai.",
+        "**Status code families**: 2xx success (200 OK, 201 Created, 204 No Content), 3xx redirect (301 permanent, 302/307 temporary), 4xx client ki galti (400 bad request, 401 authentication missing/invalid, 403 authenticated par permission nahi, 404 not found, 405 method not allowed, 429 too many requests), 5xx server ki galti (500 internal error, 503 unavailable). Retry ka faisla isi par hota hai: 4xx par wahi request dobara bhejna aksar bekaar hai (429 apvaad hai), 5xx/429 par backoff ke saath retry samajhdaari hai.",
+        "**Methods ke semantics**: GET safe hai (server state nahi badalta) aur idempotent. PUT (poora resource replace) aur DELETE idempotent hain: ek baar bhejo ya paanch baar, final state same. POST idempotent nahi: do baar bhejne par do orders ban sakte hain. Isliye network timeout ke baad POST ko blindly retry nahi karte; idempotency key jaisa mechanism chahiye.",
+        "**REST style**: URLs resources (nouns) ko naam dete hain, actions methods se aate hain: `GET /users/42`, `POST /users`, `DELETE /users/42`. Filtering, sorting, paging query parameters se: `GET /orders?status=paid&page=3`. Response mein consistent JSON shape aur sahi status code dena client ka kaam aasaan karta hai.",
+        "**JSON ke rules**: types sirf object, array, string, number, `true`/`false` aur `null` hain. Keys aur strings double quotes mein hi, trailing comma aur comments allowed nahi, `undefined`/`NaN` valid JSON nahi. Python mein `json.dumps` dict ko JSON banata hai: tuple array ban jaata hai, `None` `null` aur `True` `true`; non-string keys (jaise 1) string `\"1\"` ban jaati hain. Isliye round-trip ke baad object hamesha pehle jaisa nahi milta.",
+        "**Python app serve karna**: ek web framework route (method + path) ko function se map karta hai; function request padhta hai aur response (JSON + status) lautata hai. Server ek host aur port par listen karta hai: `127.0.0.1` matlab sirf isi machine se connection, `0.0.0.0` matlab saare network interfaces se. Development server debugging ke liye hai; production mein proper application server aur reverse proxy lagaye jaate hain.",
+        "**Environment variables aur secrets**: config jo deployment ke saath badalta hai (database URL, API keys, port) code mein nahi, environment mein rakho, aur `os.environ` se padho. `os.environ` ki har value string hoti hai, isliye number chahiye to `int(...)` karo. Local development mein `.env` file use hoti hai jo `.gitignore` mein hoti hai; repo mein sirf `.env.example` jaati hai jismein dummy values hon.",
+        "**API keys ki safety**: key ko URL query mein bhejna risky hai kyunki URLs server logs, browser history aur proxies mein record hote hain; header (jaise `Authorization: Bearer <token>`) behtar hai. Key leak ho jaaye to sirf commit delete karna kaafi nahi, key ko revoke/rotate karo."
+      ],
+      "example": {
+        "problem": "Ek chhota prediction API chahiye: `POST /predict` JSON body `{\"area\": 1200}` le, aur JSON mein price lautaye. Model ka version environment se aaye. Code aur ek sample request-response samjhao.",
+        "code": "import os\nfrom flask import Flask, request, jsonify\n\napp = Flask(__name__)\nMODEL_VERSION = os.environ.get(\"MODEL_VERSION\", \"dev\")\n\n@app.post(\"/predict\")\ndef predict():\n    body = request.get_json(silent=True)\n    if not body or \"area\" not in body:\n        return jsonify(error=\"area is required\"), 400\n    price = 5000 * float(body[\"area\"])\n    return jsonify(price=price, model=MODEL_VERSION), 200\n\nif __name__ == \"__main__\":\n    app.run(host=\"127.0.0.1\", port=int(os.environ.get(\"PORT\", \"8000\")))\n\n# curl -X POST http://127.0.0.1:8000/predict \\\n#      -H \"Content-Type: application/json\" -d '{\"area\": 1200}'",
+        "steps": [
+          "`@app.post(\"/predict\")` route ko function se jodta hai: sirf POST method aur `/predict` path par ye chalega; GET bhejoge to 405 aayega.",
+          "`request.get_json(silent=True)` body ko JSON ki tarah parse karta hai; invalid ya missing body par `None` milta hai.",
+          "Agar `area` missing hai to client ki galti hai, isliye 400 aur ek clear error message lautaate hain, 500 nahi.",
+          "Valid input par price = 5000 × 1200 = 6000000.0 calculate hota hai aur `jsonify` use JSON response banata hai.",
+          "`MODEL_VERSION` aur `PORT` environment se aate hain; `PORT` string hai, isliye `int(...)` kiya.",
+          "Answer: response **status 200**, aur JSON body mein `price` = 6000000.0 aur `model` = \"dev\" (agar `MODEL_VERSION` set nahi hai)."
+        ]
+      },
+      "mistakes": [
+        "Har error par 200 bhej kar body mein `\"error\"` likh dena. Client, monitoring aur retry logic status code dekhte hain. Fix: validation fail par 400/422, auth par 401/403, missing resource par 404, aur sirf genuinely server failure par 5xx.",
+        "API key ko code mein hard-code karke repo push kar dena. Git history se woh kabhi asaani se nahi jaati. Fix: key environment variable se padho, `.env` ko ignore karo, aur leak hui key turant rotate karo.",
+        "`os.environ[\"PORT\"]` ko number samajh kar maths karna. Environment values hamesha strings hain, isliye `\"8000\" + \"1\"` `\"80001\"` banta hai. Fix: `int(os.environ.get(\"PORT\", \"8000\"))`."
+      ],
+      "revision": [
+        "4xx = client ki galti, 5xx = server ki galti; 401 = kaun ho pata nahi, 403 = pata hai par ijaazat nahi.",
+        "GET, PUT, DELETE idempotent; POST nahi.",
+        "JSON: double quotes, no trailing comma, no comments, `null` not `None`.",
+        "`json.dumps` mein tuple → array aur int key → string key.",
+        "`127.0.0.1` sirf local; `0.0.0.0` saare interfaces.",
+        "Secrets environment mein, `.env` gitignored, values strings."
+      ],
+      "questions": [
+        {
+          "id": "tds-w3-q1",
+          "question": "Client valid token bhejta hai (server ne user pehchaan liya), par us user ko `/admin/reports` dekhne ki permission nahi hai. Sabse sahi status code kaunsa hai?",
+          "options": [
+            "401 Unauthorized",
+            "404 Not Found",
+            "403 Forbidden",
+            "500 Internal Server Error"
+          ],
+          "answer": 2,
+          "explanation": "User authenticate ho chuka hai, problem sirf authorization (permission) ki hai, jiske liye 403 hai. 401 tab hota hai jab credentials missing ya invalid hon, yaani server ko pata hi nahi aap kaun ho; naam 'Unauthorized' hone ki wajah se option A sabse tempting trap hai. 500 server ki khud ki galti ke liye hai, yahan server sahi kaam kar raha hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w3-q2",
+          "question": "Inmein se kaunsa string valid JSON hai (Python ka `json.loads` bina error ke parse karega)?",
+          "options": [
+            "`{'a': 1}`",
+            "`{\"a\": 1,}`",
+            "`{\"a\": undefined}`",
+            "`{\"a\": [1, 2.5], \"b\": null, \"c\": \"x\"}`"
+          ],
+          "answer": 3,
+          "explanation": "JSON mein keys/strings double quotes mein, `null` allowed, numbers integer ya decimal dono ho sakte hain, isliye option D valid hai. Option A Python dict jaisa dikhta hai par single quotes JSON mein invalid hain; ye sabse common trap hai jab log `str(dict)` ko JSON samajh lete hain. Option B mein trailing comma hai, aur option C mein `undefined` JavaScript ka concept hai, JSON ka nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w3-q3",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import json\nd = {1: (2, 3), \"x\": None, \"y\": True}\ns = json.dumps(d)\nback = json.loads(s)\nprint(s)\nprint(back == d)",
+          "options": [
+            "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `False`",
+            "`{\"1\": [2, 3], \"x\": null, \"y\": true}` / `True`",
+            "`{1: (2, 3), \"x\": None, \"y\": True}` / `True`",
+            "`TypeError`, kyunki tuple JSON mein convert nahi hota"
+          ],
+          "answer": 0,
+          "explanation": "`json.dumps` int key 1 ko string `\"1\"`, tuple ko array, `None` ko `null` aur `True` ko `true` banata hai. Wapas `loads` karne par key `\"1\"` (string) aur value list `[2, 3]` milti hai, jabki original mein key int 1 aur value tuple thi, isliye `back == d` False hai. Option B ka trap ye maanna hai ki JSON round-trip lossless hai. Option D galat hai: tuple serialize hota hai, bas list ban kar.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w3-q4",
+          "question": "Network timeout ki wajah se client ko pata nahi ki request server tak pahunchi ya nahi. HTTP semantics ke hisaab se kin methods ko bina side-effect ki chinta ke dobara bhejna safe hai, kyunki ve idempotent hain?",
+          "options": [
+            "Sirf GET",
+            "GET, PUT aur DELETE",
+            "GET aur POST",
+            "Saare methods, kyunki server duplicate pehchaan leta hai"
+          ],
+          "answer": 1,
+          "explanation": "Idempotent ka matlab hai ek baar ya kai baar bhejne par server ki final state same rahe. GET (safe), PUT (resource ko same value se replace) aur DELETE (doosri baar bhi resource gayab hi rehta hai, chahe response 404 aaye) idempotent hain. POST nahi hai: do baar bhejne se do records ban sakte hain, isliye option C galat hai. Option A ka trap 'safe' aur 'idempotent' ko ek samajhna hai; PUT/DELETE safe nahi par idempotent hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w3-q5",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import os\nos.environ[\"PORT\"] = \"8000\"\nos.environ.pop(\"API_KEY\", None)\nprint(os.environ.get(\"API_KEY\"), os.environ[\"PORT\"] + \"1\")",
+          "options": [
+            "`KeyError: 'API_KEY'`",
+            "`None 8001`",
+            "`\"\" 80001` (missing variable khaali string deta hai, jaise shell mein)",
+            "`None 80001`"
+          ],
+          "answer": 3,
+          "explanation": "`pop(\"API_KEY\", None)` key ko hata deta hai (na ho to bhi error nahi). `os.environ.get(\"API_KEY\")` missing key par `None` lautata hai, `KeyError` sirf `os.environ[\"API_KEY\"]` jaise square-bracket access par aata (option A ka trap). Environment values strings hain, isliye `\"8000\" + \"1\"` string concatenation se `\"80001\"` banta hai. Option B ka trap PORT ko integer maan kar 8001 jodna hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w3-q6",
+          "question": "Is Python code ka output kya hoga?",
+          "code": "from urllib.parse import urlsplit, parse_qs\nu = urlsplit(\"https://api.example.com:8443/v1/items?tag=data%20science&page=2&page=3#top\")\nq = parse_qs(u.query)\nprint(u.port, u.path, q[\"tag\"][0], q[\"page\"])",
+          "options": [
+            "`8443 /v1/items data%20science ['2', '3']`",
+            "`8443 /v1/items data science ['2', '3']`",
+            "`8443 /v1/items data science ['3']`",
+            "`443 /v1/items?tag=data%20science data science ['2', '3']`"
+          ],
+          "answer": 1,
+          "explanation": "URL mein port explicitly 8443 diya hai, path query string ke bina `/v1/items` hai, aur fragment `#top` query mein nahi aata. `parse_qs` percent-encoding decode karta hai (`%20` → space) aur har key ki values ki LIST deta hai; `page` do baar aaya hai to `['2', '3']`. Option C ka trap dict ki tarah 'aakhri value jeetti hai' sochna hai, option A ka trap ye ki decoding nahi hoti. Option D https ka default port maan leta hai jabki port URL mein likha hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Containers, Hosting Models and Continuous Integration",
+      "summary": "Is week aap image aur container ka fark, Dockerfile ke instructions aur layer caching, port mapping, static hosting aur serverless ka idea, aur har push par tests chalane wali CI pipeline ki basics seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Container kyun**: 'mere laptop par to chal raha tha' ki problem isliye aati hai kyunki OS libraries, Python version aur packages har machine par alag hote hain. Container app ko uski poori runtime (OS userland, interpreter, libraries) ke saath pack karta hai, par host ka kernel share karta hai, isliye virtual machine se bahut halka aur jaldi start hone wala hota hai.",
+        "**Image vs container**: image ek read-only template hai (layers ka stack), container us image ka chalta hua (ya ruka hua) instance hai jiske upar ek patli writable layer hoti hai. Ek image se kai containers ban sakte hain, jaise ek class se kai objects. Container delete karte hi uski writable layer ka data chala jaata hai; jo data bachana hai woh volume ya bahar ke storage mein rakho.",
+        "**Dockerfile instructions**: `FROM` base image chunta hai, `WORKDIR` working directory set karta hai, `COPY` files image mein daalta hai, `RUN` BUILD ke waqt command chalata hai (jaise `pip install`) aur nayi layer banata hai, `ENV` environment variable set karta hai, `EXPOSE` sirf document karta hai ki app kaunsa port use karta hai, aur `CMD` container START hone par chalne wali default command hai. Kai `CMD` likhe hon to sirf aakhri wala maana jaata hai, aur `docker run image <cmd>` use override kar deta hai.",
+        "**Layer caching**: har instruction ek layer hai; rebuild mein Docker tab tak cache use karta hai jab tak instruction aur uske inputs nahi badle. Pehla badla hua step aur uske baad ke saare steps dobara chalte hain. Isliye pehle sirf `requirements.txt` copy karke `pip install` karo, phir baaki code copy karo; code badalne par dependencies dobara install nahi hongi.",
+        "**Ports aur networking**: container ka apna network namespace hota hai. `docker run -p 8080:5000 img` ka matlab host ka port 8080 container ke port 5000 par forward hoga (format `HOST:CONTAINER`). Container ke andar app ko `0.0.0.0` par listen karna chahiye; `127.0.0.1` par listen karega to woh sirf container ke andar se reachable hoga aur forwarded traffic tak nahi pahunchega.",
+        "**Static hosting**: agar site sirf HTML, CSS, JavaScript aur data files hai (koi server-side code nahi), to use static host par serve kar sakte ho: server files ko jaise hain waise bhej deta hai, sasta, tez aur CDN-friendly. Dashboard ya report jo browser mein hi JSON padh kar chart banata hai, static ho sakta hai; Python API jo request par calculation karta hai, static nahi ho sakta.",
+        "**Serverless**: aap sirf ek function deploy karte ho, platform request aane par use chalata hai aur load ke hisaab se scale karta hai. Function stateless hona chahiye: do requests ke beech memory ya local disk par bharosa mat karo, state database/object storage mein rakho. Kaafi der idle rehne ke baad pehli request 'cold start' ki wajah se dheemi ho sakti hai, aur execution time ki limits hoti hain.",
+        "**CI (continuous integration)**: har push ya pull request par ek automated pipeline saaf machine par code checkout karti hai, dependencies install karti hai, linter aur tests chalati hai, aur fail hone par merge rokti hai. Pipeline ek YAML file mein steps ki tarah likhi jaati hai; koi step non-zero exit status de to job fail. Secrets (deploy tokens) CI ke secret store mein rakhe jaate hain, repo mein nahi."
+      ],
+      "example": {
+        "problem": "Ek chhoti Python API (`app.py`, port 5000) ko container mein pack karna hai aur host par `http://localhost:8080` se kholna hai. Dockerfile aur commands likho, aur batao ki code badalne par rebuild fast kyun rahega.",
+        "code": "# Dockerfile\nFROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nENV PORT=5000\nEXPOSE 5000\nCMD [\"python\", \"app.py\"]\n\n# app.py ke andar: app.run(host=\"0.0.0.0\", port=5000)\n\ndocker build -t price-api:1 .\ndocker run --rm -p 8080:5000 price-api:1",
+        "steps": [
+          "`FROM` ek chhota Python base image leta hai; `WORKDIR /app` aage ke saare paths ka base banata hai.",
+          "Pehle sirf `requirements.txt` copy hoti hai aur `RUN pip install` chalta hai; ye layer tab tak cached rahegi jab tak requirements file nahi badalti.",
+          "`COPY . .` baaki code daalta hai; `app.py` badalne par sirf yahin se aage ke steps dobara bante hain.",
+          "`CMD` build ke waqt nahi chalta, container start hone par chalta hai.",
+          "App `0.0.0.0` par listen karta hai taaki container ke network interface par aane wala forwarded traffic use mile.",
+          "`-p 8080:5000` host port 8080 ko container port 5000 se jodta hai; `--rm` container rukte hi use delete kar deta hai.",
+          "Answer: **browser mein `http://localhost:8080` kholo**; code change par sirf `COPY . .` se aage ki layers rebuild hongi, `pip install` cache se aayega."
+        ]
+      },
+      "mistakes": [
+        "Container ke andar data (jaise SQLite file ya uploads) likh kar sochna ki woh hamesha rahega. Container hatate hi writable layer chali jaati hai. Fix: volume mount karo ya bahar ke database/object storage mein likho.",
+        "`COPY . .` ko `pip install` se pehle rakhna. Har chhote code change par poori dependencies dobara install hoti hain aur build bahut dheema ho jaata hai. Fix: pehle requirements copy + install, phir code copy.",
+        "`EXPOSE 5000` likh kar sochna ki port host par khul gaya. `EXPOSE` sirf documentation hai. Fix: `docker run -p HOST:CONTAINER` se publish karo."
+      ],
+      "revision": [
+        "Image = read-only template; container = uska running/stopped instance + writable layer.",
+        "`RUN` build time par, `CMD` container start par; aakhri `CMD` hi gine jaata hai.",
+        "Pehla badla step aur uske baad sab rebuild; dependencies pehle install karo.",
+        "`-p HOST:CONTAINER`; container ke andar `0.0.0.0` par bind karo.",
+        "Static hosting = sirf files; serverless = stateless function + cold start.",
+        "CI har push par install + lint + test; non-zero exit = fail."
+      ],
+      "questions": [
+        {
+          "id": "tds-w4-q1",
+          "question": "Aapne ek image `etl:1` build ki aur `docker run etl:1` teen baar chalaya (bina `--rm` ke). Har baar script khatam hokar container exit ho gaya. Ab `docker ps -a` kitne containers dikhayega, aur `etl` ki kitni images hongi?",
+          "options": [
+            "1 container, 1 image",
+            "3 containers, 1 image",
+            "3 containers, 3 images",
+            "0 containers (sab exit ho gaye), 1 image"
+          ],
+          "answer": 1,
+          "explanation": "Har `docker run` usi ek image se ek naya container banata hai, isliye 3 containers aur 1 image. Exit hone ke baad bhi container stopped state mein rehta hai jab tak `--rm` na diya ho ya `docker rm` na kiya ho, aur `docker ps -a` stopped containers bhi dikhata hai. Option D ka trap 'exit = delete' maanna hai; option C ka trap har run par nayi image banne ki galatfehmi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w4-q2",
+          "question": "Container ke andar API port 5000 par `0.0.0.0` pe listen kar rahi hai. Aap `docker run -p 8080:5000 myapi` chalate ho. Host machine ke browser se API kis URL par milegi?",
+          "options": [
+            "`http://localhost:5000`",
+            "`http://<container-ka-IP>:8080`",
+            "`http://localhost:5000` aur `http://localhost:8080` dono",
+            "`http://localhost:8080`"
+          ],
+          "answer": 3,
+          "explanation": "`-p` ka format `HOST:CONTAINER` hai: host ka 8080 container ke 5000 par forward hota hai, isliye host se `localhost:8080` kholte hain. Option A ka trap order ulta padhna hai (container port ko host port samajhna); host par 5000 publish hi nahi hua. Option B mein container ke andar to 5000 hai, 8080 nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "tds-w4-q3",
+          "question": "Is Dockerfile se image banayi aur `docker run img` (bina extra arguments) chalaya. Container start hone par kaunsi command chalegi?",
+          "code": "FROM python:3.12-slim\nWORKDIR /app\nCOPY . .\nRUN python setup_data.py\nCMD [\"python\", \"train.py\"]\nCMD [\"python\", \"serve.py\"]",
+          "options": [
+            "`python serve.py`",
+            "`python train.py`",
+            "Pehle `train.py`, phir `serve.py`",
+            "`python setup_data.py`, phir `serve.py`"
+          ],
+          "answer": 0,
+          "explanation": "Dockerfile mein sirf aakhri `CMD` effective hota hai, isliye container start par `python serve.py` chalta hai. `RUN python setup_data.py` image BUILD ke waqt ek baar chal chuka hai, har container start par nahi, isliye option D galat hai. Option C ka trap ye sochna hai ki kai `CMD` script ki tarah order mein chalte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w4-q4",
+          "question": "Ek team apni image-resize service ko serverless function ke roop mein deploy kar rahi hai. Inmein se kaunsa statement sahi design guidance hai?",
+          "options": [
+            "Function ke global variable mein counter rakho; woh har request ke beech guaranteed bacha rahega",
+            "Serverless ka matlab hai koi server hota hi nahi, isliye latency hamesha zero hai",
+            "Function ko stateless likho, state database/object storage mein rakho, aur idle ke baad pehli request mein cold-start delay ki ummeed rakho",
+            "Function ko khud ek fixed port par HTTP server start karke listen karna padta hai"
+          ],
+          "answer": 2,
+          "explanation": "Serverless platform function instances ko zaroorat ke hisaab se banata aur hataata hai, isliye memory ya local disk ki state par bharosa nahi kiya ja sakta; idle ke baad naya instance banne mein cold start lagta hai. Option A sabse tempting trap hai kyunki kabhi-kabhi warm instance par value bachi dikh jaati hai, par guarantee nahi hai aur parallel instances ke apne alag counters hote hain. Option B galat hai: servers hote hain, bas platform sambhalta hai. Option D container-style soch hai; serverless mein platform hi request function tak pahunchata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w4-q5",
+          "question": "Ek Flask app container mein `app.run(host=\"127.0.0.1\", port=5000)` se chalti hai. `docker run -p 5000:5000 img` ke baad host par `curl http://localhost:5000` connection error deta hai, jabki container ke andar se `curl` chal jaata hai. Sabse sahi wajah aur fix kya hai?",
+          "options": [
+            "`EXPOSE 5000` missing hai; Dockerfile mein jodne se theek ho jaayega",
+            "Host par port 5000 kisi aur ne le rakha hai; `-p 5001:5000` karo",
+            "App container ke loopback par hi sun rahi hai, forwarded traffic container ke network interface par aata hai; app ko `host=\"0.0.0.0\"` par chalao",
+            "Flask containers mein kaam nahi karta; serverless use karo"
+          ],
+          "answer": 2,
+          "explanation": "Container ka `127.0.0.1` sirf container ke andar ka loopback hai. Port forwarding traffic ko container ke network interface (eth0) par bhejta hai, jahan app sun hi nahi rahi, isliye andar se curl chalta hai par bahar se nahi. `0.0.0.0` par bind karne se app saare interfaces par sunti hai. Option A tempting hai par `EXPOSE` sirf documentation hai, publishing `-p` ne pehle hi kar di. Option B mein port conflict hota to `docker run` khud start par error deta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "tds-w4-q6",
+          "question": "Is Dockerfile se ek baar image build ho chuki hai. Ab aap sirf `app.py` badalte ho (`requirements.txt` same hai) aur dobara `docker build` chalate ho. Kaunse steps asal mein dobara execute honge?",
+          "code": "FROM python:3.12-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCMD [\"python\", \"app.py\"]",
+          "options": [
+            "`FROM` se `RUN pip install` tak cache se aayenge; `COPY . .` aur uske baad ke steps dobara banenge",
+            "Saare steps dobara, kyunki build context badal gaya hai",
+            "Sirf `RUN pip install` dobara chalega, kyunki woh code par depend karta hai",
+            "Kuch bhi dobara nahi; Docker purani image hi lautayega"
+          ],
+          "answer": 0,
+          "explanation": "Docker har step ko cache se tab tak reuse karta hai jab tak instruction aur uske inputs same hain. `COPY requirements.txt .` ka input (requirements file) nahi badla, isliye woh aur `pip install` cached hain. `COPY . .` ka input (jismein `app.py` hai) badla, to wahi pehla invalidated step hai aur uske baad ke steps dobara bante hain. Option B ka trap ye maanna hai ki koi bhi file badalne par poora build dobara hota hai; ye tab sach hota jab `COPY . .` `pip install` se pehle hota. Option D galat hai kyunki badla hua code naye layer mein aana hi chahiye.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

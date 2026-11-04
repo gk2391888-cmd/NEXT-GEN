@@ -1,0 +1,497 @@
+{
+  "subjectId": "syscmd",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "GNU/Linux, the Shell and Profiling Your Machine",
+      "summary": "Is week aap samjhoge ki GNU/Linux system kin parts se banta hai, command ki anatomy kya hoti hai, aur `uname`, `lscpu`, `free`, `df`, `du`, `uptime` jaise tools se kisi bhi machine ka hardware aur OS profile kaise banate hain.",
+      "readMinutes": 14,
+      "concepts": [
+        "**GNU/Linux = kernel + userland**: Linux sirf kernel hai jo CPU scheduling, memory, devices aur filesystems sambhalta hai. Shell (`bash`), `ls`, `cp`, `grep` jaise tools GNU project (coreutils, bash) se aate hain. Ek **distribution** (Debian, Ubuntu, Fedora, RHEL, Arch) kernel, tools, init system aur package manager ko ek saath pack karti hai.",
+        "**Command ki anatomy**: `command [options] [arguments]`. Short options ek dash ke saath combine ho sakte hain (`ls -l -a -h` = `ls -lah`), long options do dash ke saath (`--all`). `--` ke baad sab kuch argument maana jaata hai, isliye `rm -- -file` naam mein dash wali file hata deta hai.",
+        "**Help system**: `man ls` poora manual (sections: 1 user commands, 5 file formats, 8 admin commands; jaise `man 5 passwd`). `man -k keyword` (yaani `apropos`) naam na pata ho tab keyword se commands dhoondhta hai, `whatis cmd` ek line ka description deta hai. `type cd` batata hai ki `cd` shell **builtin** hai, jabki `type ls` disk pe rakhi binary (ya alias) dikhata hai.",
+        "**Kernel aur distro ki pehchaan**: `uname -s` kernel ka naam (Linux), `uname -r` kernel release (jaise `6.8.0-45-generic`), `uname -m` hardware architecture (`x86_64`, `aarch64`), `uname -n` hostname. Distro ka naam aur version `lsb_release -a` ya `/etc/os-release` file se milta hai, `uname` se nahi.",
+        "**CPU aur hardware**: `nproc` usable logical CPUs batata hai. `lscpu` mein logical CPUs = sockets × cores per socket × threads per core. Detail hardware report ke liye `lshw` (poori info root se), `hwinfo`, `lspci` (PCI devices), `lsusb`, `lsblk` (disks aur partitions) use hote hain; ye sab kernel ki `/proc` aur `/sys` virtual files padhte hain.",
+        "**Memory**: `free -h` mein `available` column sabse kaam ka hai: naye programs ko bina swap ke kitni RAM mil sakti hai. `buff/cache` wali memory kernel zarurat padne par chhod deta hai, isliye kam `free` dekh kar ghabraana galat hai. Raw numbers `/proc/meminfo` mein hote hain.",
+        "**Disk: df vs du**: `df -h` har mounted filesystem ka size, used, available aur mount point dikhata hai (filesystem ke apne hisaab se). `du -sh dir` directory tree ki files ka size jodta hai. `df -i` inode usage dikhata hai; inodes khatam ho jaayein to space hote hue bhi nayi file nahi banti.",
+        "**Load average**: `uptime` teen numbers deta hai: pichhle 1, 5 aur 15 minute ka average runnable (aur uninterruptible) tasks. Inhe `nproc` se compare karo: 8 CPUs pe load 4 matlab aadhi capacity, 12 matlab tasks queue mein wait kar rahe hain."
+      ],
+      "example": {
+        "problem": "Aapko ek fictional company ki naye cloud VM ka access mila hai. Neeche wali script ka output aaya. Is machine ka ek line ka profile likho aur batao ki kya RAM kam padne waali hai.",
+        "code": "$ uname -srm\nLinux 6.8.0-45-generic x86_64\n$ grep PRETTY_NAME /etc/os-release\nPRETTY_NAME=\"Ubuntu 24.04.1 LTS\"\n$ nproc\n4\n$ free -h | head -2\n               total        used        free      shared  buff/cache   available\nMem:            15Gi       3.1Gi       1.2Gi       210Mi        11Gi        12Gi\n$ df -h / | tail -1\n/dev/vda1        78G   51G   27G  66% /\n$ uptime\n 10:42:07 up 12 days,  3:10,  1 user,  load average: 0.85, 0.60, 0.52",
+        "steps": [
+          "`uname -srm` ke teen fields: kernel naam Linux, release `6.8.0-45-generic`, architecture `x86_64`.",
+          "Distro `uname` nahi batata; `/etc/os-release` se pata chala: Ubuntu 24.04.1 LTS.",
+          "`nproc` = 4 logical CPUs. Load average 0.85 / 0.60 / 0.52 in 4 CPUs ke saamne bahut kam hai, machine lagbhag idle hai.",
+          "RAM: `free` sirf 1.2Gi dikh raha hai, par 11Gi `buff/cache` hai jo zarurat par wapas milti hai. Asli headroom `available` = 12Gi hai.",
+          "Root filesystem 78G ka hai, 51G used, 27G free (66%).",
+          "Answer: **Ubuntu 24.04.1 LTS, kernel 6.8.0-45 (x86_64), 4 CPUs, 15Gi RAM (12Gi available), root disk 66% bhara; RAM ki koi kami nahi**."
+        ]
+      },
+      "mistakes": [
+        "`free` column ko khaali RAM samajh kar 'memory khatam' bol dena. Linux khaali RAM ko disk cache mein lagaata hai; decision `available` column se lo.",
+        "Distro version ke liye `uname -a` padhna. `uname` sirf kernel ki info deta hai; distro ke liye `/etc/os-release` ya `lsb_release -a` dekho.",
+        "`df` aur `du` ke numbers alag dekh kar maan lena ki ek command galat hai. Dono alag cheezein naapte hain (filesystem vs files ka tree); delete hui par kisi process ne khuli rakhi files `df` mein dikhti hain, `du` mein nahi."
+      ],
+      "revision": [
+        "Linux = kernel; bash, coreutils = GNU userland; distro = dono + package manager.",
+        "`uname -r` kernel release, `uname -m` architecture, distro `/etc/os-release` se.",
+        "`man -k word` keyword se command dhoondhta hai; `type cmd` builtin/binary batata hai.",
+        "Logical CPUs = sockets × cores × threads per core = `nproc`.",
+        "`free` mein `available` dekho; `df` filesystem, `du` directory tree.",
+        "Load average ko `nproc` se compare karo."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w1-q1",
+          "question": "Ek Ubuntu server pe `uname -r` chalaya. Ye kya print karega?",
+          "options": [
+            "Distribution ka naam aur version, jaise `Ubuntu 24.04 LTS`",
+            "Machine ki architecture, jaise `x86_64`",
+            "Kernel ka release string, jaise `6.8.0-45-generic`",
+            "Machine ka hostname, jaise `db-01`"
+          ],
+          "answer": 2,
+          "explanation": "`uname` kernel ke baare mein batata hai, aur `-r` kernel release deta hai, jaise `6.8.0-45-generic`. Option B `uname -m` ka output hai aur option D `uname -n` ka. Sabse common trap option A hai: distro ka naam `uname` nahi, `/etc/os-release` ya `lsb_release -a` deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w1-q2",
+          "question": "Aapko disk partitions ke saath kaam karne wali koi command chahiye par uska naam yaad nahi. Sirf keyword 'partition' pata hai. Installed manual pages mein keyword se dhoondhne ke liye kaunsi command sahi hai?",
+          "options": [
+            "`man -k partition`",
+            "`man partition`",
+            "`whatis partition`",
+            "`type partition`"
+          ],
+          "answer": 0,
+          "explanation": "`man -k partition` (jo `apropos partition` jaisa hai) saare man pages ke naam aur short descriptions mein keyword dhoondhta hai, jaise `fdisk`, `parted`. Option B 'partition' naam ka page kholne ki koshish karega, jo exist nahi karta. Option C ka trap: `whatis` sirf exact command naam ka one-line description deta hai, keyword search nahi karta. Option D batata hai ki ek naam builtin hai ya binary.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w1-q3",
+          "question": "Ek server pe `df -h /` batata hai ki root filesystem pe 40G used hai, par `sudo du -sh --one-file-system /` sirf 31G dikhata hai. Inmein se kaunsi baat is 9G ke fark ko sahi explain kar sakti hai?",
+          "options": [
+            "`du` hidden files (jinka naam `.` se shuru hota hai) ko nahi ginta",
+            "`df -h` 1000 se divide karta hai aur `du -sh` 1024 se, isliye units alag hain",
+            "`df` swap aur RAM ko bhi used space mein jodta hai",
+            "Kuch badi files delete ho chuki hain par koi chalta hua process unhe abhi bhi khol kar baitha hai"
+          ],
+          "answer": 3,
+          "explanation": "Jab tak koi process deleted file ka file descriptor khula rakhta hai, kernel uske blocks free nahi karta. `df` filesystem ka asli used space dikhata hai, jabki `du` sirf directory tree mein dikhne waali files jodta hai, isliye fark aata hai (jaise rotate hua par khula log). Option A galat hai: `du` hidden files bhi ginta hai. Option B ka trap: `-h` dono mein 1024 ki powers use karta hai. Option C: `df` sirf filesystems naapta hai, RAM ya swap nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w1-q4",
+          "question": "Ek machine pe `nproc` 8 print karta hai aur `uptime` ka output ye hai. Sabse sahi interpretation kya hai?",
+          "code": " 14:05:11 up 3 days,  2:41,  2 users,  load average: 12.40, 9.10, 6.05",
+          "options": [
+            "Load ghat raha hai; pichhle 15 minute mein machine overload thi par ab theek ho rahi hai",
+            "Load badh raha hai, aur pichhle 1 minute mein CPUs se zyada tasks run hone ke liye wait kar rahe the",
+            "CPU 12.40% busy hai, isliye machine lagbhag idle hai",
+            "Load hamesha 1.0 se kam hona chahiye, isliye teeno numbers overload dikhate hain chahe CPUs kitne bhi ho"
+          ],
+          "answer": 1,
+          "explanation": "Teen numbers kram se 1, 5 aur 15 minute ke averages hain: 6.05 → 9.10 → 12.40, yaani load badh raha hai. 8 CPUs ke saamne 12.40 ka matlab hai ki average mein lagbhag 4 tasks queue mein wait kar rahe the. Option A order ulta padhta hai (pehla number sabse recent hai). Option C ka trap: load average percentage nahi, tasks ki ginti hai. Option D 1.0 wala rule sirf single-CPU machine pe lagta hai; har machine pe `nproc` se compare karo.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w1-q5",
+          "question": "`lscpu` ke output mein ye lines hain. Is machine pe `nproc` (bina kisi CPU restriction ke) kya print karega?",
+          "code": "Socket(s):             1\nCore(s) per socket:    4\nThread(s) per core:    2",
+          "options": [
+            "8",
+            "4",
+            "2",
+            "1"
+          ],
+          "answer": 0,
+          "explanation": "Logical CPUs = sockets × cores per socket × threads per core = 1 × 4 × 2 = 8. Hyper-threading ki wajah se har physical core do logical CPUs dikhata hai, aur `nproc` logical CPUs ginta hai. Option B ka trap: sirf physical cores ginna. Option C threads per core hai aur option D sockets.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w1-q6",
+          "question": "Ek Docker container ke andar `uname -r` print karta hai `6.8.0-45-generic`, jabki container ki `/etc/os-release` mein `Debian GNU/Linux 12` likha hai. Host machine Ubuntu hai. Iski sahi wajah kya hai?",
+          "options": [
+            "Container ke andar Debian ka apna kernel boot hua hai, aur `uname` galti se host ka naam dikha raha hai",
+            "`/etc/os-release` galat hai; container asal mein Ubuntu chala raha hai",
+            "Container host ka kernel share karta hai; sirf userland (files, libraries, tools) Debian image se aata hai",
+            "Debian 12 ka default kernel version bhi `6.8.0-45-generic` hai, isliye dono same hain"
+          ],
+          "answer": 2,
+          "explanation": "Container ek alag OS boot nahi karta; uske processes host ke kernel pe hi chalte hain (namespaces aur cgroups ke saath). Isliye `uname -r` host kernel ka release dikhata hai, jabki `/etc/os-release` image ki files se padha jaata hai, jo Debian ki hain. Option A ka trap container ko virtual machine samajhna hai; VM mein guest ka apna kernel hota, container mein nahi. Option B aur D dono cheezon ko ek hi source se maan lete hain.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Packages, File Types and the Permission Model",
+      "summary": "Is week aap `apt` aur `dpkg` se packages manage karna, `ls -l` ke file type characters padhna, aur permissions ko gehraai se samajhna seekhoge: directories pe r/w/x ka matlab, special bits (setuid, setgid, sticky) aur `umask` se default permissions.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Repositories aur apt**: Debian/Ubuntu packages `.deb` files hain jo repositories (URLs `/etc/apt/sources.list` aur `/etc/apt/sources.list.d/` mein) se aate hain. `apt update` index refresh karta hai, `apt install pkg` package aur uski dependencies laata hai, `apt show pkg` details, `apt-cache policy pkg` installed aur candidate version aur kaunsi repo se aayega. `dpkg -i file.deb` local file install karta hai, `dpkg -l` installed list, `dpkg -L pkg` package ki files.",
+        "**remove, purge, autoremove**: `apt remove pkg` binaries hataata hai par `/etc` mein config files chhod deta hai. `apt purge pkg` config bhi hataata hai. `apt autoremove` woh dependencies hataata hai jo kisi aur ke kaam ki nahi rahin. Production pe pehle `apt -s` (simulate) se dekh lo kya badlega.",
+        "**File types (`ls -l` ka pehla character)**: `-` regular file, `d` directory, `l` symbolic link, `c` character device (jaise `/dev/null`, terminals), `b` block device (jaise `/dev/sda`), `p` named pipe (FIFO), `s` socket. Linux mein extension se type tay nahi hota; `file data.bin` content dekh kar batata hai ki ye gzip hai, ELF binary hai ya text.",
+        "**Directory permissions ka asli matlab**: directory pe `r` = naam list karna, `x` = andar jaana aur files tak pahunchna, `w` = andar entries banana, hataana, rename karna (iske saath `x` bhi chahiye). File delete karna directory ka kaam hai, isliye file ki apni permission se farak nahi padta; directory pe `w` aur `x` chahiye.",
+        "**Special bits**: setuid (4, `u+s`): executable owner ke rights se chalta hai, jaise `/usr/bin/passwd`. setgid (2, `g+s`): directory pe lagao to andar bani nayi files directory ka group lengi (team folders ke liye). Sticky bit (1, `+t`): directory mein sirf file ka owner (ya directory owner, root) use delete kar sakta hai, jaise `/tmp` (`drwxrwxrwt`, mode 1777). `ls -l` mein lowercase `s`/`t` = bit + execute, uppercase `S`/`T` = bit bina execute ke.",
+        "**chmod ke advanced forms**: numeric mein chaar digits ho sakte hain: `chmod 2775 dir` (2 = setgid). Symbolic mein capital `X` sirf directories ko (ya jis file pe pehle se kisi ke liye x ho) execute deta hai, isliye `chmod -R go+rX proj` directories ko browsable banata hai bina har data file ko executable banaye. `chown user:group f` owner aur group badalta hai (root chahiye).",
+        "**umask**: naye file/directory ke default se bits hataata hai. Files ka base 666, directories ka 777, phir umask ki bits clear hoti hain. umask 022 → files 644, dirs 755. umask 027 → files 640 (`rw-r-----`), dirs 750. umask 007 → files 660, dirs 770 (team ke liye). `umask` bina argument current value dikhata hai; ye sirf current shell aur uske children pe lagta hai."
+      ],
+      "example": {
+        "problem": "Ek fictional analytics team (group `ds`) ke liye `/srv/ds-shared` banana hai jahan team ke sab log files bana aur edit kar sakein, har nayi file automatically group `ds` ki ho, aur bahar wale kuch na dekh sakein. Commands aur resulting permissions batao.",
+        "code": "sudo mkdir /srv/ds-shared\nsudo chgrp ds /srv/ds-shared\nsudo chmod 2770 /srv/ds-shared\nls -ld /srv/ds-shared\n# drwxrws--- 2 root ds 4096 ... /srv/ds-shared\numask 007   # har member apni ~/.bashrc mein",
+        "steps": [
+          "`chgrp ds` directory ka group `ds` karta hai, taaki group permissions team pe lagein.",
+          "`chmod 2770`: pehla digit 2 = setgid, phir 7 owner (rwx), 7 group (rwx), 0 others (kuch nahi).",
+          "`ls -ld` mein group ka execute position `s` dikhata hai: `drwxrws---`. Lowercase `s` matlab setgid aur execute dono lage hain.",
+          "Setgid ki wajah se koi bhi member file banaye, uska group `ds` hi hoga, user ka primary group nahi.",
+          "Members ka `umask 007` files ko 660 aur subdirectories ko 770 banata hai, yaani group bhi edit kar sakta hai.",
+          "Answer: **`chgrp ds` + `chmod 2770` (dikhega `drwxrws---`) + members ka umask 007**."
+        ]
+      },
+      "mistakes": [
+        "Sochna ki read-only file (`-r--r--r--`) delete nahi ho sakti. Delete directory ki `w` aur `x` permission pe depend karta hai; sticky bit na ho to directory pe write wala koi bhi use hata sakta hai.",
+        "umask ko digit-wise subtract kar dena. Sahi tareeka bits clear karna hai (base AND NOT umask). umask 027 pe dono tareeke 640 dete hain, par umask 003 pe subtraction 663 deta hai jabki sahi 664 hai (6 = 110, usme se 3 = 011 ki bits clear karo to 100 = 4).",
+        "`chmod -R 755 data/` se saari CSV files bhi executable bana dena. Directories ko browsable banana ho to `chmod -R a+rX data/` use karo."
+      ],
+      "revision": [
+        "`apt remove` config chhodta hai, `apt purge` config bhi hataata hai.",
+        "Type chars: `-` file, `d` dir, `l` link, `c` char dev, `b` block dev, `p` pipe, `s` socket.",
+        "File delete = parent directory pe `w` + `x`.",
+        "setuid 4, setgid 2, sticky 1; `/tmp` = 1777 = `drwxrwxrwt`.",
+        "Capital `X` = execute sirf directories (ya pehle se executable) ko.",
+        "umask: files 666, dirs 777 se bits clear; 027 → 640 / 750."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w2-q1",
+          "question": "Shell mein `umask 027` set hai. Ab `touch report.csv` se bani nayi file ki permission string kya hogi?",
+          "options": [
+            "`-rwxr-x---`",
+            "`-rw-r-----`",
+            "`-rw-r--r--`",
+            "`-r--r-x---`"
+          ],
+          "answer": 1,
+          "explanation": "Regular files ka base mode 666 hota hai (`touch` execute bit nahi maangta). umask 027 group se write (2) aur others se sab (7) hataata hai: 666 → 640 = `-rw-r-----`. Option A ka trap: directory ka base 777 use kar lena; 750 directory ke liye sahi hota, file ke liye nahi. Option C umask 022 ka result hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w2-q2",
+          "question": "`ls -l /dev/null` ka output `crw-rw-rw- 1 root root 1, 3 ...` se shuru hota hai. Pehla character `c` kya batata hai?",
+          "options": [
+            "File compressed hai",
+            "Ye ek socket hai jis par processes baat karte hain",
+            "Ye ek configuration file hai",
+            "Ye ek character device hai, jise kernel byte-stream ki tarah handle karta hai"
+          ],
+          "answer": 3,
+          "explanation": "`ls -l` ka pehla character file type hai, aur `c` matlab character device: data byte-by-byte stream hota hai (jaise `/dev/null`, terminals). `1, 3` device ke major aur minor numbers hain, size nahi. Option B ka trap: socket ka character `s` hota hai. Options A aur C type ko naam ya extension se jodte hain, jabki Linux mein aisa koi type character nahi hota.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w2-q3",
+          "question": "User `bob` ye command chalata hai: `rm /srv/shared/report.txt`. File `report.txt` ka owner bob hai aur uski permissions `-rw-rw-rw-` hain. Directory `/srv/shared` ki details `drwxr-xr-x alice alice` hain, aur bob group `alice` mein nahi hai. Kya hoga?",
+          "options": [
+            "`Permission denied`, kyunki file hataana directory mein badlaav hai aur bob ke paas directory pe `w` nahi hai",
+            "File hat jaayegi, kyunki bob file ka owner hai",
+            "File hat jaayegi, kyunki file sabke liye writable hai",
+            "File khaali (0 bytes) ho jaayegi par directory entry bachi rahegi"
+          ],
+          "answer": 0,
+          "explanation": "Delete karna directory ki entry hataana hai, isliye directory pe `w` aur `x` dono chahiye. Bob 'others' mein aata hai aur unke liye directory `r-x` hai, `w` nahi, isliye `rm` fail hota hai. Options B aur C ka trap file ki ownership ya file ki permission dekhna hai; ye file ka content badalne ke liye zaroori hain, entry hataane ke liye nahi. Option D jaisa koi aadha behaviour `rm` mein nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w2-q4",
+          "question": "Ek nayi directory `proj` ki permissions `drwxr-xr-x` hain. `chmod 2775 proj` ke baad `ls -ld proj` permission string kya dikhayega?",
+          "options": [
+            "`drwsrwxr-x`",
+            "`drwxrwxr-t`",
+            "`drwxrwsr-x`",
+            "`drwxr-sr-x`"
+          ],
+          "answer": 2,
+          "explanation": "Chaar-digit mode mein pehla digit special bits hai: 2 = setgid. Baaki 775 = `rwxrwxr-x`. setgid group ke execute slot mein dikhta hai, aur group ke paas x hai, isliye lowercase `s`: `drwxrwsr-x` (x na hota to uppercase `S` dikhta). Option A setuid (4) hota, option B sticky (1). Option D ka trap: purane mode 755 ke saath setgid jodna; `chmod 2775` poora mode set karta hai, isliye group ko `rwx` milta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w2-q5",
+          "question": "Aapne `sudo apt remove nginx` chalaya. Binaries hat gayi par `/etc/nginx/` mein config files abhi bhi padi hain. Package ko uski config files ke saath poori tarah hataane ke liye kaunsi command sahi hai?",
+          "options": [
+            "`sudo apt autoremove nginx`",
+            "`sudo apt clean`",
+            "`sudo apt update --remove nginx`",
+            "`sudo apt purge nginx`"
+          ],
+          "answer": 3,
+          "explanation": "`apt purge` package ke saath uski configuration files bhi hataata hai; pehle se `remove` hua package bhi purge ho sakta hai. Option A ka trap: `autoremove` un dependencies ko hataata hai jinki ab zarurat nahi, ek package ki config ko nahi. Option B sirf downloaded `.deb` cache (`/var/cache/apt/archives`) saaf karta hai. Option C koi valid apt operation nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w2-q6",
+          "question": "Directory `data` ki permissions `drwx------` hain aur uske andar `data/x.csv` ki `-rw-------`. `chmod -R go+rX data` ke baad dono ki permissions (kram se `data`, phir `x.csv`) kya hongi?",
+          "options": [
+            "`drwxr-xr-x` aur `-rwxr-xr-x`",
+            "`drwxr-xr-x` aur `-rw-r--r--`",
+            "`drwxr--r--` aur `-rw-r--r--`",
+            "`drwx------` aur `-rw-r--r--`"
+          ],
+          "answer": 1,
+          "explanation": "`r` dono ko group aur others ke liye milta hai. Capital `X` execute sirf tab deta hai jab target directory ho ya kisi ke paas pehle se execute ho. `data` directory hai, to use `go+x` milta hai: `drwxr-xr-x`. `x.csv` regular file hai jisme kisi ke paas x nahi, to sirf r jud jaata hai: `-rw-r--r--`. Option A ka trap: `X` ko lowercase `x` ki tarah maan lena. Option C mein directory ko x nahi mila, jisse andar jaana hi band rehta, aur yahi galti `X` theek karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "The Environment, Prompts, Links and Inodes",
+      "summary": "Is week aap shell variables aur environment variables ka fark, `PATH` se command lookup, startup files aur prompt strings (`PS1`, `PS2`) samjhoge, aur filesystem ke andar jhaank kar inodes, hard links aur symbolic links ka asli behaviour seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Shell variable vs environment variable**: `x=5` sirf current shell ka variable banata hai. `export x` use **environment** mein daalta hai, jo har child process ko copy ke roop mein milta hai. Child copy badle to parent pe asar nahi hota. `env` (ya `printenv`) environment dikhata hai, `set` saare shell variables aur functions.",
+        "**Ek command ke liye environment**: `LC_ALL=C sort data.txt` ya `TZ=Asia/Kolkata date` likhne se variable sirf us ek command ke environment mein jaata hai; current shell ki value nahi badalti. `env -i cmd` bilkul khaali environment ke saath chalata hai, jo scripts debug karne mein kaam aata hai.",
+        "**Important variables**: `$HOME` (home directory, `~` isi se expand hota hai), `$USER`, `$SHELL` (login shell), `$PWD` aur `$OLDPWD` (`cd -` isi ko use karta hai), `$PATH` (colon se alag directories), `$LANG`/`$LC_ALL` (locale, jo sort order aur number format badalta hai).",
+        "**PATH lookup**: command naam mein `/` na ho to shell pehle aliases, functions aur builtins dekhta hai, phir `$PATH` ki directories left se right; jo pehli mili wahi chalti hai. `type -a python3` saare matches dikhata hai. Current directory (`.`) PATH mein daalna khatarnaak hai, kyunki koi bhi `ls` naam ki script rakh kar aapse chalwa sakta hai; isliye apni script `./run.sh` se chalate hain.",
+        "**Startup files aur prompts**: login shell `~/.profile` (ya `~/.bash_profile`) padhta hai, interactive non-login bash `~/.bashrc`. Permanent `export PATH=\"$HOME/bin:$PATH\"` inhi files mein jaata hai, aur `source ~/.bashrc` turant lagu karta hai. `PS1` main prompt hai (`\\u` user, `\\h` host, `\\w` poora path, `\\W` sirf aakhri directory, `\\$` root ke liye `#`), `PS2` continuation prompt hai (default `> `) jo adhoori command (jaise khula quote) par dikhta hai.",
+        "**Inode**: har file ka metadata (type, permissions, owner, size, timestamps, data blocks ke pointers) ek inode mein hota hai, jiska ek number hota hai (`ls -i`, `stat`). File ka **naam inode mein nahi** hota; naam directory entry hai jo inode number ki taraf point karti hai.",
+        "**Hard link**: `ln a b` ek aur directory entry banata hai jo usi inode ko point karti hai, aur inode ka link count badhta hai. Dono naam barabar hain, koi 'original' nahi. `rm` sirf ek naam hataata hai; data tab free hota hai jab link count 0 ho aur koi process file khole na baitha ho. Hard links doosre filesystem pe nahi ban sakte, aur directories ke hard links user nahi bana sakta.",
+        "**Symbolic link**: `ln -s target name` ek chhoti si alag file (apna inode) banata hai jisme target ka **path** likha hota hai. Har access par path dobara resolve hota hai, isliye target hataane par link dangling ho jaata hai, aur usi naam se nayi file aane par link nayi file dikhata hai. Symlinks filesystems aur directories ke paar kaam karte hain; relative target link ki apni directory se resolve hota hai."
+      ],
+      "example": {
+        "problem": "Ek data pipeline har din nayi CSV `sales_2026-11-04.csv` jaisi file likhti hai. Downstream scripts hamesha `latest.csv` padhti hain. Naya din aane par `latest.csv` ko nayi file pe kaise point karoge, aur symlink ki jagah hard link kyun nahi?",
+        "code": "ln -s sales_2026-11-03.csv latest.csv      # kal\nls -l latest.csv\n# lrwxrwxrwx 1 asha asha 20 ... latest.csv -> sales_2026-11-03.csv\nln -sfn sales_2026-11-04.csv latest.csv    # aaj\nls -li sales_2026-11-04.csv latest.csv",
+        "steps": [
+          "`ln -s` ek symlink banata hai jisme sirf target ka naam likha hai; `ls -l` mein type `l` aur `->` ke baad target dikhta hai. Size 20 = target path ke characters.",
+          "Naye din `ln -sfn new latest.csv`: `-f` purana link hata kar naya banata hai, `-n` ensure karta hai ki `latest.csv` agar directory ka symlink ho to uske andar link na bane.",
+          "`ls -li` mein `latest.csv` aur data file ke inode numbers alag honge, kyunki symlink apni alag file hai.",
+          "Hard link problem: `ln sales_2026-11-04.csv latest.csv` purane naam ko update karne ke liye pehle `rm` chahiye, aur link kisi ek inode se chipak jaata hai; agar pipeline file ko delete karke dobara likhe to hard link purana data dikhata rahega.",
+          "Symlink naam se resolve hota hai, isliye `latest.csv` hamesha jo bhi us naam ki current file hai wahi dikhata hai.",
+          "Answer: **`ln -sfn sales_2026-11-04.csv latest.csv`; symlink naam follow karta hai, hard link purane inode pe atka rehta hai**."
+        ]
+      },
+      "mistakes": [
+        "`export` bhool kar sochna ki child script ko variable mil jaayega. Bina export variable sirf current shell mein hai; child ke liye `export VAR` ya `VAR=val ./script.sh` likho.",
+        "Symlink relative path se banana aur link ko doosri directory mein rakh dena: `ln -s data.csv /tmp/d` mein `/tmp/d` `/tmp/data.csv` dhoondhega. Relative target hamesha link ki location se resolve hota hai, ya absolute path do.",
+        "Sochna ki `rm` turant disk space free karta hai. Agar file ke aur hard links hain, ya koi process use khol kar baitha hai, to data tab tak rehta hai."
+      ],
+      "revision": [
+        "`export` = child processes ko copy milti hai; `VAR=x cmd` = sirf us command ke liye.",
+        "PATH left se right search hota hai; pehla match chalta hai; `type -a` sab dikhata hai.",
+        "`~/.bashrc` interactive shells, `~/.profile` login shells; `PS2` continuation prompt.",
+        "Inode mein metadata hai, naam nahi; naam = directory entry.",
+        "Hard link = same inode, link count +1; symlink = path wali alag file.",
+        "Data free tab hota hai jab link count 0 ho aur koi open file descriptor na ho."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w3-q1",
+          "question": "`PATH=/usr/local/bin:/usr/bin:/bin` hai, aur `python3` naam ki executable `/usr/local/bin` aur `/usr/bin` dono mein hai. Koi alias ya function nahi hai. `python3` type karne par kaunsi file chalegi?",
+          "options": [
+            "`/usr/bin/python3`, kyunki system wali directory ko priority milti hai",
+            "Shell error dega ki naam ambiguous hai",
+            "Jo file sabse nayi install hui ho, wahi",
+            "`/usr/local/bin/python3`, kyunki PATH mein woh directory pehle aati hai"
+          ],
+          "answer": 3,
+          "explanation": "Shell PATH ki directories left se right check karta hai aur pehla match chalata hai. `/usr/local/bin` list mein pehle hai, isliye wahan wala `python3` chalega; isi tarah locally install kiye tools system wale ko override karte hain. Option A ka trap: koi built-in 'system priority' nahi hoti, sirf PATH ka order. Option B galat hai: duplicate naam error nahi dete, aur option C: install date ka koi role nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w3-q2",
+          "question": "GNU/Linux (ext4) pe ek khaali directory mein ye commands chalaye. Aakhri command kya print karegi?",
+          "code": "echo hi > a\nln a b\nrm a\ncat b",
+          "options": [
+            "`cat: b: No such file or directory`",
+            "`hi`",
+            "Kuch nahi (file khaali hai)",
+            "`b -> a`"
+          ],
+          "answer": 1,
+          "explanation": "`ln a b` (bina `-s`) hard link hai: `a` aur `b` dono ek hi inode ke naam hain aur link count 2 ho jaata hai. `rm a` sirf ek naam hataata hai, count 1 bachta hai, data safe hai, isliye `cat b` `hi` dikhata hai. Option A ka trap: hard link ko symlink samajhna; symlink hota to target hatne par dangling ho jaata. Option D symlink ka `ls -l` format hai, `cat` ka output nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w3-q3",
+          "question": "GNU/Linux (ext4) pe ek khaali directory mein ye commands chalaye. `cat` kya print karega (pehle `cur`, phir `hard`)?",
+          "code": "echo v1 > data.csv\nln -s data.csv cur\nln data.csv hard\nrm data.csv\necho v2 > data.csv\ncat cur hard",
+          "options": [
+            "`v1` aur `v1`",
+            "`v2` aur `v2`",
+            "`v2` aur `v1`",
+            "`cur` ke liye error, phir `v1`"
+          ],
+          "answer": 2,
+          "explanation": "`hard` purane inode se juda hai jisme `v1` hai; `rm data.csv` ke baad bhi woh inode `hard` ke naam se zinda hai. `cur` symlink hai jisme sirf naam `data.csv` likha hai; naya `data.csv` (naya inode, content `v2`) ban gaya to `cur` usi ko resolve karta hai. Isliye `v2` phir `v1`. Option D ka trap: symlink beech mein dangling tha, par `cat` ke time naam phir se exist karta hai. Option A symlink ko hard link ki tarah treat karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w3-q4",
+          "question": "GNU/Linux ke ext4 filesystem pe ek khaali jagah `mkdir p` aur phir `mkdir p/a p/b` chalaya. `stat -c %h p` (directory `p` ka hard link count) kya print karega?",
+          "options": [
+            "4",
+            "2",
+            "3",
+            "1"
+          ],
+          "answer": 0,
+          "explanation": "Directory `p` ke inode tak chaar naam pahunchte hain: parent mein entry `p`, `p` ke andar khud ka `.`, aur `p/a` aur `p/b` dono ke andar `..`. Isliye count 4 hai (har nayi subdirectory count 1 badhaati hai). Option B ka trap: khaali directory ka count 2 hota hai, subdirectories ke `..` bhool jaana. Option C sirf ek subdirectory ginta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w3-q5",
+          "question": "Ek naye bash shell mein (jahan `X` pehle se set nahi hai) ye lines chalayi gayi. Output ki do lines kya hongi?",
+          "code": "X=1\nX=2 bash -c 'echo $X'\necho $X",
+          "options": [
+            "`1` aur `1`",
+            "`2` aur `1`",
+            "`2` aur `2`",
+            "Khaali line aur `1`"
+          ],
+          "answer": 1,
+          "explanation": "`X=2 bash -c ...` likhne se `X=2` sirf us ek child process ke environment mein jaata hai, isliye child `2` print karta hai. Current shell ka `X` abhi bhi `1` hai, to doosri line `1`. Option C ka trap: sochna ki prefix assignment current shell ki value bhi badal deta hai. Option D ka trap: sochna ki bina `export` child ko kuch nahi milega; par prefix assignment khud environment mein daalta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w3-q6",
+          "question": "GNU/Linux (ext4) pe ek khaali directory mein ye commands chalaye. Aakhri command kya print karegi?",
+          "code": "touch f\nln f g\nln g h\nrm f\nln -s h s\nln h f2\nmv g g2\nstat -c %h h",
+          "options": [
+            "4",
+            "2",
+            "5",
+            "3"
+          ],
+          "answer": 3,
+          "explanation": "Inode ke naam ginte jao: `touch f` → 1 (f); `ln f g` → 2; `ln g h` → 3 (g bhi usi inode ka naam hai); `rm f` → 2; `ln -s h s` symlink hai jiska apna inode hai, count nahi badhta; `ln h f2` → 3; `mv g g2` sirf naam badalta hai, count same. Answer 3 (h, g2, f2). Option A ka trap: symlink `s` ko bhi link count mein ginna. Option C `rm f` ka ghatna bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "The Filesystem Hierarchy, Processes and Remote Shells",
+      "summary": "Is week aap root filesystem ka naksha (FHS), shell ke time bachaane wale shortcuts, `head`/`tail`/`cut` se output ke tukde nikaalna, processes aur signals ko manage karna, aur `ssh` se remote machines pe kaam karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Filesystem Hierarchy (FHS)**: sab kuch ek tree `/` ke neeche hai. `/etc` system-wide config, `/var` badalne wala data (`/var/log` logs, `/var/lib` databases aur package state), `/usr/bin` aur `/usr/lib` packages ke programs aur libraries, `/usr/local` aur `/opt` manually install kiya software, `/home` users, `/root` root ka home, `/tmp` temporary, `/boot` kernel aur bootloader, `/dev` device files, `/srv` services ka data, `/run` boot ke baad ka runtime state.",
+        "**Virtual filesystems**: `/proc` aur `/sys` disk pe nahi hote; kernel unhe chalte-chalte banata hai. `/proc/<PID>/` mein har process ki info (cmdline, status, open files `fd/`), `/proc/cpuinfo`, `/proc/meminfo`; `/sys` mein devices aur drivers. Isliye `cat /proc/loadavg` file jaisa dikhta hai par kernel se live data aata hai.",
+        "**Shell shortcuts (bash/readline)**: `Ctrl+R` history mein reverse search, `Ctrl+A`/`Ctrl+E` line ki shuruaat/end, `Ctrl+U` cursor se pehle ka text kaatna, `Ctrl+K` cursor ke baad ka, `Ctrl+W` pichhla word, `Ctrl+L` screen saaf. `!!` pichhli poori command (jaise `sudo !!`), `!$` pichhli command ka aakhri argument, `Alt+.` usi argument ko paste karta hai. `Ctrl+C` foreground process ko SIGINT, `Ctrl+Z` SIGTSTP (pause), `Ctrl+D` input ka end (EOF).",
+        "**Output slicing**: `head -n 5` pehli 5 lines, `head -n -5` aakhri 5 chhod kar sab (GNU), `tail -n 5` aakhri 5, `tail -n +5` line 5 se end tak (CSV ka header skip karne ke liye `tail -n +2`). `tail -f app.log` file badhne par nayi lines dikhata rehta hai. `cut -d, -f2,4` delimiter se fields, `cut -f` ka default delimiter TAB hai, `cut -c1-10` characters, `cut -d: -f3-` field 3 se end tak.",
+        "**Processes**: har process ka PID aur parent ka PPID hota hai; `ps -ef` ya `ps aux` sab dikhata hai, `ps -o pid,ppid,stat,cmd`, `pgrep -f pattern` PID dhoondhta hai. STAT column: `R` running, `S` sleeping, `D` uninterruptible (aksar disk I/O), `T` stopped, `Z` zombie. `top`/`htop` live view; `nice -n 10 cmd` kam priority se chalata hai, `renice` baad mein badalta hai.",
+        "**Signals aur jobs**: `kill -l` list deta hai. Common: 1 SIGHUP (terminal band, ya daemon ko config reload), 2 SIGINT (Ctrl+C), 9 SIGKILL (pakda nahi ja sakta), 15 SIGTERM (default, saaf band hone ka mauka), 19 SIGSTOP, 18 SIGCONT. `cmd &` background job, `$!` uska PID, `wait` uske khatam hone ka intezaar. `nohup cmd &` terminal band hone par bhi chalta rehta hai (output `nohup.out` mein).",
+        "**Zombie aur orphan**: process khatam hone par uska exit status parent ke `wait()` tak table mein rehta hai; tab tak woh zombie (`Z`) hai. Zombie pehle se mara hua hai, isliye `kill -9` kuch nahi karta; parent ko theek karo ya parent khatam ho to `init`/`systemd` (PID 1) use adopt karke saaf kar deta hai. Orphan woh chalta hua process hai jiska parent mar gaya.",
+        "**ssh**: `ssh user@host` encrypted remote shell; `ssh user@host 'cmd'` sirf ek command remote pe chalata hai. Key-based login: `ssh-keygen -t ed25519` key pair banata hai, `ssh-copy-id user@host` public key remote ki `~/.ssh/authorized_keys` mein daalta hai; private key (`~/.ssh/id_ed25519`) kabhi share nahi karte aur uski permission 600 honi chahiye. `~/.ssh/config` mein `Host` alias, `scp`/`rsync` file copy, `ssh -L 8888:localhost:8888 host` port forwarding (jaise remote Jupyter)."
+      ],
+      "example": {
+        "problem": "Ek fictional ML server pe training script ghanton chalegi. Aapko ssh se login karke use aise chalana hai ki laptop ka connection toot jaaye tab bhi chalti rahe, phir baad mein uski progress aur PID check karni hai, aur galat config hone par use saaf tarah se rokna hai.",
+        "code": "ssh asha@ml-01\nnohup python3 train.py --epochs 50 > train.log 2>&1 &\necho $!            # jaise 48213\nexit\n# baad mein\nssh asha@ml-01 'tail -n 3 train.log; ps -o pid,stat,etime,cmd -p 48213'\nssh asha@ml-01 'kill 48213'",
+        "steps": [
+          "`nohup` SIGHUP ko ignore karwata hai, isliye ssh session band hone par bhi process nahi marta; `&` use background mein bhejta hai.",
+          "`> train.log 2>&1` stdout aur stderr dono log file mein bhejta hai, taaki baad mein progress padh sakein.",
+          "`$!` pichhle background job ka PID deta hai; use note karna zaroori hai (ya baad mein `pgrep -f train.py`).",
+          "Baad mein `ssh host 'cmd'` se bina interactive login ke remote pe `tail` aur `ps` chalte hain; `etime` batata hai process kitni der se chal raha hai.",
+          "Rokne ke liye pehle `kill PID` (SIGTERM), jisse script checkpoints save karke band ho sake. Sirf tab `kill -9` jab process jawab na de.",
+          "Answer: **`nohup ... &` se chalao, `$!` se PID lo, `ssh host 'tail ...; ps ...'` se check karo, `kill PID` (SIGTERM) se roko**."
+        ]
+      },
+      "mistakes": [
+        "Har baar seedha `kill -9` chalana. SIGKILL process ko cleanup (temp files, checkpoints, locks) ka mauka nahi deta; pehle SIGTERM bhejo.",
+        "`ssh host df -h | grep sda` likh kar sochna ki `grep` remote pe chala. Bina quotes ke pipe local shell parse karta hai, isliye `grep` aapki machine pe chalta hai; poori remote pipeline quotes mein likho.",
+        "`head -n -1` ko 'aakhri 1 line' samajhna. Negative count ka matlab hai aakhri N lines chhod do; aakhri line ke liye `tail -n 1` hai."
+      ],
+      "revision": [
+        "`/etc` config, `/var/log` logs, `/usr/bin` programs, `/opt` third-party, `/proc` live kernel data.",
+        "`!!` pichhli command, `!$` pichhla aakhri argument, `Ctrl+R` history search.",
+        "`tail -n +K` line K se aage; `head -n -K` aakhri K chhod kar.",
+        "SIGTERM 15 default, SIGKILL 9 pakda nahi jaata, SIGHUP 1, SIGINT 2.",
+        "Zombie ko parent `wait` karke saaf karta hai, `kill -9` se nahi.",
+        "`ssh host 'a | b'` = poori pipeline remote pe."
+      ],
+      "questions": [
+        {
+          "id": "syscmd-w4-q1",
+          "question": "Ubuntu server pe `apt` se install kiye web server ke log files aur uski main executable aam taur pe kahan milegi (FHS ke hisaab se)?",
+          "options": [
+            "Logs `/var/log` mein, executable `/usr/sbin` ya `/usr/bin` mein",
+            "Logs `/etc/log` mein, executable `/bin/local` mein",
+            "Logs `/tmp` mein, executable `/home/root/bin` mein",
+            "Logs `/proc/log` mein, executable `/opt/apt` mein"
+          ],
+          "answer": 0,
+          "explanation": "FHS mein `/var` badalne wale data ke liye hai aur logs `/var/log` mein jaate hain (jaise `/var/log/nginx/`). Package manager ke programs `/usr/bin` ya admin daemons `/usr/sbin` mein hote hain. Option B ka trap: `/etc` config ke liye hai, logs ke liye nahi. Option D: `/proc` kernel ka virtual filesystem hai jahan programs log nahi likhte, aur `/opt` apt packages ki jagah nahi, manually install kiye software ki hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w4-q2",
+          "question": "Interactive bash mein aapne `mkdir -p /srv/data/raw` chalaya. Agli command `cd !$` hai. Bash ise kis command mein badal kar chalayega?",
+          "options": [
+            "`cd -p`",
+            "`cd mkdir`",
+            "`cd /srv/data/raw`",
+            "`cd` home directory mein, kyunki `!$` ek khaali variable hai"
+          ],
+          "answer": 2,
+          "explanation": "`!$` history expansion hai jo pichhli command ka aakhri argument laata hai, yahan `/srv/data/raw`. Isliye command `cd /srv/data/raw` ban jaati hai (bash expanded line print bhi karta hai). Option A ka trap: pichhla option ya pehla argument utha lena. Option B `!!`/command naam se confuse karta hai. Option D ka trap: `!$` ko `$` wala variable samajhna; ye variable nahi, history ka reference hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "syscmd-w4-q3",
+          "question": "Is command ka output kya hoga?",
+          "code": "echo 'asha:x:1001:1001:Asha Rao:/home/asha:/bin/bash' | cut -d: -f1,6-",
+          "options": [
+            "`asha /home/asha /bin/bash`",
+            "`asha:/home/asha:/bin/bash`",
+            "`asha:/home/asha`",
+            "`asha:Asha Rao:/home/asha:/bin/bash`"
+          ],
+          "answer": 1,
+          "explanation": "`-d:` delimiter colon hai. `-f1,6-` field 1 (`asha`) aur field 6 se end tak (`/home/asha`, `/bin/bash`) chunta hai. `cut` output mein wahi delimiter wapas lagata hai, isliye `asha:/home/asha:/bin/bash`. Option A ka trap: sochna ki fields space se judte hain. Option C `6-` ko sirf field 6 padhta hai. Option D field 5 bhi le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w4-q4",
+          "question": "`ps -o pid,ppid,stat,cmd` mein ek process `Z` (zombie) state mein dikh raha hai. `kill -9` uski PID pe chalane ke baad bhi woh list mein hai. Sabse sahi explanation aur fix kya hai?",
+          "options": [
+            "SIGKILL ko process ne pakad kar ignore kar diya; `kill -15` bhejo",
+            "Process disk I/O mein atka hai; disk free hone ka wait karo",
+            "Zombie ko sirf reboot se hataya ja sakta hai",
+            "Process pehle hi khatam ho chuka hai aur sirf uska exit status bacha hai; parent `wait` nahi kar raha, isliye parent ko theek karo ya band karo taaki PID 1 use reap kar le"
+          ],
+          "answer": 3,
+          "explanation": "Zombie ek mara hua process hai jiski entry tab tak rehti hai jab tak parent `wait()` se exit status na padh le. Mare hue process ko signal ka koi matlab nahi, isliye `kill -9` bekaar hai. Parent ko signal/fix karo; parent khatam ho to zombie PID 1 (init/systemd) ka child ban kar reap ho jaata hai. Option A ka trap: SIGKILL pakda ya ignore nahi kiya ja sakta. Option B `D` state ka description hai, `Z` ka nahi. Option C zaroorat se zyada hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w4-q5",
+          "question": "Laptop se ye do commands chalayi gayi. Dono mein `tail` kahan chalta hai?",
+          "code": "ssh asha@db-01 'df -h / | tail -n 1'\nssh asha@db-01 df -h / | tail -n 1",
+          "options": [
+            "Dono mein `db-01` pe",
+            "Dono mein laptop pe",
+            "Pehli mein `db-01` pe, doosri mein laptop pe",
+            "Pehli mein laptop pe, doosri mein `db-01` pe"
+          ],
+          "answer": 2,
+          "explanation": "Pehli command mein poori pipeline quotes mein ek argument ke roop mein ssh ko jaati hai, aur remote shell use chalata hai, isliye `tail` `db-01` pe chalta hai. Doosri mein `|` quotes ke bahar hai, to laptop ka shell pehle hi pipe bana deta hai: `ssh ... df -h /` ka output laptop ke `tail` mein aata hai. Is case mein dikhne wala output same ho sakta hai, isi wajah se ye trap pakad mein nahi aata. Option A ka trap: sochna ki ssh ke baad likha sab remote pe jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "syscmd-w4-q6",
+          "question": "GNU coreutils ke saath is pipeline ka output kya hoga? (`seq 20` 1 se 20 tak numbers alag lines mein deta hai.)",
+          "code": "seq 20 | tail -n +5 | head -n -10 | tail -n 3",
+          "options": [
+            "`8`, `9`, `10` (teen lines)",
+            "`18`, `19`, `20` (teen lines)",
+            "`12`, `13`, `14` (teen lines)",
+            "`5`, `6`, `7` (teen lines)"
+          ],
+          "answer": 0,
+          "explanation": "`tail -n +5` line 5 se shuru karta hai: 5 se 20, kul 16 lines. `head -n -10` aakhri 10 lines (11 se 20) chhod deta hai: 5 se 10 bachte hain. `tail -n 3` inme se aakhri teen: 8, 9, 10. Option B ka trap: `head -n -10` ko ignore karke seedha aakhri teen lena. Option C ka trap: `head -n -10` ko `head -n 10` (pehli 10 lines, 5 se 14) samajhna, jisse aakhri teen 12, 13, 14 aate. Option D bachi hui lines mein se pehli teen le leta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,486 @@
+{
+  "subjectId": "mlp",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "The end-to-end ML workflow in scikit-learn",
+      "summary": "Is week aap ek ML project ko shuru se end tak chalana seekhoge: problem framing, train/test split, baseline, scikit-learn ka estimator API, Pipeline aur cross-validation se evaluation.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Problem framing**: pehle tay karo ki target kya hai aur task kis type ka hai: continuous target ho to regression (jaise delivery time), category ho to classification (jaise churn ya not), label hi na ho to unsupervised. Saath hi metric pehle hi chuno (RMSE, MAE, F1 ...), kyunki wahi business goal ko number mein badalta hai.",
+        "**Train/test split**: `train_test_split(X, y, test_size=0.2, random_state=42)` data ko shuffle karke 80/20 mein todta hai. Test set ek sealed envelope hai: model choose, tune aur preprocess sab training data par hota hai, test set ko sirf end mein ek baar dekhte hain. Classification mein `stratify=y` dene se dono hisson mein class ratio same rehta hai.",
+        "**Baseline**: koi bhi model banane se pehle ek bewakoof-sa reference lo. `DummyRegressor(strategy='mean')` har input ke liye training mean predict karta hai, `DummyClassifier(strategy='most_frequent')` sabse common class. Agar aapka model baseline ko clearly nahi harata, to features ya setup mein problem hai.",
+        "**Estimator API**: scikit-learn ke saare objects ek hi pattern follow karte hain. Estimator `fit(X, y)` se seekhta hai aur `predict(X)` deta hai. Transformer `fit` se statistics seekhta hai (jaise mean) aur `transform` se data badalta hai; `fit_transform` dono ek saath. Fit ke baad seekhi gayi cheezein trailing underscore wale attributes mein milti hain, jaise `coef_`, `mean_`.",
+        "**Pipeline**: `Pipeline([('scaler', StandardScaler()), ('model', LinearRegression())])` steps ko chain karta hai. `pipe.fit(X_train, y_train)` har transformer par `fit_transform` aur last step par `fit` chalata hai; `pipe.predict(X_test)` sirf `transform` (training ke statistics se) phir `predict`. Isse leakage ka khatra kam hota hai aur poora workflow ek object ban jaata hai.",
+        "**Cross-validation**: `cross_val_score(pipe, X_train, y_train, cv=5)` training data ko 5 folds mein baantta hai; har baar 4 folds par fit, 1 par score. 5 scores ka mean aur spread ek hi validation split se zyada bharosemand estimate dete hain.",
+        "**Scoring convention**: scikit-learn mein scorer ka 'greater is better' rule hai, isliye error metrics negative mein milte hain, jaise `scoring='neg_mean_squared_error'`. RMSE chahiye to sign hata kar square root lo.",
+        "**Regression metrics**: MAE = mean |y − ŷ| (har error ko barabar weight), MSE = mean (y − ŷ)², RMSE = √MSE (y ki unit mein, bade errors ko zyada saza). Outliers zyada hon to MAE aur RMSE ka farak bada dikhta hai."
+      ],
+      "example": {
+        "problem": "Ek fictional food-delivery company ke 5 test orders ka actual delivery time (minutes) [30, 50, 20, 70, 80] hai. Model ne [25, 50, 30, 60, 90] predict kiya. Baseline training mean 50 minute predict karta hai. Dono ka MAE aur RMSE nikaalo aur batao kya model kaam ka hai.",
+        "steps": [
+          "Model errors (y − ŷ): 5, 0, −10, 10, −10.",
+          "Model MAE = (5 + 0 + 10 + 10 + 10)/5 = 7.0 minute.",
+          "Model MSE = (25 + 0 + 100 + 100 + 100)/5 = 65, RMSE = √65 ≈ 8.06 minute.",
+          "Baseline errors: −20, 0, −30, 20, 30. MAE = 100/5 = 20.0 minute.",
+          "Baseline MSE = (400 + 0 + 900 + 400 + 900)/5 = 520, RMSE ≈ 22.80 minute.",
+          "Model ka RMSE baseline ka lagbhag ek-tihaai hai, to model ne asli signal pakda hai.",
+          "Answer: **model MAE 7.0, RMSE 8.06; baseline MAE 20.0, RMSE 22.80, isliye model baseline se kaafi behtar hai**."
+        ],
+        "code": "from sklearn.model_selection import train_test_split, cross_val_score\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LinearRegression\nfrom sklearn.dummy import DummyRegressor\n\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\nbaseline = DummyRegressor(strategy='mean')\npipe = Pipeline([('scaler', StandardScaler()), ('model', LinearRegression())])\n\nfor name, est in [('baseline', baseline), ('linreg', pipe)]:\n    mse = -cross_val_score(est, X_train, y_train, cv=5, scoring='neg_mean_squared_error')\n    print(name, (mse ** 0.5).mean())\n\npipe.fit(X_train, y_train)          # final fit on all training data\ntest_pred = pipe.predict(X_test)     # test set used only once, at the end"
+      },
+      "mistakes": [
+        "Test set ko baar-baar dekh kar model ya hyperparameter badalna. Isse test score optimistic ho jaata hai; tuning ke liye cross-validation ya alag validation set use karo.",
+        "Scaler ko poore data par fit karke phir split karna. Test ki statistics training mein ghus jaati hain (leakage); scaler ko Pipeline ke andar rakho taaki wo sirf training fold par fit ho.",
+        "`neg_mean_squared_error` ke negative scores dekh kar ghabra jaana ya unka square root seedha le lena. Pehle sign hatao (−1 se multiply), phir √ lo."
+      ],
+      "revision": [
+        "Framing: target type + metric pehle decide karo.",
+        "`train_test_split` → test set sirf end mein ek baar.",
+        "Baseline (`DummyRegressor`/`DummyClassifier`) ko harana zaroori hai.",
+        "Pipeline.fit = transformers ka `fit_transform` + model ka `fit`; predict = `transform` + `predict`.",
+        "cv=k: k fits, har fit (k−1)/k data par.",
+        "RMSE = √MSE; scikit-learn error scores negative mein deta hai."
+      ],
+      "questions": [
+        {
+          "id": "mlp-w1-q1",
+          "question": "Ek dataset mein 1250 rows hain. `train_test_split(X, y, test_size=0.2, random_state=0)` ke baad `X_train` mein kitni rows hongi?",
+          "options": [
+            "250",
+            "1050",
+            "1000",
+            "1200"
+          ],
+          "answer": 2,
+          "explanation": "test_size=0.2 ka matlab 20% rows test mein: 0.2 × 1250 = 250. Baaki 1250 − 250 = 1000 rows training mein jaati hain, isliye option C sahi hai. Option A test set ka size hai (train aur test ulat dena sabse common trap hai); options B aur D kisi galat subtraction se aate hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w1-q2",
+          "question": "Pipeline ke bahar ek `StandardScaler` ko `X_train` par fit kiya gaya hai. Ab test data ko scale karne ki sahi call kaunsi hai?",
+          "options": [
+            "`scaler.transform(X_test)`",
+            "`scaler.fit_transform(X_test)`",
+            "`scaler.fit(X_test)` phir `scaler.transform(X_test)`",
+            "`scaler.fit_transform(X)` poore data par, phir dobara split"
+          ],
+          "answer": 0,
+          "explanation": "Test data ko wahi mean aur std se scale karna hai jo training data se seekhe gaye, isliye sirf `transform` (option A). Option B aur C scaler ko test data par dobara fit karte hain, jisse test ki statistics model mein aa jaati hain aur train-test scaling mismatch bhi hota hai. Option D poore data par fit karta hai, jo seedha leakage hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w1-q3",
+          "question": "Ek regression model ke liye 600 training rows par `cross_val_score(model, X, y, cv=5)` chalaya. Model kitni baar train hoga, aur har baar kitni rows par?",
+          "options": [
+            "1 baar, 600 rows par",
+            "5 baar, har baar 120 rows par",
+            "4 baar, har baar 480 rows par",
+            "5 baar, har baar 480 rows par"
+          ],
+          "answer": 3,
+          "explanation": "cv=5 mein data 5 folds (120-120 rows) mein bantta hai. Har fold ek baar validation banta hai aur baaki 4 folds (480 rows) par model fit hota hai, to 5 fits, har ek 480 rows par: option D. Option B validation fold ka size hai, training ka nahi. Option C '4 training folds' ko '4 fits' samajhne ki galti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w1-q4",
+          "question": "`DummyRegressor(strategy='mean')` ko training targets [10, 20, 30, 40] par fit kiya. Test targets [25, 35] hain. Is baseline ka test RMSE kitna hai?",
+          "options": [
+            "5.00",
+            "7.07",
+            "50.00",
+            "10.00"
+          ],
+          "answer": 1,
+          "explanation": "Baseline training mean predict karta hai: (10 + 20 + 30 + 40)/4 = 25. Test errors 0 aur 10, MSE = (0 + 100)/2 = 50, RMSE = √50 ≈ 7.07 (option B). Option C MSE hai (square root bhool gaye), option A MAE hai, aur option D sirf bada error hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w1-q5",
+          "question": "`cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')` ne [-4, -9, -16, -1, -25] return kiya. Har fold ka RMSE nikaal kar un 5 RMSE values ka mean kya hai?",
+          "options": [
+            "3.00",
+            "3.32",
+            "-11.00",
+            "11.00"
+          ],
+          "answer": 0,
+          "explanation": "Scores negative MSE hain. Sign hatao: 4, 9, 16, 1, 25. Har fold ka RMSE: 2, 3, 4, 1, 5; inka mean = 15/5 = 3.00 (option A). Option B √(mean MSE) = √11 ≈ 3.32 hai, jo ek alag quantity hai (yahan per-fold RMSE ka mean poocha gaya hai). Options C aur D sirf MSE ka mean hain, square root ke bina.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w1-q6",
+          "question": "Ek feature ki training values [2, 4, 6, 8] hain. Pipeline hai `StandardScaler` → `LinearRegression`. Fit ke baad model ne scaled feature z par ye seekha: ŷ = 20 + 3z. Naye input x = 10 ke liye `pipe.predict` kya dega (2 decimal tak)?",
+          "options": [
+            "50.00",
+            "25.81",
+            "20.00",
+            "26.71"
+          ],
+          "answer": 3,
+          "explanation": "Predict ke waqt Pipeline scaler ka sirf `transform` chalati hai, training ke mean 5 aur std se. StandardScaler population std (ddof = 0) use karta hai: variance = (9 + 1 + 1 + 9)/4 = 5, std = √5 ≈ 2.236. z = (10 − 5)/2.236 ≈ 2.236, ŷ = 20 + 3 × 2.236 ≈ 26.71 (option D). Option B sample std (√(20/3) ≈ 2.582) se aata hai, option A scaling bhool kar raw x = 10 daalne se, aur option C test point par scaler dobara fit karne se (z = 0).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Exploring and preparing data: imputation, encoding, scaling",
+      "summary": "Is week aap data ko explore karna, missing values bharna, categorical columns encode karna, numeric features scale karna, leakage se bachna aur ColumnTransformer + Pipeline se poora preprocessing ek jagah likhna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Exploratory data analysis (EDA)**: `df.info()` se dtypes aur missing counts, `df.describe()` se range aur skew, `value_counts()` se category frequencies, aur target ke saath correlation dekho. EDA sirf training set par karo; test set ko dekh kar decisions lena bhi ek tarah ka data snooping hai.",
+        "**Missing values**: rows/columns drop karna aasaan hai par information khota hai. `SimpleImputer(strategy='mean' | 'median' | 'most_frequent' | 'constant')` training data se fill value seekhta hai. Skewed ya outlier wale column ke liye median behtar hai, kyunki mean outlier ki taraf khinch jaata hai. `add_indicator=True` ek extra 0/1 column banata hai jo batata hai ki value missing thi; kabhi-kabhi missingness khud ek signal hoti hai.",
+        "**Categorical encoding**: ordered categories (low < medium < high) ke liye `OrdinalEncoder` (categories ka order explicitly do). Nominal categories (city, payment mode) ke liye `OneHotEncoder`: har category ka ek 0/1 column. Test mein nayi category aa sakti hai, isliye `handle_unknown='ignore'` us row ko sab-zero de deta hai. Customer ID jaisi unique columns ko encode mat karo, unme generalise karne layak signal nahi hota.",
+        "**Scaling**: `StandardScaler` z = (x − μ)/σ karta hai, jahan μ aur σ training column ke mean aur population std (ddof = 0) hain. `MinMaxScaler` (x − min)/(max − min) se training range ko [0, 1] mein laata hai; test value training range ke bahar ho to output bhi 0–1 ke bahar jaata hai. `RobustScaler` median aur IQR use karta hai, outliers ke liye accha. Distance ya gradient based models (kNN, SVM, linear models with regularisation, neural nets) ko scaling chahiye; tree models ko nahi.",
+        "**Leakage**: (1) train-test contamination: imputer/scaler/encoder ko poore data par fit karna, jisse test ki information training mein aa jaati hai; (2) target leakage: aisa feature jo prediction ke time available hi nahi hota, jaise fraud predict karte waqt 'refund_issued'. Fix: pehle split, phir har fit sirf training data (ya CV ke training fold) par, aur aisi columns hata do.",
+        "**ColumnTransformer**: alag columns par alag preprocessing: `ColumnTransformer([('num', num_pipe, num_cols), ('cat', cat_pipe, cat_cols)])`. Har transformer ka output horizontally jud jaata hai. Jo columns kisi list mein nahi hain, unhe default `remainder='drop'` hata deta hai; rakhne hon to `remainder='passthrough'`.",
+        "**Full preprocessing pipeline**: numeric ke liye imputer → scaler, categorical ke liye imputer (most_frequent) → one-hot, dono ko ColumnTransformer mein, aur uske baad model, sab ek Pipeline mein. Ab `cross_val_score` har fold mein preprocessing ko sirf us fold ke training part par fit karega, yaani leakage-free evaluation.",
+        "**Feature engineering**: ratio features (rooms per household), right-skewed columns (income, prices) par log transform, aur dates se day-of-week jaise features aksar raw columns se zyada signal dete hain. Naye features bhi sirf training data ki information se banne chahiye."
+      ],
+      "example": {
+        "problem": "Ek column ki training values [12, NaN, 30, 18, NaN, 24] hain. Pehle median se impute karo, phir MinMaxScaler lagao. Imputed rows ki scaled value aur value 18 ki scaled value kya hogi?",
+        "steps": [
+          "Observed values: 12, 30, 18, 24. Sort: 12, 18, 24, 30. Median = (18 + 24)/2 = 21.",
+          "Imputed column: [12, 21, 30, 18, 21, 24].",
+          "MinMax training range: min = 12, max = 30, range = 18.",
+          "Imputed rows: (21 − 12)/18 = 0.5.",
+          "Value 18: (18 − 12)/18 ≈ 0.333.",
+          "Answer: **imputed rows 0.5 ban jaati hain, aur 18 → 0.333**."
+        ],
+        "code": "from sklearn.compose import ColumnTransformer\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.linear_model import LogisticRegression\n\nnum_cols = ['age', 'income']\ncat_cols = ['city', 'plan']\n\nnum_pipe = Pipeline([('impute', SimpleImputer(strategy='median')),\n                     ('scale', StandardScaler())])\ncat_pipe = Pipeline([('impute', SimpleImputer(strategy='most_frequent')),\n                     ('onehot', OneHotEncoder(handle_unknown='ignore'))])\n\npre = ColumnTransformer([('num', num_pipe, num_cols),\n                         ('cat', cat_pipe, cat_cols)])   # other columns dropped\nclf = Pipeline([('pre', pre), ('model', LogisticRegression())])\nclf.fit(X_train, y_train)"
+      },
+      "mistakes": [
+        "Imputer ya scaler ko split se pehle poore data par fit karna. Test ka mean/median training mein leak hota hai aur score optimistic aata hai; sab kuch Pipeline mein rakho.",
+        "Nominal category (jaise city) ko 0, 1, 2, 3 integer codes de kar linear model mein daalna. Model ek nakli order (city 3 > city 1) maan leta hai; `OneHotEncoder` use karo.",
+        "Outliers wale column ko mean se impute karna. Ek bada outlier mean ko kheench leta hai; median ya `RobustScaler` jaise robust options socho."
+      ],
+      "revision": [
+        "Median imputation outliers se kam prabhavit hoti hai.",
+        "Ordered → `OrdinalEncoder`; nominal → `OneHotEncoder(handle_unknown='ignore')`.",
+        "StandardScaler population std (ddof = 0) use karta hai; MinMax test value 0–1 ke bahar ja sakti hai.",
+        "Leakage: preprocessing ka har fit sirf training data par.",
+        "ColumnTransformer default `remainder='drop'`; output columns horizontally judte hain."
+      ],
+      "questions": [
+        {
+          "id": "mlp-w2-q1",
+          "question": "Ek column ki training values [4, NaN, 10, 6, 100] hain. `SimpleImputer(strategy='median')` NaN ki jagah kya bharega?",
+          "options": [
+            "30",
+            "8",
+            "10",
+            "6"
+          ],
+          "answer": 1,
+          "explanation": "Median sirf observed values par: 4, 6, 10, 100 → beech ki do values 6 aur 10 ka average = 8 (option B). Option A mean hai, jo outlier 100 ki wajah se 30 tak khinch gaya; yahi median chunne ki wajah hai. Option C unsorted list ka beech wala element hai, sorted median nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w2-q2",
+          "question": "Inme se kaunsa kaam train-test leakage paida karta hai?",
+          "options": [
+            "Pipeline ke andar `StandardScaler` rakh kar `cross_val_score` chalana",
+            "Sirf `X_train` par `SimpleImputer` fit karke `X_test` ko transform karna",
+            "Categorical column ke liye `OneHotEncoder(handle_unknown='ignore')` use karna",
+            "Poore dataset par `StandardScaler` fit karke phir `train_test_split` karna"
+          ],
+          "answer": 3,
+          "explanation": "Option D mein scaler ka mean aur std test rows ko bhi dekh kar bana, to test ki information training mein aa gayi: ye leakage hai. Option A sahi tareeka hai (har fold mein scaler sirf training part par fit hota hai), option B bhi sahi hai, aur option C sirf unseen categories ko safely handle karta hai. Trap: option A ko risky samajhna, jabki Pipeline hi leakage rokti hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w2-q3",
+          "question": "X mein 5 columns hain: age, income (numeric), city (training mein 4 categories), plan (3 categories) aur customer_id. Neeche wala ColumnTransformer fit karne ke baad output mein kitne columns honge?",
+          "code": "ct = ColumnTransformer([\n    ('num', StandardScaler(), ['age', 'income']),\n    ('cat', OneHotEncoder(), ['city', 'plan']),\n])\nZ = ct.fit_transform(X)",
+          "options": [
+            "9",
+            "10",
+            "7",
+            "4"
+          ],
+          "answer": 0,
+          "explanation": "Numeric: 2 columns. One-hot (default mein koi category drop nahi hoti): city ke 4 + plan ke 3 = 7. Total 2 + 7 = 9 (option A). customer_id kisi list mein nahi hai, aur default `remainder='drop'` use hata deta hai, isliye option B (10) galat hai. Option C `drop='first'` jaisa maan kar har feature se ek column ghatane se aata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w2-q4",
+          "question": "`MinMaxScaler` (default settings) ko ek column par fit kiya jiski training min 20 aur max 70 hai. Test row mein value 80 hai. Scaled value kya hogi?",
+          "options": [
+            "1.00",
+            "1.60",
+            "1.20",
+            "0.75"
+          ],
+          "answer": 2,
+          "explanation": "Transform training ke min aur max se hota hai: (80 − 20)/(70 − 20) = 60/50 = 1.20 (option C). Default mein output clip nahi hota, isliye training range ke bahar ki value 1 se upar jaati hai. Option A ye maan leta hai ki output hamesha [0, 1] mein rahega; option B min subtract karna bhool jaata hai (80/50); option D 60/80 hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w2-q5",
+          "question": "`StandardScaler` ko training column [10, 20, 30, 40, 50] par fit kiya. Value 45 ka scaled value lagbhag kya hoga?",
+          "options": [
+            "0.95",
+            "1.06",
+            "1.50",
+            "0.50"
+          ],
+          "answer": 1,
+          "explanation": "Mean = 30. StandardScaler population variance use karta hai: (400 + 100 + 0 + 100 + 400)/5 = 200, std = √200 ≈ 14.14. z = (45 − 30)/14.14 ≈ 1.06 (option B). Option A sample std (√250 ≈ 15.81, n − 1 se divide) se aata hai, jo StandardScaler nahi karta. Option C 15/10 aur option D 15/30 galat denominators hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w2-q6",
+          "question": "Pipeline: `SimpleImputer(strategy='mean')` → `StandardScaler`. Training column [2, NaN, 8, 4, NaN, 6] par fit kiya. Test value 9 ka output lagbhag kya hoga?",
+          "options": [
+            "2.19",
+            "1.79",
+            "2.00",
+            "4.00"
+          ],
+          "answer": 0,
+          "explanation": "Imputer observed values ka mean leta hai: (2 + 8 + 4 + 6)/4 = 5, column banta hai [2, 5, 8, 4, 5, 6]. Scaler is imputed column par fit hota hai: mean 5, population variance (9 + 0 + 9 + 1 + 0 + 1)/6 = 20/6, std ≈ 1.826. z = (9 − 5)/1.826 ≈ 2.19 (option A). Option B std ko sirf 4 observed values se (√5 ≈ 2.236) nikaalta hai, jabki scaler ko imputed data milta hai; imputation variance ghatati hai. Option C n − 1 wala std (2.0) use karta hai, option D scaling bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Linear regression and gradient descent",
+      "summary": "Is week aap linear regression ka model aur MSE cost, closed-form solution, gradient descent ke teen roop (batch, stochastic, mini-batch), learning rate ka asar aur R² se evaluation seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Linear model**: ŷ = w₁x₁ + ... + w_dx_d + b, matrix form mein ŷ = Xw + b. Training ka goal hai MSE cost J(w, b) = (1/n) Σ (ŷᵢ − yᵢ)² ko minimum karna. scikit-learn mein fit ke baad weights `coef_` aur bias `intercept_` mein milte hain.",
+        "**Closed-form (least squares)**: `LinearRegression` seedha least-squares problem solve karta hai (normal equation w = (XᵀX)⁻¹Xᵀy ka numerically stable version). Ek feature ke liye slope w = Σ(x − x̄)(y − ȳ) / Σ(x − x̄)² aur b = ȳ − w·x̄. Features bahut zyada hon ya data memory mein na aaye, tab iterative gradient descent kaam aata hai.",
+        "**Gradient**: MSE ke liye ∂J/∂w = (2/n) Σ (ŷᵢ − yᵢ)xᵢ aur ∂J/∂b = (2/n) Σ (ŷᵢ − yᵢ). Update rule: w ← w − η·∂J/∂w, jahan η learning rate hai. Minus sign isliye ki hum gradient ki ulti disha (downhill) chalte hain.",
+        "**Batch, stochastic, mini-batch**: batch GD har update mein saare n samples use karta hai (smooth par mehenga). Stochastic GD (SGD) ek sample par update karta hai (sasta, noisy, ek epoch mein n updates). Mini-batch GD b samples ka batch leta hai: ek epoch mein n/b updates, aur dono ka balance deta hai. scikit-learn ka `SGDRegressor` SGD se linear model fit karta hai.",
+        "**Learning rate**: η bahut chhota ho to loss bahut dheere girta hai; bahut bada ho to updates minimum ko overshoot karte hain, loss oscillate ya diverge karta hai. Loss vs iteration ka plot dekh kar η tune karo; SGD mein aksar decreasing schedule use hota hai taaki end mein noise kam ho.",
+        "**Feature scaling aur GD**: agar ek feature 0–1 aur doosra 0–100000 range mein ho to cost ke contours lambi patli ghaati jaise bante hain aur GD zig-zag karta hai. Standardisation ke baad contours gol-se hote hain aur convergence tez hoti hai. Closed-form solution ko correctness ke liye scaling nahi chahiye.",
+        "**R² score**: R² = 1 − SS_res/SS_tot, jahan SS_res = Σ(y − ŷ)² aur SS_tot = Σ(y − ȳ)². R² = 1 perfect fit, 0 ka matlab mean predict karne jitna, aur test data par R² negative bhi ho sakta hai agar model mean se bhi bura ho. Regressors ka `score` method R² deta hai."
+      ],
+      "example": {
+        "problem": "Data (x, y): (1, 3), (2, 5), (3, 7). Model ŷ = wx + b, start w = 0, b = 0, cost J = (1/n)Σ(ŷ − y)², learning rate η = 0.1. Ek batch gradient descent step ke baad w, b aur cost kya honge?",
+        "steps": [
+          "Shuru mein ŷ = 0, errors (ŷ − y) = −3, −5, −7. Cost J = (9 + 25 + 49)/3 ≈ 27.67.",
+          "∂J/∂w = (2/3)(−3·1 − 5·2 − 7·3) = (2/3)(−34) ≈ −22.67.",
+          "∂J/∂b = (2/3)(−3 − 5 − 7) = −10.",
+          "w = 0 − 0.1 × (−22.67) ≈ 2.267, b = 0 − 0.1 × (−10) = 1.0.",
+          "Naye predictions: 3.267, 5.533, 7.8; errors 0.267, 0.533, 0.8; cost ≈ 0.332.",
+          "Answer: **w ≈ 2.267, b = 1.0, aur cost 27.67 se girkar ≈ 0.332 ho gayi**."
+        ],
+        "code": "w, b, lr = 0.0, 0.0, 0.1\nX = [1, 2, 3]; y = [3, 5, 7]; n = len(X)\nerr = [w*x + b - t for x, t in zip(X, y)]\ndw = 2/n * sum(e*x for e, x in zip(err, X))\ndb = 2/n * sum(err)\nw, b = w - lr*dw, b - lr*db\nprint(round(w, 3), round(b, 3))   # 2.267 1.0"
+      },
+      "mistakes": [
+        "Update mein sign ulta kar dena (w + η·gradient). Isse aap uphill jaate ho aur loss badhta hai; hamesha gradient ko subtract karo.",
+        "Cost ki convention (1/n vs 1/(2n)) bhool jaana. Dono ka minimum same hai par gradient ka size factor 2 se badalta hai, isliye ek hi η par step alag hoga; question ki convention dhyaan se padho.",
+        "Unscaled features par SGD chala kar sochna ki model kharab hai. Pehle `StandardScaler` lagao, phir learning rate tune karo."
+      ],
+      "revision": [
+        "∂J/∂w = (2/n)Σ(ŷ − y)x, ∂J/∂b = (2/n)Σ(ŷ − y).",
+        "w ← w − η·gradient.",
+        "Updates per epoch: batch 1, SGD n, mini-batch n/b.",
+        "η bada → oscillate/diverge; η chhota → slow.",
+        "R² = 1 − SS_res/SS_tot; test par negative ho sakta hai."
+      ],
+      "questions": [
+        {
+          "id": "mlp-w3-q1",
+          "question": "Training set mein 10000 rows hain aur mini-batch gradient descent batch size 500 ke saath chal raha hai. Ek epoch mein kitne parameter updates honge?",
+          "options": [
+            "500",
+            "10000",
+            "1",
+            "20"
+          ],
+          "answer": 3,
+          "explanation": "Ek epoch = poora data ek baar. Har update ek batch par hota hai, to updates = 10000/500 = 20 (option D). Option A batch size hai, option B SGD (batch size 1) ke updates hain, aur option C batch GD ka ek update per epoch hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w3-q2",
+          "question": "Gradient descent se linear regression train karte waqt training loss har epoch ke saath upar-neeche jhool raha hai aur dheere-dheere badhta ja raha hai. Sabse sambhavit wajah kya hai?",
+          "options": [
+            "Learning rate bahut chhota hai",
+            "Learning rate bahut bada hai",
+            "Training data zaroorat se zyada hai",
+            "Model mein intercept term nahi hai"
+          ],
+          "answer": 1,
+          "explanation": "Bada learning rate har step mein minimum ko overshoot karta hai; dono taraf jhoolte hue loss badhne lagta hai, yaani divergence (option B). Chhota learning rate (option A) loss ko dheere par lagataar girata hai, badhata nahi. Zyada data ya intercept na hona loss ko diverge nahi karata.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w3-q3",
+          "question": "Data (x, y): (1, 2), (2, 4). Model ŷ = wx + b, abhi w = 1, b = 0. Cost J = (1/n)Σ(ŷ − y)², learning rate 0.1. Ek batch gradient descent step ke baad w kya hoga?",
+          "options": [
+            "1.50",
+            "1.25",
+            "0.50",
+            "2.00"
+          ],
+          "answer": 0,
+          "explanation": "Predictions 1 aur 2, errors (ŷ − y) = −1 aur −2. ∂J/∂w = (2/2)(−1·1 + −2·2) = −5. Naya w = 1 − 0.1 × (−5) = 1.50 (option A). Option B 1/(2n) wali convention (gradient −2.5) se aata hai jo yahan di hi nahi gayi; option C sign ulta karne se (w + η·gradient); option D optimum w hai, jo ek step mein nahi milta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w3-q4",
+          "question": "Test set par actual y = [3, 5, 7, 9] aur predictions ŷ = [4, 5, 6, 9] hain. R² kya hai?",
+          "options": [
+            "0.10",
+            "0.50",
+            "0.90",
+            "0.95"
+          ],
+          "answer": 2,
+          "explanation": "ȳ = 6. SS_tot = 9 + 1 + 1 + 9 = 20, SS_res = 1 + 0 + 1 + 0 = 2. R² = 1 − 2/20 = 0.90 (option C). Option A sirf SS_res/SS_tot hai (1 − karna bhool gaye), aur option B MSE (2/4) hai, R² nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w3-q5",
+          "question": "`LinearRegression()` ko ek feature par fit kiya: x = [1, 2, 3, 4], y = [2, 3, 5, 6]. x = 5 ke liye prediction kya hoga?",
+          "options": [
+            "7.50",
+            "7.00",
+            "7.33",
+            "8.50"
+          ],
+          "answer": 0,
+          "explanation": "x̄ = 2.5, ȳ = 4. Σ(x − x̄)(y − ȳ) = 3 + 0.5 + 0.5 + 3 = 7, Σ(x − x̄)² = 5, slope w = 1.4. Intercept b = 4 − 1.4 × 2.5 = 0.5. ŷ(5) = 1.4 × 5 + 0.5 = 7.50 (option A). Option B intercept bhool jaata hai (1.4 × 5), option C pehle aur aakhri point se line kheenchta hai (least squares nahi), option D intercept galat (1.5) le leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w3-q6",
+          "question": "Model ŷ = wx (bias nahi), start w = 0. Data order mein (1, 2) phir (2, 4). Stochastic gradient descent har sample par loss (ŷ − y)² ka gradient leta hai, learning rate 0.1. Ek epoch (dono samples, isi order mein) ke baad w kya hoga?",
+          "options": [
+            "1.00",
+            "1.68",
+            "0.40",
+            "2.00"
+          ],
+          "answer": 1,
+          "explanation": "Sample 1: gradient = 2(0 − 2)(1) = −4, w = 0 + 0.4 = 0.4. Sample 2: ŷ = 0.8, gradient = 2(0.8 − 4)(2) = −12.8, w = 0.4 + 1.28 = 1.68 (option B). Option A batch GD ka ek step hai (average gradient −10, sab samples purane w = 0 par), jabki SGD doosre sample par updated w use karta hai. Option C sirf pehla update hai, option D optimum hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Polynomial features, regularisation and the bias–variance trade-off",
+      "summary": "Is week aap PolynomialFeatures se non-linear patterns fit karna, overfitting/underfitting ko learning curves se pehchaanna, bias–variance trade-off, aur Ridge, Lasso, ElasticNet se model ko control karna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Polynomial regression**: model parameters mein ab bhi linear hai, bas features expand hote hain. `PolynomialFeatures(degree=d)` saare monomials degree d tak banata hai, interactions samet. 2 features (a, b) aur degree 2 par: 1, a, b, a², ab, b² = 6 columns (default `include_bias=True` wala constant column bhi). n features aur degree d par kul columns C(n + d, d) hote hain, to degree badhte hi features tezi se badhte hain.",
+        "**Underfitting vs overfitting**: curved data par degree 1 line underfit karti hai (train aur validation dono error high). Bahut high degree training points ke beech wiggle karke train error ko lagbhag zero kar deti hai par validation error badh jaata hai (overfit). Degree ko validation/CV error se chuno, training error se kabhi nahi.",
+        "**Bias–variance decomposition**: expected test MSE = bias² + variance + irreducible noise σ². Simple model: high bias, low variance. Complex model: low bias, high variance. Noise kisi bhi model se kam nahi hota. Goal in dono ka sweet spot hai.",
+        "**Learning curves**: `learning_curve` training size ke saath train aur validation error plot karta hai. High bias: dono curves jaldi plateau karke high level par paas-paas aa jaate hain; zyada data se fayda nahi, model ya features ko richer banao. High variance: train error low, validation error high, beech mein bada gap; zyada data ya zyada regularisation madad karta hai.",
+        "**Ridge (L2)**: scikit-learn ka Ridge ‖y − Xw‖² + α‖w‖² minimise karta hai. Saare weights ko zero ki taraf smoothly shrink karta hai par exactly zero nahi karta; correlated features mein stable rehta hai. α = 0 matlab plain least squares, α bada matlab zyada bias aur kam variance.",
+        "**Lasso (L1) aur ElasticNet**: Lasso penalty α Σ|wⱼ| kuch weights ko exactly zero kar deti hai, yaani built-in feature selection. Correlated features mein Lasso aksar ek ko chun kar baaki ko zero kar deta hai. `ElasticNet` dono penalties milata hai; `l1_ratio=1` Lasso jaisa, chhota l1_ratio Ridge ki taraf.",
+        "**Regularisation ke practical rules**: penalty weights ke size par lagti hai, isliye pehle features scale karo (Pipeline mein `StandardScaler`), warna bade-unit wale feature ko kam saza milti hai. Intercept penalise nahi hota. α ko CV se chuno (`RidgeCV`, `LassoCV` ya `GridSearchCV`)."
+      ],
+      "example": {
+        "problem": "Ek feature, bias nahi: x = [1, 2, 3], y = [2, 4, 6]. Ridge objective Σ(y − wx)² + αw² hai. α = 0 aur α = 7 par w kya aayega?",
+        "steps": [
+          "Objective ko w se differentiate karke zero rakho: −2Σx(y − wx) + 2αw = 0.",
+          "Isse w = Σxy / (Σx² + α).",
+          "Σxy = 2 + 8 + 18 = 28, Σx² = 1 + 4 + 9 = 14.",
+          "α = 0: w = 28/14 = 2 (plain least squares, perfect fit).",
+          "α = 7: w = 28/21 ≈ 1.333; penalty ne weight ko zero ki taraf kheencha.",
+          "Answer: **α = 0 par w = 2, α = 7 par w ≈ 1.333**; α badhne par shrinkage badhti hai."
+        ],
+        "code": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import PolynomialFeatures, StandardScaler\nfrom sklearn.linear_model import Ridge\nfrom sklearn.model_selection import GridSearchCV\n\npipe = Pipeline([('poly', PolynomialFeatures(degree=3, include_bias=False)),\n                 ('scale', StandardScaler()),\n                 ('ridge', Ridge())])\ngrid = GridSearchCV(pipe, {'poly__degree': [1, 2, 3, 5],\n                           'ridge__alpha': [0.1, 1, 10, 100]}, cv=5)\ngrid.fit(X_train, y_train)\nprint(grid.best_params_)"
+      },
+      "mistakes": [
+        "Polynomial degree ya α ko training error dekh kar chunna. Training error degree badhne par hamesha girta hai; CV/validation error se chuno.",
+        "Unscaled features par Ridge/Lasso lagana. Penalty units par depend karti hai, to scaling ke bina regularisation unfair ho jaati hai; `StandardScaler` Pipeline mein rakho.",
+        "Ye maan lena ki Ridge features ko hata deta hai. Ridge sirf shrink karta hai; exact zero (feature selection) Lasso ya ElasticNet ke L1 part se aata hai."
+      ],
+      "revision": [
+        "PolynomialFeatures columns = C(n + d, d) (bias samet).",
+        "Test MSE = bias² + variance + noise.",
+        "High bias: curves paas aur high; high variance: bada gap.",
+        "Ridge (L2) shrink karta hai; Lasso (L1) zero karta hai.",
+        "α bada → zyada bias, kam variance; regularise karne se pehle scale karo."
+      ],
+      "questions": [
+        {
+          "id": "mlp-w4-q1",
+          "question": "2 features par `PolynomialFeatures(degree=2)` (baaki sab default) lagaya. Output mein kitne columns honge?",
+          "options": [
+            "6",
+            "5",
+            "4",
+            "9"
+          ],
+          "answer": 0,
+          "explanation": "Features a, b ke liye degree 2 tak saare monomials: 1, a, b, a², ab, b² = 6 (option A); formula C(2 + 2, 2) = 6. Option B default `include_bias=True` wala constant column bhool jaata hai, aur option C interaction term ab ko bhi chhod deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w4-q2",
+          "question": "50 features wale dataset par aap aisa linear model chahte ho jo kuch irrelevant features ke coefficients ko exactly zero kar de. Kaunsa model chunoge?",
+          "options": [
+            "Ridge",
+            "LinearRegression",
+            "Lasso",
+            "Bahut bade alpha wala Ridge"
+          ],
+          "answer": 2,
+          "explanation": "Lasso ki L1 penalty α Σ|w| ka geometry corners par minimum deta hai, isliye kuch coefficients exactly zero ho jaate hain (option C). Ridge (options A aur D) L2 penalty se weights ko chhota karta hai par bade alpha par bhi exactly zero nahi; yahi sabse common trap hai. Plain LinearRegression koi penalty hi nahi lagata.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w4-q3",
+          "question": "Degree-10 polynomial model ki learning curve: training RMSE 2.1 aur validation RMSE 9.8, aur training size badhane par bhi gap bada hi rehta hai. Sabse sahi agla kadam kya hai?",
+          "options": [
+            "Degree 15 kar do taaki model aur flexible ho",
+            "Ridge alpha badhao (ya degree ghatao) aur ho sake to zyada training data lao",
+            "Training set ko chhota kar do taaki gap kam dikhe",
+            "Validation set hata kar sirf training RMSE report karo"
+          ],
+          "answer": 1,
+          "explanation": "Low train error + high validation error + bada gap = high variance (overfitting). Iska ilaaj model ko simple karna (regularisation badhana, degree ghatana) aur zyada data hai: option B. Option A variance aur badhaayega. Trap: sochna ki model 'kamzor' hai kyunki validation error high hai, jabki training error low hone se pata chalta hai ki problem bias nahi, variance hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w4-q4",
+          "question": "Ek feature, bias nahi: x = [1, 2, 3], y = [1, 3, 4]. Ridge objective Σ(yᵢ − wxᵢ)² + αw² hai, α = 5. Optimal w kya hai?",
+          "options": [
+            "1.36",
+            "3.80",
+            "0.79",
+            "1.00"
+          ],
+          "answer": 3,
+          "explanation": "Derivative zero: w = Σxy/(Σx² + α). Σxy = 1 + 6 + 12 = 19, Σx² = 14, to w = 19/(14 + 5) = 1.00 (option D). Option A α = 0 wala least-squares answer (19/14) hai. Option C derivative mein data wale term ka 2 bhool kar Σxy/(Σx² + 2α) = 19/24 lene se aata hai, aur option B Σx² hi bhool jaata hai (19/5).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w4-q5",
+          "question": "Ek model ke liye kisi test point par bias = 2, variance = 3 aur irreducible noise variance σ² = 1 hai. Expected squared error kitna hai?",
+          "options": [
+            "6",
+            "7",
+            "8",
+            "4"
+          ],
+          "answer": 2,
+          "explanation": "Expected MSE = bias² + variance + σ² = 4 + 3 + 1 = 8 (option C). Option A bias ko square karna bhool jaata hai (2 + 3 + 1), option B noise term chhod deta hai (4 + 3), aur option D sirf bias² hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w4-q6",
+          "question": "3 features par `PolynomialFeatures(degree=3, include_bias=False)` lagaya. Output mein kitne columns honge?",
+          "options": [
+            "20",
+            "19",
+            "9",
+            "27"
+          ],
+          "answer": 1,
+          "explanation": "Degree ≤ 3 ke saare monomials (constant samet) = C(3 + 3, 3) = 20. `include_bias=False` constant column hata deta hai: 20 − 1 = 19 (option B). Ginti: degree 1 ke 3, degree 2 ke 6, degree 3 ke 10. Option A bias column ko gin leta hai; option C sirf x, x², x³ har feature ke liye (interactions bhool kar) ginta hai; option D 3³ hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

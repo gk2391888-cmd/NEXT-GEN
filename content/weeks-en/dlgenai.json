@@ -1,0 +1,365 @@
+{
+  "subjectId": "dlgenai",
+  "questions": {
+    "dlgenai-w1-q1": {
+      "question": "A neuron has weights w = [0.5, −1, 2], bias b = −0.5 and a ReLU activation. What is its output for the input x = [2, 1, 0.5]?",
+      "options": [
+        "1.0",
+        "0.5",
+        "0.62",
+        "0"
+      ],
+      "explanation": "z = 0.5·2 + (−1)·1 + 2·0.5 − 0.5 = 1 − 1 + 1 − 0.5 = 0.5, and ReLU(0.5) = 0.5, so option B is right. Option A (1.0) comes from forgetting to add the bias −0.5. Option C (0.62) is sigmoid(0.5), the wrong activation. Option D would only happen if z were negative, but here z is positive."
+    },
+    "dlgenai-w1-q2": {
+      "question": "All activation functions are removed from the hidden layers of a 5-layer network (only z = Wx + b remains). What is the most accurate consequence?",
+      "options": [
+        "The network can still learn any non-linear function, only training becomes slower",
+        "All gradients become exactly zero, so training stops",
+        "The output always stays between 0 and 1",
+        "The whole network equals a single affine map (Ax + c), so the extra layers add no expressive power"
+      ],
+      "explanation": "A composition of affine maps is affine: W₂(W₁x + b₁) + b₂ = (W₂W₁)x + (W₂b₁ + b₂). So the 5 layers can do no more than one linear layer, and option D is right. Option A is the most tempting trap: depth alone does not bring non-linearity, the activation does. Option B is wrong, a linear network has non-zero gradients. Option C describes a sigmoid output, and here there is no squashing at all."
+    },
+    "dlgenai-w1-q3": {
+      "question": "A 3-class classifier outputs logits [2, 1, 0] and the true class is the second one (logit 1). What is the cross-entropy loss (natural log) after softmax?",
+      "options": [
+        "0.41",
+        "0.24",
+        "1.41",
+        "0.61"
+      ],
+      "explanation": "Softmax: e² + e¹ + e⁰ = 7.389 + 2.718 + 1 = 11.107, so the true-class probability is 2.718/11.107 = 0.245. Loss = −ln(0.245) = 1.41, option C. Option A (0.41) = −ln(0.665) is the loss for the first class, i.e. taking the largest probability. Option B (0.24) is the probability itself, not the loss. Option D (0.61) uses log base 10."
+    },
+    "dlgenai-w1-q4": {
+      "question": "An MLP for MNIST: input 784 → Dense(128) → Dense(64) → Dense(10). Every Dense layer has a bias. How many trainable parameters are there in total?",
+      "options": [
+        "109184",
+        "110170",
+        "100480",
+        "109386"
+      ],
+      "explanation": "Each layer: inputs × units + units. 784·128 + 128 = 100480; 128·64 + 64 = 8256; 64·10 + 10 = 650. Total = 109386, option D. Option A (109184) leaves out the biases. Option B (110170) also adds a bias for each of the 784 input 'neurons', but the input layer has no parameters. Option C is only the first layer's count."
+    },
+    "dlgenai-w1-q5": {
+      "question": "A binary classifier predicts p = 0.8 (probability of class 1) for two examples. The first has true label 1, the second has label 0. What is the mean binary cross-entropy (natural log)?",
+      "options": [
+        "0.916",
+        "0.223",
+        "1.609",
+        "1.833"
+      ],
+      "explanation": "Label 1: −ln(0.8) = 0.223. Label 0: −ln(1 − 0.8) = −ln(0.2) = 1.609. Mean = (0.223 + 1.609)/2 = 0.916, option A. Option B comes from using −ln(0.8) for the second example too, i.e. forgetting to use (1 − p) when the label is 0. Option C is only the second example's loss, and option D (1.833) is the sum, not the mean."
+    },
+    "dlgenai-w1-q6": {
+      "question": "Input x = [1, 2]. The hidden layer has 2 ReLU neurons: W₁ = [[1, −1], [0.5, 1]] (each row is one neuron), b₁ = [0, −1]. The output neuron is linear: w₂ = [2, −3], b₂ = 1. What is the network's output?",
+      "options": [
+        "−5.5",
+        "−3.5",
+        "−4.5",
+        "0"
+      ],
+      "explanation": "z₁ = 1 − 2 + 0 = −1 → ReLU = 0; z₂ = 0.5 + 2 − 1 = 1.5 → ReLU = 1.5. Output = 2·0 − 3·1.5 + 1 = −3.5, option B. Option A (−5.5) skips the ReLU and uses z₁ = −1 directly. Option C (−4.5) forgets the output bias b₂. Option D applies a ReLU on the output too, but the output neuron is linear."
+    },
+    "dlgenai-w2-q1": {
+      "question": "A weight w = 0.8 has gradient ∂L/∂w = 0.5 and the learning rate is 0.1. What is w after one plain SGD step?",
+      "options": [
+        "0.85",
+        "0.3",
+        "0.75",
+        "0.05"
+      ],
+      "explanation": "w ← w − η·grad = 0.8 − 0.1·0.5 = 0.75, option C. Option A (0.85) adds the gradient, i.e. moves in the wrong direction. Option B (0.3) forgets the learning rate and subtracts the whole gradient. Option D (0.05) is only the step size η·grad, not the new weight."
+    },
+    "dlgenai-w2-q2": {
+      "question": "An image classifier's training loss keeps falling every epoch, but its validation loss rises steadily after epoch 15. What is the best diagnosis and action?",
+      "options": [
+        "It is overfitting; use early stopping on val loss and try regularisation such as dropout or L2",
+        "It is underfitting; add more layers and train for 100 epochs",
+        "The learning rate is too small; multiply it by 10",
+        "The validation set is wrong; merge it into the training set so the val loss disappears"
+      ],
+      "explanation": "Train loss ↓ with val loss ↑ is the classic sign of overfitting: the model is memorising the training examples. So option A is right. Option B is backwards: with underfitting the training loss stays high too, and more capacity would increase overfitting. Option C does not close the train-validation gap. Option D removes the very measurement of generalisation."
+    },
+    "dlgenai-w2-q3": {
+      "question": "The momentum update v ← βv + g, w ← w − ηv is used with β = 0.9, η = 0.1, starting from v = 0 and w = 2. The gradient is g = 1 for two steps. What is w after the two steps?",
+      "options": [
+        "1.80",
+        "2.29",
+        "1.971",
+        "1.71"
+      ],
+      "explanation": "Step 1: v = 0.9·0 + 1 = 1, w = 2 − 0.1·1 = 1.9. Step 2: v = 0.9·1 + 1 = 1.9, w = 1.9 − 0.1·1.9 = 1.71, option D. Option A (1.80) is plain SGD and ignores the momentum build-up. Option C (1.971) uses a different EMA form v ← βv + (1 − β)g, which is not the rule in this question. Option B (2.29) flips the sign of the update."
+    },
+    "dlgenai-w2-q4": {
+      "question": "A training set has 50000 images, the batch size is 128 and the model trains for 10 epochs. The last smaller batch is also used. How many optimizer steps (weight updates) happen in total?",
+      "options": [
+        "3900",
+        "3910",
+        "391",
+        "500000"
+      ],
+      "explanation": "Steps per epoch = ⌈50000/128⌉ = ⌈390.6⌉ = 391, so 10 epochs give 3910, option B. Option A (3900) takes the floor and drops the last partial batch, but the question says it is used. Option C is the steps of one epoch only. Option D (500000) assumes one update per image (batch size 1)."
+    },
+    "dlgenai-w2-q5": {
+      "question": "A layer is followed by inverted dropout with rate p = 0.2 (20% of units are zeroed). During training one unit had activation 4.0 and was not dropped. What is its value after dropout?",
+      "options": [
+        "5.0",
+        "3.2",
+        "4.0",
+        "0.8"
+      ],
+      "explanation": "Inverted dropout scales the surviving units by 1/(1 − p) = 1/0.8 = 1.25, so 4.0 × 1.25 = 5.0, option A. This keeps the expected activation the same in training and inference. Option B (3.2 = 4 × 0.8) applies the old 'scale down at inference' idea during training. Option C forgets the scaling. Option D (0.8) turns the keep probability into the value."
+    },
+    "dlgenai-w2-q6": {
+      "question": "Loss = data loss + λΣw², with λ = 0.01. A weight w = 1.5 has data-loss gradient 0.2, and the learning rate is 0.1. What is w after one SGD step?",
+      "options": [
+        "1.48",
+        "1.4785",
+        "1.477",
+        "1.523"
+      ],
+      "explanation": "The derivative of λw² is 2λw = 2·0.01·1.5 = 0.03, so the total gradient is 0.2 + 0.03 = 0.23. New w = 1.5 − 0.1·0.23 = 1.477, option C. Option B (1.4785) uses λw = 0.015 for the penalty gradient, forgetting the factor 2. Option A (1.48) ignores the regularisation. Option D (1.523) flips the sign of the update."
+    },
+    "dlgenai-w3-q1": {
+      "question": "A 5 × 5 filter is applied to a 32 × 32 input with stride 1 and no padding ('valid'). What is the height × width of the output feature map?",
+      "options": [
+        "28 × 28",
+        "27 × 27",
+        "32 × 32",
+        "6 × 6"
+      ],
+      "explanation": "out = (32 + 0 − 5)/1 + 1 = 28, so option A. Option B (27) forgets the +1 in the formula. Option C (32) assumes 'same' padding, but there is no padding here. Option D treats the stride as the kernel size (5)."
+    },
+    "dlgenai-w3-q2": {
+      "question": "A Conv2D layer on an RGB image (3 channels) has 64 filters, a 3 × 3 kernel and a bias. How many trainable parameters does it have?",
+      "options": [
+        "640",
+        "1728",
+        "1731",
+        "1792"
+      ],
+      "explanation": "Each filter has 3 × 3 × 3 = 27 weights + 1 bias = 28, and 64 filters give 28 × 64 = 1792, option D. Option B (1728) leaves out the biases. Option A (640) forgets the input channels and counts each filter as just 3 × 3 + 1. Option C (1731) swaps the input and output channels: (3·3·64 + 1)·3."
+    },
+    "dlgenai-w3-q3": {
+      "question": "A 7 × 7 conv is applied to a 224 × 224 input with stride 2 and padding 3 on each side. What is the output height (and width)?",
+      "options": [
+        "109",
+        "112",
+        "111",
+        "224"
+      ],
+      "explanation": "out = ⌊(224 + 2·3 − 7)/2⌋ + 1 = ⌊223/2⌋ + 1 = 111 + 1 = 112, option B. Option A (109) ignores the padding: ⌊217/2⌋ + 1. Option C (111) forgets the +1 after the floor. Option D assumes padding keeps the size, but stride 2 roughly halves it."
+    },
+    "dlgenai-w3-q4": {
+      "question": "2 × 2 max pooling with stride 2 is applied to the 4 × 4 feature map below. What is the output?",
+      "options": [
+        "[[3.5, 2], [2.5, 6]]",
+        "[[1, 0], [0, 3]]",
+        "[[6, 5], [7, 9]]",
+        "[[1, 2], [7, 9]]"
+      ],
+      "explanation": "Four non-overlapping 2 × 2 windows: {1, 3, 4, 6} → 6, {2, 0, 1, 5} → 5, {7, 2, 0, 1} → 7, {9, 8, 3, 4} → 9. So option C. Option A is the average-pooling result and option B the min-pooling result. Option D takes the first (top-left) element of each window, which is plain subsampling, not pooling."
+    },
+    "dlgenai-w3-q5": {
+      "question": "Three Conv2D layers are stacked, each with a 3 × 3 kernel and stride 1, with no pooling in between. What is the receptive field (on the original input) of one output unit of the third layer?",
+      "options": [
+        "7 × 7",
+        "9 × 9",
+        "3 × 3",
+        "6 × 6"
+      ],
+      "explanation": "At stride 1 each 3 × 3 layer grows the receptive field by 2: 3 → 5 → 7, so 7 × 7, option A. Option B (9 × 9) comes from adding the kernel sizes (3 + 3 + 3). Option C only looks at the last layer's kernel. Option D (6 × 6) adds 3 + 3 without accounting for the overlap instead of +2 per layer."
+    },
+    "dlgenai-w3-q6": {
+      "question": "Input 28 × 28 × 1. Model: Conv2D(32 filters, 3 × 3, valid) → MaxPool(2 × 2, stride 2) → Conv2D(64 filters, 3 × 3, valid) → Flatten → Dense(10). All conv/dense layers have biases. How many trainable parameters are there in total?",
+      "options": [
+        "96160",
+        "126986",
+        "387466",
+        "96266"
+      ],
+      "explanation": "Conv1: (9·1 + 1)·32 = 320, output 26 × 26 × 32. Pool: 13 × 13 × 32, 0 params. Conv2: (9·32 + 1)·64 = 18496, output 11 × 11 × 64. Flatten = 7744, Dense: 7744·10 + 10 = 77450. Total = 320 + 18496 + 77450 = 96266, option D. Option A (96160) leaves out the biases. Option B (126986) wrongly keeps conv2's output at 13 × 13 (forgetting that valid padding shrinks it). Option C (387466) ignores the pooling layer."
+    },
+    "dlgenai-w4-q1": {
+      "question": "How is data augmentation such as random flips and random crops used correctly in an image classifier?",
+      "options": [
+        "On train, validation and test, with a new random version at every evaluation",
+        "Only on the training data, with new random versions generated on the fly each epoch",
+        "Only on the test data, so the model looks robust",
+        "Create augmented copies once before training and also add them to the test set"
+      ],
+      "explanation": "Augmentation adds variety to the training data to reduce overfitting, so it is used only on training, with new random transforms every epoch, option B. Option A is the most tempting trap: randomness on validation/test makes the score change every run and the evaluation unfair. Options C and D alter the test set, which spoils the measurement of generalisation (D also leaks data)."
+    },
+    "dlgenai-w4-q2": {
+      "question": "A pretrained backbone is frozen (trainable = False). Global average pooling on its output gives a 512-length vector, followed by a new Dense(5) softmax head. How many parameters are updated during training?",
+      "options": [
+        "2560",
+        "0",
+        "2565",
+        "All backbone parameters + 2565"
+      ],
+      "explanation": "A frozen backbone's weights are not updated and GAP has no parameters. Only the head: 512·5 + 5 = 2565, option C. Option A (2560) forgets the head's 5 biases. Option B assumes 'frozen' means the whole model is frozen, but the new head is trainable. Option D ignores the freezing."
+    },
+    "dlgenai-w4-q3": {
+      "question": "The last conv block outputs 7 × 7 × 512 and a Dense(10) classifier (with bias) sits on top. By how many parameters does the head shrink if global average pooling replaces Flatten?",
+      "options": [
+        "250890",
+        "5130",
+        "25088",
+        "245760"
+      ],
+      "explanation": "Flatten: 7·7·512 = 25088 inputs, params = 25088·10 + 10 = 250890. GAP: 512 inputs, params = 512·10 + 10 = 5130. Difference = 250890 − 5130 = 245760, option D. Option A is the full Flatten-head count and option B the GAP-head count; neither answers 'by how many'. Option C (25088) is the length of the flattened vector, not a parameter count."
+    },
+    "dlgenai-w4-q4": {
+      "question": "A fictional factory's defect detector on 200 test images: TP = 40, FP = 10, FN = 20, TN = 130 ('defect' is the positive class). What is the recall for the defect class?",
+      "options": [
+        "0.667",
+        "0.8",
+        "0.85",
+        "0.727"
+      ],
+      "explanation": "Recall = TP/(TP + FN) = 40/60 = 0.667, option A: the model missed one third of the real defects. Option B (0.8) is precision, TP/(TP + FP) = 40/50; mixing up precision and recall is the most common trap. Option C (0.85) is accuracy = 170/200. Option D (0.727) is the F1 score."
+    },
+    "dlgenai-w4-q5": {
+      "question": "You have only 2000 labelled X-ray images and a CNN pretrained on a large natural-image dataset. Which training recipe is the most standard and safe?",
+      "options": [
+        "Unfreeze all layers from the start and use a large learning rate (such as 0.1)",
+        "Leave the new head random and train only the backbone",
+        "Drop the pretrained weights and train the architecture from scratch, since the domain is different",
+        "First freeze the backbone and train the new head, then unfreeze a few top layers and fine-tune with a very small learning rate"
+      ],
+      "explanation": "The two-stage recipe (option D) first stabilises the random head, then gently adjusts only the top, task-specific layers with a small LR, so the generic low-level features survive. In option A the large LR and the big gradients from a random head destroy the pretrained features. Option C overfits with only 2000 images; even in a different domain, features like edges and textures transfer. Option B never lets the head learn."
+    },
+    "dlgenai-w4-q6": {
+      "question": "Training images are 256 × 256. Augmentation takes a 224 × 224 crop at any integer position (pixel by pixel), then flips it horizontally with 50% chance. How many distinct (crop position, flip) combinations can one image produce?",
+      "options": [
+        "2048",
+        "2178",
+        "1089",
+        "1024"
+      ],
+      "explanation": "On each axis the crop's top-left corner can be anywhere from 0 to 32, i.e. 256 − 224 + 1 = 33 positions. 33 × 33 = 1089 crops, and flip or no flip doubles it to 2178, option B. Option A (2048 = 32² × 2) forgets the +1, a classic off-by-one. Option C does not count the flip. Option D makes both mistakes."
+    },
+    "dlgenai-w5-q1": {
+      "question": "A simple RNN layer has 20 units and a 10-dimensional input at each time step (with bias). How many trainable parameters does it have?",
+      "options": [
+        "220",
+        "600",
+        "2480",
+        "620"
+      ],
+      "explanation": "Input weights 20·10 = 200, recurrent weights 20·20 = 400, bias 20: total 620, option D. Option A (220) forgets the recurrent weights Wₕ, the very thing that makes it an RNN. Option B (600) leaves out the bias. Option C (2480) is the LSTM count (4 times as much)."
+    },
+    "dlgenai-w5-q2": {
+      "question": "In an LSTM cell, which component decides how much of the previous cell state cₜ₋₁ is kept for the next step?",
+      "options": [
+        "Input gate",
+        "Forget gate",
+        "Output gate",
+        "Candidate layer gₜ"
+      ],
+      "explanation": "In cₜ = fₜ ⊙ cₜ₋₁ + iₜ ⊙ gₜ the forget gate fₜ multiplies cₜ₋₁ directly, so option B. Option A (input gate) decides how much of the new candidate gₜ is added, not the old state. Option C controls how much of the cell state goes out as hₜ. Option D only proposes new content."
+    },
+    "dlgenai-w5-q3": {
+      "question": "A 1-unit RNN: hₜ = tanh(0.5·xₜ + 1.0·hₜ₋₁), h₀ = 0, bias 0. The input sequence is x = [1, 2]. What is h₂ (to 3 decimals)?",
+      "options": [
+        "0.898",
+        "0.762",
+        "1.462",
+        "0.462"
+      ],
+      "explanation": "h₁ = tanh(0.5·1 + 0) = tanh(0.5) = 0.462. h₂ = tanh(0.5·2 + 1.0·0.462) = tanh(1.462) = 0.898, option A. Option B (0.762 = tanh(1)) ignores the previous state h₁, i.e. forgets the recurrence. Option C forgets to apply tanh. Option D is just h₁."
+    },
+    "dlgenai-w5-q4": {
+      "question": "An LSTM layer has 20 units and input dimension 10 (with bias). How many trainable parameters does it have?",
+      "options": [
+        "620",
+        "1860",
+        "2480",
+        "2400"
+      ],
+      "explanation": "Each of the LSTM's four blocks (forget, input, output gate and the candidate) is the size of a simple RNN: 20·(10 + 20 + 1) = 620. Total = 4 × 620 = 2480, option C. Option A is just one block (a simple RNN). Option B (1860) counts the three gates but forgets the candidate layer. Option D (2400) leaves out the biases."
+    },
+    "dlgenai-w5-q5": {
+      "question": "In a simple RNN, the gradient gets multiplied by roughly 0.8 at every time step during backprop. Going 30 steps back, roughly what fraction of the original gradient remains?",
+      "options": [
+        "24 times",
+        "0.0012 times",
+        "0.2 times",
+        "0.8 times"
+      ],
+      "explanation": "The factors multiply: 0.8³⁰ ≈ 0.0012, so the gradient becomes about 800 times smaller. That is the vanishing gradient, option B. Option A (0.8 × 30 = 24) multiplies by 30 instead of raising to the power 30. Options C (1 − 0.8) and D assume the shrinking happens only once, but in BPTT it repeats at every step."
+    },
+    "dlgenai-w5-q6": {
+      "question": "In one LSTM step (single unit): cₜ₋₁ = 2, forget gate fₜ = 0.9, input gate iₜ = 0.5, candidate gₜ = 0.4, output gate oₜ = 0.5. What is the new hidden state hₜ (to 3 decimals)?",
+      "options": [
+        "1.000",
+        "0.964",
+        "0.473",
+        "0.482"
+      ],
+      "explanation": "cₜ = 0.9·2 + 0.5·0.4 = 1.8 + 0.2 = 2.0. hₜ = oₜ·tanh(cₜ) = 0.5·tanh(2.0) = 0.5·0.964 = 0.482, option D. Option A (0.5·2.0) forgets to apply tanh to the cell state. Option B is tanh(cₜ) without the output-gate multiplication. Option C (0.473 = 0.5·tanh(1.8)) forgets to add the input-gate term iₜgₜ."
+    },
+    "dlgenai-w6-q1": {
+      "question": "Classifying product reviews (of different lengths) as positive or negative is which kind of sequence task?",
+      "options": [
+        "One-to-many",
+        "Many-to-many (one label per token)",
+        "Many-to-one",
+        "One-to-one"
+      ],
+      "explanation": "The input is a whole token sequence and the output is a single label, so it is many-to-one, option C. Option B would apply if every word needed a label (as in POS tagging). Option A turns one input into a sequence (as in image captioning). Option D ignores the sequence structure."
+    },
+    "dlgenai-w6-q2": {
+      "question": "An Embedding layer has vocabulary size 10000 and embedding dimension 64. How many trainable parameters does it have?",
+      "options": [
+        "640000",
+        "640064",
+        "10064",
+        "64000"
+      ],
+      "explanation": "An embedding is a 10000 × 64 lookup table: 640000 parameters, option A. Option B adds a 64-size bias, but an embedding layer has no bias, it only looks up rows. Option C adds the vocab size and the dimension. Option D drops a zero (1000 × 64), i.e. misreads the vocab size."
+    },
+    "dlgenai-w6-q3": {
+      "question": "A univariate series has 100 values. The model takes the previous 10 values as input and predicts the value one step ahead (stride 1). How many (input, target) training pairs are there?",
+      "options": [
+        "91",
+        "90",
+        "10",
+        "100"
+      ],
+      "explanation": "The input window runs from index i to i + 9 and the target is at i + 10, which must satisfy i + 10 ≤ 99, so i = 0 … 89: 90 pairs, option B. Option A (91) counts all 10-length windows but forgets that the last window has no target left. Option C is the window length, and option D treats every value as a sample."
+    },
+    "dlgenai-w6-q4": {
+      "question": "A character-level language model gives logits [2, 1] for just two candidate next characters. With sampling at temperature T = 0.5, what is the probability of the first candidate?",
+      "options": [
+        "0.731",
+        "0.622",
+        "0.667",
+        "0.881"
+      ],
+      "explanation": "Divide the logits by T: [4, 2]. Softmax: e⁴/(e⁴ + e²) = 1/(1 + e⁻²) = 0.881, option D. T < 1 sharpens the distribution. Option A (0.731) is the T = 1 result (temperature ignored). Option B (0.622) multiplies by T instead of dividing, flattening it like T = 2. Option C (2/3) normalises the logits directly instead of using softmax."
+    },
+    "dlgenai-w6-q5": {
+      "question": "Four token sequences have lengths 3, 7, 5 and 2. They are brought to maxlen = 5: shorter ones are padded, longer ones truncated. How many padding tokens are added in total, and how many real tokens are cut?",
+      "options": [
+        "11 padding, 0 cut",
+        "5 padding, 0 cut",
+        "5 padding, 2 cut",
+        "2 padding, 5 cut"
+      ],
+      "explanation": "Padding: (5 − 3) + 0 + 0 + (5 − 2) = 2 + 3 = 5. Truncation happens only in the length-7 sequence: 7 − 5 = 2 tokens are cut. So option C. Option A pads everything to the longest sequence (7), ignoring maxlen = 5: 4 + 0 + 2 + 5 = 11. Option B forgets the truncation. Option D swaps the two numbers."
+    },
+    "dlgenai-w6-q6": {
+      "question": "A language model assigns probabilities 0.5, 0.25, 0.5 and 0.125 to the correct tokens of a 4-token test sequence. What is the model's perplexity on this sequence?",
+      "options": [
+        "3.36",
+        "1.75",
+        "4.00",
+        "0.34"
+      ],
+      "explanation": "NLL in bits: 1, 2, 1, 3, mean = 1.75 bits. Perplexity = 2^1.75 = 3.36 (the same with natural logs: exp(1.75·ln 2)), option A. Option B (1.75) is the average NLL, not the perplexity; the exponent was forgotten. Option C (4.00) is the arithmetic mean of 1/p (2, 4, 2, 8), but perplexity is the geometric mean. Option D (0.34) is the mean probability."
+    }
+  }
+}

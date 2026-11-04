@@ -1,0 +1,245 @@
+{
+  "subjectId": "mad1",
+  "questions": {
+    "mad1-w1-q1": {
+      "question": "A browser opens this URL: `https://shop.example.com:8443/items/list?page=2&sort=price#reviews`. Which part of the URL is **not** sent to the server with the HTTP request?",
+      "options": [
+        "The query string `page=2&sort=price`",
+        "The fragment `reviews`",
+        "The path `/items/list`",
+        "The host `shop.example.com` (which goes in the `Host` header)"
+      ],
+      "explanation": "The fragment (the part after `#`) is only for the browser, for example to scroll to a section of the page; the browser does not include it in the request. The path and query go in the request line (`GET /items/list?page=2&sort=price HTTP/1.1`) and the host goes in the `Host` header, so options A, C and D are wrong. Trap: option A, because people think the query is also browser-only, while the server uses it to filter and sort."
+    },
+    "mad1-w1-q2": {
+      "question": "In an app, the `/login` route accepts only GET and POST. A client sends a `DELETE /login` request. Which status code is the most accurate?",
+      "options": [
+        "404 Not Found",
+        "403 Forbidden",
+        "405 Method Not Allowed",
+        "501 Not Implemented"
+      ],
+      "explanation": "The resource (`/login`) exists; this method just isn't allowed on it. That is 405, and the response's `Allow` header lists the allowed methods (GET, POST). Option A's trap: the resource was found, so 404 is wrong. Option D (501) is for a server that doesn't recognise the method for any resource at all. Option B (403) is about missing permission, not about the method."
+    },
+    "mad1-w1-q3": {
+      "question": "A 2 MB file is downloaded over a 16 Mbps link with an RTT of 80 ms. Before data arrives, 2 RTTs are needed (TCP handshake + request); ignore TLS and server time. 1 MB = 10⁶ bytes, 1 Mbps = 10⁶ bits/s. What is the total time?",
+      "options": [
+        "0.29 s",
+        "1.00 s",
+        "1.08 s",
+        "1.16 s"
+      ],
+      "explanation": "Latency: 2 × 80 ms = 0.16 s. Transmission: 2 MB = 16 × 10⁶ bits, and 16 × 10⁶ ÷ 16 × 10⁶ = 1.0 s. Total = 0.16 + 1.0 = 1.16 s. Option A's trap: not converting bytes to bits (2 ÷ 16 = 0.125 s, plus 0.16). Option B forgets the latency, and option C counts only 1 RTT."
+    },
+    "mad1-w1-q4": {
+      "question": "A browser sends `GET /old-page` and the server replies `301 Moved Permanently` with the header `Location: /new-page`. What happens next?",
+      "options": [
+        "The browser automatically sends a new GET request for `/new-page`, and the address bar shows `/new-page`",
+        "The server fetches the content of `/new-page` internally and sends it in the body of that same 301 response",
+        "The browser shows the user an error page, because 3xx codes are failures",
+        "The browser waits a little and requests `/old-page` again"
+      ],
+      "explanation": "A 3xx redirect means 'the resource is elsewhere': the browser reads the `Location` header and sends a **new request** there, so there are two request-response cycles and the URL changes. Option B's trap: that is like a server-side forward/include, not a redirect; in a redirect the client does the work. Option C is wrong because 3xx is not an error class, and option D is thinking of `Retry-After`/503."
+    },
+    "mad1-w1-q5": {
+      "question": "In a fresh browser (no caches) a user opens `https://www.example.org/`. The connection is HTTP/1.1 or HTTP/2 over TCP. Which order is correct?",
+      "options": [
+        "TCP handshake → DNS lookup → TLS handshake → HTTP request",
+        "DNS lookup → TCP handshake → TLS handshake → HTTP request",
+        "DNS lookup → TLS handshake → TCP handshake → HTTP request",
+        "HTTP request → DNS lookup → TCP handshake → TLS handshake"
+      ],
+      "explanation": "A TCP connection needs an IP address, so DNS comes first. TLS runs on top of TCP, so the TLS handshake comes after TCP. Only once the encrypted channel exists does the HTTP request go out. Option C's trap: putting TLS before TCP because 'security comes first'; but TLS needs a TCP connection to send its bytes. Option A starts TCP without an IP, which isn't possible."
+    },
+    "mad1-w1-q6": {
+      "question": "Plain HTTP/1.1 (no TLS), DNS already cached, RTT 50 ms. A browser loads an HTML page that references 5 more files (3 CSS/JS + 2 images, same server). The browser uses a single **persistent** TCP connection and requests the files one after another (no pipelining). Ignore transmission and server time. What is the minimum time to get all 6 files?",
+      "options": [
+        "600 ms",
+        "150 ms",
+        "350 ms",
+        "300 ms"
+      ],
+      "explanation": "TCP handshake = 1 RTT. Then the HTML request-response = 1 RTT, and the other 5 files one after another = 5 RTTs. Total 7 RTTs × 50 ms = 350 ms. Option A's trap: that is the non-persistent connection count, where every file needs a new handshake (6 × 2 × 50 = 600 ms). Option D forgets the handshake (6 × 50), and option B assumes all the files arrived at once."
+    },
+    "mad1-w2-q1": {
+      "question": "Which markup is the most accessible for an email input, so that clicking the label focuses the input and a screen reader announces the field's name?",
+      "options": [
+        "`<input type=\"email\" name=\"email\" placeholder=\"Email\">` (placeholder only)",
+        "`<span>Email</span> <input type=\"email\" name=\"email\">`",
+        "`<label>Email</label> <input type=\"email\" name=\"email\">` (label outside the input, no `for`)",
+        "`<label for=\"email\">Email</label> <input type=\"email\" id=\"email\" name=\"email\">`"
+      ],
+      "explanation": "The label's `for` matches the input's `id`, so the label is programmatically tied to that input: a click focuses it and a screen reader announces the field as 'Email'. Option A's trap: a placeholder disappears as soon as you type and does not replace a label. Option C has a `<label>`, but with no `for` and the input not inside it there is no link; option B's `<span>` is just text."
+    },
+    "mad1-w2-q2": {
+      "question": "In this CSS `box-sizing` is not set anywhere (default). What is the card's visible width (from one edge of the border to the other)?",
+      "options": [
+        "300px",
+        "340px",
+        "350px",
+        "370px"
+      ],
+      "explanation": "With the default `content-box`, `width` is only the content: 300 + 2 × 20 (padding) + 2 × 5 (border) = 350px. Option A's trap: thinking like `border-box`, where 300px would include everything. Option B forgets the border, and option D also adds the margin, but the margin is empty space outside the border, not part of the visible box."
+    },
+    "mad1-w2-q3": {
+      "question": "The user presses Go without changing anything. Which URL will the browser request?",
+      "options": [
+        "`/search?q=flask&sort=new`",
+        "`/search?q=flask&lang=en&sort=new`",
+        "`/search?q=flask&sort=Newest`",
+        "`/search` (the data goes in the request body)"
+      ],
+      "explanation": "Only controls with a `name` are submitted: `q=flask` and the select's `sort`. A select's value is the chosen option's `value` attribute (`new`), not its visible text (`Newest`). Option B's trap: the `lang` input has only an `id`, no `name`, so it isn't sent. Option C sends the display text, and option D is POST behaviour, while the method here is GET."
+    },
+    "mad1-w2-q4": {
+      "question": "The HTML is `<nav id=\"menu\"><a class=\"link active\" href=\"/\">Home</a></nav>` and the CSS is below. What colour is the \"Home\" link?",
+      "options": [
+        "blue",
+        "red",
+        "green",
+        "the browser's default link colour, because the rules conflict"
+      ],
+      "explanation": "Specificity: `#menu a` = (1, 0, 1), `nav a.active` = (0, 1, 2), `.link.active` = (0, 2, 0). The comparison goes from the left and only the first rule has an id, so red wins. Option A's trap: 'the last rule wins' or 'two classes are more'; source order only matters when specificity is equal. Option D is wrong because the cascade always resolves a conflict."
+    },
+    "mad1-w2-q5": {
+      "question": "The viewport width is first 768px, then 400px. What is the width of `.col` in each case?",
+      "options": [
+        "50% at 768px, 90% at 400px",
+        "100% at 768px, 100% at 400px",
+        "50% at 768px, 100% at 400px",
+        "100% at 768px, 90% at 400px"
+      ],
+      "explanation": "`max-width: 768px` means width ≤ 768px, so at 768px the first query applies and the width is 100%. At 400px both queries match; specificity is equal, so the later rule (90%) wins. Option A's trap: reading `max-width` as 'strictly less than'. Option B's trap: thinking that after the first matching media query the rest are ignored; in CSS every matching rule enters the cascade."
+    },
+    "mad1-w2-q6": {
+      "question": "Two `<div>`s sit one below the other in normal block flow (the parent is a plain block, not flex/grid), with no padding, border or content between them. What is the vertical gap between the border of \"One\" and the border of \"Two\"?",
+      "options": [
+        "50px",
+        "20px",
+        "30px",
+        "10px"
+      ],
+      "explanation": "In normal flow the vertical margins of adjacent block siblings **collapse**: the gap is the larger of the two margins, i.e. max(30, 20) = 30px. Option A's trap: adding the margins as you would horizontally (30 + 20). Collapsing happens only for vertical margins in block flow; margins of flex or grid items don't collapse, and there you would get 50px. Option D's 10px is the difference, which no rule uses."
+    },
+    "mad1-w3-q1": {
+      "question": "The context has `courses = ['MAD1', 'DBMS']`. What does this (one-line) template render?",
+      "options": [
+        "1.MAD1 2.DBMS",
+        "0.MAD1 1.DBMS",
+        "MAD1.1 DBMS.2",
+        "1.MAD1 1.DBMS"
+      ],
+      "explanation": "In Jinja `loop.index` starts at 1 and goes up on every iteration, so you get `1.MAD1 2.DBMS`. Option B's trap: counting from 0 like Python's `enumerate`; that would be `loop.index0`. Option D assumes the index never increases, and option C has the order reversed."
+    },
+    "mad1-w3-q2": {
+      "question": "A Flask app renders `<p>{{ comment }}</p>` in a `comment.html` template, and a user wrote `<b>hi</b>` as the comment. With default settings, what does the browser show?",
+      "options": [
+        "'hi' in bold text",
+        "The literal text `<b>hi</b>`, because `<` and `>` were escaped to `&lt;` and `&gt;`",
+        "The template fails to render with an error",
+        "The `<b>` tags are removed and only a plain 'hi' is shown"
+      ],
+      "explanation": "Flask turns autoescaping on for `.html` templates, so the special characters in `{{ comment }}` become HTML entities and the browser shows them as text, not as tags. Option A's trap: that only happens with `|safe` (and then a `<script>` would run too). Option D is 'sanitizing', which autoescaping does not do; it doesn't strip tags, it turns them into harmless text."
+    },
+    "mad1-w3-q3": {
+      "question": "The template is the same both times. First `user = {'name': 'Asha'}` (no `nickname` key) is passed, then `user = {'name': 'Asha', 'nickname': ''}`. What are the two outputs?",
+      "options": [
+        "`Hi Guest!` and `Hi Guest!`",
+        "`Hi !` and `Hi Guest!`",
+        "An error the first time, `Hi !` the second time",
+        "`Hi Guest!` and `Hi !`"
+      ],
+      "explanation": "The first time there is no `nickname` key, so `user.nickname` is undefined and `default` gives 'Guest'. The second time the key exists and its value is an empty string; `default` only acts on undefined values, so the empty string is printed: `Hi !`. Option A's trap: treating `default` like Python's `or`; for that you need `default('Guest', true)`. Option C is wrong because with default settings a missing key does not raise an error."
+    },
+    "mad1-w3-q4": {
+      "question": "`base.html` has `<title>{% block title %}Site{% endblock %}</title>`. When the `profile.html` below is rendered, what is the title, and does \"Hello\" appear on the page?",
+      "options": [
+        "`<title>Profile - Site</title>`, and \"Hello\" also appears on the page",
+        "`<title>Profile - </title>`, and \"Hello\" does not appear",
+        "`<title>Profile - Site</title>`, and \"Hello\" does not appear",
+        "`<title>Site</title>`, because a parent's block cannot be overridden"
+      ],
+      "explanation": "The child's `title` block replaces the parent's block, and `{{ super() }}` brings back the parent's content 'Site', so the title is `Profile - Site`. In a template that extends another, text outside blocks (here \"Hello\") is not rendered, because the output is the parent's layout. Option A's trap: treating the child like a normal page where everything is printed. Option B ignores `super()`, and option D gets the meaning of block overriding backwards."
+    },
+    "mad1-w3-q5": {
+      "question": "The header has a link `<a href=\"/cart\"><img src=\"cart.svg\" ...></a>`; there is no text in the link, only a cart icon. What is the best `alt` for the image?",
+      "options": [
+        "`alt=\"View cart\"`",
+        "`alt=\"\"`, because the icon is decorative",
+        "`alt=\"cart.svg\"`",
+        "Leave out `alt`; `title=\"cart\"` is enough"
+      ],
+      "explanation": "Here the image is the link's entire content, so its `alt` becomes the link's accessible name. So the alt should state what the link does: 'View cart'. Option B's trap: `alt=\"\"` is for decorative images that already have text next to them; here it would leave the link without a name and a screen reader would just say 'link'. Option C makes it read a filename that is useless to users, and in option D `title` is not a reliable replacement."
+    },
+    "mad1-w3-q6": {
+      "question": "The context has `nums = [3, 4, 7, 8, 10]`. What does this (one-line) template render?",
+      "options": [
+        "2=4;4=8;5=10;",
+        "0=4;1=8;2=10;",
+        "1=3;2=7;",
+        "1=4;2=8;3=10;"
+      ],
+      "explanation": "`for ... if ...` filters the sequence first, and the `loop` variable counts only the items that enter the loop: 4, 8, 10 get indices 1, 2, 3. Option A's trap: that is what happens with an `{% if %}` inside the loop, where `loop.index` counts positions in the original list (including 3). Option B is like `loop.index0`, and option C reads the condition backwards (odd numbers)."
+    },
+    "mad1-w4-q1": {
+      "question": "A student can take many courses and a course has many students. What is the correct way to store this in a relational database?",
+      "options": [
+        "A `course_id` column in the `student` table",
+        "A `student_ids` column in the `course` table holding comma-separated ids",
+        "A separate association table (such as `enrollment`) with both `student_id` and `course_id` as foreign keys",
+        "Merging Student and Course into a single table"
+      ],
+      "explanation": "This is a many-to-many (M:N) relationship, and in the relational model it is represented by an association table in which each row is one (student, course) pair. Option A's trap: one column can hold only one course, which makes it 1:N. Option B allows neither a foreign key nor a join, and option D duplicates data again and again."
+    },
+    "mad1-w4-q2": {
+      "question": "In a blog app a User can have many Posts, but every Post has exactly one author. Where should the foreign key go?",
+      "options": [
+        "A `post_id` column in the `users` table",
+        "A `user_id` column in the `posts` table, pointing to `users.id`",
+        "Each table holding the other's id",
+        "A separate association table is required"
+      ],
+      "explanation": "In a 1:N relationship the FK goes on the 'many' side (posts): every post stores the id of its one author. Option A's trap: a user has many posts, so a single `post_id` column cannot hold them all. Option C creates duplicated and inconsistent data, and option D (an association table) is for M:N, which isn't needed here."
+    },
+    "mad1-w4-q3": {
+      "question": "`users` has (1, Asha), (2, Bilal), (3, Chen). `posts` has three rows: two with `user_id = 1` and one with `user_id = 3`. What does this query return?",
+      "options": [
+        "Asha 2, Bilal 0, Chen 1",
+        "Asha 2, Bilal 1, Chen 1",
+        "Asha 2, Chen 1",
+        "Asha 2, Bilal NULL, Chen 1"
+      ],
+      "explanation": "The LEFT JOIN keeps Bilal too, with NULL post columns. `COUNT(p.id)` counts only non-NULL values, so Bilal's count is 0. Option B's trap: thinking like `COUNT(*)`, which would count the NULL row as 1. Option C is the INNER JOIN result, and option D is wrong because COUNT never returns NULL; it returns 0."
+    },
+    "mad1-w4-q4": {
+      "question": "Which statement about the model below is correct? (The `User` model's table is `user`.)",
+      "options": [
+        "`author` creates a separate column in the database that stores the user's name",
+        "`db.ForeignKey('user.id')` is wrong; it should use the class name `'User.id'`",
+        "A Post can be saved without a user, because relationships are optional",
+        "In the table the link is only the `user_id` column; `post.author` gives the User object and `user.posts` gives that user's list of posts"
+      ],
+      "explanation": "`relationship` creates no column; it provides Python attributes based on the `user_id` FK, and `backref='posts'` adds the reverse attribute on User. Option A's trap: taking the relationship for a column. Option B is wrong because `ForeignKey` takes a table.column name; the class name belongs in `relationship('User')`. Option C is wrong because `user_id` has `nullable=False`."
+    },
+    "mad1-w4-q5": {
+      "question": "A Flask-SQLAlchemy view creates `u = User(email='a@x.in')`, calls `db.session.add(u)`, and returns a response without calling `commit()`. What happens?",
+      "options": [
+        "The row is saved automatically at the end of the request",
+        "The row is not saved; at the end of the request the session is removed and the uncommitted work is discarded",
+        "The row is saved but appears only after the app restarts",
+        "`add()` itself raises an error, because add is not allowed without commit"
+      ],
+      "explanation": "`add()` only marks the object as pending in the session; making it permanent in the database is `commit()`'s job. Flask-SQLAlchemy removes the session at the end of the app context, and a transaction that was never committed is rolled back. Option A's trap: assuming an 'auto-save', which is not the default behaviour. Option D is wrong because calling commit after add is the normal flow; add on its own raises no error."
+    },
+    "mad1-w4-q6": {
+      "question": "`User.posts` is a relationship that uses the default (lazy) loading. The database has 50 users. How many SELECT queries does this code run in total?",
+      "options": [
+        "1",
+        "2",
+        "50",
+        "51"
+      ],
+      "explanation": "The first query loads all 50 users. With lazy loading, every `u.posts` runs a separate SELECT for that user the first time it is accessed, so 50 more queries: 1 + 50 = 51. This is the **N+1 problem**. Option B's trap: that is the count for eager loading such as `selectinload`, not for the default. Option A assumes a single JOIN like `joinedload`, and option C forgets the first query for the users."
+    }
+  }
+}

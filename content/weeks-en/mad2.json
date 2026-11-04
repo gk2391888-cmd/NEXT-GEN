@@ -1,0 +1,245 @@
+{
+  "subjectId": "mad2",
+  "questions": {
+    "mad2-w1-q1": {
+      "question": "What does this code print?",
+      "options": [
+        "7 3",
+        "52 3",
+        "52 NaN",
+        "7 52"
+      ],
+      "explanation": "With `+`, one operand is a string, so 2 is turned into a string too and \"5\" + \"2\" = \"52\" (concatenation). `-` has no string version, so \"5\" becomes the number 5 and 5 − 2 = 3. Option A is the trap of treating both as arithmetic, and option C is the trap of thinking that subtracting from a string always gives NaN (you get NaN only when the string cannot become a number, such as \"abc\")."
+    },
+    "mad2-w1-q2": {
+      "question": "What does this code print?",
+      "options": [
+        "null array function number",
+        "object object object NaN",
+        "null object function NaN",
+        "object object function number"
+      ],
+      "explanation": "`typeof null` gives \"object\" because of a historical quirk. An array is also an object, so `typeof []` is \"object\" (use `Array.isArray` to detect arrays). For functions `typeof` gives the special result \"function\". And `NaN`, despite the name \"Not a Number\", is a value of type number. Option A is the trap of expecting \"null\" and \"array\" from `typeof`, and option B is the trap of treating NaN as its own type."
+    },
+    "mad2-w1-q3": {
+      "question": "What happens when this code runs?",
+      "options": [
+        "`undefined` is printed, then a ReferenceError on the `y` line",
+        "`undefined` and `undefined` are printed",
+        "A ReferenceError for `x` on the very first line",
+        "1 and 2 are printed"
+      ],
+      "explanation": "`var x` is hoisted and initialised to `undefined` as soon as the function starts, so the first `console.log` prints `undefined`. `let y` is hoisted too but not initialised; until its declaration line it is in the TDZ, so `console.log(y)` throws a ReferenceError. Option B is the trap of treating `let` like `var`, and option C is the trap of thinking `var` is not hoisted at all."
+    },
+    "mad2-w1-q4": {
+      "question": "What does this code print?",
+      "options": [
+        "TypeError: Assignment to constant variable",
+        "2 2",
+        "3 3",
+        "3 2"
+      ],
+      "explanation": "`const` only locks the variable binding: `cfg` and `list` will always point to the same objects. Changing a property of the object and calling `push` on the array do not change the binding, so both are allowed: `cfg.retries` is 3 and `list.length` is 3. A TypeError would come only from a reassignment like `cfg = {}`, so option A is the trap of treating `const` as an immutable value."
+    },
+    "mad2-w1-q5": {
+      "question": "What does this code print?",
+      "options": [
+        "true true true false",
+        "false false true false",
+        "true false false false",
+        "true false true false"
+      ],
+      "explanation": "`null == undefined` is a special rule of loose equality: true. But under loose equality `null` equals only `undefined` (and itself); it is not converted to a number, so `null == 0` is false. In `\"\" == 0` the empty string becomes the number 0, so it is true. `NaN` equals nothing, not even itself: false. Option A is the trap of thinking null also becomes 0 (as it does in `null + 1`), and option C is the trap of not converting the empty string to a number."
+    },
+    "mad2-w1-q6": {
+      "question": "What does this code print?",
+      "options": [
+        "1 2",
+        "2 2",
+        "1 1",
+        "2 1"
+      ],
+      "explanation": "Spread `{ ...a }` creates a new object and copies the top-level properties. `n` is a number (a primitive), so `b.n = 2` changes only `b` and `a.n` stays 1. But `tags` is an array: only its reference was copied, so both objects share the same array, and after the `push` `a.tags.length` is also 2. Option C is the trap of treating spread as a deep copy, and option B is the trap of thinking `b` and `a` are the same object."
+    },
+    "mad2-w2-q1": {
+      "question": "What does this code print?",
+      "options": [
+        "1 1",
+        "3 3",
+        "3 1",
+        "2 0"
+      ],
+      "explanation": "Each `makeCounter()` call creates a new scope, so `c1` and `c2` have separate `count` variables. `c1` is running for the third time, so its count is 3; `c2` is running for the first time, so 1. `++count` increments first and then returns the new value. Option B is the trap of thinking both counters share one `count`, and option D assumes the old value is returned, as with post-increment (`count++`)."
+    },
+    "mad2-w2-q2": {
+      "question": "What does this code print?",
+      "options": [
+        "1,10,100,9",
+        "1,9,10,100",
+        "100,10,9,1",
+        "10,9,1,100"
+      ],
+      "explanation": "Without a comparator, `sort` turns every element into a string and compares in dictionary order: \"1\" < \"10\" < \"100\" < \"9\", because the first character \"1\" is smaller than \"9\". Option B is the trap of expecting numbers to be sorted numerically on their own; for that you must write `sort((a, b) => a - b)`."
+    },
+    "mad2-w2-q3": {
+      "question": "What does this code print?",
+      "options": [
+        "0,1,2 0,1,2",
+        "3,3,3 3,3,3",
+        "0,1,2 3,3,3",
+        "3,3,3 0,1,2"
+      ],
+      "explanation": "`var i` is a single variable for the whole loop (in fact the whole scope). All three arrow functions close over that same `i`, and when they run later the loop has finished and `i` is 3: \"3,3,3\". `let j` creates a new binding for each iteration, so each function remembers its own value 0, 1, 2. Option A is the trap of thinking a closure copies the value; a closure captures the variable, not the value."
+    },
+    "mad2-w2-q4": {
+      "question": "What does this code print?",
+      "options": [
+        "1 ok",
+        "1 TypeError",
+        "2 ok",
+        "NaN ok"
+      ],
+      "explanation": "`const inc = c.inc` extracts only the function, not its link to the object. The plain call `inc()` sets no `this`, and a class body always runs in strict mode, so `this` is `undefined` and reading `this.n` throws a TypeError. `c.n` is still 0, so `c.inc()` gives 1. Option C is the trap of thinking the extracted method stays bound to `c`, and option A assumes non-strict behaviour where `this` is the global object."
+    },
+    "mad2-w2-q5": {
+      "question": "What does this code print?",
+      "options": [
+        "7 viewer name,team",
+        "7 undefined name,team",
+        "7 viewer name,role,team",
+        "7 undefined name,role,team"
+      ],
+      "explanation": "A destructuring default applies when the property value is `undefined`, and here `role` is explicitly `undefined`, so `role` = \"viewer\". `...rest` gets only the properties not already taken: `id` and `role` were taken, so rest = `{ name, team }`. Option B is the trap of thinking the default does not apply when the property exists (a default does not apply to `null`, but it does apply to `undefined`), and option C is the trap of counting `role` in rest as well."
+    },
+    "mad2-w2-q6": {
+      "question": "What does this code print?",
+      "options": [
+        "I say ... true",
+        "I say woof false",
+        "I say woof true",
+        "TypeError: this.speak is not a function"
+      ],
+      "explanation": "`d.intro()`: `intro` is not on Dog, so it is found up the chain on `Animal.prototype`. The call is `d.intro()`, so `this` = `d`, and the `this.speak()` lookup starts again from `d`, where `Dog.prototype.speak` is found first: \"woof\". The chain is `d` → `Dog.prototype` → `Animal.prototype`, so two `getPrototypeOf` calls give `Animal.prototype`: true. Option A is the trap of thinking a parent method will call the parent's own `speak`, and option B is the trap of thinking the direct prototype of `d` is `Animal.prototype`."
+    },
+    "mad2-w3-q1": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "A → B → C → D",
+        "A → D → C → B",
+        "A → D → B → C",
+        "A → C → D → B"
+      ],
+      "explanation": "All synchronous code runs first: \"A\" and \"D\". Then the microtask queue is emptied: the promise callback \"C\". Only after that does the next task run, the timer callback \"B\". Option C is the trap of thinking `setTimeout(..., 0)` runs first because it was registered first; 0 ms means \"in the next task\", not \"now\", and microtasks always come before it. Option D is the trap of treating `then` as synchronous."
+    },
+    "mad2-w3-q2": {
+      "question": "For `/api/users/99` the server sends a 404 status with a JSON error body. What does this code print?",
+      "options": [
+        "catch Not Found",
+        "catch 404",
+        "then 404 true",
+        "then 404 false"
+      ],
+      "explanation": "The `fetch` promise fulfils as soon as any HTTP response arrives from the server, even with status 404. So `then` runs, `res.status` is 404 and `res.ok` (true only for 200–299) is false. Options A and B are the trap of thinking `fetch` rejects on an HTTP error; it rejects only on a network failure. Option C is the trap of reading `ok` as \"a response arrived\"."
+    },
+    "mad2-w3-q3": {
+      "question": "The page has `<div id=\"card\"><button id=\"buy\">Buy</button></div>` (inside body), with these listeners attached. The user clicks the button. In what order does the console print?",
+      "options": [
+        "card → button → body",
+        "button → card → body",
+        "body → card → button",
+        "button → body → card"
+      ],
+      "explanation": "The click event first travels down from window towards the button in the capture phase. On the way, `card` has a listener with `capture: true`, so it runs first. Then the target (button) listener runs, then the body listener as the event bubbles back up. Option B is the trap of treating every listener as a bubble-phase listener and ignoring `capture: true`."
+    },
+    "mad2-w3-q4": {
+      "question": "What does this promise chain print?",
+      "options": [
+        "bad 2 → after undefined",
+        "skipped undefined → bad 2 → after 10",
+        "bad 2 → after 10",
+        "bad 2"
+      ],
+      "explanation": "Starting from 1, the first `then` gives 2 and the second `then` throws with \"bad 2\". The rejection skips the next `then` (\"skipped\") and reaches `catch`, which prints \"bad 2\" and returns 10. After `catch` the chain is fulfilled again, so the last `then` receives 10: \"after 10\". Option D is the trap of thinking the chain stops after `catch`, and option A is the trap of ignoring the return value of `catch`."
+    },
+    "mad2-w3-q5": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "1 → 2 → 3 → 4",
+        "3 → 1 → 2 → 4",
+        "3 → 4 → 1 → 2",
+        "3 → 1 → 4 → 2"
+      ],
+      "explanation": "First \"3\". Then `job()` is called and its code runs synchronously up to `await`: \"1\". At `await` the function pauses and the rest becomes a microtask, so control returns to the caller: \"4\". When the synchronous code is done, the microtask runs: \"2\". Option B is the trap of treating `await null` as not pausing (await always leaves at least one microtask gap), and option C is the trap of thinking no part of an async function runs immediately."
+    },
+    "mad2-w3-q6": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "S → T1 → P1 → P2 → T2",
+        "S → P1 → P2 → T1 → T2",
+        "S → P1 → T1 → P2 → T2",
+        "S → P1 → T1 → T2 → P2"
+      ],
+      "explanation": "Sync code: \"S\". Now the microtask queue holds the P1 callback: \"P1\" is printed, T2 joins the task queue behind T1, and P2 becomes a new microtask. The microtask queue keeps draining while it has anything in it, so P2 also runs right away, before any timer. Then the tasks run in order: T1, then T2. Option C is the trap of thinking a microtask created inside a microtask waits for a later round; option A is the trap of running T1 before the microtasks because it was registered first."
+    },
+    "mad2-w4-q1": {
+      "question": "In Vue 3, `open` is false. What happens in the DOM with `<div v-show=\"open\">` and with `<div v-if=\"open\">`?",
+      "options": [
+        "Both remove the element from the DOM",
+        "`v-show` keeps the element in the DOM and applies `display: none`; `v-if` removes the element (and the components inside it) from the DOM",
+        "`v-if` hides the element with `display: none`; `v-show` removes it from the DOM",
+        "Both only apply CSS `visibility: hidden`"
+      ],
+      "explanation": "`v-show` always renders and only toggles the inline style `display: none`, so toggling is cheap. `v-if` is conditional rendering: when false, the element and its child components are destroyed, and when true they are created again. Option C is the trap of remembering the two the wrong way round; option A is the trap of thinking they are the same with different names."
+    },
+    "mad2-w4-q2": {
+      "question": "In a Vue 3 `<script setup>` component, a button click should increase the count by 1. What is correct inside `inc`?",
+      "options": [
+        "`count++`",
+        "`this.count++`",
+        "`count.set(count.get() + 1)`",
+        "`count.value++`"
+      ],
+      "explanation": "`ref()` returns a wrapper object; in script the real value lives on `.value`, so you write `count.value++`. Writing `{{ count }}` in the template is fine because a top-level ref is unwrapped there automatically. Option A is the trap of using template syntax in script (`count` is a const and an object, not a number). Option B is an Options API habit; in `<script setup>` `this` is not the component."
+    },
+    "mad2-w4-q3": {
+      "question": "A Vue 3 todo list is rendered with `v-for=\"(todo, i) in todos\" :key=\"i\"`. Each row has `{{ todo.text }}` and an `<input>` with no `v-model`; the user types notes into each input. After deleting the first todo, the notes appear next to the wrong todos. Why, and what is the fix?",
+      "options": [
+        "With an index key Vue matches rows by position; after the delete the remaining rows get different keys, so DOM nodes (and the text typed in their inputs) are reused and shown with the wrong todo. Fix: a stable key such as `:key=\"todo.id\"`",
+        "The key has no effect here; this is a Vue bug that only a page reload fixes",
+        "Adding `v-if` on the same element makes Vue rebuild every row and fixes the problem",
+        "The index key is fine; the problem is that `todos` is kept in a `ref` instead of `reactive`"
+      ],
+      "explanation": "The key tells Vue which DOM node belongs to which item. With index keys, the keys after the delete are still 0, 1, 2 ..., so Vue thinks the first rows are the same, patches their text and removes the last node. The text typed in an input is the DOM node's own state, so it stays at its position and ends up beside the wrong todo. With a stable `todo.id` key the right node is removed. Option B is the trap of calling it a random bug, and option D is the trap of blaming `ref` vs `reactive` for an identity problem."
+    },
+    "mad2-w4-q4": {
+      "question": "A Vue 3 child component contains this code. The parent renders `<TitleEditor title=\"Draft\" />`. What happens when `rename()` runs?",
+      "options": [
+        "The parent state also becomes \"Final\", because props are two-way bound",
+        "The title becomes \"Final\" in the child but stays \"Draft\" in the parent, with no warning",
+        "Props are readonly: Vue warns (in development mode) and the value does not change; the right way is to emit an event and let the parent change it",
+        "It is a compile error and the app will not build"
+      ],
+      "explanation": "In Vue 3 the `props` object is readonly (one-way data flow). Trying to write to it makes the development build warn that props are readonly, and the assignment is ignored. If the child wants the title changed, it should send an event such as `emit(\"update:title\", \"Final\")` and let the parent change its own state. Option A is the trap of treating props as two-way like `v-model`, and option B is the trap of thinking a prop is a local copy the child can quietly change."
+    },
+    "mad2-w4-q5": {
+      "question": "The Vue 3 component is shown below. The user clicks the button 3 times. What does the button show?",
+      "options": [
+        "3",
+        "0",
+        "1",
+        "Error: count is read-only"
+      ],
+      "explanation": "`let { count } = state` copies the value at that moment, 0, into a separate local variable; it keeps no link to the `state` Proxy. `count++` increments only the local variable, `state.count` stays 0 and the template gets no signal to re-render. Option A is the trap of treating destructuring as a reactive reference. Fix: write `state.count++`, or destructure with `toRefs(state)`."
+    },
+    "mad2-w4-q6": {
+      "question": "In this Vue 3 component, what is printed to the console on the first button click?",
+      "options": [
+        "1 1",
+        "0 0",
+        "0 1",
+        "1 2"
+      ],
+      "explanation": "After `count.value++` the state is 1 immediately, but Vue buffers the DOM update until the next tick. So when `before` is read, the `<p>` still holds the old text \"0\". `await nextTick()` resolves once Vue has applied the pending DOM update, so `after` is \"1\". Option A is the trap of thinking the DOM changes synchronously as soon as the ref changes; option B is the trap of thinking the DOM never updates inside a click handler."
+    }
+  }
+}

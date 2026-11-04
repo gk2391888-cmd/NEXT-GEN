@@ -1,0 +1,245 @@
+{
+  "subjectId": "mlp",
+  "questions": {
+    "mlp-w1-q1": {
+      "question": "A dataset has 1250 rows. After `train_test_split(X, y, test_size=0.2, random_state=0)`, how many rows will `X_train` have?",
+      "options": [
+        "250",
+        "1050",
+        "1000",
+        "1200"
+      ],
+      "explanation": "test_size=0.2 means 20% of the rows go to test: 0.2 × 1250 = 250. The remaining 1250 − 250 = 1000 rows go to training, so option C is correct. Option A is the test-set size (swapping train and test is the most common trap); options B and D come from a wrong subtraction."
+    },
+    "mlp-w1-q2": {
+      "question": "Outside a pipeline, a `StandardScaler` has been fitted on `X_train`. What is the correct call to scale the test data?",
+      "options": [
+        "`scaler.transform(X_test)`",
+        "`scaler.fit_transform(X_test)`",
+        "`scaler.fit(X_test)` then `scaler.transform(X_test)`",
+        "`scaler.fit_transform(X)` on the full data, then split again"
+      ],
+      "explanation": "Test data must be scaled with the same mean and std learned from the training data, so only `transform` (option A). Options B and C refit the scaler on the test data, which brings test statistics into the model and also creates a train-test scaling mismatch. Option D fits on the full data, which is plain leakage."
+    },
+    "mlp-w1-q3": {
+      "question": "`cross_val_score(model, X, y, cv=5)` is run for a regression model on 600 training rows. How many times is the model trained, and on how many rows each time?",
+      "options": [
+        "1 time, on 600 rows",
+        "5 times, on 120 rows each time",
+        "4 times, on 480 rows each time",
+        "5 times, on 480 rows each time"
+      ],
+      "explanation": "With cv=5 the data is split into 5 folds of 120 rows. Each fold is the validation fold once and the model is fitted on the other 4 folds (480 rows), so 5 fits of 480 rows each: option D. Option B is the size of the validation fold, not the training part. Option C confuses '4 training folds' with '4 fits'."
+    },
+    "mlp-w1-q4": {
+      "question": "`DummyRegressor(strategy='mean')` is fitted on training targets [10, 20, 30, 40]. The test targets are [25, 35]. What is this baseline's test RMSE?",
+      "options": [
+        "5.00",
+        "7.07",
+        "50.00",
+        "10.00"
+      ],
+      "explanation": "The baseline predicts the training mean: (10 + 20 + 30 + 40)/4 = 25. Test errors are 0 and 10, MSE = (0 + 100)/2 = 50, RMSE = √50 ≈ 7.07 (option B). Option C is the MSE (square root forgotten), option A is the MAE, and option D is just the larger error."
+    },
+    "mlp-w1-q5": {
+      "question": "`cross_val_score(model, X, y, cv=5, scoring='neg_mean_squared_error')` returned [-4, -9, -16, -1, -25]. If you compute each fold's RMSE, what is the mean of those 5 RMSE values?",
+      "options": [
+        "3.00",
+        "3.32",
+        "-11.00",
+        "11.00"
+      ],
+      "explanation": "The scores are negative MSEs. Drop the sign: 4, 9, 16, 1, 25. Per-fold RMSE: 2, 3, 4, 1, 5; their mean = 15/5 = 3.00 (option A). Option B is √(mean MSE) = √11 ≈ 3.32, a different quantity (the question asks for the mean of per-fold RMSEs). Options C and D are just the mean MSE without a square root."
+    },
+    "mlp-w1-q6": {
+      "question": "A feature has training values [2, 4, 6, 8]. The pipeline is `StandardScaler` → `LinearRegression`. After fitting, the model learned on the scaled feature z: ŷ = 20 + 3z. What does `pipe.predict` return for a new input x = 10 (to 2 decimals)?",
+      "options": [
+        "50.00",
+        "25.81",
+        "20.00",
+        "26.71"
+      ],
+      "explanation": "At predict time the Pipeline only runs the scaler's `transform`, with the training mean 5 and std. StandardScaler uses the population std (ddof = 0): variance = (9 + 1 + 1 + 9)/4 = 5, std = √5 ≈ 2.236. z = (10 − 5)/2.236 ≈ 2.236, ŷ = 20 + 3 × 2.236 ≈ 26.71 (option D). Option B comes from the sample std (√(20/3) ≈ 2.582), option A from forgetting to scale and using raw x = 10, and option C from refitting the scaler on the test point (z = 0)."
+    },
+    "mlp-w2-q1": {
+      "question": "A column has training values [4, NaN, 10, 6, 100]. What will `SimpleImputer(strategy='median')` fill in for the NaN?",
+      "options": [
+        "30",
+        "8",
+        "10",
+        "6"
+      ],
+      "explanation": "The median uses only the observed values: 4, 6, 10, 100 → the average of the middle two, 6 and 10, is 8 (option B). Option A is the mean, dragged up to 30 by the outlier 100; that is exactly why the median is chosen. Option C is the middle element of the unsorted list, not the sorted median."
+    },
+    "mlp-w2-q2": {
+      "question": "Which of these causes train-test leakage?",
+      "options": [
+        "Running `cross_val_score` with `StandardScaler` inside a Pipeline",
+        "Fitting `SimpleImputer` only on `X_train` and transforming `X_test`",
+        "Using `OneHotEncoder(handle_unknown='ignore')` for a categorical column",
+        "Fitting `StandardScaler` on the whole dataset and then calling `train_test_split`"
+      ],
+      "explanation": "In option D the scaler's mean and std were computed using the test rows too, so test information entered training: that is leakage. Option A is the correct approach (in each fold the scaler is fitted only on the training part), option B is also correct, and option C just handles unseen categories safely. Trap: thinking option A is risky, when the Pipeline is exactly what prevents leakage."
+    },
+    "mlp-w2-q3": {
+      "question": "X has 5 columns: age, income (numeric), city (4 categories in training), plan (3 categories) and customer_id. After fitting the ColumnTransformer below, how many columns will the output have?",
+      "options": [
+        "9",
+        "10",
+        "7",
+        "4"
+      ],
+      "explanation": "Numeric: 2 columns. One-hot (no category is dropped by default): 4 for city + 3 for plan = 7. Total 2 + 7 = 9 (option A). customer_id is not in any list, and the default `remainder='drop'` removes it, so option B (10) is wrong. Option C comes from assuming something like `drop='first'` and removing one column per feature."
+    },
+    "mlp-w2-q4": {
+      "question": "A `MinMaxScaler` (default settings) is fitted on a column whose training min is 20 and max is 70. A test row has the value 80. What is the scaled value?",
+      "options": [
+        "1.00",
+        "1.60",
+        "1.20",
+        "0.75"
+      ],
+      "explanation": "The transform uses the training min and max: (80 − 20)/(70 − 20) = 60/50 = 1.20 (option C). By default the output is not clipped, so a value outside the training range goes above 1. Option A assumes the output always stays in [0, 1]; option B forgets to subtract the min (80/50); option D is 60/80."
+    },
+    "mlp-w2-q5": {
+      "question": "A `StandardScaler` is fitted on the training column [10, 20, 30, 40, 50]. Roughly what is the scaled value of 45?",
+      "options": [
+        "0.95",
+        "1.06",
+        "1.50",
+        "0.50"
+      ],
+      "explanation": "Mean = 30. StandardScaler uses the population variance: (400 + 100 + 0 + 100 + 400)/5 = 200, std = √200 ≈ 14.14. z = (45 − 30)/14.14 ≈ 1.06 (option B). Option A comes from the sample std (√250 ≈ 15.81, dividing by n − 1), which StandardScaler does not use. Options C (15/10) and D (15/30) use wrong denominators."
+    },
+    "mlp-w2-q6": {
+      "question": "Pipeline: `SimpleImputer(strategy='mean')` → `StandardScaler`, fitted on the training column [2, NaN, 8, 4, NaN, 6]. Roughly what is the output for the test value 9?",
+      "options": [
+        "2.19",
+        "1.79",
+        "2.00",
+        "4.00"
+      ],
+      "explanation": "The imputer takes the mean of observed values: (2 + 8 + 4 + 6)/4 = 5, giving the column [2, 5, 8, 4, 5, 6]. The scaler is fitted on this imputed column: mean 5, population variance (9 + 0 + 9 + 1 + 0 + 1)/6 = 20/6, std ≈ 1.826. z = (9 − 5)/1.826 ≈ 2.19 (option A). Option B computes the std from only the 4 observed values (√5 ≈ 2.236), but the scaler receives imputed data; imputation shrinks the variance. Option C uses the n − 1 std (2.0), and option D forgets to scale."
+    },
+    "mlp-w3-q1": {
+      "question": "A training set has 10000 rows and mini-batch gradient descent runs with batch size 500. How many parameter updates happen in one epoch?",
+      "options": [
+        "500",
+        "10000",
+        "1",
+        "20"
+      ],
+      "explanation": "One epoch = one pass over the data. Each update uses one batch, so updates = 10000/500 = 20 (option D). Option A is the batch size, option B is the number of updates for SGD (batch size 1), and option C is batch GD's single update per epoch."
+    },
+    "mlp-w3-q2": {
+      "question": "While training linear regression with gradient descent, the training loss swings up and down every epoch and keeps growing. What is the most likely cause?",
+      "options": [
+        "The learning rate is too small",
+        "The learning rate is too large",
+        "There is more training data than needed",
+        "The model has no intercept term"
+      ],
+      "explanation": "A large learning rate overshoots the minimum on every step; swinging from side to side, the loss starts growing, i.e. divergence (option B). A small learning rate (option A) lowers the loss slowly but steadily; it does not make it grow. More data or a missing intercept does not make the loss diverge."
+    },
+    "mlp-w3-q3": {
+      "question": "Data (x, y): (1, 2), (2, 4). Model ŷ = wx + b, currently w = 1, b = 0. Cost J = (1/n)Σ(ŷ − y)², learning rate 0.1. What is w after one batch gradient descent step?",
+      "options": [
+        "1.50",
+        "1.25",
+        "0.50",
+        "2.00"
+      ],
+      "explanation": "Predictions are 1 and 2, errors (ŷ − y) = −1 and −2. ∂J/∂w = (2/2)(−1·1 + −2·2) = −5. New w = 1 − 0.1 × (−5) = 1.50 (option A). Option B comes from the 1/(2n) convention (gradient −2.5), which is not the one given; option C from flipping the sign (w + η·gradient); option D is the optimal w, which one step does not reach."
+    },
+    "mlp-w3-q4": {
+      "question": "On a test set the actual y = [3, 5, 7, 9] and predictions ŷ = [4, 5, 6, 9]. What is R²?",
+      "options": [
+        "0.10",
+        "0.50",
+        "0.90",
+        "0.95"
+      ],
+      "explanation": "ȳ = 6. SS_tot = 9 + 1 + 1 + 9 = 20, SS_res = 1 + 0 + 1 + 0 = 2. R² = 1 − 2/20 = 0.90 (option C). Option A is just SS_res/SS_tot (forgot the 1 −), and option B is the MSE (2/4), not R²."
+    },
+    "mlp-w3-q5": {
+      "question": "`LinearRegression()` is fitted on one feature: x = [1, 2, 3, 4], y = [2, 3, 5, 6]. What is the prediction for x = 5?",
+      "options": [
+        "7.50",
+        "7.00",
+        "7.33",
+        "8.50"
+      ],
+      "explanation": "x̄ = 2.5, ȳ = 4. Σ(x − x̄)(y − ȳ) = 3 + 0.5 + 0.5 + 3 = 7, Σ(x − x̄)² = 5, slope w = 1.4. Intercept b = 4 − 1.4 × 2.5 = 0.5. ŷ(5) = 1.4 × 5 + 0.5 = 7.50 (option A). Option B forgets the intercept (1.4 × 5), option C draws a line through the first and last points (not least squares), and option D uses a wrong intercept (1.5)."
+    },
+    "mlp-w3-q6": {
+      "question": "Model ŷ = wx (no bias), starting at w = 0. Data in order: (1, 2) then (2, 4). Stochastic gradient descent uses the gradient of the per-sample loss (ŷ − y)², learning rate 0.1. What is w after one epoch (both samples, in this order)?",
+      "options": [
+        "1.00",
+        "1.68",
+        "0.40",
+        "2.00"
+      ],
+      "explanation": "Sample 1: gradient = 2(0 − 2)(1) = −4, w = 0 + 0.4 = 0.4. Sample 2: ŷ = 0.8, gradient = 2(0.8 − 4)(2) = −12.8, w = 0.4 + 1.28 = 1.68 (option B). Option A is one batch GD step (average gradient −10, all samples at the old w = 0), whereas SGD uses the updated w for the second sample. Option C is only the first update, and option D is the optimum."
+    },
+    "mlp-w4-q1": {
+      "question": "`PolynomialFeatures(degree=2)` (everything else default) is applied to 2 features. How many columns will the output have?",
+      "options": [
+        "6",
+        "5",
+        "4",
+        "9"
+      ],
+      "explanation": "For features a, b all monomials up to degree 2: 1, a, b, a², ab, b² = 6 (option A); the formula C(2 + 2, 2) = 6. Option B forgets the constant column from the default `include_bias=True`, and option C also drops the interaction term ab."
+    },
+    "mlp-w4-q2": {
+      "question": "On a dataset with 50 features you want a linear model that sets the coefficients of some irrelevant features exactly to zero. Which model do you choose?",
+      "options": [
+        "Ridge",
+        "LinearRegression",
+        "Lasso",
+        "Ridge with a very large alpha"
+      ],
+      "explanation": "The geometry of Lasso's L1 penalty α Σ|w| puts the minimum at corners, so some coefficients become exactly zero (option C). Ridge (options A and D) shrinks weights with an L2 penalty but never to exactly zero, even with a large alpha; that is the most common trap. Plain LinearRegression applies no penalty at all."
+    },
+    "mlp-w4-q3": {
+      "question": "Learning curve of a degree-10 polynomial model: training RMSE 2.1 and validation RMSE 9.8, and the gap stays large as the training size grows. What is the best next step?",
+      "options": [
+        "Raise the degree to 15 so the model is more flexible",
+        "Increase the Ridge alpha (or lower the degree) and get more training data if possible",
+        "Make the training set smaller so the gap looks smaller",
+        "Drop the validation set and report only training RMSE"
+      ],
+      "explanation": "Low training error + high validation error + a big gap = high variance (overfitting). The cure is to simplify the model (more regularisation, lower degree) and more data: option B. Option A would raise the variance further. Trap: thinking the model is 'too weak' because validation error is high, when the low training error shows the problem is variance, not bias."
+    },
+    "mlp-w4-q4": {
+      "question": "One feature, no bias: x = [1, 2, 3], y = [1, 3, 4]. The Ridge objective is Σ(yᵢ − wxᵢ)² + αw², with α = 5. What is the optimal w?",
+      "options": [
+        "1.36",
+        "3.80",
+        "0.79",
+        "1.00"
+      ],
+      "explanation": "Setting the derivative to zero: w = Σxy/(Σx² + α). Σxy = 1 + 6 + 12 = 19, Σx² = 14, so w = 19/(14 + 5) = 1.00 (option D). Option A is the α = 0 least-squares answer (19/14). Option C comes from dropping the 2 on the data term of the derivative, giving Σxy/(Σx² + 2α) = 19/24, and option B forgets Σx² entirely (19/5)."
+    },
+    "mlp-w4-q5": {
+      "question": "For a model at some test point, bias = 2, variance = 3 and irreducible noise variance σ² = 1. What is the expected squared error?",
+      "options": [
+        "6",
+        "7",
+        "8",
+        "4"
+      ],
+      "explanation": "Expected MSE = bias² + variance + σ² = 4 + 3 + 1 = 8 (option C). Option A forgets to square the bias (2 + 3 + 1), option B drops the noise term (4 + 3), and option D is only bias²."
+    },
+    "mlp-w4-q6": {
+      "question": "`PolynomialFeatures(degree=3, include_bias=False)` is applied to 3 features. How many columns will the output have?",
+      "options": [
+        "20",
+        "19",
+        "9",
+        "27"
+      ],
+      "explanation": "All monomials of degree ≤ 3 (including the constant) = C(3 + 3, 3) = 20. `include_bias=False` removes the constant column: 20 − 1 = 19 (option B). Count: 3 of degree 1, 6 of degree 2, 10 of degree 3. Option A counts the bias column; option C counts only x, x², x³ per feature (forgetting interactions); option D is 3³."
+    }
+  }
+}

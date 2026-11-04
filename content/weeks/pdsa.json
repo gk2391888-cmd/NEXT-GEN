@@ -1,0 +1,505 @@
+{
+  "subjectId": "pdsa",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Python Essentials for Algorithms",
+      "summary": "Is week aap Python ke woh hisse dobara pakkaoge jo poore course mein lagenge: lists, dicts, sets ki cost, functions, recursion, classes, exceptions aur code ka time naapna.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Python list ek dynamic array hai**: andar contiguous memory mein references rakhe jaate hain, isliye `a[i]` O(1) hai. `append` amortized O(1) hai (kabhi-kabhi poori array badi jagah copy hoti hai), par `insert(0, x)`, `pop(0)` aur `x in a` O(n) hain kyunki items shift ya scan karne padte hain.",
+        "**Aliasing aur copy**: `b = a` nayi list nahi banata, dono naam ek hi object ko point karte hain. `a[:]` ya `a.copy()` shallow copy hai: bahar ki list nayi, par andar ki nested lists abhi bhi shared. Poori independent copy ke liye `copy.deepcopy`.",
+        "**dict aur set hash table hain**: lookup, insert aur `in` average O(1) hain. Keys hashable (immutable) honi chahiye: `int`, `str`, `tuple` chalenge, `list` key banaoge to `TypeError: unhashable type`. Python 3.7+ mein dict insertion order yaad rakhta hai.",
+        "**Functions first-class objects hain**: inhe variable mein rakh sakte ho, argument mein pass kar sakte ho (`sorted(data, key=len)`). Default argument sirf ek baar, function define hote waqt banta hai, isliye mutable default (`def f(x, acc=[])`) calls ke beech share ho jaata hai. Fix: `acc=None` rakho aur andar nayi list banao.",
+        "**Recursion**: har call ka apna stack frame hota hai. Base case zaroori hai, aur har recursive call problem ko base ki taraf chhota kare. CPython ka default recursion limit lagbhag 1000 hai (`sys.getrecursionlimit()`), isliye 10⁵ depth wali recursion `RecursionError` degi; aise case mein loop ya explicit stack use karo.",
+        "**Classes**: `__init__` object ki state set karta hai, methods `self` se state padhte hain. Operator overloading se apne objects ko built-ins ke saath chala sakte ho: `__lt__` define karo to `sorted()` aur `heapq` un objects ko compare kar lete hain; `__repr__`/`__str__` printing ke liye.",
+        "**Exceptions**: `try` mein risky code, `except` mein specific error handle karo, `else` tabhi chalta hai jab koi exception nahi aayi, aur `finally` hamesha chalta hai, chahe `return` ho jaaye. Bare `except:` mat likho, woh asli bugs bhi chhupa deta hai.",
+        "**Timing**: `time.perf_counter()` se code ka time naapo. Algorithm ki growth samajhne ka practical tareeka: input size n ko double karo aur dekho time kitna badhta hai. ~2× matlab linear, ~4× matlab quadratic. Ek single run ka time noisy hota hai, isliye kuch baar repeat karo."
+      ],
+      "example": {
+        "problem": "Fast exponentiation: `power(3, 13)` recursion se nikaalo, jahan exponent har baar aadha hota hai. Kitni recursive calls hongi aur answer kya hai?",
+        "steps": [
+          "Idea: xⁿ = (x^(n//2))², aur n odd ho to ek extra x se multiply. Isse exponent har call mein aadha hota hai.",
+          "Calls: power(3, 13) → power(3, 6) → power(3, 3) → power(3, 1) → power(3, 0) (base case, 1 return).",
+          "Wapas aate hue: n = 1: 1² · 3 = 3; n = 3: 3² · 3 = 27; n = 6: 27² = 729.",
+          "n = 13: 729² · 3 = 531441 · 3 = 1594323.",
+          "Total 5 calls, yaani ⌊log₂ 13⌋ + 2 = 5. Naive loop 13 multiplications karta; yeh O(log n) hai.",
+          "Answer: **1594323**, aur 5 calls."
+        ],
+        "code": "calls = 0\n\ndef power(x, n):\n    global calls\n    calls += 1\n    if n == 0:\n        return 1\n    half = power(x, n // 2)\n    if n % 2 == 0:\n        return half * half\n    return half * half * x\n\nprint(power(3, 13), calls)"
+      },
+      "mistakes": [
+        "`grid = [[0] * 3] * 3` likh kar 2D list banana. Teeno rows ek hi list object hain, to `grid[0][0] = 1` teeno rows badal deta hai. Sahi: `grid = [[0] * 3 for _ in range(3)]`.",
+        "Bade data par `if x in my_list` loop ke andar chalana. Har check O(n) hai, to poora loop O(n²) ho jaata hai. Pehle `s = set(my_list)` banao, phir `x in s` average O(1).",
+        "Recursive function mein base case ko aisa likhna jo kabhi hit na ho (jaise `n == 0` jab n negative bhi ho sakta hai). Result: `RecursionError`. Base case `n <= 0` jaisa safe rakho."
+      ],
+      "revision": [
+        "list: index O(1), append amortized O(1), `insert(0)`/`pop(0)`/`in` O(n).",
+        "dict/set: average O(1) lookup; keys hashable honi chahiye.",
+        "`b = a` alias hai; `a[:]` shallow copy; `deepcopy` poori copy.",
+        "Mutable default argument calls ke beech share hota hai; `None` default use karo.",
+        "`finally` hamesha chalta hai; `else` sirf tab jab exception na aaye.",
+        "Growth check: n double karo, time ka ratio dekho."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w1-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "a = [1, 2, 3]\nb = a\nb.append(4)\nc = a[:]\nc.append(5)\nprint(len(a), len(b), len(c))",
+          "options": [
+            "3 4 5",
+            "4 4 5",
+            "4 4 4",
+            "5 5 5"
+          ],
+          "answer": 1,
+          "explanation": "`b = a` alias hai, isliye `b.append(4)` se a bhi [1, 2, 3, 4] ho jaata hai (len 4, aur b bhi wahi list). `c = a[:]` us waqt ki copy hai, yaani [1, 2, 3, 4], phir usme 5 judta hai to len 5. Output \"4 4 5\", option B. Trap: option A, `b = a` ko copy samajh kar a ko 3 hi maan lena; option D, `a[:]` ko bhi alias maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w1-q2",
+          "question": "Ek fictional app mein 10⁶ user ids hain, aur har request par check karna hai ki ek id blocked list mein hai ya nahi. Blocked ids ko kis structure mein rakhna sabse fast hoga?",
+          "options": [
+            "Python list, check `x in blocked`",
+            "tuple, check `x in blocked`",
+            "set, check `x in blocked`",
+            "Sorted list, aur shuru se linear scan"
+          ],
+          "answer": 2,
+          "explanation": "set hash table hai, isliye `x in blocked` average O(1) hai, option C. list aur tuple mein `in` har element ko ek-ek karke dekhta hai (O(n)), isliye options A aur B slow hain. Option D ka trap: sorted list ka fayda tabhi hai jab binary search (O(log n)) karo; linear scan phir bhi O(n) hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w1-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "def add(x, bucket=[]):\n    bucket.append(x)\n    return bucket\n\nadd(1)\nadd(2)\nprint(add(3))",
+          "options": [
+            "[3]",
+            "[1, 2]",
+            "TypeError aayega",
+            "[1, 2, 3]"
+          ],
+          "answer": 3,
+          "explanation": "Default value `bucket=[]` sirf ek baar banti hai, jab `def` chalta hai. Teeno calls bina bucket diye usi ek list mein append karti hain, to teesri call ke baad woh [1, 2, 3] hai, option D. Trap: option A, yeh maanna ki har call par nayi khaali list banti hai. Fix: `bucket=None` aur andar `if bucket is None: bucket = []`.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w1-q4",
+          "question": "Naive recursive Fibonacci mein `fib(5)` chalane par function kitni baar call hota hai (pehli call mila kar)?",
+          "code": "calls = 0\n\ndef fib(n):\n    global calls\n    calls += 1\n    if n <= 1:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nfib(5)\nprint(calls)",
+          "options": [
+            "15",
+            "5",
+            "9",
+            "31"
+          ],
+          "answer": 0,
+          "explanation": "Calls ka count C(n) = 1 + C(n−1) + C(n−2), aur C(0) = C(1) = 1. To C(2) = 3, C(3) = 5, C(4) = 9, C(5) = 1 + 9 + 5 = 15, option A. Yahi exponential blow-up memoization (week 9) se theek hota hai. Traps: option B, fib(5) ki value (5) ko calls ka count samajhna; option C, C(4) = 9, yaani ek level kam ginna; option D, 2⁵ − 1 = 31, poora balanced binary tree maan lena, jabki fib(n − 2) wali branch chhoti hoti hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w1-q5",
+          "question": "Is code ka output kya hoga?",
+          "code": "class Job:\n    def __init__(self, name, pr):\n        self.name = name\n        self.pr = pr\n\n    def __lt__(self, other):\n        return self.pr > other.pr\n\njobs = [Job(\"a\", 2), Job(\"b\", 5), Job(\"c\", 1)]\nprint([j.name for j in sorted(jobs)])",
+          "options": [
+            "['c', 'a', 'b']",
+            "['b', 'a', 'c']",
+            "['a', 'b', 'c']",
+            "TypeError: '<' not supported"
+          ],
+          "answer": 1,
+          "explanation": "`sorted()` objects ko `<` se compare karta hai, aur `<` ke liye `__lt__` chalta hai. Yahan `__lt__` ulta hai: `self.pr > other.pr`, yaani jiski priority badi woh \"chhota\" maana jaata hai aur pehle aata hai. Priority 5, 2, 1 ke order mein: ['b', 'a', 'c'], option B. Trap: option A, `sorted` ko normal ascending priority samajhna; option D, yeh bhoolna ki `__lt__` define hone se objects comparable ho jaate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w1-q6",
+          "question": "Is code ka output kya hoga? (`end=\" \"` newline ki jagah space print karta hai.)",
+          "code": "def g(x):\n    try:\n        r = 10 // x\n    except ZeroDivisionError:\n        print(\"Z\", end=\" \")\n        return -1\n    else:\n        print(\"E\", end=\" \")\n        return r\n    finally:\n        print(\"F\", end=\" \")\n\nprint(g(0), g(5))",
+          "options": [
+            "Z E -1 2",
+            "-1 2 Z F E F",
+            "Z F E F -1 2",
+            "Z -1 E F 2"
+          ],
+          "answer": 2,
+          "explanation": "Arguments pehle evaluate hote hain, left se right. `g(0)`: `10 // 0` ZeroDivisionError deta hai, `except` mein \"Z\" print hota hai aur `return -1` hota hai, par return se pehle `finally` \"F\" print karta hai. `g(5)`: koi error nahi, to `else` \"E\" print karke 2 return karta hai, phir bhi `finally` \"F\" chalta hai. Aakhir mein `print` \"-1 2\" likhta hai. Output \"Z F E F -1 2\", option C. Trap: option A, sochna ki `return` ke baad `finally` nahi chalta; option B, sochna ki outer `print` pehle output deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Complexity, Searching and Sorting",
+      "summary": "Is week aap algorithms ki speed ko O, Ω, Θ notation mein naapna, binary search, aur selection, insertion, merge aur quicksort ko unke best/worst case aur stability ke saath samajhna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Asymptotic notation**: f(n) = O(g(n)) matlab kuch constant c aur n₀ ke baad f(n) ≤ c·g(n) (upper bound). Ω lower bound hai, aur Θ dono ek saath (tight bound). Constants aur chhote terms hata dete hain: 3n² + 50n + 7 = Θ(n²). Default mein hum worst case ki baat karte hain.",
+        "**Growth ka order**: 1 < log n < √n < n < n log n < n² < n³ < 2ⁿ < n!. Rough rule: Python ek second mein lagbhag 10⁷ simple steps karta hai. n = 10⁵ par n² = 10¹⁰ steps, yaani minutes; n log n ≈ 1.7 × 10⁶, yaani pal bhar.",
+        "**Steps ginna**: alag loops ka cost add hota hai, nested loops ka multiply. Dependent loop (`for j in range(i)`) ka total Σ i = n(n − 1)/2 = Θ(n²). Jo loop variable ko har baar aadha ya double karta hai woh sirf log₂ n baar chalta hai.",
+        "**Binary search**: sirf sorted data par. Har step mein search range [lo, hi] aadhi hoti hai, isliye O(log n); 10⁶ elements mein max ~20 comparisons. Invariant: agar x hai to woh [lo, hi] ke andar hi hai. Python mein `bisect.bisect_left` yahi kaam karta hai.",
+        "**Selection sort**: har pass mein baaki hisse ka minimum dhoondh kar aage swap. Hamesha n(n − 1)/2 comparisons, chahe input sorted ho; swaps sirf n − 1 tak. Door ka swap equal keys ka order bigaad sakta hai, isliye **not stable**.",
+        "**Insertion sort**: har naya element peeche ki sorted list mein sahi jagah tak shift hota hai. Already sorted input par O(n), reverse sorted par O(n²). Shifts ki ginti = input ke inversions. Stable aur in-place; chhote ya almost-sorted data par bahut accha.",
+        "**Merge sort**: list ko aadha karo, dono half recursively sort karo, phir do sorted lists ko O(n) mein merge karo. Har case mein Θ(n log n), stable (merge mein barabar hone par left wala pehle lo), par O(n) extra memory chahiye.",
+        "**Quicksort aur stability**: pivot chuno, chhote elements left aur bade right partition karo, phir dono taraf recursion. Average Θ(n log n), in-place, par bura pivot (jaise sorted input par pehla element) Θ(n²) deta hai; random pivot isse bachata hai. **Stable sort** equal keys ka original order rakhta hai; Python ka `sorted` (Timsort) stable hai, isliye multi-key sorting ek ke baad ek sort se ho sakti hai."
+      ],
+      "example": {
+        "problem": "Merge sort se [29, 4, 17, 8, 35, 12] sort karo, aur har merge step dikhao.",
+        "steps": [
+          "Split: [29, 4, 17] aur [8, 35, 12]. Phir [29] | [4, 17] aur [8] | [35, 12].",
+          "Neeche se merge: [4] + [17] → [4, 17]; phir [29] + [4, 17] → [4, 17, 29].",
+          "Right side: [35] + [12] → [12, 35]; phir [8] + [12, 35] → [8, 12, 35].",
+          "Aakhri merge: dono fronts compare karo: 4 vs 8 → 4; 17 vs 8 → 8; 17 vs 12 → 12; 17 vs 35 → 17; 29 vs 35 → 29; left khatam, 35 copy.",
+          "Har level par total O(n) kaam, aur levels ⌈log₂ 6⌉ = 3, isliye O(n log n).",
+          "Answer: **[4, 8, 12, 17, 29, 35]**."
+        ],
+        "code": "def merge(L, R):\n    out, i, j = [], 0, 0\n    while i < len(L) and j < len(R):\n        if L[i] <= R[j]:          # <= keeps it stable\n            out.append(L[i]); i += 1\n        else:\n            out.append(R[j]); j += 1\n    return out + L[i:] + R[j:]\n\ndef merge_sort(a):\n    if len(a) <= 1:\n        return a\n    mid = len(a) // 2\n    return merge(merge_sort(a[:mid]), merge_sort(a[mid:]))\n\nprint(merge_sort([29, 4, 17, 8, 35, 12]))"
+      },
+      "mistakes": [
+        "Binary search mein `while lo < hi` aur `hi = mid - 1` mila dena: aakhri bacha hua element check hi nahi hota, ya loop kabhi khatam nahi hota. Ek convention pakdo: closed range [lo, hi] ke saath `while lo <= hi`, `lo = mid + 1`, `hi = mid - 1`.",
+        "Unsorted list par binary search chalana. Code error nahi deta, bas galat answer deta hai. Pehle sort karo (O(n log n)), aur baar-baar search karna ho tabhi yeh fayde ka hai.",
+        "Sochna ki O(n log n) har input size par O(n²) se fast hai. Chhote n par constants jeette hain, isliye Timsort jaise practical sorts chhote tukdon par insertion sort hi use karte hain."
+      ],
+      "revision": [
+        "O upper, Ω lower, Θ tight bound; constants aur chhote terms hata do.",
+        "Dependent nested loop Σ i = n(n − 1)/2 = Θ(n²); halving loop Θ(log n).",
+        "Binary search: sorted data, O(log n), `while lo <= hi`.",
+        "Selection: hamesha Θ(n²), unstable. Insertion: best Θ(n), stable.",
+        "Merge sort: Θ(n log n) hamesha, stable, O(n) extra space.",
+        "Quicksort: average Θ(n log n), worst Θ(n²), in-place, unstable."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w2-q1",
+          "question": "Bahut bade n ke liye inme se kaunsa function sabse tez badhta hai?",
+          "options": [
+            "100·n²",
+            "50·n·log₂ n",
+            "2^(log₂ n)",
+            "n³/1000"
+          ],
+          "answer": 3,
+          "explanation": "Asymptotic comparison mein constants maayne nahi rakhte, sirf n ki power dekhte hain. n³/1000 = Θ(n³), jo n² se tez badhta hai; lagbhag n = 10⁵ ke baad yeh 100·n² se aage nikal jaata hai. Isliye option D. Trap: option A, bada constant 100 dekh kar use bada maan lena. Option C asal mein sirf n hai, kyunki 2^(log₂ n) = n.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w2-q2",
+          "question": "Insertion sort kis input par sabse kam kaam karta hai, yaani Θ(n) time leta hai?",
+          "options": [
+            "Pehle se ascending order mein sorted list",
+            "Descending order (ulti sorted) list",
+            "Random order list",
+            "Koi bhi list jisme saare elements distinct hon"
+          ],
+          "answer": 0,
+          "explanation": "Sorted input par har naya element apne left wale se sirf ek baar compare hota hai aur koi shift nahi hota, to total n − 1 comparisons: Θ(n), option A. Option B worst case hai: har element ko poori sorted list ke paar shift hona padta hai, n(n − 1)/2 shifts. Trap: option D, distinct elements hone se kaam kam nahi hota; kaam inversions ki ginti par depend karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w2-q3",
+          "question": "Is code ka output kya hoga?",
+          "code": "n = 64\ncount = 0\ni = 1\nwhile i < n:\n    for j in range(i):\n        count += 1\n    i *= 2\nprint(count)",
+          "options": [
+            "384",
+            "63",
+            "6",
+            "4096"
+          ],
+          "answer": 1,
+          "explanation": "Outer loop i = 1, 2, 4, 8, 16, 32 ke liye chalta hai (64 par ruk jaata hai). Inner loop har baar i steps: 1 + 2 + 4 + 8 + 16 + 32 = 63, option B. Yeh geometric series hai jiska total n se kam hai, isliye code Θ(n) hai, Θ(n log n) nahi. Trap: option A, 6 outer passes × 64 = 384 maan lena, yaani har pass mein poora n; option D, nested loop dekh kar n² = 4096.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w2-q4",
+          "question": "Is code ka output kya hoga?",
+          "code": "def bsearch(a, x):\n    lo, hi = 0, len(a) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        print(mid, end=\" \")\n        if a[mid] == x:\n            return mid\n        elif a[mid] < x:\n            lo = mid + 1\n        else:\n            hi = mid - 1\n    return -1\n\nprint(bsearch([3, 8, 12, 19, 23, 31, 40, 47, 55], 10))",
+          "options": [
+            "4 1 -1",
+            "4 1 0 -1",
+            "4 1 2 -1",
+            "4 2 -1"
+          ],
+          "answer": 2,
+          "explanation": "lo = 0, hi = 8. mid = 4: a[4] = 23 > 10, to hi = 3. mid = (0 + 3) // 2 = 1: a[1] = 8 < 10, to lo = 2. mid = (2 + 3) // 2 = 2: a[2] = 12 > 10, to hi = 1. Ab lo > hi, loop khatam, return -1. Output \"4 1 2 -1\", option C. Trap: option A, 8 aur 12 ke beech gap dekh kar wahin rok dena, jabki code ek aur mid check karta hai; option B, 8 < 10 par galti se left jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w2-q5",
+          "question": "Records ko sirf pehle number (key) par selection sort kiya gaya. Output kya hoga?",
+          "code": "def selection_sort(a):\n    n = len(a)\n    for i in range(n - 1):\n        m = i\n        for j in range(i + 1, n):\n            if a[j][0] < a[m][0]:\n                m = j\n        a[i], a[m] = a[m], a[i]\n\nrecs = [(2, \"x\"), (2, \"y\"), (1, \"z\")]\nselection_sort(recs)\nprint(\" \".join(r[1] for r in recs))",
+          "options": [
+            "z x y",
+            "x y z",
+            "y x z",
+            "z y x"
+          ],
+          "answer": 3,
+          "explanation": "i = 0: minimum key 1 index 2 par hai, to index 0 aur 2 swap: [(1, z), (2, y), (2, x)]. i = 1: `a[2][0] < a[1][0]` yaani 2 < 2 False hai, koi swap nahi. Output \"z y x\", option D. Equal keys wale x aur y ka order ulta ho gaya, yahi dikhata hai ki selection sort stable nahi hai. Trap: option A, stable sort ki tarah x ko y se pehle maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w2-q6",
+          "question": "Yeh quicksort pehle element ko pivot banata hai aur `comps` mein element-pivot comparisons ginta hai. Pehle se sorted 8 elements par output kya hoga?",
+          "code": "comps = 0\n\ndef qs(a, lo, hi):\n    global comps\n    if lo >= hi:\n        return\n    p = a[lo]\n    i = lo\n    for j in range(lo + 1, hi + 1):\n        comps += 1\n        if a[j] < p:\n            i += 1\n            a[i], a[j] = a[j], a[i]\n    a[lo], a[i] = a[i], a[lo]\n    qs(a, lo, i - 1)\n    qs(a, i + 1, hi)\n\ndata = list(range(1, 9))\nqs(data, 0, len(data) - 1)\nprint(comps)",
+          "options": [
+            "24",
+            "36",
+            "28",
+            "64"
+          ],
+          "answer": 2,
+          "explanation": "Sorted input par pivot (pehla element) hamesha sabse chhota hai, to har partition ek side khaali aur doosri side mein baaki saare elements chhodta hai. Size 8 ke partition mein 7 comparisons, phir size 7 par 6, ..., size 2 par 1: 7 + 6 + ... + 1 = 28 = n(n − 1)/2, option C. Yahi Θ(n²) worst case hai. Trap: option A, average case n log₂ n = 8 × 3 = 24 lagaana; option B, n(n + 1)/2 = 36, har partition mein ek extra comparison gin lena.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Lists, Stacks, Queues and Hashing",
+      "summary": "Is week aap arrays aur linked lists ka fark, Python list ki amortized cost, stack aur queue ka sahi implementation, aur hash tables mein collisions aur load factor kaise kaam karte hain, yeh seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Array vs linked list**: array mein elements contiguous memory mein hote hain, isliye `a[i]` O(1) hai, par beech mein insert/delete ke liye baaki elements shift karne padte hain (O(n)). Linked list ke nodes mein value aur `next` reference hota hai: kisi known node ke baad insert/delete O(1), par i-th element tak pahunchna O(n), aur har node ka extra memory overhead.",
+        "**Python list = dynamic array**: capacity bhar jaane par list ek badi array (lagbhag ek fixed factor se badi) allocate karke sab copy karti hai. Copies ka total kul appends ke proportional rehta hai, isliye `append` **amortized O(1)** hai. `pop()` O(1), par `pop(0)` aur `insert(0, x)` O(n).",
+        "**Stack (LIFO)**: push, pop, peek, teeno O(1). Python mein list ke `append` aur `pop()` se. Uses: function call stack, undo, bracket matching, postfix expression evaluation, DFS.",
+        "**Queue (FIFO)**: enqueue peeche, dequeue aage se. List par `pop(0)` O(n) hai, isliye `collections.deque` use karo: `append` aur `popleft` dono O(1). Fixed size array mein queue **circular buffer** se banti hai: head aur tail index `% capacity` se ghoomte hain.",
+        "**Hashing**: hash function key ko table index mein badalta hai, jaise h(k) = k mod m. Accha hash keys ko slots mein barabar failata hai. Keys slots se zyada ho sakti hain, to **collision** (do keys ek slot par) hona tay hai.",
+        "**Collision resolution**: (1) **Separate chaining**: har slot mein ek chhoti list (bucket), colliding keys usme. (2) **Open addressing**: table ke andar hi doosra slot dhoondho; **linear probing** mein h(k), h(k) + 1, h(k) + 2, ... (mod m). Linear probing mein lagataar bhare slots ke clusters bante hain, aur delete ke liye seedha khaali karne ki jagah tombstone marker lagta hai.",
+        "**Load factor α = n/m** (keys / slots). Chaining mein average search O(1 + α). Open addressing mein α < 1 zaroori hai, aur α 1 ke paas pahunchte hi probes tezi se badhte hain. Isliye table ek threshold (jaise 0.75) par lagbhag double karke saari keys **rehash** karti hai; yeh resize kabhi-kabhi O(n) hai, par amortized har insert O(1).",
+        "**dict/set ke rules**: keys hashable honi chahiye (`int`, `str`, `tuple` of immutables). `list` ya `dict` key nahi ban sakte, kyunki mutable object ka hash badal jaaye to woh galat slot mein pada reh jaayega. Jo do objects `==` hain unka hash bhi barabar hona chahiye."
+      ],
+      "example": {
+        "problem": "Postfix expression `6 2 3 + * 4 -` ko stack se evaluate karo.",
+        "steps": [
+          "Rule: number aaye to push; operator aaye to do pop karo (pehla pop right operand hai), result push karo.",
+          "6, 2, 3 push: stack [6, 2, 3].",
+          "`+`: 3 aur 2 pop, 2 + 3 = 5 push: [6, 5].",
+          "`*`: 5 aur 6 pop, 6 × 5 = 30 push: [30].",
+          "4 push: [30, 4]. `-`: 4 aur 30 pop, 30 − 4 = 26 push: [26].",
+          "Input khatam, stack mein ek hi value: **26**. Har token O(1), total O(n)."
+        ],
+        "code": "def eval_postfix(expr):\n    st = []\n    for tok in expr.split():\n        if tok in \"+-*\":\n            right = st.pop()\n            left = st.pop()\n            if tok == \"+\":\n                st.append(left + right)\n            elif tok == \"-\":\n                st.append(left - right)\n            else:\n                st.append(left * right)\n        else:\n            st.append(int(tok))\n    return st.pop()\n\nprint(eval_postfix(\"6 2 3 + * 4 -\"))"
+      },
+      "mistakes": [
+        "BFS ya kisi bhi queue ke liye list ka `pop(0)` use karna. Har dequeue O(n) hai, to 10⁵ items par poora program O(n²) ho jaata hai. `collections.deque` aur `popleft()` use karo.",
+        "Postfix/stack problems mein pop ka order ulta lena: pehla pop **right** operand hai. `8 2 -` ka answer 6 hai, −6 nahi.",
+        "Linear probing table se key ko seedha khaali karke delete karna. Uske baad wali keys ki search beech mein khaali slot dekh kar ruk jaati hai aur \"not found\" deti hai. Tombstone (deleted marker) lagao."
+      ],
+      "revision": [
+        "Array: index O(1), beech mein insert O(n). Linked list: known node ke baad insert O(1), access O(n).",
+        "list `append` amortized O(1); `pop(0)`/`insert(0)` O(n).",
+        "Stack = LIFO (list), queue = FIFO (`deque`).",
+        "α = n/m; chaining average O(1 + α); open addressing mein α < 1.",
+        "Linear probing: h(k), h(k)+1, ... mod m; clustering hoti hai.",
+        "Keys hashable honi chahiye; table resize par sab rehash."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w3-q1",
+          "question": "Is code ka output kya hoga?",
+          "code": "s = []\ns.append(4)\ns.append(7)\ns.pop()\ns.append(9)\ns.append(2)\ntop = s.pop()\nprint(top, s)",
+          "options": [
+            "2 [4, 9]",
+            "7 [9, 2]",
+            "2 [4, 7, 9]",
+            "2 [4, 9, 2]"
+          ],
+          "answer": 0,
+          "explanation": "List stack ki tarah chal rahi hai: `pop()` aakhri item hatata hai. [4, 7] → pop (7 gaya) → [4] → 9 aur 2 push → [4, 9, 2] → pop 2 return karta hai aur list [4, 9] rehti hai. Output \"2 [4, 9]\", option A. Trap: option B, queue ki tarah aage se nikaalna (FIFO); option D, `pop()` ko peek samajhna jo item hatata nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w3-q2",
+          "question": "Python list `a` (n items) aur dict `d` par inme se kaunsa operation O(n) time leta hai?",
+          "options": [
+            "`a.append(x)`",
+            "`a.pop()`",
+            "`d[key]` lookup",
+            "`a.pop(0)`"
+          ],
+          "answer": 3,
+          "explanation": "`a.pop(0)` pehla item hatata hai, to baaki n − 1 references ek jagah aage shift karne padte hain: O(n), option D. Option A amortized O(1) hai, option B aakhri item hatata hai (O(1)), aur option C hash lookup hai (average O(1)). Trap: option A, kabhi-kabhi hone wale resize ko dekh kar append ko O(n) bol dena; amortized cost O(1) hi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w3-q3",
+          "question": "Kis input par `balanced` True return karega?",
+          "code": "def balanced(s):\n    pairs = {\")\": \"(\", \"]\": \"[\", \"}\": \"{\"}\n    st = []\n    for ch in s:\n        if ch in \"([{\":\n            st.append(ch)\n        elif not st or st.pop() != pairs[ch]:\n            return False\n    return not st",
+          "options": [
+            "([)]",
+            "(()",
+            "{[()()]}",
+            "())("
+          ],
+          "answer": 2,
+          "explanation": "\"{[()()]}\": har closing bracket stack ke top wale opening se match karta hai, aur end mein stack khaali hai, to True, option C. Option A mein `)` aata hai jab top par `[` hai, mismatch. Option B ke end mein ek `(` bacha rehta hai, `not st` False. Option D mein teesra character `)` aata hai jab stack khaali hai. Trap: option A, sirf brackets ki ginti barabar dekh kar True maan lena; order bhi match hona chahiye.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w3-q4",
+          "question": "Hash table ka size 7 hai, h(k) = k mod 7, aur collision par linear probing (agla slot, aakhri slot ke baad index 0). Keys is order mein daali jaati hain: 10, 17, 24, 3. Key 3 kis index par jaayegi?",
+          "options": [
+            "3",
+            "6",
+            "4",
+            "0"
+          ],
+          "answer": 1,
+          "explanation": "10 mod 7 = 3, to 10 index 3 par. 17 mod 7 = 3 (bhara), to 4. 24 mod 7 = 3 (bhara), 4 (bhara), to 5. 3 mod 7 = 3: 3, 4, 5 teeno bhare, to 6, option B. Yeh primary clustering hai: ek hi home slot wali keys ek lambi line bana deti hain. Trap: option A, sirf home slot 3 dekh kar collision ignore karna; option C, sirf ek probe karke ruk jaana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w3-q5",
+          "question": "Yeh code ek hash table ka resizing rule simulate karta hai: insert se pehle agar (n + 1)/m > 0.75 ho to m double hota hai. 13 inserts ke baad output kya hoga?",
+          "code": "m, n = 8, 0\nresizes = 0\nfor key in range(13):\n    if (n + 1) / m > 0.75:\n        m *= 2\n        resizes += 1\n    n += 1\nprint(m, resizes)",
+          "options": [
+            "16 1",
+            "32 2",
+            "64 3",
+            "24 2"
+          ],
+          "answer": 1,
+          "explanation": "m = 8 par 6 keys tak (6/8 = 0.75, threshold se zyada nahi) koi resize nahi. 7th insert par 7/8 > 0.75, to m = 16. 12 keys tak 12/16 = 0.75 theek hai; 13th par 13/16 > 0.75, to m = 32. Do resizes: \"32 2\", option B. Trap: option A, sirf pehla resize ginna; option D, har baar 8 slots jodna (24), jabki rule double karne ka hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w3-q6",
+          "question": "Do stacks se bani queue. Output kya hoga?",
+          "code": "class Q2:\n    def __init__(self):\n        self.inb, self.out = [], []\n\n    def enq(self, x):\n        self.inb.append(x)\n\n    def deq(self):\n        if not self.out:\n            while self.inb:\n                self.out.append(self.inb.pop())\n        return self.out.pop()\n\nq = Q2()\nfor x in (1, 2, 3):\n    q.enq(x)\na = q.deq()\nq.enq(4)\nb = q.deq()\nc = q.deq()\nprint(a, b, c, len(q.inb), len(q.out))",
+          "options": [
+            "3 2 1 1 0",
+            "1 2 3 0 1",
+            "1 2 4 1 0",
+            "1 2 3 1 0"
+          ],
+          "answer": 3,
+          "explanation": "Pehle `deq` par `out` khaali hai, to `inb` [1, 2, 3] ulta karke `out` = [3, 2, 1] banta hai; pop se 1. Phir 4 `inb` mein jaata hai. Agle do `deq` mein `out` khaali nahi, to wahi se 2 aur 3 nikalte hain; 4 `inb` mein hi rehta hai. Output \"1 2 3 1 0\", option D. Har element zyada se zyada ek baar move hota hai, isliye dequeue amortized O(1). Trap: option B, sochna ki har `deq` par `inb` ka sab kuch `out` mein chala jaata hai; option A, ise stack (LIFO) samajhna.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Graphs: Representation, BFS, DFS and Topological Sort",
+      "summary": "Is week aap graphs ko matrix aur adjacency list mein store karna, BFS aur DFS se explore karna, connected components nikaalna, aur DAG ka topological order banana seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Graph G = (V, E)**: n vertices aur m edges. Undirected graph mein edge {u, v} dono taraf, directed mein u → v sirf ek taraf. Undirected mein Σ degree = 2m (har edge do baar gini jaati hai), aur m ≤ n(n − 1)/2. m n² ke paas ho to graph dense, n ke order ka ho to sparse.",
+        "**Adjacency matrix**: n × n table, A[u][v] = 1 agar edge hai. Edge check O(1), par space O(n²) aur kisi vertex ke neighbours nikaalna O(n). **Adjacency list** (Python mein `dict` of lists): space O(n + m), neighbours O(degree). Real data (road, social network) aksar sparse hota hai, isliye list zyada use hoti hai.",
+        "**BFS (breadth-first search)**: queue se level-by-level explore. Vertex ko queue mein daalte hi visited mark karo, warna woh do baar aa sakta hai. Unweighted graph mein BFS har vertex tak minimum edges wala path deta hai; `parent` pointers se path wapas banta hai. Time O(n + m) list ke saath, O(n²) matrix ke saath.",
+        "**DFS (depth-first search)**: ek raste par jitna gehra ja sako jao, phir backtrack. Recursion ya explicit stack se. Har vertex ka pre number (pehli baar visit) aur post number (saare descendants khatam) rakh sakte ho. Directed graph mein back edge (kisi ancestor ki taraf edge) ka matlab cycle hai.",
+        "**Connected components**: undirected graph mein har unvisited vertex se ek BFS/DFS chalao; har naya start ek naya component hai. Poora kaam phir bhi O(n + m). Isse pata chalta hai ki network mein kitne alag tukde hain aur do vertices connected hain ya nahi.",
+        "**DAG aur topological sort**: directed acyclic graph mein vertices ka aisa order jahan har edge u → v ke liye u pehle aaye (jaise course prerequisites ya build steps). Order tabhi possible hai jab koi directed cycle na ho, aur aksar ek se zyada valid orders hote hain.",
+        "**Kahn's algorithm**: har vertex ki indegree gino, indegree 0 wale queue mein daalo. Ek nikaalo, output karo, uske har out-neighbour ki indegree 1 ghatao, aur jo 0 ho jaaye use queue mein daalo. O(n + m). Agar output mein n se kam vertices aaye to graph mein cycle hai.",
+        "**DFS se topological sort**: DFS mein vertex tab \"finish\" hota hai jab uske saare descendants ho chuke. Finish order (post order) ko ulta karo, woh valid topological order hai. Python mein bahut gehri recursion `RecursionError` de sakti hai; bade graph par iterative DFS likho."
+      ],
+      "example": {
+        "problem": "Ek fictional college ke 8 students (0 se 7) ki friendship edges di hain: (0,1), (1,2), (3,4), (5,6), (6,7), (5,7). Kitne alag friend groups (connected components) hain?",
+        "steps": [
+          "Edge list se adjacency list banao; dono directions mein edge daalo kyunki graph undirected hai.",
+          "Vertex 0 unvisited hai: BFS se 0, 1, 2 milte hain. Component 1 = {0, 1, 2}.",
+          "Agla unvisited 3: BFS se {3, 4}. Component 2.",
+          "Agla unvisited 5: BFS se {5, 6, 7}; 5-6-7 ek triangle hai, par visited check se koi do baar nahi aata. Component 3.",
+          "Saare vertices visited. Har vertex aur edge ek-do baar hi dekhe gaye: O(n + m).",
+          "Answer: **3** components."
+        ],
+        "code": "from collections import deque\n\ndef components(n, edges):\n    adj = {v: [] for v in range(n)}\n    for u, v in edges:\n        adj[u].append(v)\n        adj[v].append(u)\n    seen, comps = set(), []\n    for s in range(n):\n        if s in seen:\n            continue\n        seen.add(s)\n        comp, q = [], deque([s])\n        while q:\n            u = q.popleft()\n            comp.append(u)\n            for w in adj[u]:\n                if w not in seen:\n                    seen.add(w)\n                    q.append(w)\n        comps.append(comp)\n    return comps\n\nc = components(8, [(0, 1), (1, 2), (3, 4), (5, 6), (6, 7), (5, 7)])\nprint(len(c), c)"
+      },
+      "mistakes": [
+        "BFS mein vertex ko queue se nikaalte waqt visited mark karna, daalte waqt nahi. Ek hi vertex queue mein kai baar aa jaata hai aur dense graph par kaam bahut badh jaata hai. Enqueue karte hi mark karo.",
+        "Topological order ko DFS ka pre-order (visit order) samajhna. Sahi order finish order ka **ulta** hai; pre-order mein koi vertex apne prerequisite se pehle aa sakta hai.",
+        "Undirected graph ki adjacency list mein edge sirf ek taraf (u → v) daalna. Phir v se u tak nahi pahunch paate aur components galat aate hain."
+      ],
+      "revision": [
+        "Σ degree = 2m (undirected).",
+        "Matrix: O(n²) space, O(1) edge check. List: O(n + m) space.",
+        "BFS = queue, unweighted shortest path, O(n + m).",
+        "DFS = stack/recursion; finish order ulta = topological order.",
+        "Kahn: indegree 0 queue; output < n vertices ⇒ cycle.",
+        "Topological order sirf DAG mein; aksar kai valid orders."
+      ],
+      "questions": [
+        {
+          "id": "pdsa-w4-q1",
+          "question": "Ek undirected graph ke 6 vertices ki degrees 3, 2, 2, 3, 1, 1 hain. Graph mein kitne edges hain?",
+          "options": [
+            "12",
+            "5",
+            "6",
+            "3"
+          ],
+          "answer": 2,
+          "explanation": "Har edge do vertices ki degree mein ek-ek baar judta hai, isliye Σ degree = 2m. Yahan 3 + 2 + 2 + 3 + 1 + 1 = 12 = 2m, to m = 6, option C. Trap: option A, degree ka sum hi edges maan lena (2 se divide bhoolna); option B, sochna ki 6 vertices ke graph mein n − 1 = 5 edges hote hain, jo sirf tree ke liye sach hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w4-q2",
+          "question": "n vertices aur m edges wale graph ko **adjacency matrix** mein rakha hai. Poore graph par BFS ka time kya hoga?",
+          "options": [
+            "O(n + m)",
+            "O(n²)",
+            "O(m log n)",
+            "O(n · m)"
+          ],
+          "answer": 1,
+          "explanation": "BFS har vertex ko ek baar queue se nikaalta hai, aur uske neighbours dhoondhne ke liye matrix ki poori row (n entries) padhni padti hai. n vertices × n entries = O(n²), option B, chahe graph mein edges kam hi hon. Trap: option A, jo adjacency **list** ke saath sahi hai; matrix mein neighbours O(degree) mein nahi milte.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "pdsa-w4-q3",
+          "question": "Is BFS code ka output kya hoga? (Neighbours list mein diye gaye order mein hi dekhe jaate hain.)",
+          "code": "from collections import deque\n\ng = {0: [2, 1], 1: [0, 4, 3], 2: [0, 4],\n     3: [1, 5], 4: [2, 1, 5], 5: [4, 3]}\norder, parent = [], {0: None}\nq = deque([0])\nwhile q:\n    u = q.popleft()\n    order.append(u)\n    for v in g[u]:\n        if v not in parent:\n            parent[v] = u\n            q.append(v)\nprint(order, parent[5])",
+          "options": [
+            "[0, 1, 2, 3, 4, 5] 3",
+            "[0, 2, 4, 1, 3, 5] 4",
+            "[0, 2, 1, 4, 3, 5] 4",
+            "[0, 2, 1, 4, 3, 5] 3"
+          ],
+          "answer": 2,
+          "explanation": "Queue [0]. 0 nikla: 2, 1 discover (order 0, 2, 1). 2 nikla: 4 naya (parent 2). 1 nikla: 3 naya (parent 1); 4 pehle se seen. 4 nikla: 5 naya, parent[5] = 4. Phir 3 aur 5 se kuch naya nahi. Output \"[0, 2, 1, 4, 3, 5] 4\", option C. Trap: option D, sochna ki 5 ko 3 ne discover kiya (3 bhi 5 ka neighbour hai, par 4 queue mein pehle tha); option B DFS ka order hai; option A neighbours ko sorted maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w4-q4",
+          "question": "Is directed graph par DFS chalaya gaya hai; `post` mein vertex tab judta hai jab uska DFS khatam hota hai. Output kya hoga?",
+          "code": "g = {\"a\": [\"b\", \"c\"], \"b\": [\"d\"], \"c\": [\"d\", \"e\"],\n     \"d\": [], \"e\": [\"b\"]}\nseen, post = set(), []\n\ndef dfs(u):\n    seen.add(u)\n    for v in g[u]:\n        if v not in seen:\n            dfs(v)\n    post.append(u)\n\ndfs(\"a\")\nprint(\" \".join(post))",
+          "options": [
+            "d b e c a",
+            "a b d c e",
+            "d e b c a",
+            "a c e b d"
+          ],
+          "answer": 0,
+          "explanation": "a → b → d: d ke koi out-edges nahi, d finish; phir b finish. Wapas a se c: d pehle se visited, e par jao; e → b visited, to e finish; phir c, phir a. Post order \"d b e c a\", option A. Iska ulta (option D) ek valid topological order hai. Trap: option B, visit (pre) order likh dena; option D, post order ko pehle hi ulta kar dena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w4-q5",
+          "question": "Ek fictional degree ke courses A–F ke prerequisites graph mein hain (X → Y matlab X pehle). Kahn's algorithm ka output kya hoga?",
+          "code": "from collections import deque\n\ng = {\"A\": [\"C\"], \"B\": [\"C\", \"D\"], \"C\": [\"E\"],\n     \"D\": [\"E\"], \"E\": [], \"F\": [\"D\"]}\nindeg = {v: 0 for v in g}\nfor u in g:\n    for v in g[u]:\n        indeg[v] += 1\nq = deque(v for v in g if indeg[v] == 0)\nout = []\nwhile q:\n    u = q.popleft()\n    out.append(u)\n    for v in g[u]:\n        indeg[v] -= 1\n        if indeg[v] == 0:\n            q.append(v)\nprint(\" \".join(out))",
+          "options": [
+            "A B C D F E",
+            "A C B D F E",
+            "F B A D C E",
+            "A B F C D E"
+          ],
+          "answer": 3,
+          "explanation": "Indegree: A 0, B 0, C 2, D 2, E 2, F 0. Queue shuru mein dict order mein [A, B, F]. A nikla: C → 1. B nikla: C → 0 (queue mein), D → 1. F nikla: D → 0 (queue mein). C nikla: E → 1. D nikla: E → 0. Phir E. Output \"A B F C D E\", option D. Trap: option A, C ke 0 hote hi use F se pehle chala dena; queue FIFO hai, F pehle se line mein tha.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "pdsa-w4-q6",
+          "question": "Ek DAG mein 6 vertices a, b, c, d, e, f hain aur sirf yeh edges hain: a → c, b → c, c → d, c → e. (f ka koi edge nahi.) Kitne alag-alag valid topological orders hain?",
+          "options": [
+            "4",
+            "24",
+            "20",
+            "720"
+          ],
+          "answer": 1,
+          "explanation": "c se pehle a aur b dono chahiye (2 orders: ab ya ba), c ke baad d aur e (2 orders). To a, b, c, d, e ke 2 × 2 = 4 orders. f ka koi constraint nahi, to har order ki 6 jagahon mein se kahin bhi aa sakta hai: 4 × 6 = 24, option B. Traps: option A, isolated vertex f ko bhool jaana; option C, f ke liye 6 ki jagah sirf 5 jagahen ginna, yaani ek end bhool jaana (4 × 5); option D, constraints ignore karke 6! = 720.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

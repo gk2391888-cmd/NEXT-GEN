@@ -1,0 +1,484 @@
+{
+  "subjectId": "mlf",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "Learning from data: tasks, losses and generalisation",
+      "summary": "Is week aap ML problems ko supervised/unsupervised aur regression/classification me classify karna, loss function se model ki galti naapna, aur training vs test error se overfitting pehchanna seekhoge.",
+      "readMinutes": 14,
+      "concepts": [
+        "**Machine learning ka setup**: data D = {(x₁, y₁), …, (xₙ, yₙ)}, jahan xᵢ ∈ ℝᵈ ek feature vector hai aur yᵢ label. Hum ek function family (model class) choose karte hain, jaise f(x) = wᵀx + b, aur data se aise parameters dhoondhte hain jo naye, unseen x par bhi achha predict karein. Asli goal training data yaad karna nahi, **generalise** karna hai.",
+        "**Supervised vs unsupervised**: supervised learning me har x ke saath label y diya hota hai (house price, spam/not-spam). Unsupervised me sirf x hote hain aur hum structure dhoondhte hain: clustering (customer segments), dimensionality reduction (PCA), density estimation. Label hai ya nahi, yahi pehla sawaal hai.",
+        "**Regression vs classification**: label continuous real number ho (price, temperature, delivery time) to regression; label ek finite set se ho ({spam, not spam}, {0, 1, …, 9}) to classification. Output ka type decide karta hai, input ka type nahi.",
+        "**Loss function** ℓ(ŷ, y) batata hai ki ek prediction kitni galat hai. Regression me squared loss (ŷ − y)² aur absolute loss |ŷ − y| common hain; classification me 0-1 loss (galat = 1, sahi = 0) aur probabilistic models ke liye cross-entropy −[y ln p + (1 − y) ln(1 − p)]. Training ka matlab hai **empirical risk** (1/n) Σ ℓ(f(xᵢ), yᵢ) ko minimise karna.",
+        "**Squared vs absolute loss**: squared loss bade errors ko zyada punish karta hai, isliye outliers ka asar bada hota hai. Ek constant predictor c ke liye Σ(yᵢ − c)² ka minimiser **mean** hai aur Σ|yᵢ − c| ka minimiser **median**. Isliye absolute loss outliers ke against zyada robust hai.",
+        "**Training, validation aur test split**: model ko training set par fit karo, hyperparameters (polynomial degree, regularisation strength) validation set par choose karo, aur test set ko sirf end me ek baar final estimate ke liye use karo. Test set par model choose kiya to wo estimate optimistic (biased) ho jaata hai.",
+        "**Overfitting aur underfitting**: bahut simple model training aur test dono par high error deta hai (underfitting, high bias). Bahut flexible model training error ko lagbhag zero kar deta hai par test error badh jaata hai (overfitting, high variance), kyunki wo noise bhi yaad kar leta hai. Model complexity badhane par training error ghatta hai, test error pehle ghatkar phir badhta hai (U-shape).",
+        "**Interpolation ka trap**: n points jinke x alag-alag hain, unhe degree n − 1 polynomial exactly pass kar sakta hai, yaani training error 0. Ye achha model hone ka saboot nahi hai; zero training error ke saath aksar test error sabse kharab hota hai."
+      ],
+      "example": {
+        "problem": "Ek fictional delivery startup 4 orders ka delivery time (minutes) predict karta hai. Actual y = (30, 42, 25, 50), model ke predictions ŷ = (28, 45, 25, 44). Mean squared error (MSE) aur mean absolute error (MAE) nikalo, aur batao kaunsa error outlier jaisi badi galti ko zyada weight deta hai.",
+        "steps": [
+          "Errors y − ŷ: 30 − 28 = 2, 42 − 45 = −3, 25 − 25 = 0, 50 − 44 = 6.",
+          "Squared errors: 4, 9, 0, 36. Sum = 49.",
+          "MSE = 49 / 4 = 12.25 (minutes²). RMSE = √12.25 = 3.5 minutes.",
+          "Absolute errors: 2, 3, 0, 6. Sum = 11, MAE = 11 / 4 = 2.75 minutes.",
+          "Sabse badi galti 6 ka MSE me contribution 36/49 ≈ 73% hai, jabki MAE me sirf 6/11 ≈ 55%.",
+          "Answer: **MSE = 12.25, MAE = 2.75**; squared loss badi galtiyon ko zyada weight deta hai."
+        ]
+      },
+      "mistakes": [
+        "Test set par baar-baar models compare karke best choose karna. Tab test error ek honest estimate nahi rehta. Model selection ke liye alag validation set (ya cross-validation) rakho.",
+        "Zero training error ko best model maan lena. Flexible model noise ko bhi fit kar leta hai; hamesha validation/test error dekho.",
+        "Problem ko input ke type se regression/classification bolna. Decide output (label) ka type karta hai: numeric continuous label = regression, category = classification."
+      ],
+      "revision": [
+        "Supervised: (x, y) pairs; unsupervised: sirf x.",
+        "Regression: continuous label; classification: discrete label.",
+        "Empirical risk = (1/n) Σ ℓ(f(xᵢ), yᵢ).",
+        "Squared loss ka best constant = mean; absolute loss ka = median.",
+        "Overfitting: training error low, test error high.",
+        "Validation se model choose karo, test sirf final report ke liye."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w1-q1",
+          "question": "Ek fictional online store ke paas customers ki purchase history hai, par koi label nahi. Wo customers ko similar buying behaviour wale groups me baantna chahta hai. Ye kis type ka ML problem hai?",
+          "options": [
+            "Supervised regression",
+            "Supervised classification",
+            "Unsupervised clustering",
+            "Supervised ranking"
+          ],
+          "answer": 2,
+          "explanation": "Data me koi label y nahi hai aur goal groups (structure) dhoondhna hai, isliye ye unsupervised clustering hai. Option B tempting hai kyunki output 'group' ek category lagti hai, par classification ke liye training me har customer ka sahi group pehle se pata hona chahiye, jo yahan nahi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w1-q2",
+          "question": "Ek regression model ke liye actual values y = (3, 5, 2, 8) aur predictions ŷ = (2.5, 5, 4, 7) hain. Mean squared error (MSE) kya hai?",
+          "options": [
+            "1.3125",
+            "0.875",
+            "5.25",
+            "1.1456"
+          ],
+          "answer": 0,
+          "explanation": "Errors: 0.5, 0, −2, 1. Squares: 0.25, 0, 4, 1, sum = 5.25. MSE = 5.25 / 4 = 1.3125. Option B (0.875) MAE hai (absolute errors ka mean), option C (5.25) sum of squared errors hai jisme n se divide karna bhool gaye, aur option D RMSE = √1.3125 hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w1-q3",
+          "question": "Teen polynomial regression models ke errors (MSE) ye hain. Degree 1: train 4.1, validation 4.3. Degree 3: train 1.2, validation 1.5. Degree 9: train 0.05, validation 6.8. Kaunsa statement sahi hai?",
+          "options": [
+            "Degree 9 best hai kyunki uska training error sabse kam hai",
+            "Degree 3 choose karna chahiye; degree 9 overfit kar raha hai",
+            "Degree 1 overfit kar raha hai kyunki uske dono errors close hain",
+            "Final model choose karne ke liye test set par teeno ka error compare karna chahiye"
+          ],
+          "answer": 1,
+          "explanation": "Model selection validation error se hota hai: degree 3 ka validation error (1.5) sabse kam hai. Degree 9 ka training error 0.05 par validation 6.8 hai, jo overfitting ka classic sign hai, isliye option A ka trap training error par bharosa karna hai. Degree 1 underfit (high bias) hai, overfit nahi. Option D galat hai kyunki test set par choose karne se final estimate biased ho jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w1-q4",
+          "question": "Ek binary classifier do examples par probability p = P(y = 1) deta hai: pehle example ka y = 1 aur p = 0.8, doosre ka y = 0 aur p = 0.3. Natural log use karke average cross-entropy loss kya hai?",
+          "options": [
+            "0.5798",
+            "0.7136",
+            "0.1259",
+            "0.2899"
+          ],
+          "answer": 3,
+          "explanation": "Loss = −[y ln p + (1 − y) ln(1 − p)]. Pehla: −ln 0.8 = 0.2231. Doosra (y = 0): −ln(1 − 0.3) = −ln 0.7 = 0.3567. Average = (0.2231 + 0.3567)/2 = 0.2899. Option B me doosre example ke liye −ln 0.3 le liya (y = 0 hone par 1 − p lena tha), option A sum hai average nahi, aur option C me log base 10 use ho gaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w1-q5",
+          "question": "Training data me 6 points hain jinke x values sab alag hain. Kis minimum degree ka polynomial in sab points se exactly guzar sakta hai (training MSE = 0, chahe y kuch bhi ho)?",
+          "options": [
+            "6",
+            "4",
+            "3",
+            "5"
+          ],
+          "answer": 3,
+          "explanation": "Degree k polynomial me k + 1 coefficients hote hain. 6 alag x par 6 equations hain, to 6 unknowns chahiye: k + 1 = 6, k = 5 (Vandermonde system invertible hai jab x alag hon). Option A ka trap points ki count ko hi degree maan lena hai. Ye bhi yaad rakho: aisa zero training error aksar overfitting hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w1-q6",
+          "question": "Data {1, 2, 3, 10} ke liye ek constant predictor ŷ = c choose karna hai. Squared loss Σ(yᵢ − c)² aur absolute loss Σ|yᵢ − c| ko minimise karne wale c kya hain?",
+          "options": [
+            "Squared: c = 4; absolute: [2, 3] me koi bhi c",
+            "Squared: c = 2.5; absolute: c = 4",
+            "Dono ke liye c = 4",
+            "Squared: c = 4; absolute: sirf c = 2.5"
+          ],
+          "answer": 0,
+          "explanation": "Squared loss ka minimiser mean hai: (1 + 2 + 3 + 10)/4 = 4 (derivative −2Σ(yᵢ − c) = 0). Absolute loss ka minimiser median hai; even count me 2 aur 3 ke beech har c same loss 10 deta hai (c = 2, 2.5, 3 sab par sum = 10, jabki c = 4 par 12). Option D tempting hai kyunki median ko 2.5 padhaya jaata hai, par absolute loss ke liye poora interval [2, 3] optimal hai. Option B mean/median ulte kar deta hai; outlier 10 mean ko kheenchta hai, median ko nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Calculus toolkit: gradients, chain rule and Taylor approximations",
+      "summary": "Is week aap partial derivatives aur gradient nikalna, loss function par chain rule lagana, aur first/second-order Taylor approximation se function ko locally approximate karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Derivative as local slope**: f′(a) = lim (f(a + h) − f(a))/h jab h → 0. ML me iska practical matlab: parameter ko thoda sa h badhao to loss lagbhag f′(a)·h badhega. Isi sensitivity se training chalti hai.",
+        "**Partial derivative**: f(x, y) me ∂f/∂x nikalte waqt y ko constant maano. Jaise f = x²y + 3y² ke liye ∂f/∂x = 2xy aur ∂f/∂y = x² + 6y. Har parameter ki apni sensitivity hoti hai.",
+        "**Gradient** ∇f = (∂f/∂x₁, …, ∂f/∂x_d) ek vector hai jo steepest increase ki direction batata hai. Unit vector u ki direction me rate of change (directional derivative) = ∇f · u, jo maximum |∇f| hota hai jab u gradient ke parallel ho. Isliye gradient descent −∇f ki direction me chalta hai.",
+        "**Chain rule**: agar L = g(h(w)), to dL/dw = g′(h(w)) · h′(w). Squared loss L = (wx − y)² ke liye dL/dw = 2(wx − y) · x. Multivariable case me ∂L/∂wⱼ = Σₖ (∂L/∂zₖ)(∂zₖ/∂wⱼ); neural networks ka backpropagation isi ka systematic use hai.",
+        "**Linear (first-order) approximation**: f(a + Δ) ≈ f(a) + ∇f(a) · Δ. Ye point a par tangent plane hai. Δ chhota ho to error Δ ke square jitna chhota hota hai.",
+        "**Second-order Taylor approximation**: f(a + Δ) ≈ f(a) + ∇f(a) · Δ + ½ Δᵀ H Δ, jahan H Hessian matrix hai (Hᵢⱼ = ∂²f/∂xᵢ∂xⱼ). Curvature ki ye information Newton's method aur minima/maxima ki pehchaan (week 7) me kaam aati hai.",
+        "**Useful derivatives**: d/dx eˣ = eˣ, d/dx ln x = 1/x, sigmoid σ(z) = 1/(1 + e⁻ᶻ) ke liye σ′(z) = σ(z)(1 − σ(z)). Vector form me ∇(aᵀx) = a aur ∇(xᵀAx) = (A + Aᵀ)x, jo A symmetric ho to 2Ax ban jaata hai."
+      ],
+      "example": {
+        "problem": "Ek single-feature model ŷ = wx + b aur ek training example (x = 2, y = 7) ke liye squared loss L(w, b) = (wx + b − y)² hai. w = 1, b = 1 par gradient ∇L = (∂L/∂w, ∂L/∂b) nikalo aur batao ki loss kam karne ke liye w ko badhana chahiye ya ghatana.",
+        "steps": [
+          "Residual r = wx + b − y = 1·2 + 1 − 7 = −4.",
+          "Chain rule: ∂L/∂w = 2r · ∂(wx + b)/∂w = 2r · x.",
+          "Isi tarah ∂L/∂b = 2r · 1 = 2r.",
+          "Values: ∂L/∂w = 2(−4)(2) = −16, ∂L/∂b = 2(−4) = −8.",
+          "Gradient negative hai, matlab w badhane par L ghatega; gradient descent w ← w − η(−16) w ko badhata hai.",
+          "Answer: **∇L = (−16, −8)**; w aur b dono ko badhana chahiye."
+        ],
+        "code": "x, y = 2, 7\nw, b = 1.0, 1.0\nr = w * x + b - y\ngrad_w = 2 * r * x\ngrad_b = 2 * r\nprint(grad_w, grad_b)   # -16.0 -8.0"
+      },
+      "mistakes": [
+        "Chain rule me inner derivative bhool jaana: (wx − y)² ka w-derivative 2(wx − y) nahi, 2(wx − y)·x hai.",
+        "Second-order Taylor me ½ factor chhod dena, ya cross term ∂²f/∂x∂y ko sirf ek baar ginna. ΔᵀHΔ me cross term 2·Hₓᵧ·Δx·Δy aata hai.",
+        "Gradient ko descent direction samajhna. ∇f increase ki direction hai; minimise karne ke liye −∇f lo."
+      ],
+      "revision": [
+        "∇f = vector of partial derivatives; ∇f · u = directional derivative.",
+        "Chain rule: d/dw g(h(w)) = g′(h(w))·h′(w).",
+        "Linear approx: f(a + Δ) ≈ f(a) + ∇f(a)·Δ.",
+        "Quadratic approx: + ½ ΔᵀHΔ.",
+        "σ′(z) = σ(z)(1 − σ(z)); ∇(xᵀAx) = 2Ax for symmetric A."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w2-q1",
+          "question": "f(x) = x³ − 4x ke liye f′(2) kya hai?",
+          "options": [
+            "0",
+            "8",
+            "12",
+            "4"
+          ],
+          "answer": 1,
+          "explanation": "f′(x) = 3x² − 4, to f′(2) = 12 − 4 = 8. Option C (12) me sirf 3x² ka part liya, −4 bhool gaye. Option A (0) f(2) = 8 − 8 hai, derivative nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w2-q2",
+          "question": "f(x, y) = x²y + 3y² ka gradient point (1, 2) par kya hai?",
+          "options": [
+            "(2, 13)",
+            "(4, 7)",
+            "(4, 12)",
+            "(4, 13)"
+          ],
+          "answer": 3,
+          "explanation": "∂f/∂x = 2xy = 2·1·2 = 4. ∂f/∂y = x² + 6y = 1 + 12 = 13. Gradient (4, 13). Option B me 3y² ka derivative 3y le liya (power rule me 2 ka factor chhoot gaya), option C me x² wala term bhool gaye, aur option A me ∂f/∂x ke liye y ki jagah 1 rakh diya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w2-q3",
+          "question": "Ek example (x = 2, y = 3) par loss L(w) = (wx − y)² hai. w = 1 par dL/dw kya hai?",
+          "options": [
+            "−4",
+            "−2",
+            "4",
+            "2"
+          ],
+          "answer": 0,
+          "explanation": "Chain rule: dL/dw = 2(wx − y)·x = 2(2 − 3)·2 = −4. Option B (−2) me inner derivative x = 2 bhool gaye. Option C sign ulta hai, jo tab hota hai jab residual ko (y − wx) likhkar inner derivative ka minus chhod dete ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w2-q4",
+          "question": "f(x, y) = x²y ka point (2, 1) par linear approximation use karke f(2.1, 0.95) ka estimate kya hai?",
+          "options": [
+            "4.6",
+            "4.1895",
+            "4.2",
+            "4.4"
+          ],
+          "answer": 2,
+          "explanation": "f(2, 1) = 4, ∇f = (2xy, x²) = (4, 4). Δ = (0.1, −0.05). Estimate = 4 + 4(0.1) + 4(−0.05) = 4 + 0.4 − 0.2 = 4.2. Option B (4.1895) exact value hai, linear approximation nahi. Option A me Δy ka sign + le liya, aur option D me y-direction ka change ignore kar diya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w2-q5",
+          "question": "f(x, y) = x² + 2y² ka point (1, 1) par unit vector u = (0.6, 0.8) ki direction me directional derivative kya hai?",
+          "options": [
+            "2.2",
+            "√20",
+            "4.4",
+            "6"
+          ],
+          "answer": 2,
+          "explanation": "∇f = (2x, 4y) = (2, 4). Directional derivative = ∇f · u = 2(0.6) + 4(0.8) = 1.2 + 3.2 = 4.4. Option B (√20) |∇f| hai, yaani maximum possible rate, jo sirf gradient ki direction me milta hai. Option A me gradient ki jagah f ke coefficients (1, 2) use hue: 0.6 + 1.6 = 2.2. Option D gradient components ka sum hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w2-q6",
+          "question": "f(x, y) = x³ + xy² ka point (1, 1) par second-order Taylor approximation use karke f(1.1, 0.9) ka estimate kya hai?",
+          "options": [
+            "2.2",
+            "2.22",
+            "2.24",
+            "2.26"
+          ],
+          "answer": 1,
+          "explanation": "f(1, 1) = 2. ∇f = (3x² + y², 2xy) = (4, 2). Hessian H = [[6x, 2y], [2y, 2x]] = [[6, 2], [2, 2]]. Δ = (0.1, −0.1). Linear part: 2 + 0.4 − 0.2 = 2.2. ΔᵀHΔ = 6(0.01) + 2·2(0.1)(−0.1) + 2(0.01) = 0.06 − 0.04 + 0.02 = 0.04, aur ½ · 0.04 = 0.02. Estimate 2.22 (exact value 2.222). Option A sirf linear approximation hai, option C me ½ bhool gaye, aur option D me cross term ka sign + le liya.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Least squares as projection onto the column space",
+      "summary": "Is week aap linear regression ko Ax ≈ b ke roop me likhna, normal equations AᵀAx̂ = Aᵀb se best fit nikalna, aur use column space par orthogonal projection ki tarah samajhna seekhoge.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Regression as a linear system**: n examples aur d features ho to design matrix A (n × d) banao, har row ek example, aur agar intercept chahiye to pehla column saare 1 ka. Model ŷ = Ax. Usually n > d hota hai (zyada equations, kam unknowns), isliye Ax = b ka exact solution aam taur par exist nahi karta.",
+        "**Column space** C(A) = {Ax : x ∈ ℝᵈ}, yaani A ke columns ke saare linear combinations. Ax = b solvable hai tabhi jab b ∈ C(A). Jab b bahar ho, hum C(A) ka wo point p = Ax̂ dhoondhte hain jo b ke sabse kareeb ho.",
+        "**Least squares objective**: x̂ = argmin ‖Ax − b‖² = argmin Σ (aᵢᵀx − bᵢ)². Gradient 2Aᵀ(Ax − b) ko zero rakhne par **normal equations** milte hain: AᵀA x̂ = Aᵀb. Agar A ke columns linearly independent hain to AᵀA invertible hai aur x̂ = (AᵀA)⁻¹Aᵀb unique hai.",
+        "**Geometry: orthogonal projection**: best fit p = Ax̂ wo point hai jahan error e = b − p column space ke har vector se perpendicular ho: Aᵀe = 0. Normal equations isi condition ka algebraic roop hain. Projection matrix P = A(AᵀA)⁻¹Aᵀ, aur P² = P, Pᵀ = P.",
+        "**Projection onto a single line**: vector a ki direction me b ka projection p = (aᵀb / aᵀa) · a. Denominator aᵀa = ‖a‖² hai, ‖a‖ nahi. Ye d = 1 wala special case hai.",
+        "**Intercept ka asar**: column of ones hone se Aᵀe = 0 ki pehli equation kehti hai Σeᵢ = 0, yaani residuals ka sum zero, aur fitted line (x̄, ȳ) se guzarti hai. Bina intercept ke (line origin se forced) ye guarantee nahi milti.",
+        "**Rank deficiency**: agar ek feature doosre ka multiple hai (jaise height cm me aur inches me dono), to A ke columns dependent hain, AᵀA singular hai, aur x̂ unique nahi. Projection p phir bhi unique hota hai; sirf coefficients ka split ambiguous hai. Practice me duplicate feature hatao ya regularisation (ridge) use karo."
+      ],
+      "example": {
+        "problem": "Ek fictional shop ka ad spend x (lakh ₹) aur sales y (lakh ₹): (1, 2), (2, 3), (3, 5), (4, 6). Line ŷ = c + mx ko least squares se fit karo aur check karo ki residuals column space ke orthogonal hain.",
+        "steps": [
+          "A ki rows (1, xᵢ): A = [[1, 1], [1, 2], [1, 3], [1, 4]], b = (2, 3, 5, 6).",
+          "AᵀA = [[4, 10], [10, 30]], Aᵀb = (Σy, Σxy) = (16, 47).",
+          "Normal equations: 4c + 10m = 16, 10c + 30m = 47. Determinant 4·30 − 10·10 = 20.",
+          "c = (30·16 − 10·47)/20 = 10/20 = 0.5; m = (4·47 − 10·16)/20 = 28/20 = 1.4.",
+          "Fitted values 1.9, 3.3, 4.7, 6.1; residuals e = (0.1, −0.3, 0.3, −0.1).",
+          "Check: Σe = 0 aur Σxᵢeᵢ = 0.1 − 0.6 + 0.9 − 0.4 = 0, yaani Aᵀe = 0 ✓. SSE = 0.01 + 0.09 + 0.09 + 0.01 = 0.2.",
+          "Answer: **ŷ = 0.5 + 1.4x**, minimum SSE = 0.2."
+        ],
+        "code": "def lstsq_line(xs, ys):\n    n = len(xs)\n    sx, sy = sum(xs), sum(ys)\n    sxx = sum(x * x for x in xs)\n    sxy = sum(x * y for x, y in zip(xs, ys))\n    d = n * sxx - sx * sx\n    c = (sxx * sy - sx * sxy) / d\n    m = (n * sxy - sx * sy) / d\n    return c, m\n\nprint(lstsq_line([1, 2, 3, 4], [2, 3, 5, 6]))   # (0.5, 1.4)"
+      },
+      "mistakes": [
+        "AᵀA x̂ = Aᵀb ki jagah Ax̂ = b ko kisi bhi tarah solve karne ki koshish, jaise sirf pehli d rows le kar. Wo baaki equations ko ignore karta hai aur error minimise nahi karta.",
+        "Line par projection me aᵀb ko ‖a‖ se divide karna. Sahi formula p = (aᵀb / ‖a‖²)·a hai; unit vector u ho tabhi p = (uᵀb)u.",
+        "Intercept column bhool jaana. Bina column of ones ke fit origin se guzarne ko majboor hota hai aur residuals ka sum zero nahi rehta."
+      ],
+      "revision": [
+        "Ax = b solvable ⇔ b ∈ C(A).",
+        "Normal equations: AᵀA x̂ = Aᵀb.",
+        "Error e = b − Ax̂ satisfies Aᵀe = 0.",
+        "P = A(AᵀA)⁻¹Aᵀ, P² = P.",
+        "Line par projection: (aᵀb / aᵀa)·a.",
+        "Dependent columns ⇒ AᵀA singular, x̂ unique nahi."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w3-q1",
+          "question": "A = [[1, 0], [0, 1], [1, 1]] (3 × 2). Kis b ke liye Ax = b ka exact solution exist karta hai?",
+          "options": [
+            "b = (1, 2, 4)",
+            "b = (2, 1, 3)",
+            "b = (1, 1, 1)",
+            "b = (3, 1, 2)"
+          ],
+          "answer": 1,
+          "explanation": "Ax = (x₁, x₂, x₁ + x₂), to column space me har vector ka teesra component pehle do ka sum hai. (2, 1, 3) me 2 + 1 = 3 ✓, x = (2, 1). Option A me 1 + 2 = 3 ≠ 4. Option D tempting hai kyunki usme bhi koi do components milkar teesra banate hain (1 + 2 = 3), par condition specifically b₃ = b₁ + b₂ hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w3-q2",
+          "question": "A (n × d, n > d, independent columns) ke liye ‖Ax − b‖² ko minimise karne wala x̂ kis equation ko satisfy karta hai?",
+          "options": [
+            "AᵀA x̂ = Aᵀb",
+            "AAᵀ x̂ = b",
+            "A x̂ = Aᵀb",
+            "AᵀA x̂ = b"
+          ],
+          "answer": 0,
+          "explanation": "Gradient 2Aᵀ(Ax − b) = 0 se AᵀA x̂ = Aᵀb milta hai. Option D me dimensions hi match nahi karte: AᵀA x̂ d-dimensional hai jabki b n-dimensional. Option B me AAᵀ (n × n) aata hai jo x̂ (d entries) par lag hi nahi sakta. Har option ka shape check karna sabse tez filter hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w3-q3",
+          "question": "Points (0, 1), (1, 3), (2, 6), (3, 5) par line ŷ = c + mx ka least squares fit kya hai?",
+          "options": [
+            "ŷ = 1 + 1.33x",
+            "ŷ = 2.14x",
+            "ŷ = 1.5 + 1.5x",
+            "ŷ = 3.75"
+          ],
+          "answer": 2,
+          "explanation": "Σx = 6, Σx² = 14, Σy = 15, Σxy = 0 + 3 + 12 + 15 = 30. Normal equations: 4c + 6m = 15, 6c + 14m = 30 ⇒ m = 1.5, c = 1.5. Option A pehle aur aakhri point ko jodne wali line hai (slope 4/3), jo baaki points ko ignore karti hai. Option B intercept ke bina fit hai (m = 30/14), aur option D sirf mean ȳ hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w3-q4",
+          "question": "b = (3, 0, 3) ka vector a = (1, 2, 2) ki line par orthogonal projection kya hai?",
+          "options": [
+            "(3, 6, 6)",
+            "(9, 18, 18)",
+            "(2, −2, 1)",
+            "(1, 2, 2)"
+          ],
+          "answer": 3,
+          "explanation": "aᵀb = 3 + 0 + 6 = 9, aᵀa = 1 + 4 + 4 = 9, to p = (9/9)·a = (1, 2, 2). Option A me ‖a‖ = 3 se divide kiya (‖a‖² se karna tha), option B me divide hi nahi kiya. Option C error vector e = b − p hai; check: aᵀe = 2 − 4 + 2 = 0.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w3-q5",
+          "question": "Ek fictional housing dataset me 'area in m²' aur 'area in ft²' dono features hain (ft² = 10.764 × m²), saath me intercept column. Least squares ke baare me kya sahi hai?",
+          "options": [
+            "AᵀA singular hai; fitted values Ax̂ unique hain par coefficients x̂ unique nahi",
+            "AᵀA invertible hai kyunki dono columns ke numbers alag hain",
+            "Koi least squares solution exist hi nahi karta",
+            "Fitted values bhi unique nahi hain, isliye predictions bharose layak nahi"
+          ],
+          "answer": 0,
+          "explanation": "Ek column doosre ka exact multiple hai, to columns linearly dependent hain, rank(A) < d, aur AᵀA singular hai. Phir bhi b ka C(A) par projection p unique hai; sirf do dependent features ke beech weight ka split ambiguous hai (infinitely many x̂). Option B ka trap ye sochna hai ki alag numbers ka matlab independence hai. Option D galat hai kyunki projection hamesha unique hota hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w3-q6",
+          "question": "A = [[1, 0], [1, 1], [1, 2]] aur b = (1, 5, 3). Least squares solution x̂ aur minimum squared error ‖b − Ax̂‖² kya hain?",
+          "options": [
+            "x̂ = (3, 0), ‖e‖² = 8",
+            "x̂ = (1, 4), ‖e‖² = 36",
+            "x̂ = (2, 1), ‖e‖² = 6",
+            "x̂ = (1, 2), ‖e‖² = 8"
+          ],
+          "answer": 2,
+          "explanation": "AᵀA = [[3, 3], [3, 5]], Aᵀb = (9, 11). 3x₁ + 3x₂ = 9 aur 3x₁ + 5x₂ = 11 ⇒ x₂ = 1, x₁ = 2. p = Ax̂ = (2, 3, 4), e = (−1, 2, −1), ‖e‖² = 6, aur Aᵀe = (0, 0) ✓. Option B pehli do equations ko exactly solve karta hai (x₁ = 1, x₁ + x₂ = 5), jisse teesri row ka error 36 ho jaata hai. Option A sirf mean (slope 0) fit hai, aur option D me intercept aur slope swap ho gaye.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Eigenvalues, eigenvectors and diagonalisation",
+      "summary": "Is week aap characteristic polynomial se eigenvalues nikalna, eigenvectors dhoondhna, matrix ko diagonalise karna, aur Aᵏ jaisi powers ko eigenvalues ki powers se jaldi compute karna seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Eigenvector aur eigenvalue**: non-zero v jiske liye Av = λv. Matlab A is direction ko ghumata nahi, sirf λ se scale karta hai (λ negative ho to direction ulti). v = 0 kabhi eigenvector nahi hota, par λ = 0 allowed hai (tab A singular hai).",
+        "**Characteristic polynomial**: Av = λv ⇔ (A − λI)v = 0 ka non-zero solution ⇔ det(A − λI) = 0. 2 × 2 ke liye ye λ² − (trace)λ + det = 0 ban jaata hai. Har eigenvalue ke liye null space of (A − λI) me eigenvectors milte hain.",
+        "**Trace aur determinant**: n × n matrix ke eigenvalues (multiplicity ke saath) ka sum = trace(A) aur product = det(A). Triangular matrix ke eigenvalues seedhe diagonal entries hain. Quick check: 2 × 2 me paaye gaye λ₁, λ₂ ka sum aur product trace aur det se match hone chahiye.",
+        "**Eigenvalues of related matrices**: agar Av = λv, to Aᵏv = λᵏv, A⁻¹v = (1/λ)v (λ ≠ 0), (A + cI)v = (λ + c)v, aur (cA)v = cλv. Isliye det(cA) = cⁿ det(A) for n × n, sirf c·det(A) nahi.",
+        "**Diagonalisation**: agar A ke n linearly independent eigenvectors hain to A = VΛV⁻¹, jahan V ke columns eigenvectors aur Λ = diag(λᵢ). Distinct eigenvalues hon to eigenvectors guaranteed independent hote hain. Repeated eigenvalue par ho bhi sakta hai (jaise 3I) aur nahi bhi (jaise [[3, 1], [0, 3]], jiska sirf ek eigenvector direction hai: **defective** matrix).",
+        "**Powers via eigen-decomposition**: Aᵏ = VΛᵏV⁻¹. Practical tareeka: x ko eigenvectors me likho, x = c₁v₁ + c₂v₂, phir Aᵏx = c₁λ₁ᵏv₁ + c₂λ₂ᵏv₂. Bade k par sabse bada |λ| dominate karta hai; yahi idea power iteration, Markov chains aur PageRank ke peeche hai."
+      ],
+      "example": {
+        "problem": "Ek fictional app ke users do plans A aur B me hain. Har mahine A ke 90% A me rehte hain aur 10% B me jaate hain; B ke 80% B me rehte hain aur 20% A me jaate hain. Matrix M = [[0.9, 0.2], [0.1, 0.8]], shuru me x₀ = (500, 400). Eigen-decomposition se 2 mahine baad ke users aur long-run split nikalo.",
+        "steps": [
+          "Trace = 1.7, det = 0.72 − 0.02 = 0.70. λ² − 1.7λ + 0.7 = 0 ⇒ λ = 1 aur λ = 0.7.",
+          "λ = 1: (M − I) = [[−0.1, 0.2], [0.1, −0.2]] ⇒ v₁ = (2, 1). λ = 0.7: [[0.2, 0.2], [0.1, 0.1]] ⇒ v₂ = (1, −1).",
+          "x₀ = c₁(2, 1) + c₂(1, −1): 2c₁ + c₂ = 500, c₁ − c₂ = 400 ⇒ c₁ = 300, c₂ = −100.",
+          "Mᵏx₀ = 300·1ᵏ·(2, 1) − 100·(0.7)ᵏ·(1, −1) = (600 − 100·0.7ᵏ, 300 + 100·0.7ᵏ).",
+          "k = 2: 0.7² = 0.49 ⇒ (600 − 49, 300 + 49) = (551, 349). Direct check: Mx₀ = (530, 370), M(530, 370) = (551, 349) ✓.",
+          "k → ∞ par 0.7ᵏ → 0, to split (600, 300) ki taraf jaata hai.",
+          "Answer: **2 mahine baad (551, 349); long run me (600, 300)**, yaani λ = 1 wala eigenvector steady state hai."
+        ]
+      },
+      "mistakes": [
+        "Har matrix ke eigenvalues diagonal entries maan lena. Ye sirf triangular (ya diagonal) matrix ke liye sach hai; baaki ke liye det(A − λI) = 0 solve karo.",
+        "Repeated eigenvalue dekhte hi 'diagonalisable nahi' bol dena. 3I diagonalisable hai; asli test hai ki independent eigenvectors kitne hain.",
+        "det(cA) = c·det(A) likhna. n × n matrix ke liye har row c se scale hoti hai, to det(cA) = cⁿ det(A)."
+      ],
+      "revision": [
+        "Av = λv, v ≠ 0; det(A − λI) = 0.",
+        "Σλᵢ = trace, Πλᵢ = det.",
+        "Triangular ⇒ eigenvalues = diagonal entries.",
+        "A = VΛV⁻¹ ⇒ Aᵏ = VΛᵏV⁻¹.",
+        "Aᵏx = Σ cᵢλᵢᵏvᵢ; bada |λ| dominate karta hai.",
+        "Distinct eigenvalues ⇒ diagonalisable."
+      ],
+      "questions": [
+        {
+          "id": "mlf-w4-q1",
+          "question": "A = [[2, 5], [0, 3]] ke eigenvalues kya hain?",
+          "options": [
+            "5 aur 6",
+            "2 aur 5",
+            "0 aur 5",
+            "2 aur 3"
+          ],
+          "answer": 3,
+          "explanation": "Upper triangular matrix ke eigenvalues diagonal entries hain: det(A − λI) = (2 − λ)(3 − λ) ⇒ 2 aur 3. Option A me trace (5) aur det (6) ko hi eigenvalues likh diya; asal me eigenvalues ka sum 5 aur product 6 hai. Off-diagonal 5 ka eigenvalues par koi asar nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w4-q2",
+          "question": "A = [[4, 1], [2, 3]] aur v = (1, 1). v ke liye kya sahi hai?",
+          "options": [
+            "v eigenvector hai, eigenvalue 5",
+            "v eigenvector hai, eigenvalue 2",
+            "v eigenvector hai, eigenvalue 7",
+            "v eigenvector nahi hai"
+          ],
+          "answer": 0,
+          "explanation": "Av = (4 + 1, 2 + 3) = (5, 5) = 5·(1, 1), to v eigenvector hai aur λ = 5. Option B tempting hai kyunki 2 bhi A ka eigenvalue hai (trace 7 − 5 = 2), par uska eigenvector (1, −2) hai, (1, 1) nahi. Option C trace hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlf-w4-q3",
+          "question": "A = [[4, −2], [1, 1]] ke eigenvalues kya hain?",
+          "options": [
+            "4 aur 1",
+            "−2 aur −3",
+            "2 aur 3",
+            "6 aur −1"
+          ],
+          "answer": 2,
+          "explanation": "Trace = 5, det = 4·1 − (−2)(1) = 6. λ² − 5λ + 6 = 0 ⇒ (λ − 2)(λ − 3) = 0 ⇒ 2, 3. Check: 2 + 3 = 5 ✓, 2·3 = 6 ✓. Option A diagonal entries hain, jo sirf triangular matrix me eigenvalues hote. Option B me trace ka sign ulta liya (λ² + 5λ + 6), aur option D me det ka sign ulta (λ² − 5λ − 6).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w4-q4",
+          "question": "Ek 3 × 3 matrix A ke eigenvalues 1, 2 aur 4 hain. det(2A) kya hai?",
+          "options": [
+            "16",
+            "14",
+            "64",
+            "8"
+          ],
+          "answer": 2,
+          "explanation": "2A ke eigenvalues 2, 4, 8 hain, product 64. Equivalently det(2A) = 2³·det(A) = 8·8 = 64. Option A (16) ka trap det(2A) = 2·det(A) likhna hai. Option B 2·trace = 2·7 hai, aur option D sirf det(A) hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w4-q5",
+          "question": "Inme se kaunsi matrix diagonalisable NAHI hai?",
+          "options": [
+            "[[3, 0], [0, 3]]",
+            "[[3, 1], [0, 3]]",
+            "[[1, 2], [2, 1]]",
+            "[[2, 1], [0, 3]]"
+          ],
+          "answer": 1,
+          "explanation": "[[3, 1], [0, 3]] ka eigenvalue 3 do baar aata hai, par A − 3I = [[0, 1], [0, 0]] ka null space sirf (1, 0) ki line hai: ek hi independent eigenvector, to defective. Option A tempting hai kyunki usme bhi 3 repeated hai, par 3I already diagonal hai aur har vector eigenvector hai. Option D ke eigenvalues 2, 3 distinct hain, aur option C symmetric hai, dono diagonalisable.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlf-w4-q6",
+          "question": "A = [[4, −2], [1, 1]] ke eigenpairs hain: λ = 2 with v = (1, 1), aur λ = 3 with v = (2, 1). x = (3, 2) ke liye A⁵x kya hai?",
+          "options": [
+            "(518, 275)",
+            "(307, 275)",
+            "(96, 64)",
+            "(40, 25)"
+          ],
+          "answer": 0,
+          "explanation": "x = (3, 2) = 1·(1, 1) + 1·(2, 1). To A⁵x = 2⁵(1, 1) + 3⁵(2, 1) = (32, 32) + (486, 243) = (518, 275). Option B me eigenvalues ko galat eigenvectors ke saath jod diya: 3⁵(1, 1) + 2⁵(2, 1). Option C me poore x par sirf 2⁵ lagaya, aur option D me power ki jagah 5 se multiply kiya (λ·5).",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

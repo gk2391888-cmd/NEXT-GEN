@@ -1,0 +1,490 @@
+{
+  "subjectId": "ba",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "KPIs and dashboards that drive decisions",
+      "summary": "Is week aap seekhoge ki business goal se sahi KPI kaise chunte hain, metric ko numerator, denominator aur time window ke saath precisely kaise define karte hain, KPI tree se revenue ko drivers me kaise todte hain, aur achha dashboard misleading dashboard se kaise alag hota hai.",
+      "readMinutes": 16,
+      "concepts": [
+        "**KPI vs metric**: har number KPI nahi hota. Metric koi bhi measurement hai (page views, calls, SKUs). **KPI (key performance indicator)** woh chhota set hai jo seedha business goal se juda ho, jiska ek owner ho, ek target ho, aur jiske hilne pe koi decision liya jaaye. Agar kisi number ke upar-neeche hone se koi action nahi badalta, toh woh dashboard ke top pe nahi hona chahiye.",
+        "**Leading vs lagging indicators**: lagging indicator result batata hai jab sab ho chuka (quarterly revenue, annual profit, last month ka churn). Leading indicator pehle hilta hai aur future result predict karta hai (free-trial sign-ups, sales pipeline value, cart additions, support ticket backlog). Achhe dashboard me dono hote hain: lagging se score pata chalta hai, leading se time pe action le sakte ho.",
+        "**Metric definition**: ek KPI ki poori definition me chaar cheezein hoti hain: numerator, denominator, time window aur grain (kis level pe: order, customer, store, din). Jaise 'conversion rate = orders / sessions, daily, sirf web channel'. 'Active user' ka matlab 30-day login hai ya 7-day purchase, yeh likhe bina do teams ke numbers kabhi match nahi karenge.",
+        "**Ratio of totals vs average of ratios**: overall conversion = Σ orders / Σ sessions hota hai, stores ke conversion % ka simple average nahi. Chhote store ka 15% aur bade store ka 2.5% barabar weight paayenge toh overall number jhootha bada ya chhota dikhega. Ratio KPI ko hamesha numerator aur denominator alag se sum karke roll-up karo.",
+        "**KPI tree (driver decomposition)**: Revenue = Sessions × Conversion rate × AOV (average order value = revenue / orders). Kyunki yeh product hai, growth factors multiply hote hain: (1 + g_revenue) = (1 + g_sessions)(1 + g_conversion)(1 + g_AOV). Isse pata chalta hai ki revenue kis driver ki wajah se badla aur kis team (marketing, product, pricing) ko action lena hai.",
+        "**Guardrail (counter) metrics aur Goodhart's law**: jab ek metric target ban jaata hai, log use game karne lagte hain ('when a measure becomes a target, it ceases to be a good measure'). Isliye har primary KPI ke saath ek counter-metric rakho: tickets closed ke saath reopen rate, delivery speed ke saath damaged-order rate, sign-ups ke saath 30-day retention.",
+        "**Dashboard design**: pehle decision-question likho ('kya hum is hafte target pe hain?'), phir chart. Top pe 5–8 KPI tiles, har tile ke saath context: target, pichhla period, last year same period, aur ek chhoti trend line. RAG (red / amber / green) thresholds pehle se tay karo, drill-down (region → store) do, aur data kab refresh hua woh timestamp dikhao.",
+        "**Misleading dashboards**: bar chart ka y-axis 0 se na shuru karna (chhota farq bahut bada dikhta hai), do alag scales wala dual-axis chart (koi bhi correlation dikha sakte ho), cumulative chart (girti daily sales bhi upar jaati line lagti hai), 10 slices wala pie ya 3D chart, aur **vanity metrics** jaise 'total app downloads till date' jo hamesha badhte hain par engagement ke baare me kuch nahi batate."
+      ],
+      "example": {
+        "problem": "Kaveri Mart (fictional online grocery). September: 2,00,000 sessions, 6,400 orders, revenue ₹30,40,000. October: 2,40,000 sessions, 7,200 orders, revenue ₹36,00,000. Conversion aur AOV nikaalo, revenue growth ko drivers me todo, aur batao dashboard pe kya flag hona chahiye.",
+        "steps": [
+          "Conversion = orders / sessions. September: 6,400 / 2,00,000 = 3.2%. October: 7,200 / 2,40,000 = 3.0%.",
+          "AOV = revenue / orders. September: 30,40,000 / 6,400 = ₹475. October: 36,00,000 / 7,200 = ₹500.",
+          "Revenue growth = 36,00,000 / 30,40,000 − 1 = 0.184, yaani 18.4%.",
+          "Driver factors: sessions × 1.20 (+20%), conversion × 3.0 / 3.2 = 0.9375 (−6.25%), AOV × 500 / 475 = 1.0526 (+5.26%).",
+          "Check: 1.20 × 0.9375 × 1.0526 = 1.184, jo revenue growth se match karta hai. Percentages add karna (20 − 6.25 + 5.26 = 19.0%) galat hai kyunki tree multiplicative hai.",
+          "Interpretation: headline revenue green hai, par conversion gir raha hai; shayad naya traffic paid campaign se aaya jo kam convert karta hai. Conversion tile ko amber karo aur channel-wise drill-down dekho.",
+          "**Answer**: conversion **3.2% → 3.0%**, AOV **₹475 → ₹500**, revenue **+18.4%** = traffic aur AOV ki wajah se, jabki **conversion −6.25%** dashboard pe flag hona chahiye."
+        ]
+      },
+      "mistakes": [
+        "Stores ya channels ke conversion % ka simple average leke overall conversion bolna. Fix: numerators aur denominators alag sum karo, phir divide karo (ratio of totals).",
+        "Bar chart ka axis 90 ya 95 se shuru karke chhote farq ko dramatic dikhana. Fix: bar chart hamesha 0 se; chhote changes dikhane hon toh line chart ya 'change in percentage points' wala tile use karo.",
+        "Sirf ek KPI ko target bana dena (jaise 'tickets closed per day'). Fix: har primary KPI ke saath ek guardrail metric rakho jo gaming pakad le (reopen rate, CSAT)."
+      ],
+      "revision": [
+        "KPI = goal se juda, owner + target + decision wala metric.",
+        "Lagging = result (revenue, churn); leading = pehle hilta hai (sign-ups, pipeline).",
+        "Ratio KPI roll-up: Σ numerator / Σ denominator, average of ratios nahi.",
+        "Revenue = sessions × conversion × AOV; growth factors multiply hote hain.",
+        "Har KPI ke saath context (target, last period) aur guardrail metric.",
+        "Bar axis 0 se, dual-axis aur cumulative charts se savdhaan."
+      ],
+      "questions": [
+        {
+          "id": "ba-w1-q1",
+          "question": "Ek subscription video app ka main goal agle quarter ka subscription revenue badhana hai. Inme se kaunsa **leading** indicator hai?",
+          "options": [
+            "Pichhle quarter ka total subscription revenue",
+            "Is hafte shuru hue free trials ki sankhya",
+            "Pichhle mahine cancel hue subscribers ki sankhya",
+            "Pichhle financial year ka net profit"
+          ],
+          "answer": 1,
+          "explanation": "Free trials aaj shuru hote hain aur kuch hafton baad paid subscriptions me badalte hain, isliye yeh future revenue pehle se batate hain: option B leading indicator hai. Trap: option C (pichhle mahine ke cancellations) bhi 'customer behaviour' lagta hai, par woh ho chuka result hai, yaani lagging; options A aur D bhi lagging financial results hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w1-q2",
+          "question": "Ek D2C brand ki website pe ek mahine me 1,60,000 sessions, 4,000 orders aur ₹18,00,000 revenue aaya. Conversion rate (orders / sessions) aur AOV kya hain?",
+          "options": [
+            "Conversion 4%, AOV ₹450",
+            "Conversion 2.5%, AOV ₹11.25",
+            "Conversion 40%, AOV ₹4,500",
+            "Conversion 2.5%, AOV ₹450"
+          ],
+          "answer": 3,
+          "explanation": "Conversion = 4,000 / 1,60,000 = 0.025 = 2.5%. AOV = revenue / orders = 18,00,000 / 4,000 = ₹450, isliye option D sahi hai. Trap: option B me AOV = revenue / sessions liya gaya (₹11.25 revenue per session hai, AOV nahi); options A aur C me decimal ya zero galat jagah lag gaya.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w1-q3",
+          "question": "Ek retail chain ke teen stores ka ek din ka data: Store P: 50 purchases / 1,000 visitors, Store Q: 30 / 200, Store R: 20 / 800. Chain ka overall visitor-to-purchase conversion kya hai?",
+          "options": [
+            "5.0%",
+            "7.5%",
+            "15.0%",
+            "2.5%"
+          ],
+          "answer": 0,
+          "explanation": "Overall = Σ purchases / Σ visitors = (50 + 30 + 20) / (1,000 + 200 + 800) = 100 / 2,000 = 5.0%, yaani option A. Trap: option B teen store rates (5%, 15%, 2.5%) ka simple average hai, jo chhote Store Q ko bade stores jitna weight de deta hai; options C aur D sirf ek store ka rate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w1-q4",
+          "question": "Ek dashboard bar chart me Brand X ka customer satisfaction score 92 aur Brand Y ka 94 dikhata hai, par y-axis 90 se shuru hota hai. Chart me Y ka bar X se kitna lamba dikhta hai, aur asli farq kitna hai?",
+          "options": [
+            "Dikhne me bhi aur asli me bhi lagbhag 2.2% lamba",
+            "Dikhne me 2.2% lamba, asli me 2 guna",
+            "Dikhne me 2 guna lamba, asli me sirf lagbhag 2.2% zyada",
+            "Dikhne me 4 guna lamba, asli me 2 points zyada"
+          ],
+          "answer": 2,
+          "explanation": "Axis 90 se shuru hai, toh bar heights 92 − 90 = 2 aur 94 − 90 = 4 units hain: Y ka bar 2 guna dikhta hai. Asli ratio 94 / 92 = 1.022, yaani sirf lagbhag 2.2% zyada, isliye option C. Trap: option D me 4 ko ratio maan liya (4 sirf Y ke bar ki height hai); option A tab sahi hota jab axis 0 se shuru hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w1-q5",
+          "question": "Ek customer-support team ka naya KPI 'tickets closed per agent per day' hai aur iske saath bonus juda hai. Do mahine me yeh KPI 40% badh gaya, par complaints bhi badh gayi. Is problem ko pakadne ke liye sabse achha guardrail metric kaunsa hai?",
+          "options": [
+            "7 din ke andar reopen hone wale tickets ka percentage",
+            "Har agent ke total login hours",
+            "Har din aane wale naye tickets ki sankhya",
+            "Ek ticket close karne ka average time"
+          ],
+          "answer": 0,
+          "explanation": "Bonus ki wajah se agents tickets bina solve kiye close kar sakte hain (Goodhart's law). Reopen rate (option A) seedha pakadta hai ki closed ticket sach me resolve hua ya nahi, isliye yeh sahi guardrail hai. Trap: option D (average handle time) bhi quality-related lagta hai, par jaldi-jaldi close karne se yeh aur 'achha' dikhega, gaming pakdega nahi; options B aur C effort aur demand naapte hain, quality nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w1-q6",
+          "question": "Ek e-commerce site ka revenue = sessions × conversion rate × AOV. Agle mahine sessions 4% girne ka anumaan hai aur AOV same rahega. Revenue 10% badhane ke liye conversion rate ko lagbhag kitna (relative %) badhna hoga?",
+          "options": [
+            "14.0%",
+            "6.0%",
+            "14.6%",
+            "10.0%"
+          ],
+          "answer": 2,
+          "explanation": "Factors multiply hote hain: 0.96 × (1 + g) × 1 = 1.10, toh 1 + g = 1.10 / 0.96 = 1.1458, yaani g ≈ 14.6%, option C. Trap: option A percentages ko add/subtract karke aata hai (10 + 4 = 14%), jo multiplicative tree me galat hai; option B (10 − 4) sign bhi ulta le leta hai, aur option D sessions ki giravat ignore karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Segmentation, pivots and Simpson's paradox",
+      "summary": "Is week aap seekhoge ki data ko segments aur pivot tables me kaise todte hain, sahi denominator kaise chunte hain, overall number me mix effect aur rate effect ko kaise alag karte hain, aur Simpson's paradox jaise cases me summary kaise dhokha deti hai.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Segmentation**: customers ya transactions ko aise groups me baantna jinka behaviour alag ho: geographic (metro / tier-2), demographic (age band), behavioural (**RFM**: recency, frequency, monetary value) ya channel (app / web). Achha segment measurable, kaafi bada, baaki segments se alag, aur actionable hota hai, yaani us par alag offer ya process chal sake.",
+        "**Pivot table / group-by**: rows (jaise city), columns (jaise channel), values (jaise order value) aur aggregation (sum, mean, count, distinct count) chunke ek hi raw table se alag-alag summary banti hai. Aggregation sawaal se tay hoti hai: 'kitna revenue?' → sum; 'typical order kitna bada?' → mean ya median; 'kitne customers?' → distinct count, kyunki ek customer ke kai orders ho sakte hain.",
+        "**Row % vs column % vs total %**: ek hi cell ka percentage teen denominators se ban sakta hai. 'North ke kitne % customers Premium hain' ka denominator North ka row total hai; 'Premium customers me se kitne % North se hain' ka denominator Premium ka column total hai. Report me denominator hamesha naam se likho.",
+        "**Percent vs percentage points**: return rate 8% se 10% hua toh change **2 percentage points (pp)** hai, aur relative change 2 / 8 = 25% hai. Dono sahi hain par alag cheezein hain; 'returns 2% badhe' likhna ambiguous hai.",
+        "**Mix effect vs rate effect**: overall average = Σ (segment ka share × segment ka rate). Overall number do wajah se badal sakta hai: segment ke andar rate badla (rate effect), ya segments ke shares badle (mix effect). Isliye har segment ka AOV badhe tab bhi overall AOV gir sakta hai, agar sasta segment tezi se bada ho gaya.",
+        "**Simpson's paradox**: har segment me A, B se behtar ho, phir bhi combine karne pe B behtar dikhe. Yeh tab hota hai jab ek lurking variable (segment) dono se juda ho: kis group me kitne units gaye, aur outcome kitna aasaan tha. Hal: pehle causal story socho; agar segment ek confounder hai toh segment-wise compare karo ya standardise karo.",
+        "**Direct standardisation**: dono groups ke segment-rates ko ek hi common mix (jaise combined population ka mix) pe apply karo. Isse 'kis group ko aasaan cases mile' ka farq hat jaata hai aur rates fair tareeke se compare hote hain.",
+        "**Summaries kab mislead karti hain**: chhote denominators (4 me se 3 = 75% wala store top rank pe), skewed data me mean (kuch bade orders mean ko kheench lete hain; median bhi dikhao), survivorship bias (sirf abhi active customers ka average), aur ecological fallacy (state-level correlation ko individual customers pe laga dena)."
+      ],
+      "example": {
+        "problem": "Do delivery partners (fictional): SwiftKart: metro 720 / 800 on-time, tier-2 140 / 200 on-time. DakDost: metro 184 / 200 on-time, tier-2 600 / 800 on-time. Overall kaun behtar dikhta hai, segment-wise kaun behtar hai, aur common 50-50 mix pe standardised rates kya hain?",
+        "steps": [
+          "SwiftKart: metro 720 / 800 = 90%, tier-2 140 / 200 = 70%, overall 860 / 1000 = 86%.",
+          "DakDost: metro 184 / 200 = 92%, tier-2 600 / 800 = 75%, overall 784 / 1000 = 78.4%.",
+          "Segment-wise DakDost dono jagah aage hai (92 > 90, 75 > 70), par overall SwiftKart aage dikhta hai (86 > 78.4): yeh Simpson's paradox hai.",
+          "Wajah: DakDost ke 80% orders tier-2 me hain jahan on-time delivery mushkil hai, jabki SwiftKart ke sirf 20% orders tier-2 me hain. Segment (city type) ek confounder hai.",
+          "Combined mix: metro 1000 / 2000 = 50%, tier-2 50%. SwiftKart standardised = 0.5 × 90 + 0.5 × 70 = 80%.",
+          "DakDost standardised = 0.5 × 92 + 0.5 × 75 = 83.5%.",
+          "**Answer**: crude overall me SwiftKart (**86% vs 78.4%**) aage dikhta hai, par same mix pe DakDost **83.5% vs 80%** se behtar hai; partner choose karne ke liye segment-wise ya standardised comparison use karo."
+        ]
+      },
+      "mistakes": [
+        "Do groups ke overall rates compare karke decision lena bina dekhe ki unka segment mix alag hai. Fix: pehle segment-wise table banao; mix bahut alag ho toh standardised rates compare karo.",
+        "Percentage points aur percent ko mix karna ('conversion 4% se 5% hua, yaani 1% badha'). Fix: absolute change pp me likho aur relative change % me, dono saaf-saaf.",
+        "Chhote denominator wale segment ko top performer bata dena. Fix: rate ke saath hamesha n bhi dikhao aur ranking ke liye minimum sample size rakho."
+      ],
+      "revision": [
+        "Pivot = rows × columns × values × aggregation; aggregation sawaal se tay hoti hai.",
+        "Row % aur column % ke denominators alag hote hain; naam se likho.",
+        "8% → 10% = +2 pp = +25% relative.",
+        "Overall = Σ share × rate; overall change = rate effect + mix effect.",
+        "Simpson's paradox: segment-wise trend combine karne pe ulta; confounder dhoondo.",
+        "Standardisation: dono groups ke rates ko ek common mix pe lagao."
+      ],
+      "questions": [
+        {
+          "id": "ba-w2-q1",
+          "question": "Ek fashion e-tailer ka return rate is quarter 8% se badhkar 10% ho gaya. Is change ko sahi tarah se kaise describe karenge?",
+          "options": [
+            "2 percentage points, jo 2% relative increase bhi hai",
+            "25 percentage points ka increase",
+            "2 percentage points ka increase, yaani 25% relative increase",
+            "10 percentage points ka increase, yaani 125% relative increase"
+          ],
+          "answer": 2,
+          "explanation": "Absolute change = 10 − 8 = 2 percentage points; relative change = 2 / 8 = 0.25 = 25%, isliye option C. Trap: option A pp aur relative % ko same maan leta hai (2 pp ka relative matlab 25% hai, 2% nahi); option B relative 25% ko galti se pp me likh deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w2-q2",
+          "question": "Ek loyalty programme me 300 Gold members ka average monthly spend ₹800 hai aur 700 Silver members ka ₹400. Saare 1,000 members ka average monthly spend kya hai?",
+          "options": [
+            "₹520",
+            "₹600",
+            "₹680",
+            "₹1,200"
+          ],
+          "answer": 0,
+          "explanation": "Weighted average = (300 × 800 + 700 × 400) / 1,000 = (2,40,000 + 2,80,000) / 1,000 = ₹520, yaani option A. Trap: option B do segment averages ka simple average hai, jo bade Silver segment ko kam weight deta hai; option C weights ulte laga deta hai (0.7 × 800 + 0.3 × 400); option D do averages ka sum hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w2-q3",
+          "question": "Do sales reps ke lead conversions (fictional data): Asha: warm leads 45 / 60, cold leads 12 / 140. Bilal: warm leads 120 / 180, cold leads 1 / 20. Kaunsa statement sahi hai?",
+          "options": [
+            "Bilal dono lead types me Asha se behtar hai, isliye overall bhi aage hai",
+            "Asha overall aur dono lead types me, teeno jagah aage hai",
+            "Dono ka overall conversion barabar hai, kyunki dono ke 200 leads hain",
+            "Asha har lead type me behtar hai, par Bilal overall aage hai kyunki uske 90% leads warm hain"
+          ],
+          "answer": 3,
+          "explanation": "Asha: warm 75%, cold 8.6%, overall 57 / 200 = 28.5%. Bilal: warm 66.7%, cold 5%, overall 121 / 200 = 60.5%. Asha har segment me aage, par Bilal ko 180 / 200 = 90% warm (aasaan) leads mile, isliye overall Bilal aage: option D (Simpson's paradox). Trap: option A sirf overall number dekh ke maan leta hai ki Bilal har jagah behtar hai; option C equal lead count ko equal conversion samajh leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w2-q4",
+          "question": "Ek food brand (fictional) ke orders: pichhle saal App 600 orders AOV ₹500, Web 400 orders AOV ₹900. Is saal App 1,500 orders AOV ₹520, Web 500 orders AOV ₹950. Is saal ka overall AOV kya hai, aur pichhle saal ke ₹660 se tulna me kya hua?",
+          "options": [
+            "₹692; dono channels ka AOV badha, isliye overall bhi badha",
+            "₹627.50; dono channels ka AOV badha, phir bhi mix sasta App ki taraf shift hone se overall gira",
+            "₹735; overall AOV badha",
+            "₹660; overall AOV same raha"
+          ],
+          "answer": 1,
+          "explanation": "Is saal overall = (1,500 × 520 + 500 × 950) / 2,000 = (7,80,000 + 4,75,000) / 2,000 = ₹627.50, jo ₹660 se kam hai. App ka share 60% se 75% ho gaya: mix effect ne rate effect ko dabaa diya, isliye option B. Trap: option A pichhle saal ka 60:40 mix use karta hai (0.6 × 520 + 0.4 × 950 = 692); option C do AOVs ka simple average hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w2-q5",
+          "question": "Ek SaaS company ke 1,000 customers: North me 120 Premium + 280 Basic, South me 80 Premium + 520 Basic. Board poochta hai: 'Premium customers me se kitne % North se hain?'",
+          "options": [
+            "60%",
+            "30%",
+            "12%",
+            "40%"
+          ],
+          "answer": 0,
+          "explanation": "Sawaal ka denominator Premium column total hai: 120 + 80 = 200. North Premium = 120, toh 120 / 200 = 60%, option A. Trap: option B row % hai (North ke 400 customers me se 120 = 30% Premium), jo ulta sawaal answer karta hai; option C total % hai (120 / 1,000); option D South ka share hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w2-q6",
+          "question": "Do discount strategies (fictional) alag stores me test hui. Strategy P: urban stores me 30% redemption (900 customers), rural me 10% (100 customers). Strategy Q: urban 32% (200 customers), rural 12% (800 customers). Combined customer mix (urban 1,100, rural 900) pe standardise karke kaunsi strategy kitne percentage points se behtar hai?",
+          "options": [
+            "P, 12 percentage points se",
+            "Q, 2 percentage points se",
+            "Dono barabar hain",
+            "Q, 4 percentage points se"
+          ],
+          "answer": 1,
+          "explanation": "Common mix: urban 1,100 / 2,000 = 0.55, rural 0.45. P = 0.55 × 30 + 0.45 × 10 = 21%; Q = 0.55 × 32 + 0.45 × 12 = 23%. Q 2 pp se behtar hai, option B. Trap: option A crude overall rates (P 28%, Q 16%) compare karta hai, jo P ke urban-heavy mix ki wajah se biased hain; option D do segment gaps (2 + 2) ko jod deta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Brand preference across cities: the chi-square test of independence",
+      "summary": "Is week aap seekhoge ki do categorical variables (jaise city aur brand) ke beech association ko contingency table aur chi-square test of independence se kaise test karte hain, kaun se cells result ko drive kar rahe hain yeh residuals se kaise dekhte hain, aur Cramér's V se association ki strength kaise naapte hain.",
+      "readMinutes": 17,
+      "concepts": [
+        "**Contingency table (cross-tab)**: do categorical variables ke combinations ke counts, jaise rows = city, columns = preferred brand. Business sawaal: 'kya brand preference city pe depend karti hai?' **H₀**: city aur brand independent hain (har city me brand shares same hain). **H₁**: dono associated hain (kam se kam ek city ka brand mix alag hai).",
+        "**Expected count**: agar H₀ sach hai toh P(row aur column) = P(row) × P(column), isliye E = (row total × column total) / N. Expected counts woh table hai jo 'koi association nahi' wali duniya me dikhti; test observed (O) ko is E se compare karta hai.",
+        "**Chi-square statistic**: χ² = Σ (O − E)² / E, saare cells pe. Har cell ka **contribution** (O − E)² / E hota hai. **df = (r − 1)(c − 1)**. Test hamesha right-tailed hai: χ² critical value se bada (ya p-value < α) ho toh H₀ reject. Jaise df = 4 pe 5% critical value 9.488 hai.",
+        "**Conditions**: observations independent hon aur har customer sirf ek cell me gine, table me **counts** hon (percentages ya averages nahi), aur expected counts kaafi bade hon: rule of thumb, saare E ≥ 5 (ya kam se kam 80% cells me E ≥ 5 aur koi E < 1 nahi). Warna chhoti categories merge karo, ya 2×2 me Fisher's exact test use karo.",
+        "**Standardised (Pearson) residual** = (O − E) / √E. Iska sign batata hai cell expected se zyada (+) hai ya kam (−), aur |residual| > 2 wale cells association ko drive karte hain. Sirf 'significant' bolna kaafi nahi; manager ko batana hai ki kaunsi city kis brand ko over-index karti hai.",
+        "**Cramér's V (effect size)** = √(χ² / (N × (k − 1))), jahan k = min(rows, columns); 2×2 me yeh φ ban jaata hai. χ² sample size ke saath badhta hai: same proportions aur 4 guna data ⇒ 4 guna χ². V size-free hai: lagbhag 0.1 weak, 0.3 moderate, 0.5 strong association (rough guide).",
+        "**Independence vs homogeneity vs goodness-of-fit**: ek random sample ko do variables pe classify kiya → independence test. Har city se alag fixed sample liya → homogeneity test (arithmetic same). Ek hi variable ko kisi claimed distribution se compare karna (jaise 'teen brands ka share 50 : 30 : 20') → goodness-of-fit, df = categories − 1.",
+        "**Business reading**: association ka matlab causation nahi. Pune ka ek brand ko zyada pasand karna income, distribution reach ya local taste ki wajah se ho sakta hai. Result se action nikaalo (regional campaign, shelf allocation), par cause ko alag test ya experiment se confirm karo."
+      ],
+      "example": {
+        "problem": "Ek tea company (fictional) ne 400 customers se poocha ki woh kaunsa brand pasand karte hain. Chennai (150): Neelgiri Gold 70, Brahmaputra Leaf 50, Sahyadri Chai 30. Kolkata (120): 40, 60, 20. Pune (130): 40, 40, 50. 5% level pe test karo ki brand preference city se independent hai ya nahi (df = 4 pe critical value 9.488), aur batao kaun se cells result ko drive karte hain.",
+        "steps": [
+          "Column totals: Neelgiri 150, Brahmaputra 150, Sahyadri 100; N = 400.",
+          "Expected counts (row × column / N): Chennai 56.25, 56.25, 37.5; Kolkata 45, 45, 30; Pune 48.75, 48.75, 32.5.",
+          "Contributions: Chennai 3.36, 0.69, 1.50; Kolkata 0.56, 5.00, 3.33; Pune 1.57, 1.57, 9.42.",
+          "χ² = sum ≈ 27.01, df = (3 − 1)(3 − 1) = 4. 27.01 > 9.488, toh H₀ reject: brand preference city ke saath associated hai.",
+          "Standardised residuals: Pune–Sahyadri = (50 − 32.5) / √32.5 ≈ +3.07 aur Kolkata–Brahmaputra = (60 − 45) / √45 ≈ +2.24 sabse bade hain.",
+          "Cramér's V = √(27.01 / (400 × 2)) ≈ 0.18, yaani association real hai par weak-to-moderate.",
+          "**Answer**: **χ² ≈ 27.0 > 9.488**, H₀ reject; association mainly **Pune ka Sahyadri Chai** aur **Kolkata ka Brahmaputra Leaf** ki taraf jhukaav se aata hai, aur **V ≈ 0.18**."
+        ]
+      },
+      "mistakes": [
+        "Counts ki jagah percentages ya averages pe χ² lagana. Fix: hamesha raw frequencies use karo; percentages se χ² ki value N ke hisaab se galat aati hai.",
+        "Sirf 'p < 0.05, significant' bolke ruk jaana. Fix: residuals se batao kaunse cells drive kar rahe hain, aur Cramér's V se strength; bade N me tiny association bhi significant hoti hai.",
+        "Expected counts 5 se kam hone pe bhi test chala dena. Fix: rare categories merge karo (jaise 'Others'), ya chhoti 2×2 tables me Fisher's exact test lo."
+      ],
+      "revision": [
+        "H₀: dono categorical variables independent.",
+        "E = row total × column total / N.",
+        "χ² = Σ (O − E)² / E, df = (r − 1)(c − 1), right-tailed.",
+        "Standardised residual (O − E) / √E; |r| > 2 drive karta hai.",
+        "Cramér's V = √(χ² / (N(k − 1))), k = min(r, c).",
+        "Same proportions, 4 guna N ⇒ 4 guna χ², V same."
+      ],
+      "questions": [
+        {
+          "id": "ba-w3-q1",
+          "question": "Ek beverage company 4 cities aur 3 brands ki contingency table pe chi-square test of independence chalaati hai. Degrees of freedom kitne honge?",
+          "options": [
+            "6",
+            "12",
+            "11",
+            "5"
+          ],
+          "answer": 0,
+          "explanation": "df = (r − 1)(c − 1) = (4 − 1)(3 − 1) = 3 × 2 = 6, option A. Trap: option B cells ki sankhya (4 × 3) hai, aur option C cells − 1 hai jo goodness-of-fit wala formula hai, independence ka nahi; option D (4 − 1) + (3 − 1) ko jod deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w3-q2",
+          "question": "3 cities × 4 brands wali survey table me N = 400 hai. Kolkata ka row total 120 hai aur Brand B ka column total 150 hai. Independence ke under (Kolkata, Brand B) cell ka expected count kya hai?",
+          "options": [
+            "30",
+            "37.5",
+            "45",
+            "56.25"
+          ],
+          "answer": 2,
+          "explanation": "E = row total × column total / N = 120 × 150 / 400 = 45, option C. Trap: option A (120 / 4) maan leta hai ki chaaron brands barabar popular hain, jo H₀ nahi kehta; H₀ sirf itna kehta hai ki Kolkata ka brand mix overall mix jaisa hai. Option B (150 / 4) aur option D (150 × 150 / 400) galat totals use karte hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w3-q3",
+          "question": "100 Delhi customers me se 60 Brand X aur 40 Brand Y pasand karte hain; 100 Mumbai customers me se 45 X aur 55 Y. Bina continuity correction ke chi-square test of independence (α = 0.05; critical values: df = 1 pe 3.841, df = 2 pe 5.991) ka sahi result kaunsa hai?",
+          "options": [
+            "χ² ≈ 2.26, H₀ reject nahi hota",
+            "χ² ≈ 4.51, H₀ reject: brand preference aur city associated hain",
+            "χ² ≈ 4.51, H₀ reject nahi hota kyunki 4.51 < 5.991",
+            "χ² ≈ 4.51, aur yeh prove karta hai ki city brand preference ka cause hai"
+          ],
+          "answer": 1,
+          "explanation": "Column totals X = 105, Y = 95; har row 100, N = 200. E = 52.5 (X) aur 47.5 (Y) dono rows me. Har cell me |O − E| = 7.5, toh χ² = 7.5² × (1/52.5 + 1/47.5) × 2 ≈ 4.51. df = 1, 4.51 > 3.841 ⇒ reject, option B. Trap: option C df = 2 ka critical value lagata hai (2×2 table me df = 1); option A sirf ek row ke cells jodta hai; option D association ko causation bana deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w3-q4",
+          "question": "Ek significant chi-square test (3×4 table) ke chaar cells ke observed (O) aur expected (E) counts neeche hain. Kaunsa cell χ² me sabse zyada contribute karta hai?",
+          "options": [
+            "Mumbai–Brand P: O = 130, E = 115",
+            "Delhi–Brand R: O = 48, E = 40",
+            "Jaipur–Brand Q: O = 12, E = 20",
+            "Lucknow–Brand S: O = 25, E = 15"
+          ],
+          "answer": 3,
+          "explanation": "Contribution = (O − E)² / E: option A 225 / 115 ≈ 1.96, option B 64 / 40 = 1.6, option C 64 / 20 = 3.2, option D 100 / 15 ≈ 6.67. Sabse bada option D hai. Trap: option A me |O − E| = 15 sabse bada hai, par bade E se divide hone pe contribution chhota ho jaata hai; χ² absolute gap nahi, gap ko expected ke relative naapta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w3-q5",
+          "question": "300 customers ki 3 × 4 table (3 income bands × 4 brands) pe χ² = 24 aaya. Cramér's V kya hai?",
+          "options": [
+            "0.04",
+            "0.283",
+            "0.20",
+            "0.163"
+          ],
+          "answer": 2,
+          "explanation": "k = min(3, 4) = 3, toh V = √(χ² / (N(k − 1))) = √(24 / (300 × 2)) = √0.04 = 0.20, option C. Trap: option A √ lena bhool jaata hai; option B (k − 1) bhool ke √(24 / 300) leta hai; option D k − 1 ki jagah k = 3 use karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w3-q6",
+          "question": "Survey 1: Delhi (100) me 55 X / 45 Y, Mumbai (100) me 45 X / 55 Y. Survey 2 me har cell 4 guna hai: Delhi 220 / 180, Mumbai 180 / 220. df = 1 pe 5% critical value 3.841 hai. Kaunsa statement sahi hai?",
+          "options": [
+            "Survey 1 me χ² = 2.0 (not significant), Survey 2 me χ² = 8.0 (significant), par φ (Cramér's V) dono me 0.1 hi hai",
+            "Dono surveys me χ² = 2.0, kyunki proportions same hain",
+            "Survey 2 me χ² = 8.0 aur φ bhi 4 guna hoke 0.4 ho gaya, yaani strong association",
+            "Survey 2 me χ² = 4.0 (√4 = 2 guna), significant"
+          ],
+          "answer": 0,
+          "explanation": "Survey 1: E = 50 har cell, χ² = 4 × 5² / 50 = 2.0 < 3.841. Survey 2: E = 200, χ² = 4 × 20² / 200 = 8.0 > 3.841. φ = √(χ² / N) = √(2 / 200) = √(8 / 800) = 0.1 dono me, isliye option A. Trap: option C maan leta hai ki effect size bhi N ke saath badhta hai; χ² badha kyunki evidence badha, association ki strength wahi hai. Option B bhool jaata hai ki χ² counts pe depend karta hai.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Comparing groups: two-sample tests, A/B tests and one-way ANOVA",
+      "summary": "Is week aap seekhoge ki do groups ke means ko Welch t-test se, do conversion rates ko two-proportion z-test se, aur teen ya zyada groups ko one-way ANOVA se kaise compare karte hain, multiple testing ka risk kaise control karte hain, aur effect size se business importance kaise judge karte hain.",
+      "readMinutes": 18,
+      "concepts": [
+        "**Design pehle, test baad me**: outcome numeric hai (delivery time, basket size) ya binary (converted / not)? Groups independent hain (alag customers, alag stores) ya same units do baar measure hue (paired, jo week 9 me aayega)? Do groups ke means → two-sample t; do proportions → two-proportion z; teen ya zyada groups ke means → one-way ANOVA.",
+        "**Welch two-sample t-test**: t = (x̄₁ − x̄₂) / √(s₁²/n₁ + s₂²/n₂). Yeh equal variances assume nahi karta, aur df Welch–Satterthwaite formula se aata hai: df = (v₁ + v₂)² / (v₁²/(n₁ − 1) + v₂²/(n₂ − 1)), jahan vᵢ = sᵢ²/nᵢ. **Pooled t** tabhi lo jab SDs aur sample sizes milte-julte hon; business data me Welch safe default hai.",
+        "**A/B test for conversion (two-proportion z-test)**: H₀: p_A = p_B. Pooled p̂ = (x_A + x_B) / (n_A + n_B), SE = √(p̂(1 − p̂)(1/n_A + 1/n_B)), z = (p̂_B − p̂_A) / SE. '25% relative lift' sunne me bada lagta hai, par chhote base rate aur chhote n pe yeh noise bhi ho sakta hai. Test one-sided hai ya two-sided, yeh data dekhne se pehle tay karo.",
+        "**One-way ANOVA**: H₀: μ₁ = μ₂ = … = μ_k; H₁: kam se kam ek mean alag. Total variation todo: SST = SSB (between groups) + SSW (within groups). MSB = SSB / (k − 1), MSW = SSW / (N − k), **F = MSB / MSW**. Agar groups me asli farq nahi toh F ≈ 1; F critical value se bada ho toh H₀ reject.",
+        "**Multiple t-tests kyun nahi**: har test α = 0.05 pe ho aur m independent tests hon toh kam se kam ek false positive ka chance (family-wise error rate) = 1 − (1 − α)^m. 3 groups ke 3 pairwise tests me yeh lagbhag 14.3% ho jaata hai. ANOVA ek hi F-test se overall sawaal 5% pe answer karta hai.",
+        "**Post-hoc comparisons**: significant F sirf batata hai ki koi farq hai, kaunsa pair alag hai yeh nahi. Phir Tukey HSD ya **Bonferroni** (har pair ko α / m pe test karo, m = k(k − 1)/2) use karo. 4 groups ⇒ 6 pairs ⇒ har test 0.05 / 6 ≈ 0.0083 pe.",
+        "**Assumptions**: groups ke andar observations independent, har group lagbhag normal (n bada ho toh CLT madad karta hai), aur variances roughly equal (Levene's test; rule of thumb: sabse badi SD / sabse chhoti SD < 2). Variances bahut alag hon toh Welch ANOVA, aur heavy outliers ya ordinal data ho toh Kruskal–Wallis.",
+        "**Effect size**: η² = SSB / SST = outcome ke variation ka kitna hissa group membership explain karti hai; do groups ke liye Cohen's d = (x̄₁ − x̄₂) / pooled SD. Bade sample me tiny farq bhi significant ho jaata hai; rollout ka decision effect size aur cost se lo, sirf p-value se nahi."
+      ],
+      "example": {
+        "problem": "QuickBasket (fictional) do dark-store models test karta hai. Model A: 25 stores, average delivery time 38 min, s = 6. Model B: 20 stores, average 32 min, s = 10. 5% two-sided level pe Welch t-test se batao kya farq significant hai (df = 29 pe t critical 2.045).",
+        "steps": [
+          "v_A = 6² / 25 = 1.44; v_B = 10² / 20 = 5.00.",
+          "SE = √(1.44 + 5.00) = √6.44 ≈ 2.538.",
+          "t = (38 − 32) / 2.538 ≈ 2.36.",
+          "Welch df = 6.44² / (1.44² / 24 + 5² / 19) ≈ 29.6; conservative rehne ke liye 29 lo.",
+          "|t| = 2.36 > 2.045, toh H₀ (equal means) reject.",
+          "Note: SDs 6 vs 10 kaafi alag hain, isliye pooled t (jo t ≈ 2.49 deta) ki jagah Welch sahi choice hai.",
+          "**Answer**: **t ≈ 2.36 > 2.045**, Model B ka delivery time significantly kam hai; average farq **6 minute** hai, jo ab cost ke saath tolna hai."
+        ]
+      },
+      "mistakes": [
+        "Teen ya zyada groups me saare pairs pe alag-alag t-test chala dena. Fix: pehle ANOVA F-test, phir Tukey ya Bonferroni-adjusted post-hoc comparisons.",
+        "Significant F ka matlab 'saare groups ek doosre se alag hain' samajhna. Fix: F sirf itna kehta hai ki kam se kam ek mean alag hai; kaunse pairs alag hain yeh post-hoc batata hai.",
+        "A/B test me bada relative lift dekh ke winner declare karna. Fix: z-test (ya confidence interval) se check karo, aur sample size test shuru hone se pehle tay karo."
+      ],
+      "revision": [
+        "Welch t: SE = √(s₁²/n₁ + s₂²/n₂); unequal variances me safe.",
+        "Two-proportion z: pooled p̂ se SE, z = (p̂_B − p̂_A) / SE.",
+        "ANOVA: F = [SSB / (k − 1)] / [SSW / (N − k)].",
+        "FWER = 1 − (1 − α)^m; Bonferroni: α / m.",
+        "Significant F ⇒ kam se kam ek mean alag; post-hoc se pair dhoondo.",
+        "η² = SSB / SST, effect size ke saath decision lo."
+      ],
+      "questions": [
+        {
+          "id": "ba-w4-q1",
+          "question": "Ek analyst 3 store formats ke average bill ko compare karne ke liye 3 pairwise t-tests chalaata hai, har ek α = 0.05 pe. Agar tests independent maane jaayein aur asal me koi farq na ho, toh kam se kam ek false positive aane ki probability kya hai?",
+          "options": [
+            "5%",
+            "15%",
+            "0.0125%",
+            "Lagbhag 14.3%"
+          ],
+          "answer": 3,
+          "explanation": "FWER = 1 − (1 − 0.05)³ = 1 − 0.857375 ≈ 0.143, yaani lagbhag 14.3%, option D. Trap: option B 3 × 0.05 jod deta hai; yeh sirf upper bound (Bonferroni inequality) hai, exact probability nahi. Option A maan leta hai ki har test ka 5% poore analysis pe bhi 5% hi rehta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w4-q2",
+          "question": "Ek company 4 ad campaigns ka sales lift compare karti hai; har campaign 5 alag stores me chala (total 20 stores). One-way ANOVA ke F-statistic ke degrees of freedom kya hain?",
+          "options": [
+            "(4, 20)",
+            "(3, 16)",
+            "(3, 19)",
+            "(4, 16)"
+          ],
+          "answer": 1,
+          "explanation": "Between-groups df = k − 1 = 4 − 1 = 3; within-groups df = N − k = 20 − 4 = 16, isliye F(3, 16), option B. Trap: option C total df (N − 1 = 19) ko within df maan leta hai; options A aur D groups ki sankhya ko hi df le lete hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "ba-w4-q3",
+          "question": "4 pricing plans, har plan me 10 customers (N = 40). ANOVA me SSB = 120 aur SSW = 360 aaye. F(3, 36) ka 5% critical value 2.866 hai. Sahi conclusion kya hai?",
+          "options": [
+            "F ≈ 0.33, H₀ reject nahi hota",
+            "F = 12.0, H₀ reject",
+            "F = 4.0, H₀ reject: kam se kam ek plan ka mean baaki se alag hai",
+            "F = 4.0, H₀ reject: chaaron plans ke means ek doosre se alag hain"
+          ],
+          "answer": 2,
+          "explanation": "MSB = 120 / 3 = 40, MSW = 360 / 36 = 10, F = 40 / 10 = 4.0 > 2.866, toh reject; ANOVA sirf itna kehta hai ki kam se kam ek mean alag hai, isliye option C. Trap: option D wahi F leta hai par conclusion zyada kheench deta hai; kaunse pairs alag hain yeh post-hoc test batayega. Option B SSB ko df se divide karna bhool jaata hai (120 / 10), aur option A SSB / SSW leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w4-q4",
+          "question": "Ek checkout page A/B test: version A me 2,000 visitors se 120 orders, version B me 2,000 visitors se 150 orders. Pooled two-proportion z-test (two-sided, α = 0.05, critical value 1.96) ka sahi result kya hai?",
+          "options": [
+            "z ≈ 1.89; 5% two-sided level pe significant nahi",
+            "z ≈ 1.89; significant, kyunki relative lift 25% hai",
+            "z ≈ 2.67; significant",
+            "z ≈ 1.89; significant, kyunki 1.89 > 1.645"
+          ],
+          "answer": 0,
+          "explanation": "p̂_A = 0.06, p̂_B = 0.075, pooled p̂ = 270 / 4,000 = 0.0675. SE = √(0.0675 × 0.9325 × (1/2,000 + 1/2,000)) ≈ 0.00793. z = 0.015 / 0.00793 ≈ 1.89 < 1.96, isliye option A. Trap: option D one-sided critical value (1.645) laga deta hai jabki test two-sided tay tha; option C SE me sirf ek 1/n leta hai; option B lift ke size ko significance samajh leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w4-q5",
+          "question": "4 delivery partners ke ANOVA me F significant aaya. Ab saare pairwise comparisons Bonferroni correction ke saath karne hain, family-wise α = 0.05. Har pairwise test kis significance level pe hoga?",
+          "options": [
+            "0.0125",
+            "Lagbhag 0.0083",
+            "0.05",
+            "Lagbhag 0.0167"
+          ],
+          "answer": 1,
+          "explanation": "4 groups me pairs m = 4 × 3 / 2 = 6, toh har test α / m = 0.05 / 6 ≈ 0.0083 pe, option B. Trap: option A groups ki sankhya (4) se divide karta hai, pairs ki sankhya se nahi; option D 3 comparisons maan leta hai; option C correction hi nahi lagata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "ba-w4-q6",
+          "code": "Layout A: 10, 12, 11, 13\nLayout B: 14, 15, 13, 16\nLayout C: 12, 11, 13, 12",
+          "question": "Ek supermarket chain (fictional) ne 3 shelf layouts 12 stores me test kiye (har layout 4 stores). Weekly sales (₹ lakh) neeche diye hain. One-way ANOVA ka F aur η² kya hai, aur 5% pe (F(2, 9) critical = 4.256) decision kya hai?",
+          "options": [
+            "F ≈ 1.72, H₀ reject nahi; η² ≈ 0.63",
+            "F ≈ 7.75, H₀ reject; η² ≈ 1.72",
+            "F ≈ 15.5, H₀ reject; η² ≈ 0.63",
+            "F ≈ 7.75, H₀ reject; η² ≈ 0.63"
+          ],
+          "answer": 3,
+          "explanation": "Means 11.5, 14.5, 12; grand mean 12.667. SSB = 4 × (1.167² + 1.833² + 0.667²) ≈ 20.67. SSW = 5 + 5 + 2 = 12. MSB = 20.67 / 2 = 10.33, MSW = 12 / 9 = 1.333, F ≈ 7.75 > 4.256 ⇒ reject. η² = 20.67 / 32.67 ≈ 0.63, isliye option D. Trap: option C SSB ko df = 2 se divide karna bhool jaata hai; option A SSB / SSW ko F maan leta hai; option B wahi ratio η² ke roop me leta hai, jabki η² ka denominator SST hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}

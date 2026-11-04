@@ -1,0 +1,245 @@
+{
+  "subjectId": "mlt",
+  "questions": {
+    "mlt-w1-q1": {
+      "question": "Why is the data centred (mean subtracted) before forming the covariance matrix in PCA?",
+      "options": [
+        "So that every feature has variance exactly 1",
+        "So that the principal directions capture the spread of the data; without centring the top direction leans towards the mean",
+        "So that the eigenvalues of the covariance matrix do not come out negative",
+        "So that the number of dimensions drops automatically"
+      ],
+      "explanation": "Variance is spread around the mean. If the mean is not subtracted, the top eigenvector of (1/n) Σ xxᵀ mostly points along the mean vector rather than along the spread, so option B is correct. Trap in option A: making variance 1 is standardization (dividing each feature by its standard deviation), not centring. Option C is wrong because (1/n) Σ xxᵀ is PSD anyway, so its eigenvalues are never negative even without centring."
+    },
+    "mlt-w1-q2": {
+      "question": "The covariance matrix of a 3-feature dataset has eigenvalues 6, 3 and 1. What fraction of the total variance do the first two principal components capture?",
+      "options": [
+        "60%",
+        "97.8%",
+        "66.7%",
+        "90%"
+      ],
+      "explanation": "Variance explained = (6 + 3) / (6 + 3 + 1) = 9/10 = 90%, so option D. Option A (60%) is the first component alone. Option B comes from squaring the eigenvalues: (36 + 9)/46 ≈ 97.8%; an eigenvalue already is a variance and must not be squared. Option C uses 6/9, dividing by the sum of only the first two instead of the total."
+    },
+    "mlt-w1-q3": {
+      "question": "Centred 2-D data has covariance matrix C = [[4, 2], [2, 1]]. What are the first principal direction and its variance?",
+      "options": [
+        "Direction (2, 1)/√5, variance 5",
+        "Direction (1, 2)/√5, variance 5",
+        "Direction (1, 0), variance 4",
+        "Direction (1, −2)/√5, variance 0"
+      ],
+      "explanation": "Trace = 5 and determinant = 4 − 4 = 0, so the eigenvalues are 5 and 0. For λ = 5, (C − 5I)v = 0 ⇒ −v₁ + 2v₂ = 0 ⇒ v = (2, 1)/√5; check: C(2, 1) = (10, 5) = 5(2, 1). So option A. Option B swaps the components: C(1, 2) = (8, 4), which is not a multiple of (1, 2). Option C just picks the largest diagonal entry (C₁₁ = 4) and ignores the covariance term. Option D is the second (zero-variance) direction."
+    },
+    "mlt-w1-q4": {
+      "question": "A centred point x = (3, 1) is projected onto the unit direction w = (1, 1)/√2 and reconstructed in 1-D. What is the squared reconstruction error ‖x − x̂‖²?",
+      "options": [
+        "0",
+        "8",
+        "2",
+        "10"
+      ],
+      "explanation": "Score = xᵀw = (3 + 1)/√2 = 2√2. Reconstruction x̂ = (xᵀw)w = 2√2 · (1, 1)/√2 = (2, 2). Error = (3 − 2)² + (1 − 2)² = 2, so option C. Shortcut: ‖x‖² − (xᵀw)² = 10 − 8 = 2. Option B (8) is the squared length of the projected part (score²), not the error. Option D (10) is the whole ‖x‖², as if nothing had been projected."
+    },
+    "mlt-w1-q5": {
+      "question": "The covariance eigenvalues (descending) of a 5-feature dataset are 5.0, 2.5, 1.5, 0.6, 0.4. What is the minimum number of principal components needed to retain at least 95% of the variance?",
+      "options": [
+        "2",
+        "3",
+        "5",
+        "4"
+      ],
+      "explanation": "Total = 10. Cumulative fractions: 50% at k = 1, 75% at k = 2, 90% at k = 3, 96% at k = 4. 95% is first crossed at k = 4, so option D. Trap in option B (3): treating 90% as 'close enough'; the threshold is 95%. Option C (5) keeps every component, which is no reduction at all."
+    },
+    "mlt-w1-q6": {
+      "question": "A fictional gene-expression study has n = 50 samples with d = 1000 features each. After centring, the 1000 × 1000 covariance matrix is formed with the (1/n) convention. At most how many of its eigenvalues can be nonzero?",
+      "options": [
+        "49",
+        "50",
+        "1000",
+        "950"
+      ],
+      "explanation": "C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ is a sum of 50 rank-1 matrices, but the centred vectors sum to zero (Σ (xᵢ − x̄) = 0), so they are linearly dependent and span at most a 49-dimensional subspace. Rank ≤ n − 1 = 49, so option A. Option B (50) forgets the one extra dependency created by centring. Option C assumes a d × d matrix is always full rank, which is impossible when d > n."
+    },
+    "mlt-w2-q1": {
+      "question": "In the RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)), what is k(x, x) for any point x?",
+      "options": [
+        "0",
+        "σ²",
+        "1",
+        "Depends on ‖x‖²"
+      ],
+      "explanation": "At x = y, ‖x − y‖² = 0, so k(x, x) = exp(0) = 1 whatever σ or x is, so option C. Every point has feature-space norm 1. The trap in option D comes from the linear or polynomial kernel, where k(x, x) = ‖x‖² or (‖x‖² + c)ᵖ; the RBF kernel depends only on distance. Option A is backwards: similarity is maximal when the distance is zero."
+    },
+    "mlt-w2-q2": {
+      "question": "For x = (1, 2) and y = (3, −1), what is the polynomial kernel value k(x, y) = (xᵀy + 1)²?",
+      "options": [
+        "4",
+        "1",
+        "36",
+        "2"
+      ],
+      "explanation": "xᵀy = 1·3 + 2·(−1) = 1, so k = (1 + 1)² = 4, which is option A. Option B (1) is the homogeneous kernel (xᵀy)², i.e. the +1 was forgotten. Option C (36) comes from ignoring the sign of −1 and taking xᵀy = 5. Option D (2) skips the squaring."
+    },
+    "mlt-w2-q3": {
+      "question": "For x ∈ ℝ², the kernel k(x, y) = (xᵀy + 1)³ equals a dot product in a feature space of what dimension (all monomials of degree ≤ 3, including the constant)?",
+      "options": [
+        "3",
+        "8",
+        "4",
+        "10"
+      ],
+      "explanation": "Because c > 0, all monomials of degree 0 to 3 appear: count = C(d + p, p) = C(5, 3) = 10 (1 constant, 2 linear, 3 quadratic, 4 cubic). So option D. Option C (4) counts only the degree-3 monomials, which is the dimension for the homogeneous kernel (xᵀy)³. Option B (8) counts the 2³ ordered products, which include duplicates such as x₁x₂ and x₂x₁."
+    },
+    "mlt-w2-q4": {
+      "question": "The RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)) is used with σ = 1. For x = (1, 2) and y = (2, 0), what is k(x, y) approximately?",
+      "options": [
+        "0.0067",
+        "0.082",
+        "0.327",
+        "0.287"
+      ],
+      "explanation": "‖x − y‖² = (1 − 2)² + (2 − 0)² = 1 + 4 = 5. k = exp(−5/2) = exp(−2.5) ≈ 0.082, so option B. Option A is exp(−5), i.e. the factor 2 in 2σ² was forgotten. Option C uses the distance √5 instead of the squared distance. Option D reads 2σ² as (2σ)² = 4."
+    },
+    "mlt-w2-q5": {
+      "question": "The linear kernel matrix of the 1-D points 0, 1, 2 is K = [[0, 0, 0], [0, 1, 2], [0, 2, 4]]. What is the (3, 3) entry of the centred kernel K̃ = (I − 1ₙ)K(I − 1ₙ)?",
+      "options": [
+        "1",
+        "3",
+        "2",
+        "4"
+      ],
+      "explanation": "K̃₃₃ = K₃₃ − (row 3 mean) − (column 3 mean) + (overall mean) = 4 − 2 − 2 + 1 = 1, so option A. Check: the centred points are −1, 0, 1 and 1·1 = 1. Option B (3) subtracts only the overall mean. Option C (2) subtracts only the row mean, which is one-sided centring. Option D (4) is the uncentred entry."
+    },
+    "mlt-w2-q6": {
+      "question": "In kernel PCA the centred kernel matrix K̃ has largest eigenvalue μ = 4 with unit eigenvector β = (1/√2, 0, −1/√2). The coefficients α are scaled so that the feature-space direction w = Σ αᵢ φ(xᵢ) has norm 1. What is the score (projection) of training point x₁ on this component?",
+      "options": [
+        "0.354",
+        "2.828",
+        "1.414",
+        "0.707"
+      ],
+      "explanation": "For ‖w‖² = αᵀK̃α = 1 we need α = β/√μ = β/2. Score of x₁ = Σⱼ αⱼ K̃₁ⱼ = (K̃α)₁ = μα₁ = √μ β₁ = 2 · (1/√2) = √2 ≈ 1.414, so option C. Option A (0.354) is just α₁ without multiplying by K̃. Option B (2.828) is μβ₁, i.e. β used without normalising. Option D (0.707) is β₁ itself."
+    },
+    "mlt-w3-q1": {
+      "question": "Which statement about Lloyd's algorithm (k-means) is correct?",
+      "options": [
+        "Neither the assignment step nor the update step ever increases the objective J, and the algorithm stops at a local minimum in finitely many steps",
+        "The algorithm always reaches the global minimum of J, whatever the initialisation",
+        "J can increase in the update step; only the assignment step decreases it",
+        "The algorithm converges only for k = 2"
+      ],
+      "explanation": "The assignment step picks each point's best cluster for fixed centroids, and the update step takes the mean, which is the exact minimiser of squared distance for fixed clusters; both keep J non-increasing and assignments are finite, so option A is correct. Option B is the most common trap: convergence is guaranteed only to a local minimum, not the global one, which is why initialisation matters. Option C is wrong because the mean is the minimiser of squared error."
+    },
+    "mlt-w3-q2": {
+      "question": "After the assignment step, a cluster contains the points (1, 2), (3, 4) and (5, 0). What is its new centroid after the update step?",
+      "options": [
+        "(3, 3)",
+        "(9, 6)",
+        "(3, 2)",
+        "(4.5, 3)"
+      ],
+      "explanation": "Centroid = mean = ((1 + 3 + 5)/3, (2 + 4 + 0)/3) = (9/3, 6/3) = (3, 2), so option C. Option B is just the sum, without dividing by 3. Option D divides by 2 (wrong count). Option A ignores the 0 in the y-coordinate and takes (2 + 4)/2 = 3."
+    },
+    "mlt-w3-q3": {
+      "question": "k-means++ is run on the 1-D points 0, 1, 3, 6 and the first centre chosen is 0. What is the probability that point 6 is chosen as the second centre?",
+      "options": [
+        "0.25",
+        "0.783",
+        "0.6",
+        "0.196"
+      ],
+      "explanation": "Each point's distance to the nearest centre (0) is D = 0, 1, 3, 6, so D² = 0, 1, 9, 36 with sum 46. P(6) = 36/46 ≈ 0.783, so option B. Option C (0.6) is proportional to distance (6/10), not squared distance. Option A (0.25) is a uniform random choice, i.e. plain random initialisation. Option D is the probability for point 3 (9/46)."
+    },
+    "mlt-w3-q4": {
+      "question": "A k = 2 clustering has cluster 1 = {(0, 0), (2, 0), (1, 3)} and cluster 2 = {(6, 6), (8, 6)}, with each centroid at its cluster mean. What is the k-means objective J (within-cluster sum of squared distances)?",
+      "options": [
+        "8",
+        "2",
+        "6.83",
+        "10"
+      ],
+      "explanation": "Cluster 1 has mean (1, 1): squared distances 2, 2, 4 ⇒ 8. Cluster 2 has mean (7, 6): squared distances 1, 1 ⇒ 2. J = 8 + 2 = 10, so option D. Option C (≈ 6.83) sums plain distances (√2 + √2 + 2 + 1 + 1) instead of squared ones. Options A and B are the contributions of one cluster each."
+    },
+    "mlt-w3-q5": {
+      "question": "In kernel k-means the cluster is C = {a, b}. Kernel values: k(x, x) = 1, k(x, a) = 0.5, k(x, b) = 0.3, k(a, a) = k(b, b) = 1, k(a, b) = 0.4. What is ‖φ(x) − μ_C‖² in feature space?",
+      "options": [
+        "0.2",
+        "0.9",
+        "1.6",
+        "0.7"
+      ],
+      "explanation": "‖φ(x) − μ_C‖² = k(x, x) − (2/|C|) Σ k(x, xⱼ) + (1/|C|²) Σᵢ Σⱼ k(xᵢ, xⱼ) = 1 − (2/2)(0.5 + 0.3) + (1/4)(1 + 1 + 0.4 + 0.4) = 1 − 0.8 + 0.7 = 0.9, so option B. Option A (0.2) forgets the third term (the centroid's own squared norm). Option C (1.6) uses 1/|C| instead of 1/|C|² in the third term. Option D (0.7) drops the cross terms k(a, b) and k(b, a) from the double sum."
+    },
+    "mlt-w3-q6": {
+      "question": "Lloyd's algorithm with k = 2 is run to convergence on the 1-D points 1, 2, 3, 8, 9, 20, starting from centroids 1 and 2. What are the final centroids?",
+      "options": [
+        "1 and 8.4",
+        "4.6 and 20",
+        "2 and 12.33",
+        "2 and 8.5"
+      ],
+      "explanation": "Iteration 1: only 1 is closer to centroid 1; 2, 3, 8, 9, 20 go to centroid 2 ⇒ update to 1 and (2 + 3 + 8 + 9 + 20)/5 = 8.4. Iteration 2: 1, 2, 3 go to centroid 1 (for 3: 4 vs 29.16) and 8, 9, 20 to centroid 8.4 ⇒ update to 2 and 37/3 ≈ 12.33. Iteration 3: assignments unchanged ⇒ converged, so option C. Option A stops after one iteration. Option B is a different local minimum (reached from initial centroids 1 and 20, J = 53.2 vs 90.67 here), which shows the result depends on initialisation, but this run does not get there. Option D ignores the outlier 20."
+    },
+    "mlt-w4-q1": {
+      "question": "Treating the data 2, 4, 6 as Gaussian, what is the maximum likelihood estimate of the variance σ²?",
+      "options": [
+        "4",
+        "1.63",
+        "8",
+        "2.67"
+      ],
+      "explanation": "μ̂ = 4. The MLE σ̂² = (1/n) Σ (xᵢ − μ̂)² = (4 + 0 + 4)/3 = 8/3 ≈ 2.67, so option D. Option A (4) divides by n − 1 = 2; that is the unbiased sample variance, not the MLE. Option B (1.63) is the standard deviation √(8/3), not the variance. Option C (8) is just the sum of squared deviations."
+    },
+    "mlt-w4-q2": {
+      "question": "A click-through probability θ has prior Beta(2, 2). In 10 impressions there are 7 clicks and 3 non-clicks (Bernoulli likelihood). What is the posterior distribution?",
+      "options": [
+        "Beta(7, 3)",
+        "Beta(9, 5)",
+        "Beta(5, 9)",
+        "Beta(9, 12)"
+      ],
+      "explanation": "The Beta prior is conjugate to the Bernoulli likelihood: Beta(α + h, β + t) = Beta(2 + 7, 2 + 3) = Beta(9, 5), so option B. Option C adds clicks and non-clicks the wrong way round. Option A ignores the prior entirely. Option D adds the total trials (10) to β instead of only the failures (3)."
+    },
+    "mlt-w4-q3": {
+      "question": "The prior is Beta(3, 3) and 8 successes are observed in 10 Bernoulli trials. What is the MAP estimate of θ?",
+      "options": [
+        "0.8",
+        "0.6875",
+        "0.714",
+        "0.786"
+      ],
+      "explanation": "Posterior Beta(3 + 8, 3 + 2) = Beta(11, 5). MAP = mode = (α − 1)/(α + β − 2) = 10/14 ≈ 0.714, so option C. Option B (11/16 = 0.6875) is the posterior mean, not the mode. Option A (0.8) is the MLE, which ignores the prior. Option D (11/14) forgets the −1 in the numerator."
+    },
+    "mlt-w4-q4": {
+      "question": "A 1-D GMM has two components: π₁ = 0.2, μ₁ = 0, σ₁ = 1 and π₂ = 0.8, μ₂ = 3, σ₂ = 1. For the point x = 1.5, what is the responsibility r₁ of component 1?",
+      "options": [
+        "0.2",
+        "0.5",
+        "0.8",
+        "0.25"
+      ],
+      "explanation": "x = 1.5 is equally far from both means and σ is the same, so N(1.5; 0, 1) = N(1.5; 3, 1). Hence r₁ = 0.2·N / (0.2·N + 0.8·N) = 0.2, option A. The trap in option B is to look only at distance, say 0.5 and ignore the mixing weights. Option D (0.25) is the ratio π₁/π₂, not a normalised probability. Option C is the responsibility of component 2."
+    },
+    "mlt-w4-q5": {
+      "question": "On the data 0, 2, 6, the E-step gives component 1 the responsibilities (1, 0.5, 0). What are μ₁ and π₁ after the M-step?",
+      "options": [
+        "μ₁ = 0.333, π₁ = 0.5",
+        "μ₁ = 1, π₁ = 0.5",
+        "μ₁ = 0.667, π₁ = 0.5",
+        "μ₁ = 0.667, π₁ = 1.5"
+      ],
+      "explanation": "N₁ = 1 + 0.5 + 0 = 1.5. μ₁ = (1·0 + 0.5·2 + 0·6)/1.5 = 1/1.5 ≈ 0.667 and π₁ = N₁/n = 1.5/3 = 0.5, so option C. Option A divides the weighted sum by n = 3 instead of N₁. Option B takes the plain average (0 + 2)/2 of the points with nonzero responsibility, ignoring the weights. Option D does not divide π₁ by n, which cannot be a probability (> 1)."
+    },
+    "mlt-w4-q6": {
+      "question": "1-D GMM: π₁ = π₂ = 0.5, both means are 0, but σ₁ = 1 and σ₂ = 2. For the point x = 2, what is the responsibility r₁ of component 1 approximately?",
+      "options": [
+        "0.5",
+        "0.309",
+        "0.667",
+        "0.182"
+      ],
+      "explanation": "N(2; 0, 1) = e^(−2)/√(2π) ≈ 0.1353/√(2π) and N(2; 0, 2) = e^(−0.5)/(2√(2π)) ≈ 0.3033/√(2π). r₁ = 0.1353/(0.1353 + 0.3033) ≈ 0.309, so option B. The wider component wins in the tails. The trap in option A is to see equal means and say 0.5. Option D (0.182) forgets the Gaussian's 1/σ normalising factor, which does not cancel when σ differs. Option C (2/3) would be right at x = 0, not at x = 2."
+    }
+  }
+}

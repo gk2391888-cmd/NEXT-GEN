@@ -1,0 +1,499 @@
+{
+  "subjectId": "mad1",
+  "weeks": [
+    {
+      "week": 1,
+      "title": "How the Web Works: Clients, Servers and HTTP",
+      "summary": "Is week aap client-server model, URL ke hisse, DNS se lekar HTTP request tak ka poora safar, HTTP request/response ka structure, status code classes aur latency/bandwidth se page load time ka estimate lagana seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**Client-server model**: browser (user agent) ek **client** hai jo request bhejta hai, aur **server** us request ko process karke response deta hai. Server kabhi khud se baat shuru nahi karta; har exchange client ki request se shuru hota hai. Ek web app mein browser, app server, database sab alag roles hain, par HTTP ke level par baat sirf request aur response ki hoti hai.",
+        "**URL anatomy**: `https://shop.example.com:8443/items/list?page=2#reviews` mein scheme `https`, host `shop.example.com`, port `8443`, path `/items/list`, query `page=2` aur fragment `reviews` hai. Port na likho to default lagta hai: `http` ke liye 80, `https` ke liye 443. **Fragment** (`#` ke baad wala hissa) browser ke andar hi rehta hai, server ko request mein nahi jaata.",
+        "**DNS se HTTP tak**: browser pehle **DNS** se hostname ka IP address nikaalta hai (OS aur browser cache, phir resolver; har record ka TTL hota hai). Phir server se **TCP connection** banta hai (handshake = 1 RTT), HTTPS ho to uske upar **TLS handshake** hota hai, aur tab jaakar HTTP request jaati hai. Har step mein round trips lagte hain, isliye latency badhti hai.",
+        "**HTTP request ka structure**: pehli line request line hai, jaise `GET /items/list?page=2 HTTP/1.1`, jisme method, target aur version hai. Uske baad headers (`Host`, `User-Agent`, `Accept`, `Cookie`), phir ek khaali line, phir optional body. HTTP/1.1 mein `Host` header zaroori hai, kyunki ek IP par kai websites chal sakti hain.",
+        "**HTTP response ka structure**: status line jaise `HTTP/1.1 200 OK`, phir headers (`Content-Type: text/html; charset=utf-8`, `Content-Length`, `Set-Cookie`, `Location`), khaali line, aur body. `Content-Type` batata hai body ko kaise samjhein (HTML, JSON, image), isliye galat content type se browser page galat dikhata hai.",
+        "**Status code classes**: 1xx informational, 2xx success (200 OK, 201 Created, 204 No Content), 3xx redirection (301 permanent, 302 temporary, 304 Not Modified), 4xx client error (400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 405 Method Not Allowed) aur 5xx server error (500 Internal Server Error, 502 Bad Gateway, 503 Service Unavailable). Pehla digit hi batata hai galti kiski hai.",
+        "**Latency vs bandwidth**: latency ek message ke aane-jaane ka time hai (RTT = round-trip time), bandwidth ek second mein kitne bits bhej sakte ho. Rough estimate: total time ≈ (RTTs ki ginti × RTT) + (size in bits ÷ bandwidth). Dhyaan do: network speed **Mbps** (megabits) mein hoti hai aur file size **MB** (megabytes) mein, 1 byte = 8 bits.",
+        "**Statelessness**: HTTP stateless hai, yaani server ek request ko pichhli request se apne aap nahi jodta. Login jaisi cheezein yaad rakhne ke liye cookies aur sessions use hote hain (week 7). HTTP/1.1 **persistent connection** (keep-alive) ek TCP connection par kai requests bhejne deta hai, aur HTTP/2 ek connection par kai requests saath-saath (multiplexing) chala sakta hai."
+      ],
+      "example": {
+        "problem": "Ek student ka laptop 40 Mbps link par hai aur server tak RTT 100 ms hai. 5 MB ka page download karna hai. Maan lo data aane se pehle 2 RTT lagte hain (TCP handshake + request), TLS aur server processing ignore karo. 1 MB = 10⁶ bytes, 1 Mbps = 10⁶ bits/s. Total time kitna hoga?",
+        "steps": [
+          "Latency wala hissa: 2 RTT × 100 ms = 200 ms = 0.2 s.",
+          "Size ko bits mein badlo: 5 MB = 5 × 10⁶ × 8 = 40 × 10⁶ bits.",
+          "Transmission time = 40 × 10⁶ bits ÷ 40 × 10⁶ bits/s = 1.0 s.",
+          "Dono jodo: 0.2 s + 1.0 s = 1.2 s.",
+          "Sochne wali baat: chhote pages (jaise 50 KB) ke liye latency hissa zyada bhari padta hai, bade downloads ke liye bandwidth hissa.",
+          "Answer: lagbhag **1.2 s**."
+        ]
+      },
+      "mistakes": [
+        "MB aur Mbps ko same maan lena. 5 MB ko 40 Mbps se seedha divide karke 0.125 s nikaalna galat hai; pehle bytes ko 8 se multiply karke bits banao.",
+        "Ye sochna ki URL ka `#section` server tak jaata hai aur server usse alag content bhejega. Fragment sirf browser use karta hai (page ke andar scroll ya client-side routing ke liye).",
+        "Har error ko 404 bol dena. Route maujood hai par method galat hai to 405, login nahi hai to 401, permission nahi hai to 403, aur server ke code mein exception aaye to 500."
+      ],
+      "revision": [
+        "URL = scheme://host:port/path?query#fragment; fragment server ko nahi jaata.",
+        "Order: DNS → TCP handshake → TLS handshake → HTTP request.",
+        "Request = request line + headers + blank line + body; HTTP/1.1 mein `Host` zaroori.",
+        "2xx success, 3xx redirect, 4xx client ki galti, 5xx server ki galti.",
+        "Time ≈ RTTs × RTT + (bytes × 8) ÷ bandwidth.",
+        "HTTP stateless hai; state cookies/sessions se aati hai."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w1-q1",
+          "question": "Browser yeh URL kholta hai: `https://shop.example.com:8443/items/list?page=2&sort=price#reviews`. URL ka kaunsa hissa HTTP request ke saath server tak **nahi** jaata?",
+          "options": [
+            "Query string `page=2&sort=price`",
+            "Fragment `reviews`",
+            "Path `/items/list`",
+            "Host `shop.example.com` (jo `Host` header mein jaata hai)"
+          ],
+          "answer": 1,
+          "explanation": "Fragment (`#` ke baad wala hissa) sirf browser ke liye hai, jaise page ke andar kisi section par scroll karna; browser use request mein shaamil nahi karta. Path aur query request line mein jaate hain (`GET /items/list?page=2&sort=price HTTP/1.1`), aur host `Host` header mein, isliye options A, C aur D galat hain. Trap: option A, kyunki log sochte hain query bhi sirf browser ka hissa hai, jabki server isi se filter/sort karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w1-q2",
+          "question": "Ek app mein `/login` route sirf GET aur POST accept karta hai. Client `DELETE /login` request bhejta hai. Sabse sahi status code kaunsa hai?",
+          "options": [
+            "404 Not Found",
+            "403 Forbidden",
+            "405 Method Not Allowed",
+            "501 Not Implemented"
+          ],
+          "answer": 2,
+          "explanation": "Resource (`/login`) maujood hai, bas yeh method uske liye allowed nahi hai; iske liye 405 hai, aur response ke `Allow` header mein allowed methods (GET, POST) bataye jaate hain. Option A ka trap: resource mil gaya hai, isliye 404 galat hai. Option D (501) tab hota hai jab server us method ko kisi bhi resource ke liye pehchaanta hi nahi. Option B (403) permission ki kami ke liye hai, method ke liye nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w1-q3",
+          "question": "2 MB ki file 16 Mbps link par download karni hai, RTT 80 ms hai. Data aane se pehle 2 RTT lagte hain (TCP handshake + request); TLS aur server time ignore karo. 1 MB = 10⁶ bytes, 1 Mbps = 10⁶ bits/s. Total time kitna hoga?",
+          "options": [
+            "0.29 s",
+            "1.00 s",
+            "1.08 s",
+            "1.16 s"
+          ],
+          "answer": 3,
+          "explanation": "Latency: 2 × 80 ms = 0.16 s. Transmission: 2 MB = 16 × 10⁶ bits, aur 16 × 10⁶ ÷ 16 × 10⁶ = 1.0 s. Total = 0.16 + 1.0 = 1.16 s. Option A ka trap: bytes ko bits mein nahi badla (2 ÷ 16 = 0.125 s, plus 0.16). Option B latency bhool jaata hai, aur option C sirf 1 RTT ginta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w1-q4",
+          "question": "Browser `GET /old-page` bhejta hai aur server jawab deta hai `301 Moved Permanently` ke saath header `Location: /new-page`. Iske baad kya hota hai?",
+          "options": [
+            "Browser apne aap `/new-page` ke liye ek nayi GET request bhejta hai, aur address bar mein `/new-page` dikhta hai",
+            "Server andar hi andar `/new-page` ka content nikaal kar usi 301 response ki body mein bhej deta hai",
+            "Browser user ko ek error page dikhata hai, kyunki 3xx codes failure hote hain",
+            "Browser thodi der baad wapas `/old-page` ko hi dobara request karta hai"
+          ],
+          "answer": 0,
+          "explanation": "3xx redirect ka matlab hai 'resource kahin aur hai': browser `Location` header padh kar wahan **nayi request** bhejta hai, isliye do request-response cycles hote hain aur URL badal jaata hai. Option B ka trap: yeh server-side forward/include jaisa hai, redirect nahi; redirect mein kaam client karta hai. Option C galat hai kyunki 3xx error class nahi hai, aur option D `Retry-After`/503 jaisi soch hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w1-q5",
+          "question": "Ek fresh browser (koi cache nahi) mein user `https://www.example.org/` kholta hai. Connection HTTP/1.1 ya HTTP/2 over TCP hai. Sahi order kaunsa hai?",
+          "options": [
+            "TCP handshake → DNS lookup → TLS handshake → HTTP request",
+            "DNS lookup → TCP handshake → TLS handshake → HTTP request",
+            "DNS lookup → TLS handshake → TCP handshake → HTTP request",
+            "HTTP request → DNS lookup → TCP handshake → TLS handshake"
+          ],
+          "answer": 1,
+          "explanation": "TCP connection ke liye IP address chahiye, isliye DNS sabse pehle. TLS, TCP connection ke upar chalta hai, isliye TLS handshake TCP ke baad. Encrypted channel ban jaane ke baad hi HTTP request jaati hai. Option C ka trap: TLS ko 'security pehle' soch kar TCP se pehle rakhna; par TLS ko bytes bhejne ke liye pehle TCP connection chahiye. Option A mein bina IP ke TCP shuru ho raha hai, jo possible nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w1-q6",
+          "question": "Plain HTTP/1.1 (TLS nahi), DNS pehle se cached, RTT 50 ms. Browser ek HTML page laata hai jo 5 aur files (3 CSS/JS + 2 images, same server) refer karta hai. Browser ek hi **persistent** TCP connection use karta hai aur files ek ke baad ek maangta hai (pipelining nahi). Transmission aur server time ignore karo. Saari 6 files aane mein kam se kam kitna time lagega?",
+          "options": [
+            "600 ms",
+            "150 ms",
+            "350 ms",
+            "300 ms"
+          ],
+          "answer": 2,
+          "explanation": "TCP handshake = 1 RTT. Phir HTML ki request-response = 1 RTT, aur baaki 5 files ek ke baad ek = 5 RTT. Total 7 RTT × 50 ms = 350 ms. Option A ka trap: yeh non-persistent connection ka hisaab hai, jahan har file ke liye naya handshake lagta hai (6 × 2 × 50 = 600 ms). Option D handshake bhool jaata hai (6 × 50), aur option B maan leta hai ki saari files ek saath aa gayi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "title": "Building Pages with HTML and CSS",
+      "summary": "Is week aap HTML document ka structure, semantic tags, block vs inline elements, forms kaise data bhejte hain, CSS selectors aur specificity, box model aur media queries se responsive layout seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Document structure**: `<!DOCTYPE html>` browser ko standards mode mein rakhta hai. `<html lang=\"en\">` ke andar `<head>` (title, meta charset, viewport, stylesheet links) aur `<body>` (dikhne wala content) hote hain. HTML structure aur meaning batata hai, CSS presentation, aur JavaScript behaviour; is separation se har layer alag se badal sakte ho.",
+        "**Semantic tags**: `<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<aside>`, `<footer>` content ka role batate hain. Screen readers, search engines aur doosre developers in roles ko samajhte hain; har jagah `<div>` likhne se yeh jaankari kho jaati hai. Headings `<h1>` se `<h6>` tak ek outline banate hain, levels skip mat karo.",
+        "**Block vs inline**: block elements (`<div>`, `<p>`, `<h1>`, `<section>`, `<ul>`) nayi line se shuru hote hain aur poori available width lete hain. Inline elements (`<span>`, `<a>`, `<em>`, `<strong>`) text ke flow mein rehte hain; unpar `width`/`height` aur vertical margin ka layout par asar nahi hota. `display` property se yeh behaviour badal sakte ho (`inline-block`, `flex`, `grid`).",
+        "**Forms**: `<form action=\"/search\" method=\"get\">` batata hai data kahan aur kaise jaayega. Sirf woh controls submit hote hain jinka `name` attribute hai; data `name=value` pairs mein jaata hai. GET mein yeh pairs URL ki query string mein lagte hain, POST mein request body mein. `<label for=\"email\">` ko `<input id=\"email\">` se jodo, taaki label par click aur screen reader dono sahi kaam karein.",
+        "**Selectors aur cascade**: type selector `p`, class `.card`, id `#menu`, attribute `[type=\"email\"]`, descendant `nav a`, child `ul > li`, pseudo-class `a:hover`. Jab do rules ek hi property set karein, browser pehle **specificity** dekhta hai aur barabar ho to jo rule baad mein aata hai woh jeetta hai. Inline `style` attribute aur `!important` in sabse upar hain, isliye unhe kam se kam use karo.",
+        "**Specificity ginna**: ise (ids, classes/attributes/pseudo-classes, elements) jaisa tuple samjho. `#menu a` = (1, 0, 1), `.link.active` = (0, 2, 0), `nav a.active` = (0, 1, 2). Comparison left se hota hai, isliye ek id kitni bhi classes se bhaari hai. Specificity jeetne ke liye selectors lambe karte jaana maintenance ki problem banta hai; flat class-based CSS behtar hai.",
+        "**Box model**: har element content + padding + border + margin hai. Default `box-sizing: content-box` mein `width` sirf content ki hai, padding aur border upar se judte hain. `box-sizing: border-box` mein `width` mein padding aur border shaamil hote hain, isliye layout ka hisaab aasaan hota hai. Do block siblings ke beech vertical margins **collapse** hote hain: gap dono mein se bade margin jitna hota hai.",
+        "**Responsive basics**: `<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">` ke bina mobile browser page ko desktop width par render karke chhota kar deta hai. **Media queries** jaise `@media (max-width: 600px) { ... }` screen width ke hisaab se rules lagati hain (`max-width` mein boundary value shaamil hai). Fixed px ki jagah `%`, `rem`, `fr` aur flexbox/grid use karo."
+      ],
+      "example": {
+        "problem": "`.box { width: 200px; padding: 10px; border: 2px solid; margin: 5px; }` hai. Default `content-box` mein box ka visible (border se border) width aur margin samet total horizontal jagah kitni hogi? Aur `box-sizing: border-box` lagane par content ki width kitni bachegi?",
+        "steps": [
+          "Content-box mein `width` sirf content hai: 200px.",
+          "Padding dono taraf: 2 × 10 = 20px. Border dono taraf: 2 × 2 = 4px.",
+          "Visible width = 200 + 20 + 4 = 224px.",
+          "Margin dono taraf jodo: 224 + 2 × 5 = 234px total horizontal jagah.",
+          "Border-box mein 200px mein hi padding aur border shaamil hain, to content = 200 − 20 − 4 = 176px, aur visible width 200px hi rehti hai.",
+          "Answer: content-box mein **224px visible, 234px total**; border-box mein **content 176px**."
+        ],
+        "code": ".box {\n    width: 200px;\n    padding: 10px;\n    border: 2px solid #333;\n    margin: 5px;\n}\n\n/* common reset: width ab border tak ki hai */\n*, *::before, *::after {\n    box-sizing: border-box;\n}"
+      },
+      "mistakes": [
+        "Form input mein `id` dena par `name` bhool jaana. Server ko woh field milegi hi nahi, kyunki submission `name` se banta hai, `id` se nahi.",
+        "Specificity ko source order se confuse karna. 'Neeche wala rule jeetta hai' sirf tab sach hai jab specificity barabar ho; ek `#id` wala rule upar likha ho tab bhi class wale rules se jeetega.",
+        "`width: 100%` ke saath padding lagana aur horizontal scrollbar aa jaana. Content-box mein padding width ke upar judti hai; `box-sizing: border-box` lagao."
+      ],
+      "revision": [
+        "Sirf `name` wale form controls submit hote hain; GET = query string, POST = body.",
+        "Specificity (ids, classes, elements) pehle, source order sirf tie par.",
+        "Content-box: visible width = width + 2·padding + 2·border.",
+        "Vertical margins collapse: gap = bada margin.",
+        "`max-width: 600px` mein 600px bhi shaamil hai; baad wala matching rule tie par jeetta hai.",
+        "Semantic tags + label/for = accessibility ki neev."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w2-q1",
+          "question": "Email input ke liye kaunsa markup sabse accessible hai, jahan label par click karne se input focus ho aur screen reader field ka naam padhe?",
+          "options": [
+            "`<input type=\"email\" name=\"email\" placeholder=\"Email\">` (sirf placeholder)",
+            "`<span>Email</span> <input type=\"email\" name=\"email\">`",
+            "`<label>Email</label> <input type=\"email\" name=\"email\">` (label input ke bahar, bina `for`)",
+            "`<label for=\"email\">Email</label> <input type=\"email\" id=\"email\" name=\"email\">`"
+          ],
+          "answer": 3,
+          "explanation": "Label ka `for` input ke `id` se match hota hai, isliye label programmatically us input se juda hai: click se focus hota hai aur screen reader field ko 'Email' bolta hai. Option A ka trap: placeholder type karte hi gayab ho jaata hai aur label ki jagah nahi leta. Option C mein `<label>` hai par na `for` hai na input uske andar, isliye jod nahi banta; option B ka `<span>` bas text hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w2-q2",
+          "question": "Is CSS mein `box-sizing` kahin set nahi hai (default). Card ka visible width (border ke ek kinare se doosre tak) kitna hoga?",
+          "code": ".card {\n    width: 300px;\n    padding: 20px;\n    border: 5px solid #333;\n    margin: 10px;\n}",
+          "options": [
+            "300px",
+            "340px",
+            "350px",
+            "370px"
+          ],
+          "answer": 2,
+          "explanation": "Default `content-box` mein `width` sirf content ki hai: 300 + 2 × 20 (padding) + 2 × 5 (border) = 350px. Option A ka trap: `border-box` jaisa sochna, jahan 300px mein sab shaamil hota. Option B border bhool jaata hai, aur option D margin bhi jod deta hai, jabki margin border ke bahar ki khaali jagah hai, visible box ka hissa nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w2-q3",
+          "question": "User kuch badle bina Go dabata hai. Browser kaunsa URL request karega?",
+          "code": "<form action=\"/search\" method=\"get\">\n    <input name=\"q\" value=\"flask\">\n    <input id=\"lang\" value=\"en\">\n    <select name=\"sort\">\n        <option value=\"new\" selected>Newest</option>\n        <option value=\"top\">Top</option>\n    </select>\n    <button type=\"submit\">Go</button>\n</form>",
+          "options": [
+            "`/search?q=flask&sort=new`",
+            "`/search?q=flask&lang=en&sort=new`",
+            "`/search?q=flask&sort=Newest`",
+            "`/search` (data request body mein jaata hai)"
+          ],
+          "answer": 0,
+          "explanation": "Sirf `name` wale controls submit hote hain: `q=flask` aur select ka `sort`. Select ki value chune hue option ka `value` attribute (`new`) hai, dikhne wala text (`Newest`) nahi. Option B ka trap: `lang` input ke paas sirf `id` hai, `name` nahi, isliye woh nahi jaata. Option C display text bhejta hai, aur option D POST ka behaviour hai, jabki yahan method GET hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w2-q4",
+          "question": "HTML hai `<nav id=\"menu\"><a class=\"link active\" href=\"/\">Home</a></nav>` aur CSS neeche diya hai. \"Home\" link ka color kya hoga?",
+          "code": "#menu a { color: red; }\nnav a.active { color: green; }\n.link.active { color: blue; }",
+          "options": [
+            "blue",
+            "red",
+            "green",
+            "browser default link color, kyunki rules aapas mein conflict karte hain"
+          ],
+          "answer": 1,
+          "explanation": "Specificity: `#menu a` = (1, 0, 1), `nav a.active` = (0, 1, 2), `.link.active` = (0, 2, 0). Comparison left se hota hai aur sirf pehle rule mein id hai, isliye red jeetta hai. Option A ka trap: 'sabse neeche wala rule jeetta hai' ya 'do classes zyada hain'; source order sirf barabar specificity par kaam aata hai. Option D galat hai kyunki conflict ko cascade hamesha resolve karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w2-q5",
+          "question": "Viewport width pehle 768px hai, phir 400px. Dono cases mein `.col` ki width kya hogi?",
+          "code": ".col { width: 50%; }\n\n@media (max-width: 768px) {\n    .col { width: 100%; }\n}\n\n@media (max-width: 480px) {\n    .col { width: 90%; }\n}",
+          "options": [
+            "768px par 50%, 400px par 90%",
+            "768px par 100%, 400px par 100%",
+            "768px par 50%, 400px par 100%",
+            "768px par 100%, 400px par 90%"
+          ],
+          "answer": 3,
+          "explanation": "`max-width: 768px` ka matlab width ≤ 768px, to 768px par pehli query lagti hai aur width 100% hoti hai. 400px par dono queries match karti hain; specificity barabar hai, isliye baad wala rule (90%) jeetta hai. Option A ka trap: `max-width` ko 'strictly less than' samajhna. Option B ka trap: sochna ki pehli matching media query ke baad baaki ignore ho jaati hain; CSS mein saare matching rules cascade mein jaate hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w2-q6",
+          "question": "Do `<div>` normal block flow mein ek ke neeche ek hain (parent ek simple block hai, flex/grid nahi), aur unke beech koi padding, border ya content nahi hai. \"One\" ke border aur \"Two\" ke border ke beech vertical gap kitna hoga?",
+          "code": "<div class=\"a\">One</div>\n<div class=\"b\">Two</div>\n\n.a { margin-bottom: 30px; }\n.b { margin-top: 20px; }",
+          "options": [
+            "50px",
+            "20px",
+            "30px",
+            "10px"
+          ],
+          "answer": 2,
+          "explanation": "Normal flow mein adjacent block siblings ke vertical margins **collapse** hote hain: gap dono margins mein se bade wala hota hai, yaani max(30, 20) = 30px. Option A ka trap: margins ko horizontal ki tarah jod dena (30 + 20). Yeh collapse sirf vertical margins par aur block flow mein hota hai; flex ya grid items ke margins collapse nahi hote, wahan 50px hota. Option D ka 10px difference hai, jiska koi rule nahi.",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "title": "Views with Jinja2 Templates",
+      "summary": "Is week aap MVC mein View layer ka role, Jinja2 ka syntax (variables, filters, loops, conditions), autoescaping, template inheritance aur macros, aur templates likhte waqt accessibility ke basic rules seekhoge.",
+      "readMinutes": 15,
+      "concepts": [
+        "**View ka role**: MVC mein Model data rakhta hai, Controller request handle karta hai, aur **View** sirf data ko HTML (ya JSON) mein dikhata hai. Flask mein controller `render_template('courses.html', courses=rows, user=u)` call karta hai; template engine context ke variables ko HTML mein bharta hai. View mein database query ya business decision nahi hone chahiye, sirf presentation logic.",
+        "**Jinja2 delimiters**: `{{ expr }}` value print karta hai, `{% stmt %}` control (for, if, block, extends) ke liye hai, aur `{# comment #}` output mein nahi aata. `{{ user.name }}` pehle attribute dhoondta hai, phir dict key, isliye object aur dict dono ke saath chalta hai. Jo variable ya key maujood nahi, woh error ke bajaye **undefined** ban kar khaali print hota hai (default setting mein).",
+        "**Filters**: `|` ke baad lagte hain aur chain ho sakte hain: `{{ name|title }}`, `{{ items|length }}`, `{{ tags|join(', ') }}`, `{{ price|round(2) }}`. `{{ x|default('N/A') }}` sirf tab N/A deta hai jab `x` undefined ho; khaali string ya 0 ke liye bhi chahiye to `default('N/A', true)` likho.",
+        "**Loops aur conditions**: `{% for c in courses %}...{% else %}No courses{% endfor %}` mein `else` tab chalta hai jab list khaali ho. Loop ke andar `loop.index` (1 se), `loop.index0` (0 se), `loop.first`, `loop.last`, `loop.length` milte hain. Jinja mein `break`/`continue` default nahi hai; items skip karne ho to `{% for n in nums if n > 0 %}` likho, jisse `loop.index` sirf filtered items ginta hai.",
+        "**Autoescaping**: Flask `.html` templates mein autoescape on rakhta hai, yaani `{{ comment }}` mein `<`, `>`, `&`, quotes HTML entities (`&lt;` etc.) ban jaate hain. Isse user ka diya HTML/JS code chal nahi paata (XSS se bachav). `|safe` filter escaping band karta hai, isliye use sirf trusted, khud banaye HTML par lagao, user input par kabhi nahi.",
+        "**Template inheritance**: `base.html` mein common layout aur `{% block content %}{% endblock %}` jaise placeholders hote hain. Child template pehli line mein `{% extends \"base.html\" %}` likhta hai aur sirf blocks override karta hai; `{{ super() }}` parent block ka content bhi le aata hai. Extends ke baad blocks ke bahar likha text render nahi hota.",
+        "**Reuse**: `{% include \"_navbar.html\" %}` ek partial ko daalta hai, aur `{% macro field(name, label) %}...{% endmacro %}` function jaisa reusable snippet banata hai (form fields ke liye bahut kaam ka). Isse ek hi markup das jagah copy-paste nahi karna padta.",
+        "**Accessibility in templates**: `<html lang=\"en\">`, har meaningful image par sahi `alt` (decorative image par `alt=\"\"`), har input ke saath `<label>`, headings ka sahi order, links ka text jo bina context ke bhi samajh aaye ('Download report', 'click here' nahi), aur kaafi colour contrast. Base template mein ek baar sahi kar do to saare pages ko milta hai."
+      ],
+      "example": {
+        "problem": "Controller `render_template('courses.html', courses=['MAD1', 'DBMS', 'Java'], student='asha')` call karta hai. Neeche wala child template kya render karega?",
+        "code": "{# base.html #}\n<!DOCTYPE html>\n<html lang=\"en\">\n<head><title>{% block title %}Portal{% endblock %}</title></head>\n<body>{% block content %}{% endblock %}</body>\n</html>\n\n{# courses.html #}\n{% extends \"base.html\" %}\n{% block title %}Courses | {{ super() }}{% endblock %}\n{% block content %}\n<h1>Hello {{ student|title }}</h1>\n<ol>\n{% for c in courses %}\n    <li>{{ loop.index }}/{{ loop.length }}: {{ c }}</li>\n{% else %}\n    <li>No courses yet</li>\n{% endfor %}\n</ol>\n{% endblock %}",
+        "steps": [
+          "`courses.html` `base.html` ko extend karta hai, isliye poora skeleton base se aata hai aur sirf `title` aur `content` blocks badalte hain.",
+          "`title` block: `Courses | ` ke baad `{{ super() }}` parent ka text `Portal` laata hai, to title `Courses | Portal` banta hai.",
+          "`student|title` 'asha' ko `Asha` banata hai, to heading `Hello Asha`.",
+          "Loop teen baar chalta hai; `loop.index` 1, 2, 3 aur `loop.length` 3 hai.",
+          "List khaali nahi hai, isliye `{% else %}` wala `No courses yet` nahi aata.",
+          "Answer: title **Courses | Portal**, heading **Hello Asha**, aur items **1/3: MAD1, 2/3: DBMS, 3/3: Java**."
+        ]
+      },
+      "mistakes": [
+        "User ke comments par `|safe` laga dena taaki 'formatting dikhe'. Isse koi bhi `<script>` daal kar doosre users ke browser mein code chala sakta hai. User input hamesha escaped rehna chahiye.",
+        "Template mein database query ya calculation likhna (jaise har row ke liye total nikaalna). Yeh controller/model ka kaam hai; template ko taiyaar data do.",
+        "`loop.index` ko 0 se shuru maanna. Jinja mein `loop.index` 1 se aur `loop.index0` 0 se shuru hota hai."
+      ],
+      "revision": [
+        "`{{ }}` print, `{% %}` control, `{# #}` comment.",
+        "`default('x')` sirf undefined par; falsy ke liye `default('x', true)`.",
+        "`loop.index` 1-based; `for ... if ...` filtered items hi ginta hai.",
+        "Autoescape on: `<` → `&lt;`; `|safe` sirf trusted HTML par.",
+        "`extends` pehli line; child sirf blocks override kare; `super()` parent ka content.",
+        "alt, label, lang, heading order: accessibility basics."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w3-q1",
+          "question": "Context mein `courses = ['MAD1', 'DBMS']` hai. Yeh template (ek hi line) kya render karega?",
+          "code": "{% for c in courses %}{{ loop.index }}.{{ c }} {% endfor %}",
+          "options": [
+            "1.MAD1 2.DBMS",
+            "0.MAD1 1.DBMS",
+            "MAD1.1 DBMS.2",
+            "1.MAD1 1.DBMS"
+          ],
+          "answer": 0,
+          "explanation": "Jinja mein `loop.index` 1 se shuru hota hai aur har iteration par badhta hai, isliye `1.MAD1 2.DBMS` aata hai. Option B ka trap: Python ke `enumerate` ki tarah 0 se ginna; woh `loop.index0` hota. Option D maanta hai ki index badhta nahi, aur option C mein order ulta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w3-q2",
+          "question": "Ek Flask app `comment.html` template mein `<p>{{ comment }}</p>` render karti hai, aur user ne comment mein `<b>hi</b>` likha hai. Default settings mein browser mein kya dikhega?",
+          "options": [
+            "'hi' bold text mein dikhega",
+            "Literal text `<b>hi</b>` dikhega, kyunki `<` aur `>` ko `&lt;` aur `&gt;` mein escape kar diya gaya",
+            "Template render nahi hoga aur error aayega",
+            "`<b>` tags hata diye jaayenge aur sirf plain 'hi' dikhega"
+          ],
+          "answer": 1,
+          "explanation": "Flask `.html` templates mein autoescape on hota hai, isliye `{{ comment }}` ke special characters HTML entities ban jaate hain aur browser unhe tags ki tarah nahi, text ki tarah dikhata hai. Option A ka trap: yeh tabhi hota jab `|safe` lagaya jaata (aur tab `<script>` bhi chal jaata). Option D 'sanitizing' hai, jo autoescape nahi karta; woh tags hataata nahi, unhe harmless text bana deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w3-q3",
+          "question": "Template ek hi hai. Pehli baar `user = {'name': 'Asha'}` (koi `nickname` key nahi) aur doosri baar `user = {'name': 'Asha', 'nickname': ''}` pass hota hai. Dono outputs kya honge?",
+          "code": "Hi {{ user.nickname|default('Guest') }}!",
+          "options": [
+            "`Hi Guest!` aur `Hi Guest!`",
+            "`Hi !` aur `Hi Guest!`",
+            "Pehli baar error, doosri baar `Hi !`",
+            "`Hi Guest!` aur `Hi !`"
+          ],
+          "answer": 3,
+          "explanation": "Pehli baar `nickname` key hai hi nahi, to `user.nickname` undefined hai aur `default` 'Guest' deta hai. Doosri baar key maujood hai aur value khaali string hai; `default` sirf undefined par kaam karta hai, isliye khaali string hi print hoti hai: `Hi !`. Option A ka trap: `default` ko Python ke `or` jaisa samajhna; aisa chahiye to `default('Guest', true)` likhna padta. Option C galat hai kyunki default setting mein missing key error nahi deti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w3-q4",
+          "question": "`base.html` mein `<title>{% block title %}Site{% endblock %}</title>` hai. Neeche wala `profile.html` render karne par title kya hoga, aur kya \"Hello\" page par dikhega?",
+          "code": "{% extends \"base.html\" %}\nHello\n{% block title %}Profile - {{ super() }}{% endblock %}",
+          "options": [
+            "`<title>Profile - Site</title>`, aur \"Hello\" bhi page par dikhega",
+            "`<title>Profile - </title>`, aur \"Hello\" nahi dikhega",
+            "`<title>Profile - Site</title>`, aur \"Hello\" nahi dikhega",
+            "`<title>Site</title>`, kyunki parent ka block override nahi hota"
+          ],
+          "answer": 2,
+          "explanation": "Child ka `title` block parent ka block replace karta hai, aur `{{ super() }}` parent ka content 'Site' wapas laata hai, to title `Profile - Site` banta hai. Extends wale template mein blocks ke bahar ka text (yahan \"Hello\") render nahi hota, kyunki output parent ka layout hai. Option A ka trap: child ko normal page samajhna jahan sab kuch print hota hai. Option B `super()` ko ignore karta hai, aur option D block override ka matlab hi ulta samajhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w3-q5",
+          "question": "Header mein ek link hai `<a href=\"/cart\"><img src=\"cart.svg\" ...></a>`; link ke andar koi text nahi, sirf cart ka icon hai. Image ke liye sabse sahi `alt` kya hai?",
+          "options": [
+            "`alt=\"View cart\"`",
+            "`alt=\"\"`, kyunki icon decorative hai",
+            "`alt=\"cart.svg\"`",
+            "`alt` mat do, `title=\"cart\"` kaafi hai"
+          ],
+          "answer": 0,
+          "explanation": "Yahan image hi link ka poora content hai, to uska `alt` hi link ka accessible naam banta hai. Isliye alt mein link ka kaam likho: 'View cart'. Option B ka trap: `alt=\"\"` sirf decorative images ke liye hai jinke saath text pehle se ho; yahan isse link bina naam ka ho jaayega aur screen reader sirf 'link' bolega. Option C filename padhwata hai jo users ke liye bekaar hai, aur option D mein `title` reliable replacement nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w3-q6",
+          "question": "Context mein `nums = [3, 4, 7, 8, 10]` hai. Yeh template (ek hi line) kya render karega?",
+          "code": "{% for n in nums if n % 2 == 0 %}{{ loop.index }}={{ n }};{% endfor %}",
+          "options": [
+            "2=4;4=8;5=10;",
+            "0=4;1=8;2=10;",
+            "1=3;2=7;",
+            "1=4;2=8;3=10;"
+          ],
+          "answer": 3,
+          "explanation": "`for ... if ...` sequence ko pehle filter karta hai, aur `loop` variable sirf un items ko ginta hai jo loop mein aaye: 4, 8, 10 ko index 1, 2, 3 milte hain. Option A ka trap: yeh tab hota jab andar `{% if %}` likha hota aur `loop.index` original list ki position ginta (3 ko bhi count karke). Option B `loop.index0` jaisa hai, aur option C condition ulti padhta hai (odd numbers).",
+          "difficulty": "hard"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "title": "Models: Databases, ER Design and SQLAlchemy",
+      "summary": "Is week aap app ke liye database kyun chahiye, ER diagram se tables kaise banti hain (1:N, M:N), SQL aur ORM ka farak, SQLAlchemy models, relationships, sessions/transactions aur N+1 query problem seekhoge.",
+      "readMinutes": 16,
+      "concepts": [
+        "**Database kyun**: Python variables process band hote hi gayab ho jaate hain, aur CSV files mein ek saath kai users likhein to data kharab ho sakta hai. Database persistence, concurrent access, **transactions** (ya to poora kaam ho ya kuch nahi), constraints aur fast querying deta hai. MVC mein Model layer isi data aur uske rules ko represent karti hai.",
+        "**Relational model**: data tables mein hota hai; har row ek record, har column ek attribute. **Primary key** (PK) har row ko uniquely pehchaanti hai, **foreign key** (FK) doosri table ki PK ko point karti hai. Constraints jaise `NOT NULL`, `UNIQUE`, FK galat data ko database level par hi rok dete hain, chahe app ke code mein bug ho.",
+        "**ER thinking**: pehle entities (Student, Course), unke attributes aur relationships ki cardinality socho. **1:N** (ek User ki kai Posts) mein FK 'N' wali table mein jaati hai: `posts.user_id`. **M:N** (Student–Course) seedha do tables mein nahi aata; ek association table (`enrollment(student_id, course_id)`) banti hai jisme dono FKs hain aur aksar dono milkar PK hote hain. **1:1** ke liye FK par `UNIQUE` lagta hai.",
+        "**Normalization ka intuition**: ek fact ek hi jagah store karo. Agar har enrollment row mein course ka title bhi likho to title badalne par saari rows update karni padengi (update anomaly). Course title `course` table mein, aur enrollment mein sirf `course_id` rakho.",
+        "**SQL vs ORM**: SQL mein aap queries khud likhte ho; **ORM** (Object-Relational Mapper) class ko table, object ko row aur attribute ko column se map karta hai. ORM boilerplate kam karta hai, values ko safely parameterize karta hai aur Python objects deta hai; par queries chhupi rehti hain, isliye performance samajhne ke liye generated SQL dekhna aana chahiye. Complex reports ke liye raw SQL bhi bilkul theek hai.",
+        "**SQLAlchemy model**: `class User(db.Model)` mein `id = db.Column(db.Integer, primary_key=True)`, `email = db.Column(db.String(120), unique=True, nullable=False)`. FK `db.ForeignKey('user.id')` **table.column** naam leti hai (class naam nahi); Flask-SQLAlchemy class `User` ki table ka naam default `user` rakhta hai. `db.relationship('Post', backref='author')` koi column nahi banata; yeh Python side par `user.posts` aur `post.author` jaise attributes deta hai jo FK ke through kaam karte hain.",
+        "**Session aur transactions**: `db.session.add(obj)` object ko pending karta hai, `db.session.commit()` transaction ko database mein pakka karta hai, aur error par `db.session.rollback()` sab undo karta hai. Commit ke bina kuch save nahi hota; Flask-SQLAlchemy request ke end mein session hata deta hai aur uncommitted kaam discard ho jaata hai.",
+        "**Loading strategy aur N+1**: relationship default mein **lazy** hai: `user.posts` pehli baar access karne par alag SELECT chalti hai. 50 users ki list par har user ke posts padhoge to 1 + 50 queries chalengi, jise **N+1 problem** kehte hain. `selectinload`/`joinedload` jaise eager loading options isse 1–2 queries mein kar dete hain."
+      ],
+      "example": {
+        "problem": "Ek (fictional) coaching portal mein 3 students aur 2 courses hain. Asha MAD1 aur DBMS mein, Bilal sirf MAD1 mein enrolled hai, Chen kisi mein nahi. Schema banao aur har course ke enrolled students gino.",
+        "code": "class Student(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n    name = db.Column(db.String(80), nullable=False)\n\nclass Course(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n    code = db.Column(db.String(10), unique=True, nullable=False)\n\nclass Enrollment(db.Model):\n    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True)\n    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), primary_key=True)\n\n-- equivalent SQL report\nSELECT c.code, COUNT(e.student_id) AS n\nFROM course c\nLEFT JOIN enrollment e ON e.course_id = c.id\nGROUP BY c.id, c.code\nORDER BY c.code;",
+        "steps": [
+          "Student–Course M:N hai, isliye teesri table `enrollment` banti hai jisme `(student_id, course_id)` composite primary key hai; ek student ek course mein do baar enroll nahi ho sakta.",
+          "Rows: enrollment = (Asha, MAD1), (Asha, DBMS), (Bilal, MAD1). Chen ki koi row nahi.",
+          "Report ke liye `course` se `LEFT JOIN` karo, taaki zero students wala course bhi aaye.",
+          "`COUNT(e.student_id)` sirf non-NULL values ginta hai: DBMS → 1, MAD1 → 2.",
+          "Answer: **DBMS 1, MAD1 2**."
+        ]
+      },
+      "mistakes": [
+        "M:N ko ek column mein comma-separated ids (`'3,7,9'`) rakh kar 'solve' karna. Na FK lag sakti hai, na join ho sakta hai, na index; association table banao.",
+        "`db.ForeignKey('User.id')` likhna. FK table ka naam leti hai (`'user.id'`), class ka naam `relationship('User')` mein aata hai.",
+        "`add()` ke baad `commit()` bhoolna aur sochna data save ho gaya. Bina commit ke request khatam hote hi changes discard ho jaate hain."
+      ],
+      "revision": [
+        "1:N → FK 'many' side par; M:N → association table.",
+        "PK unique pehchaan, FK doosri table ki PK ko point karti hai.",
+        "`relationship` column nahi banata; FK hi asli link hai.",
+        "add → commit; error par rollback.",
+        "Lazy relationship par loop = N+1 queries; eager loading se bachao.",
+        "LEFT JOIN + COUNT(column) zero wale rows bhi dikhata hai."
+      ],
+      "questions": [
+        {
+          "id": "mad1-w4-q1",
+          "question": "Ek student kai courses le sakta hai aur ek course mein kai students hote hain. Relational database mein ise store karne ka sahi tareeka kya hai?",
+          "options": [
+            "`student` table mein ek `course_id` column",
+            "`course` table mein `student_ids` column jisme comma-separated ids hon",
+            "Ek alag association table (jaise `enrollment`) jisme `student_id` aur `course_id` dono foreign keys hon",
+            "Student aur Course ko ek hi table mein merge kar dena"
+          ],
+          "answer": 2,
+          "explanation": "Yeh many-to-many (M:N) relationship hai, aur relational model mein ise ek association table se represent karte hain jisme har row ek (student, course) pair hai. Option A ka trap: ek column sirf ek course rakh sakta hai, to woh 1:N ban jaata hai. Option B mein na foreign key lag sakti hai na join, aur option D data ko baar-baar duplicate karta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w4-q2",
+          "question": "Blog app mein ek User ki kai Posts ho sakti hain, par har Post ka ek hi author hai. Foreign key kahan honi chahiye?",
+          "options": [
+            "`users` table mein `post_id` column",
+            "`posts` table mein `user_id` column, jo `users.id` ko point kare",
+            "Dono tables mein ek-doosre ki id",
+            "Alag association table zaroori hai"
+          ],
+          "answer": 1,
+          "explanation": "1:N relationship mein FK 'many' side (posts) par jaati hai: har post apne ek author ki id rakhti hai. Option A ka trap: user ke paas kai posts hain, to ek `post_id` column sabko nahi rakh sakta. Option C duplicate aur inconsistent data banata hai, aur option D (association table) M:N ke liye hai, yahan zaroorat nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad1-w4-q3",
+          "question": "`users` mein (1, Asha), (2, Bilal), (3, Chen) hain. `posts` mein teen rows hain: do posts `user_id = 1` ki aur ek `user_id = 3` ki. Yeh query kya return karegi?",
+          "code": "SELECT u.name, COUNT(p.id) AS n\nFROM users u\nLEFT JOIN posts p ON p.user_id = u.id\nGROUP BY u.id, u.name\nORDER BY u.id;",
+          "options": [
+            "Asha 2, Bilal 0, Chen 1",
+            "Asha 2, Bilal 1, Chen 1",
+            "Asha 2, Chen 1",
+            "Asha 2, Bilal NULL, Chen 1"
+          ],
+          "answer": 0,
+          "explanation": "LEFT JOIN Bilal ko bhi rakhta hai, uske post columns NULL ke saath. `COUNT(p.id)` sirf non-NULL values ginta hai, to Bilal ka count 0 hai. Option B ka trap: `COUNT(*)` jaisa sochna, jo NULL wali row ko bhi 1 ginta. Option C INNER JOIN ka result hai, aur option D galat hai kyunki COUNT kabhi NULL nahi deta, 0 deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w4-q4",
+          "question": "Neeche ke model ke baare mein kaunsa statement sahi hai? (`User` model ki table `user` hai.)",
+          "code": "class Post(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n    title = db.Column(db.String(100), nullable=False)\n    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)\n    author = db.relationship('User', backref='posts')",
+          "options": [
+            "`author` database mein ek alag column banata hai jisme user ka naam store hota hai",
+            "`db.ForeignKey('user.id')` galat hai; wahan class ka naam `'User.id'` likhna chahiye",
+            "Post bina user ke bhi save ho sakti hai, kyunki relationship optional hota hai",
+            "Table mein link sirf `user_id` column se hai; `post.author` se User object aur `user.posts` se us user ki posts ki list milti hai"
+          ],
+          "answer": 3,
+          "explanation": "`relationship` koi column nahi banata; yeh `user_id` FK ke basis par Python attributes deta hai, aur `backref='posts'` User par ulti taraf ka attribute jodta hai. Option A ka trap: relationship ko column samajh lena. Option B galat hai kyunki `ForeignKey` table.column naam leti hai, class ka naam `relationship('User')` mein aata hai. Option C galat hai kyunki `user_id` par `nullable=False` hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w4-q5",
+          "question": "Ek Flask-SQLAlchemy view `u = User(email='a@x.in')` banata hai, `db.session.add(u)` karta hai, aur `commit()` kiye bina response return kar deta hai. Kya hoga?",
+          "options": [
+            "Row request ke end mein apne aap save ho jaayegi",
+            "Row save nahi hogi; request ke end mein session hata diya jaata hai aur uncommitted kaam discard ho jaata hai",
+            "Row save ho jaayegi par app restart ke baad hi dikhegi",
+            "`add()` hi error dega, kyunki commit ke bina add allowed nahi"
+          ],
+          "answer": 1,
+          "explanation": "`add()` object ko sirf session mein pending karta hai; database mein pakka karna `commit()` ka kaam hai. Flask-SQLAlchemy app context ke end mein session remove karta hai, aur bina commit wala transaction roll back ho jaata hai. Option A ka trap: 'auto-save' maan lena, jo default behaviour nahi hai. Option D galat hai kyunki add ke baad commit karna normal flow hai, add akela error nahi deta.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad1-w4-q6",
+          "question": "`User.posts` ek relationship hai jo default (lazy) loading use karta hai. Database mein 50 users hain. Is code se kul kitni SELECT queries chalengi?",
+          "code": "users = User.query.all()\nfor u in users:\n    print(u.name, len(u.posts))",
+          "options": [
+            "1",
+            "2",
+            "50",
+            "51"
+          ],
+          "answer": 3,
+          "explanation": "Pehli query saare 50 users laati hai. Lazy loading mein har `u.posts` pehli baar access karne par us user ke liye alag SELECT chalti hai, to 50 aur queries: 1 + 50 = 51. Yahi **N+1 problem** hai. Option B ka trap: yeh `selectinload` jaise eager loading ka count hai, default ka nahi. Option A `joinedload` jaisa ek JOIN maan leta hai, aur option C users wali pehli query bhool jaata hai.",
+          "difficulty": "hard"
+        }
+      ]
+    }
+  ]
+}
