@@ -61,6 +61,96 @@
       ],
       "explanation": "A container does not boot a separate OS; its processes run on the host's kernel (with namespaces and cgroups). So `uname -r` shows the host kernel's release, while `/etc/os-release` is read from the image's files, which are Debian's. The trap in option A is treating a container like a virtual machine; a VM has its own guest kernel, a container does not. Options B and D assume both facts come from the same source."
     },
+    "syscmd-w1-q7": {
+      "question": "You want to know whether `cd` is a program stored on disk or a builtin inside the shell. Which command answers this most directly?",
+      "options": [
+        "`type cd`",
+        "`whatis cd`",
+        "`man -k cd`",
+        "`uname -s`"
+      ],
+      "explanation": "`type cd` says directly `cd is a shell builtin`. `whatis cd` only gives a one-line description and does not say builtin or binary. `man -k cd` searches man pages by keyword, and `uname -s` prints the kernel name; neither has anything to do with a command's type."
+    },
+    "syscmd-w1-q8": {
+      "question": "A server shows this `free -h` output. Roughly how much RAM can a new program get without swapping, and which column do you read it from?",
+      "options": [
+        "From the `free` column: only 2.1Gi is left",
+        "From the `available` column: about 21Gi",
+        "From the `buff/cache` column: about 19Gi",
+        "From the `total` column: the full 31Gi"
+      ],
+      "explanation": "`available` is the kernel's estimate of how much memory new programs can get without swapping, here 21Gi. Panicking over `free` (2.1Gi) is a common mistake: the kernel gives back most of `buff/cache` when needed. `buff/cache` by itself is not the answer, and `total` also includes memory that is already in use."
+    },
+    "syscmd-w1-q9": {
+      "question": "A file named `-notes.txt` was created by mistake. Which command will remove it?",
+      "options": [
+        "`rm -notes.txt`",
+        "`rm \"-notes.txt\"`",
+        "`rm -- -notes.txt`",
+        "`rm --notes.txt`"
+      ],
+      "explanation": "Everything after `--` is treated as an argument, so `rm -- -notes.txt` removes the file (`rm ./-notes.txt` also works). In `rm -notes.txt` the `-n` becomes an option and rm reports 'invalid option'. The quotes trap: the shell strips the quotes and still hands rm the same `-notes.txt`, which still looks like an option. `--notes.txt` is an unknown long option."
+    },
+    "syscmd-w1-q10": {
+      "question": "Running `man passwd` opens the page for the command that changes passwords. You want to read the format of the fields in the `/etc/passwd` file. Which command is right?",
+      "options": [
+        "`man 8 passwd`",
+        "`man -k passwd`",
+        "`whatis passwd`",
+        "`man 5 passwd`"
+      ],
+      "explanation": "Man section 5 is for file formats, so `man 5 passwd` explains the fields of `/etc/passwd`. Without a section, man opens the first match (section 1, the command). Section 8 is for admin commands, not file formats. `man -k passwd` only lists matching pages and `whatis` gives a one-line description; neither explains the format."
+    },
+    "syscmd-w1-q11": {
+      "question": "This output appeared in a new Ubuntu user's terminal. What does it actually mean?",
+      "options": [
+        "The shell expands `ls` via the alias to `ls --color=auto` and runs that",
+        "`ls` is a bash builtin, so there is no binary named `ls` on disk",
+        "`ls --color=auto` is the name of a separate binary stored in `/usr/bin`",
+        "`--color=auto` is an environment variable applied to every command"
+      ],
+      "explanation": "`type` shows how the shell will interpret a name: here `ls` is an alias, so the shell first expands it to `ls --color=auto` and then runs the real `ls` binary (found via PATH) with that option. An alias is not a builtin, and the binary is still on disk. `ls --color=auto` is not a file name, and `--color=auto` is an option, not an environment variable."
+    },
+    "syscmd-w1-q12": {
+      "question": "New files cannot be created on a server. Looking at the output below, what is the most accurate diagnosis?",
+      "options": [
+        "`df -h` is wrong; the disk is really 100% full, confirm it with `du`",
+        "Inodes are used up (probably by lots of small files); delete some files",
+        "29G is free, so this is a permission problem that `chmod` will fix",
+        "Some process holds deleted files open, so the 19G in `df -h` is wrong"
+      ],
+      "explanation": "Two steps: `df -h` shows space left (40%), but `df -i` shows `IFree` at 0 and `IUse%` at 100%. Every file needs an inode, so once inodes run out you get 'No space left on device' even with free space; millions of small cache files are the usual cause. `df -h` is not wrong, and this is not a permission error (the message would differ). Deleted-but-open files inflate `Used`; they do not explain a 100% inode count."
+    },
+    "syscmd-w1-q13": {
+      "question": "You need to run a new job that needs 6Gi of RAM on this machine. Will it fit comfortably without swap?",
+      "options": [
+        "Yes; `free` + `buff/cache` = 6.5Gi, which is more than 6Gi",
+        "No; only 0.8Gi is `free`, so it is short by about 5.2Gi",
+        "No; `available` is 5.9Gi, a little less than 6Gi",
+        "Yes; `total` is 16Gi and the job takes only 6Gi of it"
+      ],
+      "explanation": "Decide with `available`: 5.9Gi < 6Gi, so the job will not fit comfortably without swap. The `free` + `buff/cache` (6.5Gi) trap: not all cache can be reclaimed (for example `shared`/tmpfs pages), which is why the kernel's estimate is 5.9Gi. Looking only at `free` (0.8Gi) makes the shortfall look far too big, and `total` includes the 9.5Gi already used."
+    },
+    "syscmd-w1-q14": {
+      "question": "A fictional tool `qstat` has four builds on its release page. Which build is right for the machine with the output below?",
+      "options": [
+        "`qstat_1.4_amd64.deb`",
+        "`qstat-1.4.aarch64.rpm`",
+        "`qstat_1.4_i386.deb`",
+        "`qstat_1.4_arm64.deb`"
+      ],
+      "explanation": "Combine two facts: the `uname -m` field is `aarch64` (64-bit ARM), and `/etc/os-release` says Debian 12, which uses `.deb` packages. Debian calls aarch64 `arm64`, so the answer is `qstat_1.4_arm64.deb`. `amd64` and `i386` are for x86 machines. The `.rpm` has the right architecture but is the Fedora/RHEL family's format, not Debian's."
+    },
+    "syscmd-w1-q15": {
+      "question": "The output of two machines is below. Divide the 1-minute load by the number of logical CPUs. Which statement is correct?",
+      "options": [
+        "P: 0.80 per CPU, Q: 0.625; P is busier, but nothing queues",
+        "P has 0.80, Q has 1.25; tasks are queueing on Q's 8 CPUs",
+        "Q is busier, because its load is 10.00 and P's is only 3.20",
+        "P has 0.80, Q has 2.50; tasks are waiting on Q's 4 cores"
+      ],
+      "explanation": "Q's logical CPUs = sockets × cores × threads = 2 × 4 × 2 = 16. Per-CPU load: P = 3.20/4 = 0.80, Q = 10.00/16 = 0.625. Both are below 1, so nothing is queueing; P is relatively busier. Assuming 8 CPUs is the forgot-the-threads trap (1.25), 4 is just one socket's cores (2.50), and comparing raw load ignores the CPU count."
+    },
     "syscmd-w2-q1": {
       "question": "The shell has `umask 027` set. What is the permission string of a new file created with `touch report.csv`?",
       "options": [
@@ -120,6 +210,96 @@
         "`drwx------` and `-rw-r--r--`"
       ],
       "explanation": "Both get `r` for group and others. Capital `X` adds execute only when the target is a directory or someone already has execute. `data` is a directory, so it gets `go+x`: `drwxr-xr-x`. `x.csv` is a regular file with no x for anyone, so only r is added: `-rw-r--r--`. The trap in option A: treating `X` like lowercase `x`. In option C the directory gets no x, which would block entering it, and that is exactly the mistake `X` fixes."
+    },
+    "syscmd-w2-q7": {
+      "question": "The shell has `umask 022` set. What is the permission string of a new directory created with `mkdir reports`?",
+      "options": [
+        "`drwxr-xr-x`",
+        "`drw-r--r--`",
+        "`drwxrwxr-x`",
+        "`d---w--w-`"
+      ],
+      "explanation": "The base for directories is 777; umask 022 clears the `w` bit for group and others, giving 755 = `drwxr-xr-x`. `drw-r--r--` is the trap of applying the file base 666 to a directory (without `x` you cannot even enter it). `drwxrwxr-x` is the result of umask 002, and `d---w--w-` mistakes the umask itself for the permission."
+    },
+    "syscmd-w2-q8": {
+      "question": "A file is named `report.pdf` but no PDF viewer can open it. Which command tells its real type by looking at the content instead of the name?",
+      "options": [
+        "`ls -l report.pdf`",
+        "`file report.pdf`",
+        "`type report.pdf`",
+        "`apt show report.pdf`"
+      ],
+      "explanation": "On Linux the extension does not decide the type; `file` reads the content (magic bytes) and says whether it is a PDF, gzip or text. The first character of `ls -l` only shows `-` (regular file), not the format. `type` is for shell commands, not files, and `apt show` gives package details."
+    },
+    "syscmd-w2-q9": {
+      "question": "You added a file for a new repository in `/etc/apt/sources.list.d/`. Now `sudo apt install fastq-tools` says 'Unable to locate package'. What should you run first?",
+      "options": [
+        "`sudo apt autoremove`",
+        "`sudo dpkg -l`",
+        "`sudo apt update`",
+        "`sudo apt purge fastq-tools`"
+      ],
+      "explanation": "After adding a new repository you have to refresh the package index, which is what `apt update` does; without it apt does not know about the new packages. `autoremove` removes unneeded dependencies, `dpkg -l` only lists installed packages, and `purge` removes an installed package along with its config; none of them refreshes the index."
+    },
+    "syscmd-w2-q10": {
+      "question": "The shell has `umask 003` set. After `touch notes.txt` and `mkdir logs`, what are their permission strings (in that order)?",
+      "options": [
+        "`-rw-rw--wx` and `drwxrwxr--`",
+        "`-rw-rw-r--` and `drwxrwxr-x`",
+        "`-rw-rw-rw-` and `drwxrwxrwx`",
+        "`-rw-rw-r--` and `drwxrwxr--`"
+      ],
+      "explanation": "umask clears bits; it does not subtract. 3 = 011 (`w` and `x`). File: from 666, others' 6 = 110, clearing `w` gives 100 = 4, so 664 = `-rw-rw-r--`. Directory: from 777, others' 7 = 111, clearing `w`,`x` gives 4, so 774 = `drwxrwxr--`. `-rw-rw--wx` is the digit-subtraction trap (6−3 = 3), `drwxrwxr-x` wrongly keeps others' `x`, and the last option ignores the umask."
+    },
+    "syscmd-w2-q11": {
+      "question": "A file's `ls -l` output starts with `-rwSr--r--`. What does the capital `S` in the owner part mean?",
+      "options": [
+        "The setuid bit is set, but the owner has no execute permission",
+        "The setuid bit is set and the owner can also execute the file",
+        "The file is a socket that only the owner can read and write",
+        "The sticky bit is set, so only the owner can delete the file"
+      ],
+      "explanation": "In the owner's execute position, lowercase `s` = setuid + execute and uppercase `S` = setuid without execute (usually a mistake, since setuid is useless without `x`). The lowercase `s` meaning is the second option. A socket would show `s` as the first character, but here the first character is `-`. The sticky bit appears as `t`/`T` in the others' position, not the owner's."
+    },
+    "syscmd-w2-q12": {
+      "question": "`/srv/drop` has the details `drwxrwxrwt carol carol`. Inside it is `a.txt` with details `-rw-rw-rw- alice alice`. First bob (neither owner nor root), then carol, runs `rm /srv/drop/a.txt`. What happens?",
+      "options": [
+        "bob removes the file, because both the directory and the file are writable by all",
+        "bob gets 'Operation not permitted'; then carol removes the file",
+        "Both fail, because with the sticky bit only the file owner alice can delete it",
+        "bob removes it because the file is `rw-rw-rw-`; nothing is left for carol"
+      ],
+      "explanation": "The final `t` is the sticky bit. In a sticky directory an entry can be removed only by the file's owner, the directory's owner or root. bob is none of these, so despite the writable directory he gets 'Operation not permitted'. carol owns the directory, so her `rm` succeeds. The file's own `rw-rw-rw-` has no effect on deletion, and the sticky rule includes the directory owner, not just alice."
+    },
+    "syscmd-w2-q13": {
+      "question": "You run `chmod 3750 team` on a new directory `team`. What permission string will `ls -ld team` show?",
+      "options": [
+        "`drwxr-x--T`",
+        "`drwsr-x--T`",
+        "`drwxr-s--T`",
+        "`drwxr-s---`"
+      ],
+      "explanation": "The first digit 3 = 2 (setgid) + 1 (sticky); setuid (4) is not set. The rest, 750, is `rwx`, `r-x`, `---`. The group has `x`, so setgid shows as lowercase `s`: `r-s`. Others have no `x`, so sticky shows as uppercase `T`: `--T`. Result: `drwxr-s--T`. `drwxr-x--T` forgets setgid, `drws` would mean setuid (4), which is not set, and `drwxr-s---` forgets the sticky bit (1)."
+    },
+    "syscmd-w2-q14": {
+      "question": "The shell has `umask 027` set. These commands are run in an empty directory. What is the permission string of `s.sh` at the end?",
+      "options": [
+        "`-rwxr-----`",
+        "`-rwxr-xr-x`",
+        "`-rwxrwx--x`",
+        "`-rwxr-x--x`"
+      ],
+      "explanation": "Step 1: clearing umask 027's bits from 666 gives 640 = `-rw-r-----`. Step 2: `u+x` gives 740 = `-rwxr-----`. Step 3: capital `X` gives a file execute permission if someone already has `x`; the owner does, so `a+X` gives `x` to u, g and o: 751 = `-rwxr-x--x`. `-rwxr-----` assumes `X` only applies to directories. `X` only adds `x`, not `r` or `w`, so the `r-xr-x` and `rwx` group options are wrong."
+    },
+    "syscmd-w2-q15": {
+      "question": "`/usr/bin/passwd` used to be `-rwsr-xr-x root root`, and `/etc/shadow` is `-rw-r----- root shadow`. An admin mistakenly runs `sudo chmod 0755 /usr/bin/passwd`. Now the normal user asha (not in group shadow) runs `passwd`. What happens?",
+      "options": [
+        "Mode becomes `-rwxr-xr-x`; passwd runs as asha and cannot write `/etc/shadow`",
+        "Mode stays `-rwsr-xr-x`, because numeric chmod does not touch special bits",
+        "Mode becomes `-rwxr-xr-x`, but passwd works because the file is still owned by root",
+        "asha cannot run passwd at all, because others no longer have execute"
+      ],
+      "explanation": "The first digit of `0755` is 0, so setuid (4) is cleared: `-rwxr-xr-x`. The program now runs with asha's rights, and others get nothing on `/etc/shadow`, so the password update fails. A numeric mode sets a regular file's special bits too; it does not leave them alone. Being owned by root is not enough; without setuid a process runs with the rights of the user who started it. In 755 others have `r-x`, so the command does still run."
     },
     "syscmd-w3-q1": {
       "question": "`PATH=/usr/local/bin:/usr/bin:/bin`, and an executable named `python3` exists in both `/usr/local/bin` and `/usr/bin`. There is no alias or function. Which file runs when you type `python3`?",
@@ -181,6 +361,96 @@
       ],
       "explanation": "Count the names of the inode: `touch f` → 1 (f); `ln f g` → 2; `ln g h` → 3 (g names the same inode); `rm f` → 2; `ln -s h s` is a symlink with its own inode, so the count does not change; `ln h f2` → 3; `mv g g2` only renames, the count stays. The answer is 3 (h, g2, f2). The trap in option A: counting the symlink `s` as a link. Option C forgets the decrease from `rm f`."
     },
+    "syscmd-w3-q7": {
+      "question": "These two lines are run in a new bash shell. What is the output?",
+      "options": [
+        "`[]`",
+        "`[5]`",
+        "`[$x]`",
+        "An `x: unbound variable` error"
+      ],
+      "explanation": "`x=5` is only a variable of the current shell; without `export`, `x` does not reach the child `bash`'s environment and expands to nothing: `[]`. `[5]` would need `export x`. The single quotes stop the parent shell from expanding `$x`, but the child shell does expand it, so you do not get a literal `[$x]`. Without `set -u`, an unset variable is not an error."
+    },
+    "syscmd-w3-q8": {
+      "question": "`PS1='\\u@\\h:\\W\\$ '` is set. The user is asha (not root), the host is `lab-07`, and the current directory is `/home/asha/proj/etl`. What does the prompt look like?",
+      "options": [
+        "`asha@lab-07:/home/asha/proj/etl$`",
+        "`asha@lab-07:etl$`",
+        "`asha@lab-07:etl#`",
+        "`lab-07@asha:etl$`"
+      ],
+      "explanation": "`\\u` is the user (asha), `\\h` the host (`lab-07`), `\\W` only the last directory (`etl`), and `\\$` becomes `$` for a normal user. The full path comes from `\\w` (small w), not capital `\\W`. `#` appears only for root, and the order is `\\u@\\h`, not reversed."
+    },
+    "syscmd-w3-q9": {
+      "question": "`cd -` takes you back to the previous directory. Which variable does it read that directory's path from?",
+      "options": [
+        "`$PWD`",
+        "`$HOME`",
+        "`$OLDPWD`",
+        "`$PATH`"
+      ],
+      "explanation": "On every `cd` the shell stores the old directory in `$OLDPWD` and the new one in `$PWD`; `cd -` goes to `$OLDPWD`. `$PWD` is the current directory, `cd` with no argument goes to `$HOME`, and `$PATH` is the list of directories searched for commands."
+    },
+    "syscmd-w3-q10": {
+      "question": "These commands are run in an empty directory on GNU/Linux (ext4). In the `ls -i` output, which names have the same inode number?",
+      "options": [
+        "All three: `a`, `b` and `c`",
+        "Only `a` and `c`",
+        "All three differ, since every name has its own inode",
+        "Only `a` and `b`"
+      ],
+      "explanation": "`ln a b` is a hard link: a new directory entry pointing at the same inode, so `a` and `b` have the same number. `ln -s a c` creates a separate small file (its own inode) that only stores the path `a`, so `c`'s number differs. The 'every name has its own inode' trap forgets that names live in directory entries, not in inodes."
+    },
+    "syscmd-w3-q11": {
+      "question": "`/data/report.csv` exists and `/tmp/report.csv` does not. What happens when these commands run?",
+      "options": [
+        "`cat` gives an error, because the link looks for `/tmp/report.csv`",
+        "`/data/report.csv` is printed, because the link was made in `/data`",
+        "`ln` itself fails, because `report.csv` does not exist in `/tmp`",
+        "A copy of the report is made at `/tmp/r` and that copy is printed"
+      ],
+      "explanation": "A symlink stores only the text `report.csv`, and a relative target is resolved from the link's own directory (`/tmp`). `/tmp/report.csv` does not exist, so the link dangles and `cat` says 'No such file or directory'. The current directory at creation time is not remembered anywhere. `ln -s` does not check that the target exists, so the link is created, and it makes no copy. Fix: use the absolute path `ln -s /data/report.csv /tmp/r`."
+    },
+    "syscmd-w3-q12": {
+      "question": "These commands are run in an empty directory on GNU/Linux (ext4). What do the last three commands give, in order?",
+      "options": [
+        "`a`, then `a`, then `2`",
+        "An error, then `a`, then `1`",
+        "`a`, then `a`, then `1`",
+        "An error, then an error, then `0`"
+      ],
+      "explanation": "After `ln f g` the inode has two names (link count 2); `s` only stores the path `f`. `rm f` removes one name: count 1, and the data lives on through `g`. `cat s` looks for the path `f`, which is gone, so it errors. `cat g` gives `a` and `stat -c %h g` gives `1`. Treating the symlink like a hard link is the `a`, `a` trap; thinking `rm` destroyed the data is the last option's trap."
+    },
+    "syscmd-w3-q13": {
+      "question": "These lines are run in a new bash shell. What are the three lines of output?",
+      "options": [
+        "`10 20`, `[10] [20]`, `1 2`",
+        "`10 20`, `[] [2]`, `1 2`",
+        "`10 20`, `[] [20]`, `1 2`",
+        "`10 20`, `[] [20]`, `1 20`"
+      ],
+      "explanation": "The child receives only `B=2` in its environment. In the child, `A=10` is a new shell variable (not exported), while `B=20` changes the value of an exported variable, so the grandchild gets `B=20` but not `A`: `[] [20]`. The parent's copies do not change, so the last line is `1 2`. `[10]` is the forgot-export trap, `[2]` assumes a changed exported value is not passed on, and `1 20` assumes a child can change its parent."
+    },
+    "syscmd-w3-q14": {
+      "question": "asha's shell shows this output (`/home/asha/bin/ls` is a script of her own). She just types `ls`. What actually runs?",
+      "options": [
+        "`/usr/bin/ls --color=auto`, because the alias is meant for the system binary",
+        "`/home/asha/bin/ls` with no argument, because aliases apply only to builtins",
+        "An error, because the alias and the script share a name, causing a loop",
+        "The `/home/asha/bin/ls` script, with the argument `--color=auto`"
+      ],
+      "explanation": "Two steps: the alias expands first, so the command becomes `ls --color=auto`. Then the name `ls` is looked up in PATH, and per `type -a` `/home/asha/bin` comes first, so her script runs with the argument `--color=auto`. An alias is not tied to a particular binary; it only replaces text. Aliases are not limited to builtins, and bash does not re-expand an alias inside itself, so there is no loop."
+    },
+    "syscmd-w3-q15": {
+      "question": "A shell has `LANG=en_US.UTF-8` and `LC_ALL` is not set. These lines are run. What are the two lines of output (ignoring the trailing space on the first)?",
+      "options": [
+        "`A B a b` and `[]`",
+        "`a A b B` and `[]`",
+        "`A B a b` and `[C]`",
+        "`a A b B` and `[C]`"
+      ],
+      "explanation": "`LC_ALL=C` goes only into the environment of that one `sort` command. The C locale sorts by byte value, and in ASCII all capital letters (A=65...) come before small letters (a=97...): `A B a b`. `a A b B` is the dictionary order of a locale like en_US, which did not apply here. The shell's `LC_ALL` was never set, hence `[]`; `[C]` assumes a prefix assignment stays in the current shell."
+    },
     "syscmd-w4-q1": {
       "question": "On an Ubuntu server, where are a web server's log files and its main executable usually found when it is installed with `apt` (per the FHS)?",
       "options": [
@@ -240,6 +510,96 @@
         "`5`, `6`, `7` (three lines)"
       ],
       "explanation": "`tail -n +5` starts at line 5: 5 to 20, 16 lines in all. `head -n -10` drops the last 10 lines (11 to 20), leaving 5 to 10. `tail -n 3` takes the last three of these: 8, 9, 10. The trap in option B: ignoring `head -n -10` and taking the last three straight away. The trap in option C: reading `head -n -10` as `head -n 10` (the first 10 lines, 5 to 14), which gives a last three of 12, 13, 14. Option D takes the first three of the remaining lines instead."
+    },
+    "syscmd-w4-q7": {
+      "question": "You run `kill 4121` (no signal name given). Which signal does the process receive?",
+      "options": [
+        "SIGKILL (9), which ends the process immediately with no cleanup",
+        "SIGTERM (15), which gives the process a chance to shut down cleanly",
+        "SIGHUP (1), which only asks the process to reload its config",
+        "SIGSTOP (19), which pauses the process and keeps it in the background"
+      ],
+      "explanation": "The default signal of `kill` is SIGTERM (15): the process can catch it, clean up files, locks and checkpoints, and exit. SIGKILL (9) is sent when you write `kill -9`. SIGHUP (1) needs `kill -HUP` and SIGSTOP (19) needs `kill -STOP`; neither is the default."
+    },
+    "syscmd-w4-q8": {
+      "question": "The first line of `sales.csv` is a header. Which command prints every line except the header?",
+      "options": [
+        "`tail -n 2 sales.csv`",
+        "`head -n 2 sales.csv`",
+        "`tail -n +2 sales.csv`",
+        "`head -n -1 sales.csv`"
+      ],
+      "explanation": "`tail -n +2` prints from line 2 to the end, so only the header is left out. `tail -n 2` gives just the last 2 lines, and `head -n 2` the first 2 (header included). `head -n -1` drops the last line, not the header; that is the common negative-count trap."
+    },
+    "syscmd-w4-q9": {
+      "question": "In which of the kernel's virtual files can you find the full command line that the process with PID 4121 was started with?",
+      "options": [
+        "`/var/log/4121/cmdline`",
+        "`/etc/proc/4121`",
+        "`/dev/4121/cmdline`",
+        "`/proc/4121/cmdline`"
+      ],
+      "explanation": "`/proc` is not on disk; the kernel creates `/proc/<PID>/` for every process, and `cmdline` holds its arguments. `/var/log` holds log files, `/etc` config and `/dev` device files; live process information is in none of them."
+    },
+    "syscmd-w4-q10": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`a,b,c`",
+        "`b`",
+        "An empty line",
+        "`a`"
+      ],
+      "explanation": "The default delimiter of `cut -f` is TAB, not comma. The line has no TAB, and `cut` (without `-s`) prints a line containing no delimiter in full: `a,b,c`. Getting `b` needs `-d,`. Expecting an empty line or `a` forgets that a line without the delimiter is printed as is, not treated as field 1 only."
+    },
+    "syscmd-w4-q11": {
+      "question": "From a laptop you run `ssh -L 8888:localhost:8888 asha@gpu-01`, and on `gpu-01` Jupyter is running on `127.0.0.1:8888`. What happens when you open `http://localhost:8888` in the laptop's browser?",
+      "options": [
+        "The laptop's own port 8888 opens, where no Jupyter is running",
+        "The request travels through the ssh tunnel to Jupyter on `gpu-01`",
+        "The request fails, because Jupyter only listens on `127.0.0.1`",
+        "Jupyter gets copied to the laptop and starts running there locally"
+      ],
+      "explanation": "`-L 8888:localhost:8888` carries connections arriving on the laptop's port 8888 through the encrypted tunnel to `gpu-01`, which then connects to `localhost:8888`. For the remote end, `localhost` is itself, so it reaches the Jupyter on loopback. This is forwarding; no new Jupyter runs on the laptop and nothing is copied."
+    },
+    "syscmd-w4-q12": {
+      "question": "`marks.csv` is shown below. With GNU coreutils, what is the output of the pipeline?",
+      "options": [
+        "`Meena,92` and `Kabir,75`",
+        "`Asha,81` and `Ravi,67`",
+        "`Ravi,67` and `Meena,92`",
+        "`3,Meena,92` and `4,Kabir,75`"
+      ],
+      "explanation": "Stage by stage: `tail -n +2` drops the header and leaves 4 rows. `cut -d, -f2,3` keeps name and score: `Asha,81`, `Ravi,67`, `Meena,92`, `Kabir,75`. `head -n -1` drops the last row (`Kabir,75`), and `tail -n 2` keeps the last two of the remaining three. `Meena,92`/`Kabir,75` is the ignore-`head -n -1` trap, the `Asha` option reads `tail -n 2` as `head`, and the id option forgets the `cut`."
+    },
+    "syscmd-w4-q13": {
+      "question": "Part of `ps -eo pid,ppid,stat,cmd` is shown below. Two zombie workers are visible. What is the most correct step to get rid of them?",
+      "options": [
+        "Run `kill -9 3307 3308`, because no process can catch SIGKILL",
+        "Stop PID 2215 (`-bash`), because the zombies belong to that shell",
+        "First `kill -CONT 3307 3308`, then stop them with `kill 3307 3308`",
+        "Fix or stop PID 3301 (`etl.py`); PID 1 then reaps the zombies"
+      ],
+      "explanation": "From the PPID column: both zombies' parent is 3301 (`etl.py`), which is not collecting their exit status with `wait`. A zombie is already dead, so `kill -9`, CONT or TERM do nothing to it. Fix or stop the parent; once the parent is gone the zombies pass to PID 1, which reaps them. 2215 is only the grandparent, not the zombies' parent."
+    },
+    "syscmd-w4-q14": {
+      "question": "The laptop's hostname is `lap-07` and the remote machine's is `db-01`; both use bash as the login shell. What do these two commands, run from the laptop, print in order?",
+      "options": [
+        "`lap-07` and `db-01`",
+        "`db-01` and `db-01`",
+        "`db-01` and `lap-07`",
+        "`lap-07` and `$HOSTNAME`"
+      ],
+      "explanation": "The first command is in double quotes, so the laptop's shell turns `$HOSTNAME` into `lap-07` before ssh even runs, and the remote just runs `echo lap-07`. The second uses single quotes, so `$HOSTNAME` reaches the remote literally and the bash there turns it into `db-01`. 'Both remote' forgets the local expansion, and a literal `$HOSTNAME` would need nobody on the remote to expand it either."
+    },
+    "syscmd-w4-q15": {
+      "question": "These three commands are run in order in interactive bash. What command does the third line actually become?",
+      "options": [
+        "`sudo cp report.csv /srv/backup/`",
+        "`sudo ls -l /srv/backup/`",
+        "`sudo ls -l !$`",
+        "`sudo ls -l report.csv`"
+      ],
+      "explanation": "On line 2, `!$` becomes the last argument of the previous command (cp), `/srv/backup/`, and history saves the expanded command `ls -l /srv/backup/`. On line 3, `!!` brings back that whole previous command: `sudo ls -l /srv/backup/`. The `cp` option takes `!!` as two commands back. `!$` does not stay literal in history, and `report.csv` was cp's first argument, not its last."
     },
     "syscmd-w5-q1": {
       "question": "What is the output of this bash script (two lines)?",
@@ -301,6 +661,96 @@
       ],
       "explanation": "The pattern needs a whole word, a space, then the same word again, with word boundaries on both sides. `the the cat` (the the), `is is` and `go go!` match; `!` is not a word character, so there is a boundary after `go`. In `this is it`, `is` cannot start inside `this` (the leading `\\b` is required) and `is it` is not a repeat. In `abc abcd` the second `abc` is followed by `d`, so the final `\\b` fails. The answer is 3. The trap in option A: ignoring `\\b` (then all five would match). Option B counts `abc abcd`, and option C drops `go go!` because of the punctuation."
     },
+    "syscmd-w5-q7": {
+      "question": "In `find / -name app.conf 2>/dev/null`, what does `2>/dev/null` do?",
+      "options": [
+        "Throws away results (stdout); only errors show on screen",
+        "Throws away errors (stderr); results (stdout) still show on screen",
+        "Throws away both stdout and stderr, so nothing shows on screen",
+        "Saves the output to a file named `/dev/null` to read later"
+      ],
+      "explanation": "Descriptor 2 is stderr, so `2>/dev/null` sends only error messages (such as 'Permission denied') to `/dev/null`, which swallows everything; results on stdout (fd 1) still show. Discarding stdout would be `>/dev/null`, and both would be `&>/dev/null`. `/dev/null` is a character device that keeps no data, so the 'read later' option is wrong."
+    },
+    "syscmd-w5-q8": {
+      "question": "`app.conf` has these 4 lines. What does `grep -v '^#' app.conf` print?",
+      "options": [
+        "`# db settings` and `#port=5433`",
+        "Only `port=5432`",
+        "`host=10.0.0.5` and `port=5432`",
+        "All 4 lines, because `^#` is literal text"
+      ],
+      "explanation": "`^#` matches lines that start with `#`, and `-v` inverts it: only the lines that do not match. `# db settings` and `#port=5433` both start with `#`, leaving `host=10.0.0.5` and `port=5432`. The comment-lines option forgets the `-v`, and `^` in a regex is the start of the line, not a literal."
+    },
+    "syscmd-w5-q9": {
+      "question": "`app.log` exists but contains no `ERROR` anywhere. What do these two lines print?",
+      "options": [
+        "`0`",
+        "`2`",
+        "An empty line",
+        "`1`"
+      ],
+      "explanation": "`-q` prints nothing and only sets the exit status: 0 = found, 1 = not found, 2 = error (such as a missing file). Here the file exists but has no match, so `1`. `0` would mean a match and `2` a missing file. `echo $?` always prints a number, never an empty line."
+    },
+    "syscmd-w5-q10": {
+      "question": "`r.txt` is shown below. With GNU grep, what do these two commands print, in order?",
+      "options": [
+        "`1` and `2`",
+        "`2` and `2`",
+        "`1` and `1`",
+        "`0` and `2`"
+      ],
+      "explanation": "In a basic regex (plain `grep`) `+` is a literal character, so `a+b` matches only the line that actually contains `a+b`: 1 line. With `-E` (ERE) `+` means 'the previous item one or more times', so `aab` and `ab` match; the `a+b` line has no 'a followed by b' and `b` has no `a`: 2 lines. `2 2` treats `+` as special in BRE, and `0` forgets that the literal `a+b` line exists."
+    },
+    "syscmd-w5-q11": {
+      "question": "The directory has a file `good` and no `bad`. When you run `ls good bad 2>&1 > out.txt`, what shows on screen and what ends up in `out.txt`?",
+      "options": [
+        "Nothing on screen; both `good` and the error in `out.txt`",
+        "The `bad` error on screen; `good` in `out.txt`",
+        "`good` on screen; the `bad` error in `out.txt`",
+        "Both lines on screen; `out.txt` stays empty"
+      ],
+      "explanation": "Redirections apply left to right. `2>&1` sends stderr to wherever stdout points at that moment, which is the terminal. Then `> out.txt` moves only stdout to the file. So the error appears on screen and `good` goes to the file. To get both in the file, reverse the order: `> out.txt 2>&1`. The other options either read the order backwards or assume `2>&1` follows later changes to stdout."
+    },
+    "syscmd-w5-q12": {
+      "question": "These lines are run in bash (`/nonexistent` does not exist; grep's error goes to stderr, ignore it). What are the two lines of output?",
+      "options": [
+        "`1 0` and `0`",
+        "`2 0` and `0`",
+        "`2 0` and `1`",
+        "`0` and `1`"
+      ],
+      "explanation": "`PIPESTATUS` keeps every stage's status: grep returns 2 for a missing file (1 only means 'no match'), and `true` returns 0: `2 0`. Without pipefail a pipeline's `$?` is the last command's, which would be 0; after `set -o pipefail` the pipeline fails if any stage fails, with the status of the rightmost failing stage (`false`), 1. `1 0` mistakes the error for 'no match', `0` on the second line ignores pipefail, and a lone `0` on the first line shows only the last status."
+    },
+    "syscmd-w5-q13": {
+      "question": "What is the output of this code in bash (two lines)?",
+      "options": [
+        "`3` and `3`",
+        "`4` and `4`",
+        "`3` and `4`",
+        "`4` and `3`"
+      ],
+      "explanation": "The here-string `<<<` adds a newline to the end of the string before making it stdin, so `wc -c` receives `abc` + newline = 4 bytes. `printf %s` writes just `abc` with no newline: 3 bytes. `3 3` forgets the here-string's newline, `4 4` assumes printf adds one too, and `3 4` swaps them. So when measuring a string's length, watch for the extra byte from a here-string."
+    },
+    "syscmd-w5-q14": {
+      "question": "`g.txt` is shown below. With GNU grep, what do these two pipelines print, in order?",
+      "options": [
+        "`2` and `3`",
+        "`3` and `3`",
+        "`2` and `2`",
+        "`1` and `3`"
+      ],
+      "explanation": "`-o` puts every match on its own line, so `wc -l` counts matches, not lines. On the first line, `id=7` and `id=12` both sit at a word boundary: 2. In `uid=5`, `u` and `i` are both word characters with no `\\b` between them, so the first pattern skips it; `ID=9` never matches because of case (no `-i`). The second pattern has no `\\b`, so the `id=5` inside `uid=5` also matches: 3. `1` counts matching lines, and `3 3` ignores the `\\b`."
+    },
+    "syscmd-w5-q15": {
+      "question": "With GNU grep, what is the output of this pipeline?",
+      "options": [
+        "`4`",
+        "`5`",
+        "`2`",
+        "`6`"
+      ],
+      "explanation": "`-A1` adds 1 line of context after each match: 4 after 3, and 8 after 7. The two groups are not adjacent (5 and 6 lie between them), so GNU grep puts a `--` separator line between them. Output: 3, 4, `--`, 7, 8 = 5 lines. `4` forgets the separator, `2` counts only the matches, and `6` assumes context also comes before the match."
+    },
     "syscmd-w6-q1": {
       "question": "The current directory has `a.csv` and `b.csv`. Running `find . -name *.csv` makes GNU find report: `paths must precede expression: b.csv`. What is the cause and the fix?",
       "options": [
@@ -360,6 +810,96 @@
         "Nothing"
       ],
       "explanation": "Before comparing, `-size` rounds the file's size up to the given unit. In MiB units: `empty.txt` → 0, `small.csv` (500 KiB) → 1, `big.csv` → 3. `-1M` means less than 1, so only 0: just `./empty.txt`. The trap in option A: reading 500 KiB directly as 'smaller than 1 MiB'; after rounding it becomes 1 and `-1M` fails. For files under 1 MiB write `-size -1024k`."
+    },
+    "syscmd-w6-q7": {
+      "question": "What does `find /data -type d -empty` look for?",
+      "options": [
+        "All empty (0 byte) regular files under `/data`",
+        "Empty directories under `/data` (an empty `/data` too)",
+        "Only directories that contain no subdirectory",
+        "Directories whose name contains the word `empty`"
+      ],
+      "explanation": "`-type d` keeps only directories and `-empty` keeps those with no entries at all; the two are joined by AND. Empty files would be `-type f -empty`. A directory holding files but no subdirectory is not empty. `-empty` is a test, not a name pattern; names need `-name`."
+    },
+    "syscmd-w6-q8": {
+      "question": "In vim you made wrong changes to a file and want to quit without saving them. What do you type from Normal mode?",
+      "options": [
+        "`:wq`",
+        "`:x`",
+        "`:q!`",
+        "`:w`"
+      ],
+      "explanation": "`:q!` quits without saving, and the `!` forces it even with unsaved changes. `:wq` and `:x` both save first, so the wrong changes would land in the file. `:w` only saves and leaves vim open."
+    },
+    "syscmd-w6-q9": {
+      "question": "In nano you want to save the file and keep editing (not exit). Which shortcut is right?",
+      "options": [
+        "`Ctrl+X`",
+        "`Ctrl+K`",
+        "`Ctrl+W`",
+        "`Ctrl+O`"
+      ],
+      "explanation": "In nano, `Ctrl+O` (Write Out) saves the file and you stay in the editor. `Ctrl+X` is exit (it asks if there are unsaved changes), `Ctrl+K` cuts the current line, and `Ctrl+W` is search (Where Is)."
+    },
+    "syscmd-w6-q10": {
+      "question": "The current directory holds just three files: `./a.log`, `./old/b.log` and `./old/x/c.log`. With GNU find, what does this pipeline print?",
+      "options": [
+        "`2`",
+        "`1`",
+        "`3`",
+        "`0`"
+      ],
+      "explanation": "The starting point `.` is depth 0. `./a.log` is at depth 1, `./old/b.log` at depth 2 and `./old/x/c.log` at depth 3. `-maxdepth 2` goes only as deep as 2, so 2 files are found. `1` reads maxdepth as 'first level only', `3` ignores the limit, and `0` assumes `-name` matches the whole path."
+    },
+    "syscmd-w6-q11": {
+      "question": "A vim line reads `alpha beta gamma delta` and the cursor is on its first character (Normal mode). You press `dw` and then `.`. What is left on the line?",
+      "options": [
+        "`beta gamma delta`",
+        "`gamma delta`",
+        "`delta`",
+        "`alpha gamma delta`"
+      ],
+      "explanation": "`dw` deletes from the cursor to the start of the next word, so `alpha ` goes and the line becomes `beta gamma delta` with the cursor on `beta`. `.` repeats the last change (`dw`), so `beta ` goes too: `gamma delta`. `beta gamma delta` ignores the `.`, `delta` assumes `.` ran twice, and the last option assumes `.` deletes the word after the cursor."
+    },
+    "syscmd-w6-q12": {
+      "question": "A directory holds five files last modified 0.5, 1.5, 2.5, 3.5 and 4.5 days ago. What does GNU `find . -type f -mtime +1 -mtime -4` print?",
+      "options": [
+        "3 files: the 1.5, 2.5 and 3.5 day old ones",
+        "2 files: the 1.5 and 2.5 day old ones",
+        "2 files: the 2.5 and 3.5 day old ones",
+        "4 files: all except the 0.5 one"
+      ],
+      "explanation": "`-mtime` measures age in whole days, dropping the fraction: 0, 1, 2, 3, 4. `+1` means more than 1: 2, 3, 4. `-4` means less than 4: 0, 1, 2, 3. The tests are ANDed, leaving only 2 and 3, which are the 2.5 and 3.5 day old files. The 1.5 day file has age 1, which is not `+1`; that is the 'at least 1 day' trap. The 4.5 one falls outside `-4`."
+    },
+    "syscmd-w6-q13": {
+      "question": "The tree has these files: `./a.csv`, `./.git/x.csv` and `./src/b.csv`. What does the command below (no `-print` at the end) print? Ignore the order.",
+      "options": [
+        "`./a.csv` and `./src/b.csv`",
+        "`./a.csv`, `./.git/x.csv` and `./src/b.csv`",
+        "Only `./.git`",
+        "`./.git`, `./a.csv` and `./src/b.csv`"
+      ],
+      "explanation": "When the expression has no action (`-print`, `-exec`...), find wraps the whole expression in `-print`: `( -path ./.git -prune -o -name '*.csv' ) -print`. For `./.git`, `-prune` is true (and find does not descend), so it gets printed too. So the `.git` name appears but `x.csv` does not. The two-file answer would be right with an explicit `-print` at the end. The `x.csv` option ignores the prune."
+    },
+    "syscmd-w6-q14": {
+      "question": "A directory holds four files of 0, 1500, 2048 and 2049 bytes. With GNU find, how many files do `find . -type f -size 2k` and `find . -type f -size -2k` give, in order?",
+      "options": [
+        "`2` and `1`",
+        "`1` and `2`",
+        "`2` and `2`",
+        "`3` and `1`"
+      ],
+      "explanation": "`-size` first rounds the size up to KiB units: 0 → 0, 1500 → 2, 2048 → 2, 2049 → 3. `-size 2k` means exactly 2 units: the 1500 and 2048 files, so 2. `-size -2k` means fewer than 2: only the 0 byte file, so 1. `1 2` assumes only exactly 2048 bytes counts as '2k' and that 1500 falls under 'less'; `3` rounds 2049 down too."
+    },
+    "syscmd-w6-q15": {
+      "question": "A directory holds two files: `a b.log` (with a space in its name) and `c.log`. When this pipeline runs, how many files does `ls` show successfully and how many errors appear?",
+      "options": [
+        "2 files, no errors",
+        "1 file (`./c.log`) and 2 errors (`./a` and `b.log`)",
+        "1 file and 1 error (for `./a b.log`)",
+        "0 files; the whole command fails right at the start"
+      ],
+      "explanation": "By default `xargs` splits its input on whitespace, so `./a b.log` becomes two arguments: `./a` and `b.log`. No file has either name, so `ls` gives 2 'cannot access' errors and shows only `./c.log`. Treating the space as part of one name (1 error) is exactly the trap. Fix: `find . -name '*.log' -print0 | xargs -0 ls`, which splits on NUL."
     },
     "syscmd-w7-q1": {
       "question": "`go.sh` (executable) has a single line: `cd /var/log`. You are in `/home/asha` and run the following. What does `pwd` print?",
@@ -421,6 +961,96 @@
       ],
       "explanation": "`a`: `f` returns 3. `b`: `!` turns non-zero into 0 (and 0 into 1). `c`: `f` failed so `true` ran, and a list's status is that of the last command run: 0. `d`: the `if` condition failed with no `else`, and when no branch runs the whole `if` returns 0. So `3 0 0 0`. The trap in option B: taking `!` to give 1 here and expecting `if` to pass the condition's status through. Option C makes only the `if` mistake."
     },
+    "syscmd-w7-q7": {
+      "question": "`s.sh` (executable) contains these two lines. It is run as `./s.sh a \"b c\" d`. What is the output?",
+      "options": [
+        "`4`",
+        "`1`",
+        "`3`",
+        "`2`"
+      ],
+      "explanation": "`$#` counts the positional arguments. Because of the quotes, `\"b c\"` is a single argument, so the arguments are `a`, `b c`, `d` = 3. `4` ignores the quotes and splits on the space. `$0` (the script name) is not counted, and `1`/`2` treat everything as one or two strings."
+    },
+    "syscmd-w7-q8": {
+      "question": "What is the output of this bash line? (`/etc` is a directory.)",
+      "options": [
+        "`nodir`",
+        "`dir` and then `nodir`",
+        "An error: `[` command not found",
+        "`dir`"
+      ],
+      "explanation": "`-d` checks whether the path is a directory; `/etc` is, so the test returns status 0 and `echo dir` after `&&` runs. `echo dir` also succeeds (0), so the `||` part does not run: just `dir`. `[` is a real command (another name for `test`), so there is no 'not found'."
+    },
+    "syscmd-w7-q9": {
+      "question": "A script contains these lines. It is run as `./job.sh data.csv` (just one argument). What is the output?",
+      "options": [
+        "`10`",
+        "`data.csv`",
+        "An empty line",
+        "`2`"
+      ],
+      "explanation": "`${2:-10}` means: if `$2` is unset or empty, use 10. Only one argument was given, so `$2` is empty and `rows` becomes 10. `data.csv` is `$1`, not `$2`. An empty line would need no default (plain `$2`), and `2` is just the parameter's number, not a value."
+    },
+    "syscmd-w7-q10": {
+      "question": "`job.sh` contains these lines. It is run with no arguments as `bash job.sh`. What happens?",
+      "options": [
+        "`after` is printed and `f` stays empty; status 0",
+        "A usage message on stderr, no `after`, non-zero status",
+        "`usage: job.sh FILE` goes to stdout, then `after` is printed too",
+        "Nothing is printed and the script ends with status 0"
+      ],
+      "explanation": "With `${1:?msg}`, if `$1` is unset or empty bash writes the message to stderr and stops a non-interactive script right there (status 1). So `echo after` is never reached. Carrying on with an empty value is what `:-` does, not `:?`. The message does not go to stdout, and it does not quietly return status 0 either."
+    },
+    "syscmd-w7-q11": {
+      "question": "What is the output of this bash code (two lines)?",
+      "options": [
+        "`A` and `C`",
+        "`A` and `D`",
+        "`B` and `C`",
+        "`B` and `D`"
+      ],
+      "explanation": "Inside `[[ ]]`, `>` compares strings in dictionary order: the first character `1` is less than `9`, so \"10\" > \"9\" is false and `B` is printed. `(( ))` is integer arithmetic, where 10 > 9 is true, so `C`. The `A` trap treats `>` in `[[ ]]` as numeric; numbers need `-gt` or `(( ))`."
+    },
+    "syscmd-w7-q12": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`2 b-c-d`",
+        "`3 a-b c-d`",
+        "`2 b c d`",
+        "`2 b c-d`"
+      ],
+      "explanation": "`set --` creates three arguments: `a`, `b c`, `d`. `shift` drops `a`, so `$#` = 2 and `b c` and `d` remain. A quoted `\"$*\"` joins the arguments with the first character of IFS (here `-`): `b c-d`. The space inside an argument stays as it is, so `b-c-d` is wrong. `3 a-...` forgets the shift, and `b c d` assumes the joiner is always a space."
+    },
+    "syscmd-w7-q13": {
+      "question": "This bash code is run in an empty directory. What is the output?",
+      "options": [
+        "Only `1`",
+        "`1` and `2`",
+        "`1` and `3`",
+        "`1`, `2` and `3`"
+      ],
+      "explanation": "Line 2: in `[[ ]]` an unquoted `*.csv` on the right is a glob pattern, so `data.csv` matches: `1`. Line 3: quoting turns the pattern into the literal string `*.csv`, which does not equal `data.csv`. Line 4: `[` is a command whose arguments the shell glob-expands; in an empty directory `*.csv` matches no file and stays literal `*.csv`, and `=` is plain string equality, not pattern matching. So neither `2` nor `3` is printed."
+    },
+    "syscmd-w7-q14": {
+      "question": "This bash code is run in an empty directory. What is the output?",
+      "options": [
+        "`0 1 ok`",
+        "`1 0 bad`",
+        "`1 0 ok`",
+        "`0 0 bad`"
+      ],
+      "explanation": "A function's status is the status of its last command, here `[ -s ]` (the file exists and its size is > 0). `: > empty.txt` creates a 0 byte file, so `a` = 1. `full.txt` contains `hi`, so `b` = 0. `missing.txt` does not exist, so the test fails (1) and `||` sets `c=bad`. `0 1 ok` swaps the success/failure numbers, and `ok` assumes `-s` is true for a missing file."
+    },
+    "syscmd-w7-q15": {
+      "question": "What is the output of this bash code (two lines)?",
+      "options": [
+        "`sales 2` and `quoted`",
+        "`sales_2026 3` and `literal-fail`",
+        "`sales 3` and `literal-fail`",
+        "`sales 3` and `quoted`"
+      ],
+      "explanation": "An unquoted `$re` acts as a regex: `BASH_REMATCH[0]` is the whole match `sales_2026.csv`, `[1]` = `sales`, `[2]` = `2026`, so the array has 3 elements: `sales 3`. On the second line, quoting `\"$re\"` makes bash search for the whole string as literal text (`^`, `(`, `+` all literal), which is not in the filename, hence `literal-fail`. `2` forgets the whole-match element `[0]`, `sales_2026` misreads group 1, and `quoted` assumes the quotes change nothing."
+    },
     "syscmd-w8-q1": {
       "question": "What is the output of this bash code?",
       "options": [
@@ -480,6 +1110,96 @@
         "`3 10 5`"
       ],
       "explanation": "`IFS=,` splits each line into city and amount. The loop is redirected from a here-doc, not a subshell, so the array survives. For each city the amount is added to the old value (0 the first time via `:-0`): pune 10 + 7 = 17, delhi 5 + 1 = 6, goa 3. There are 3 distinct keys, so `${#n[@]}` = 3. Output `3 17 6`. The trap in option A: reading `${#n[@]}` as the number of lines. The trap in option C: thinking each assignment overwrites the old value (here the expression adds to it). Option D keeps only the first entry."
+    },
+    "syscmd-w8-q7": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`x z`",
+        "`y x`",
+        "`z x`",
+        "`z y`"
+      ],
+      "explanation": "Indexed arrays start at 0, so `${b[0]}` = `x`, and a negative index counts from the end, so `${b[-1]}` = `z`. echo prints the `-1` one first, hence `z x`. `x z` reads the order backwards, and the `y` options are the counting-from-1 trap."
+    },
+    "syscmd-w8-q8": {
+      "question": "When does the crontab line `*/15 * * * * /srv/poll.sh` run the script?",
+      "options": [
+        "Once a day at 15:00 (3 PM)",
+        "On the 15th of every month, every minute of that day",
+        "Once an hour, only at minute 15",
+        "Every 15 minutes: at :00, :15, :30 and :45 of every hour"
+      ],
+      "explanation": "The first field is the minute, and `*/15` means every 15 starting from 0: 0, 15, 30, 45. The other fields are `*`, so it runs every hour of every day. 15:00 would need 15 in the hour field (second), and the 15th would need the third field. Only minute 15 would be written `15`, not `*/15`."
+    },
+    "syscmd-w8-q9": {
+      "question": "Which command lists the pending jobs scheduled with `at`?",
+      "options": [
+        "`atq`",
+        "`atrm`",
+        "`crontab -e`",
+        "`journalctl -u at`"
+      ],
+      "explanation": "`atq` shows pending `at` jobs with their number and time. `atrm` removes a job, `crontab -e` edits recurring cron jobs, and `journalctl -u` shows a systemd service's logs, not the list of pending `at` jobs."
+    },
+    "syscmd-w8-q10": {
+      "question": "This bash loop is run in an empty directory (without `nullglob`). What is the output?",
+      "options": [
+        "Nothing is printed",
+        "`got *.csv` (one line)",
+        "An error: `*.csv`: No such file or directory",
+        "`got` (one line with an empty name)"
+      ],
+      "explanation": "In bash, when a glob matches no file the pattern stays as it is (literal `*.csv`), and the loop runs once on that one word: `got *.csv`. The 'nothing' result is what `shopt -s nullglob` gives. `echo` opens no file, so there is no 'No such file' error, and the pattern does not become an empty string."
+    },
+    "syscmd-w8-q11": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`20 30 5`",
+        "`10 20 30 5`",
+        "`20 30 40 5`",
+        "`20 30 40 4`"
+      ],
+      "explanation": "`${a[@]:1:3}` gives 3 elements starting at index 1: `20 30 40` (index 0 holds 10). `${#a[@]}` is the element count: 5. `20 30` reads the slice as 'index 1 up to 3', `10 20 30` treats index 1 as the first element, and `4` mistakes the last index for the count."
+    },
+    "syscmd-w8-q12": {
+      "question": "What is the output of this bash code?",
+      "options": [
+        "`300 0`",
+        "`300 300`",
+        "`44 44`",
+        "`300 44`"
+      ],
+      "explanation": "The function writes 300 with `echo`, which `$( )` captures into `r`. `return` can only give a status from 0–255, so 300 mod 256 = 44. The status of the assignment `r=$(...)` is the command substitution's status, and `$?` is expanded before `echo` runs, hence `300 44`. `0` assumes an assignment always succeeds (0), `300 300` forgets the return limit, and `44 44` mistakes the echoed data for the status."
+    },
+    "syscmd-w8-q13": {
+      "question": "What is the output of this bash code (two lines)?",
+      "options": [
+        "`asha|ds,50` and `ravi|`",
+        "`asha|ds` and `ravi|`",
+        "`asha|50` and `ravi|`",
+        "`1|asha` and `2|ravi`"
+      ],
+      "explanation": "`read` splits fields on IFS (`,`) and puts the entire rest of the line into the last variable. Line one: `id=1`, `name=asha`, `rest=ds,50` (comma included). Line two has just two fields, so `rest` is empty: `ravi|`. `asha|ds` assumes extra fields are thrown away, `asha|50` that only the last field is kept, and `1|asha` misreads the order of the variables."
+    },
+    "syscmd-w8-q14": {
+      "question": "This line is in a crontab. Which statement about it is correct?",
+      "options": [
+        "It runs 3 times a day (at 9, 10 and 11) and the file name comes out right",
+        "9 runs a day, but without `\\%` the `%` becomes a newline and breaks it",
+        "It runs 9 times a day and `$(date +%H%M)` gives each run the correct name",
+        "It runs 20 times a day, evenly spaced between 9 and 11 in the morning"
+      ],
+      "explanation": "Schedule: minute `*/20` = 0, 20, 40 and hour `9-11` = 9, 10, 11, so 3 × 3 = 9 runs a day. But in a crontab an unescaped `%` becomes a newline and the text after it is fed to the command as stdin, so `date +` is left incomplete and the command breaks; it should be written `\\%H\\%M`. '3 times' forgets the minute field, 'correct name' forgets the `%` rule, and 20 runs treats `*/20` as a count."
+    },
+    "syscmd-w8-q15": {
+      "question": "What is the output of this bash script (without `lastpipe`)?",
+      "options": [
+        "`5`",
+        "`0`",
+        "`3`",
+        "`2`"
+      ],
+      "explanation": "The first loop reads from the process substitution `< <(...)`, so it runs in the current shell and `count` becomes 3. The second loop is on the right side of a pipe, which runs in a subshell; there `count` goes from 3 to 5, but that copy vanishes when the subshell ends. So `echo` shows 3. `5` forgets the subshell, `0` assumes both loops ran in subshells, and `2` counts only the second loop's lines."
     },
     "syscmd-w9-q1": {
       "question": "What is the output of this pipeline? (Output lines are shown here separated by spaces.)",
@@ -541,6 +1261,96 @@
       ],
       "explanation": "The header is not skipped. On the first line `$3` = `salary`, which does not look numeric, so it is compared as a string with the uninitialised `max`: `salary` > `\"\"` is true, so `max = salary` and `who = id`. Every later salary (like `50`) is then compared with the string `salary` as a string, and digits sort before letters, so none is bigger. Output `id salary`. The trap in option A: ignoring the header's effect (that is what `NR > 1` would give). Option B is what you would get if every comparison were a string one (`80` > `100` lexically)."
     },
+    "syscmd-w9-q7": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`4 4`",
+        "`d 4`",
+        "`4 d`",
+        "`3 d`"
+      ],
+      "explanation": "`NF` is the number of fields: 4. `$NF` means 'field number NF', which is `$4` = `d`. The comma in `print` inserts OFS (a space): `4 d`. `4 4` confuses `$NF` with `NF`, `d 4` reverses the order, and `3` counts fields from 0."
+    },
+    "syscmd-w9-q8": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`1002 /home/ravi`",
+        "`x /bin/sh`",
+        "`1002:/bin/sh`",
+        "`1002 /bin/sh`"
+      ],
+      "explanation": "`-F:` makes the colon the separator. Fields: 1 `ravi`, 2 `x`, 3 `1002`, 4 `1002`, 5 empty (two colons in a row), 6 `/home/ravi`, 7 `/bin/sh`. The empty field still counts, so `$7` is the shell, not the home. `x` is field 2, and the output separator is OFS (a space), not the input `:`."
+    },
+    "syscmd-w9-q9": {
+      "question": "What does `awk 'END { print NR }' data.txt` print?",
+      "options": [
+        "The number of lines in the file, like `wc -l`",
+        "Only the last line of the file",
+        "Each line with its line number in front",
+        "Nothing, because END has no record to work with"
+      ],
+      "explanation": "`NR` is the count of records read so far; `END` runs after all lines are read, so at that point `NR` is the total. The last line would need printing `$0` (GNU awk keeps it in END). A number on every line needs `{ print NR, $0 }` without END. No records are read in END, but the value of `NR` remains."
+    },
+    "syscmd-w9-q10": {
+      "question": "What is the output of this command (two lines)?",
+      "options": [
+        "`a-b-c` and `a-b-c`",
+        "`a,b,c` and `a-b-c`",
+        "`a,b,c` and `a,b,c`",
+        "`a b c` and `a-b-c`"
+      ],
+      "explanation": "The first `print` shows `$0` exactly as read: `a,b,c`; OFS only applies when the record is rebuilt. `$1=$1` assigns a field, which rebuilds `$0` with OFS (`-`): `a-b-c`. Expecting `-` on the first line applies OFS to the input too, a comma on the second forgets the rebuild trick, and `a b c` assumes the default OFS."
+    },
+    "syscmd-w9-q11": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`1 bonana`",
+        "`3 banana`",
+        "`3 bonono`",
+        "`bonono 3`"
+      ],
+      "explanation": "`gsub` (with no third argument) replaces every match in `$0` and returns how many it replaced: the three `a`s of `banana` → `bonono`, n = 3. `1 bonana` is what `sub` does (first match only). `banana` assumes `gsub` works on a copy, and `bonono 3` reads the print order backwards."
+    },
+    "syscmd-w9-q12": {
+      "question": "Two files are shown below. What is the output of this awk command?",
+      "options": [
+        "`1 Data Science`, `2`, `3 Machine Learning`",
+        "`1 Data`, `2 NA`, `3 Machine` (cut at space)",
+        "`1 ds`, `2 ops`, `3 ml` (no lookup)",
+        "`1 Data Science`, `2 NA`, `3 Machine Learning`"
+      ],
+      "explanation": "While reading the first file `NR == FNR` is true, so the lookup `n[ds]`, `n[ml]` is built and `next` skips the second rule. In `emp.csv` FNR restarts at 1 but NR does not, so the second rule runs: `ds` and `ml` are found, `ops` is not, so `NA`. Because of `-F,`, `Data Science` is a single field and is not cut to `Data`. A bare `2` (no name) forgets the `else` branch, and the codes option ignores the lookup."
+    },
+    "syscmd-w9-q13": {
+      "question": "`nums.txt` has three lines: 3, 7, 5. With GNU awk, what does this program print?",
+      "options": [
+        "`min=`",
+        "`min=3`",
+        "`min=0`",
+        "`min=5`"
+      ],
+      "explanation": "`min` starts uninitialised, which is 0 as a number and `\"\"` as a string. Compared with a numeric-looking field it counts as 0: 3 < 0, 7 < 0 and 5 < 0 are all false, so `min` is never assigned and END prints an empty string: `min=`. `min=3` would be right if you initialised with `NR == 1 { min = $1 }`. `0` assumes an uninitialised variable prints as 0, and `5` is just the last value."
+    },
+    "syscmd-w9-q14": {
+      "question": "`v.txt` has four lines: 2, 4, 6, 8. What is the output of this awk program?",
+      "options": [
+        "`6.67 5.00`",
+        "`5.00 6.67`",
+        "`5.00 5.00`",
+        "`20.00 6.67`"
+      ],
+      "explanation": "s = 20, ss = 4 + 16 + 36 + 64 = 120, NR = 4, m = 5. Population variance = 120/4 − 25 = 5.00. Sample variance = (120 − 4·25)/(4 − 1) = 20/3 = 6.67. `6.67 5.00` swaps them, `5.00 5.00` assumes the two formulas agree, and `20.00` is the total of squared deviations with the division forgotten."
+    },
+    "syscmd-w9-q15": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`1 1`",
+        "`0 0`",
+        "`1 0`",
+        "`0 1`"
+      ],
+      "explanation": "awk compares numeric-looking input fields as numbers: 10 > 9 is true, so 1. `$1 \"\"` appends an empty string, forcing the values to be strings; in dictionary order the first character `1` is less than `9`, so \"10\" > \"9\" is false: 0. `1 1` forgets the effect of the concatenation, and the options starting with `0` treat the first comparison as a string one too."
+    },
     "syscmd-w10-q1": {
       "question": "With GNU sed, what is the output of this pipeline? (Output lines are shown here separated by spaces.)",
       "options": [
@@ -600,6 +1410,96 @@
         "`b2`"
       ],
       "explanation": "`-n` turns off auto-print. On each line `s/[0-9]/X/p` runs first: when a substitution happens the changed pattern space is printed, so `aX`, `bX` and `cX` are all printed. The second command `/b/p` looks at the changed pattern space (`bX`), which contains `b`, so `bX` is printed again. Four lines in all: `aX bX bX cX`. The trap in option A: thinking each line can print only once. The trap in option B: thinking `/b/` sees the original line `b2`; sed gives every command the current pattern space."
+    },
+    "syscmd-w10-q7": {
+      "question": "What is the output of this pipeline? (Output lines are shown here separated by spaces.)",
+      "options": [
+        "`1 2 3 4`",
+        "`2 4`",
+        "`1 2 2 3 3 4 4 5 6`",
+        "`2 3 4`"
+      ],
+      "explanation": "`-n` turns off automatic printing, and `2,4p` prints only lines 2 to 4: `2 3 4`. A range includes both ends, so `2 4` is wrong. `1 2 3 4` starts the range at line 1. The long line is the result without `-n`, where every line prints once and the range lines print twice."
+    },
+    "syscmd-w10-q8": {
+      "question": "What is the output of this pipeline? (Output lines are shown here separated by spaces.)",
+      "options": [
+        "`a b`",
+        "`b c`",
+        "`a b c`",
+        "`c`"
+      ],
+      "explanation": "The address `$` is the last line and `d` deletes it, so `c` goes and `a b` remains. `b c` would delete the first line (`1d`), `a b c` ignores the delete, and `c` assumes `$d` shows only the last line; that would be `sed -n '$p'`."
+    },
+    "syscmd-w10-q9": {
+      "question": "You run `sed -i.bak 's/v1/v2/' app.cfg` with GNU sed. What is true afterwards?",
+      "options": [
+        "`app.cfg` is unchanged; the edited output went to `app.cfg.bak`",
+        "`app.cfg` is changed and the original copy is kept in `app.cfg.bak`",
+        "Output appeared only on screen; no file changed",
+        "`app.cfg` changed, and an empty file named `.bak` was created"
+      ],
+      "explanation": "`-i` edits the file in place, and with the suffix `.bak` a copy of the original, `app.cfg.bak`, is made before the change. The edited content goes to the original name (`app.cfg`), not to `.bak`. Screen-only output is what happens without `-i`. The backup name is the file name plus the suffix, not a bare `.bak`."
+    },
+    "syscmd-w10-q10": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`xyz xyd`",
+        "`zxy bad`",
+        "`zxy yxd`",
+        "`cab yxd`"
+      ],
+      "explanation": "`y/abc/xyz/` maps each character by position: a→x, b→y, c→z, and it applies to the whole line (no `g` flag needed). `cab` → `zxy`, `bad` → `yxd` (`d` is not in the map and stays). `xyz xyd` treats `y` like a string replace, and the other two options assume only one word changes, like `s` without `g`."
+    },
+    "syscmd-w10-q11": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`v=/opt/bin`",
+        "`v=&/opt/bin`",
+        "`v=/usr/local/bin/opt`",
+        "`v=/usr/local/opt/bin`"
+      ],
+      "explanation": "The delimiter here is `|`, so the `/` in the path need no escaping. The regex matches `/usr/local`, and `&` in the replacement is the whole matched text, so `/usr/local` is replaced by `/usr/local/opt` and the rest, `/bin`, stays: `v=/usr/local/opt/bin`. `v=/opt/bin` ignores the `&`, `v=&/opt/bin` treats `&` as literal (that needs `\\&`), and the last option assumes the text is added at the end of the line."
+    },
+    "syscmd-w10-q12": {
+      "question": "What is the output of this pipeline? (Output lines are shown here separated by spaces.)",
+      "options": [
+        "`z3`",
+        "`y1 z3`",
+        "`y2 z3`",
+        "`x1 z3`"
+      ],
+      "explanation": "Both commands run in order on every line, and the second sees the pattern space as changed by the first. Line 1: `x1` → `y1`, now `/y/` matches, deleted. Line 2: `s` does nothing to `y2`, `/y/` matches, deleted. Line 3: `z3` survives. `y1 z3` assumes `/y/d` sees the original line, and the `x1`/`y2` options ignore the substitution or the delete."
+    },
+    "syscmd-w10-q13": {
+      "question": "What is the output of this pipeline? (Output lines are shown here separated by spaces.)",
+      "options": [
+        "`A B A`",
+        "`A B A A`",
+        "`A B A C A`",
+        "`A A A`"
+      ],
+      "explanation": "Line 1 `A` opens the range; the end pattern is checked from the next line on, so line 2 `B` is inside and line 3 `A` closes the range (and is printed). Line 4 `C` does not match the start pattern, so it is outside. Line 5 `A` opens a new range, which runs to the end of the file since no end is found, so it prints too: `A B A A`. `A B A` forgets the second range, the `C` option assumes the range never closed, and `A A A` reads it like `/A/p`."
+    },
+    "syscmd-w10-q14": {
+      "question": "What is the output of this command?",
+      "options": [
+        "`a1b2(2)c333`",
+        "`a(1)b(22)c333`",
+        "`a1b(22)c333`",
+        "`a1b22c(333)`"
+      ],
+      "explanation": "`[0-9]+` is greedy, so the matches are whole runs of digits: `1`, `22`, `333`. The flag `2` changes only the second match, and `&` is the whole matched text, so `22` → `(22)`. `a1b2(2)c333` takes the second digit character as the second match, `a(1)b(22)c333` reads the flag `2` as 'the first 2 matches', and `(333)` is the third match."
+    },
+    "syscmd-w10-q15": {
+      "question": "`s.txt` is shown below (the second line ends in two extra spaces). What is the output of this pipeline?",
+      "options": [
+        "`2026-11-01 120` and `2026-11-02 50`",
+        "`# export 0`, `2026-11-01 200` and `2026-11-02 50`",
+        "`2026-11-01 80` and `2026-11-02 50`",
+        "`2026-11-01 200` and `2026-11-02 50`"
+      ],
+      "explanation": "sed removes the comment line and strips trailing spaces. awk groups by date and adds the amounts: 11-01 = 120 + 80 = 200, 11-02 = 50. The order of `for (d in t)` is not fixed, which is why `sort` is there. The `120` option stops at the first entry, the `80` option assumes the second value overwrites the first (like `=`, not `+=`), and the `# export` option forgets the `/^#/d`."
     },
     "syscmd-w11-q1": {
       "question": "A directory contains only `data.csv`. After `gzip data.csv`, what does `ls` show?",
@@ -661,6 +1561,96 @@
       ],
       "explanation": "`uniq -c` only merges consecutive duplicate lines. The groups are: .4 ×3, .9 ×2, .4 ×1, .7 ×1, .9 ×1, .4 ×1. `sort -rn` orders the counts from largest to smallest and `head -n 2` gives the first two: `3 10.0.0.4`, `2 10.0.0.9`. Option B is the true totals (.4 = 5, .9 = 3), which you would get only with a `sort` before `uniq`; it is the biggest trap, because the broken pipeline still looks plausible. Options C and D misread the grouping."
     },
+    "syscmd-w11-q7": {
+      "question": "What does `tar -tzf backup.tar.gz` do?",
+      "options": [
+        "Extracts the whole archive into the current directory",
+        "Compresses the archive once more with gzip to shrink it",
+        "Tests the archive's files and removes the broken ones from it",
+        "Lists the files inside the archive without extracting anything"
+      ],
+      "explanation": "`-t` is list mode, `-z` reads through gzip, and `-f` names the archive file; nothing is written to disk. Extracting would be `-x` and creating `-c`. tar does not 'test and remove' files inside an archive, and recompressing is not what `-t` does."
+    },
+    "syscmd-w11-q8": {
+      "question": "`ss -tlnp` shows a service listening on port 443. Which service usually uses this port?",
+      "options": [
+        "HTTPS",
+        "ssh",
+        "DNS",
+        "PostgreSQL"
+      ],
+      "explanation": "Port 443 is the standard port for HTTPS (HTTP over TLS). ssh uses 22, DNS 53 and PostgreSQL 5432. Plain HTTP uses 80."
+    },
+    "syscmd-w11-q9": {
+      "question": "You need a compressed copy `data.csv.gz` of `data.csv`, but you also want to keep the original `data.csv`. Which command is right?",
+      "options": [
+        "`gzip data.csv`",
+        "`gzip -k data.csv`",
+        "`gunzip -k data.csv`",
+        "`zcat data.csv`"
+      ],
+      "explanation": "By default `gzip` replaces the file with its `.gz` version; `-k` (keep) keeps the original too. After a plain `gzip data.csv` only `data.csv.gz` is left. `gunzip` decompresses, and `zcat` reads a compressed file without extracting it; neither compresses."
+    },
+    "syscmd-w11-q10": {
+      "question": "Which of these IPv4 addresses is in a private range?",
+      "options": [
+        "`172.32.0.1`",
+        "`192.169.1.10`",
+        "`172.20.5.9`",
+        "`11.0.0.1`"
+      ],
+      "explanation": "The private ranges are 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16. /12 means 172.16 through 172.31, so `172.20.5.9` is private. `172.32.0.1` is just outside that range, `192.169.1.10` is not 192.168, and `11.0.0.1` is not 10.x; all three are public addresses. The trap: assuming 'starts with 172 = private' or 'starts with 192 = private'."
+    },
+    "syscmd-w11-q11": {
+      "question": "This Makefile is in `/home/asha/proj`, which also has a `src/` directory (and no file named `show`). What does GNU `make show` print on the terminal?",
+      "options": [
+        "`cd src`, `pwd`, then `/home/asha/proj/src`",
+        "Only `/home/asha/proj/src`",
+        "Only `/home/asha/proj`",
+        "`cd src`, `pwd`, then `/home/asha/proj`"
+      ],
+      "explanation": "make prints each recipe line before running it (there is no `@`), so `cd src` and `pwd` appear. Each line runs in its own shell, so the first line's `cd` does not carry over to the second, and `pwd` gives `/home/asha/proj`. The `src` output assumes a single shell (that would need `cd src && pwd`), and the 'only' options forget the command echo."
+    },
+    "syscmd-w11-q12": {
+      "question": "This is the Makefile and every file is up to date. You now run `touch plot.py` and then GNU `make` (no argument). Which recipes run?",
+      "options": [
+        "The `plot.png` one, then the `report.html` one",
+        "Only the `plot.png` one",
+        "All four, because one prerequisite changed",
+        "The `clean.csv`, `plot.png` and `report.html` ones"
+      ],
+      "explanation": "The default goal is the first target, `report.html`. make checks from the bottom up: `clean.csv` is newer than its prerequisites (up to date), so `stats.txt` is up to date too. `plot.py` is now newer than `plot.png`, so `plot.png` is rebuilt, and the new `plot.png` is newer than `report.html`, so that is rebuilt as well. 'Only plot.png' forgets the chain upwards, and the `clean.csv`/all-four options assume a change also spreads downwards."
+    },
+    "syscmd-w11-q13": {
+      "question": "This is the Makefile. `raw/jan.csv` and `clean.sed` exist, and there is an `out/` directory but no `out/jan.csv`. Which command does `make out/jan.csv` print and run?",
+      "options": [
+        "`sed -f clean.sed raw/jan.csv clean.sed > out/jan.csv`",
+        "`sed -f clean.sed raw/jan.csv > out/jan.csv`",
+        "`sed -f clean.sed raw/%.csv > out/%.csv`",
+        "`sed -f clean.sed out/jan.csv > raw/jan.csv`"
+      ],
+      "explanation": "In the pattern rule `%` matches `jan` from the target, so the prerequisites become `raw/jan.csv` and `clean.sed`. `$<` is only the first prerequisite (`raw/jan.csv`) and `$@` the target (`out/jan.csv`). The option with both prerequisites is what `$^` would give. `%` does not stay literal in the recipe, and the last option swaps target and source."
+    },
+    "syscmd-w11-q14": {
+      "question": "The 8 lines of `access.log` are below. What is the output of this pipeline (ignoring uniq's leading spaces)?",
+      "options": [
+        "`4 10.0.0.4` and `3 10.0.0.9`",
+        "`3 10.0.0.9` and `1 10.0.0.7`",
+        "`3 10.0.0.9` and `2 10.0.0.4`",
+        "`2 10.0.0.4` and `3 10.0.0.9`"
+      ],
+      "explanation": "With the default whitespace FS, field 9 is the status code. Lines with 500 or above: `.9` (503, 502, 500) = 3, `.7` (500) = 1, `.4` (500, 504) = 2; `.4`'s 200 and 404 are filtered out. `sort | uniq -c` counts, `sort -rn` puts the biggest count first, and `head -n 2` keeps the top two. `4 10.0.0.4` forgets the filter and counts every request, the `.7` option drops `.4`'s 504, and the last option forgets the `-r`."
+    },
+    "syscmd-w11-q15": {
+      "question": "`/srv/data/a.csv` exists. These commands are run (as root, `/backup` exists). After the extract, where is `a.csv`?",
+      "options": [
+        "`/srv/data/a.csv` (the old file gets overwritten)",
+        "`/tmp/r/a.csv`",
+        "`/tmp/r/data/a.csv`",
+        "`/tmp/r/srv/data/a.csv`"
+      ],
+      "explanation": "When creating the archive, GNU tar strips the leading `/` from absolute paths ('Removing leading `/` from member names'), so the name stored is `srv/data/a.csv`: relative, but the full path. `-C /tmp/r` changes into `/tmp/r` before extracting, so the file lands at `/tmp/r/srv/data/a.csv`. The `/` is stripped precisely so the real `/srv/data` is not overwritten. tar does not flatten directories, nor does it start from just the last directory."
+    },
     "syscmd-w12-q1": {
       "question": "A server has 4 disks of 4 TB each, set up as RAID 5. What is the usable capacity, and how many disk failures can the array survive?",
       "options": [
@@ -720,6 +1710,96 @@
         "`F1`, `b`, then a conflict block (HEAD side `X`, feat side `Y`), then `d`, `M5`"
       ],
       "explanation": "Git performs a line-level three-way merge. Line 1 was changed only by feat and line 5 only by main, and they are away from line 3, so both apply automatically: `F1` and `M5`. Only line 3 changed differently on both sides, and only it becomes a conflict block. Under `<<<<<<< HEAD` is the current branch's (main's) `Y`, and after `=======` comes feat's `X`. The trap in option C: thinking a conflict holds back the other changes too. The trap in option D: taking HEAD to be the branch being merged in. Option A assumes the conflict covers the whole file."
+    },
+    "syscmd-w12-q7": {
+      "question": "A server has 2 disks of 8 TB each, set up as RAID 1. What are the usable capacity and the fault tolerance?",
+      "options": [
+        "16 TB; data survives 1 disk failure",
+        "16 TB; any disk failure loses the data",
+        "4 TB; both disks can fail",
+        "8 TB; data survives 1 disk failure"
+      ],
+      "explanation": "RAID 1 is mirroring: both disks hold the same data, so the capacity is one disk's (8 TB) and the data is safe as long as one disk survives. 16 TB adds both disks, which is RAID 0. '16 TB, any failure loses the data' is exactly RAID 0. 4 TB and 'both can fail' are both wrong: a mirror does not eat half a disk, and with both disks gone no copy is left."
+    },
+    "syscmd-w12-q8": {
+      "question": "Which command creates a new branch `feat/report` and immediately switches to it?",
+      "options": [
+        "`git switch -c feat/report`",
+        "`git merge feat/report`",
+        "`git branch -d feat/report`",
+        "`git fetch feat/report`"
+      ],
+      "explanation": "`git switch -c name` creates a new branch at the current commit and moves `HEAD` to it. `git merge` merges an existing branch into the current one, `git branch -d` deletes a branch, and `git fetch` brings commits from a remote; none of them creates a new branch."
+    },
+    "syscmd-w12-q9": {
+      "question": "A wrong commit `a1b2c3d` was pushed to the shared `main`, and teammates have already pulled it. What do you do to undo it safely?",
+      "options": [
+        "Run `git reset --hard HEAD~1`, then `git push --force`",
+        "Run `git revert a1b2c3d` and push the new commit",
+        "Run `git commit --amend` to change the commit message",
+        "Run `git branch -d main`, then recreate `main`"
+      ],
+      "explanation": "`git revert` creates a new commit that does the opposite of the wrong one; history moves forward, so nothing breaks for teammates. `reset --hard` + force push rewrites shared history and throws everyone's local `main` into a mess. `--amend` also changes the commit's SHA (and changing the message does not undo the mistake), and deleting `main` is not an undo."
+    },
+    "syscmd-w12-q10": {
+      "question": "There are 3 disks of 4 TB each. Compare RAID 0 and RAID 5: usable capacity, and how many disk failures the data survives?",
+      "options": [
+        "RAID 0: 12 TB, 1 failure; RAID 5: 8 TB, 2 failures",
+        "RAID 0: 4 TB, 2 failures; RAID 5: 12 TB, 1 failure",
+        "RAID 0: 12 TB, 0 failures; RAID 5: 8 TB, 1 failure",
+        "RAID 0: 12 TB, 0 failures; RAID 5: 12 TB, 1 failure"
+      ],
+      "explanation": "RAID 0 is striping: capacity n·S = 3 × 4 = 12 TB, but zero redundancy; lose one disk and everything is gone. In RAID 5 one disk's worth of space goes to parity: (n−1)·S = 2 × 4 = 8 TB, and any 1 disk can fail. Giving RAID 0 one failure treats it like a mirror, and giving RAID 5 two confuses it with RAID 6. Giving RAID 5 12 TB forgets the parity space, and '4 TB, 2 failures' looks like RAID 1."
+    },
+    "syscmd-w12-q11": {
+      "question": "These commands are run in a new repo (every commit succeeds). What do the last two commands print, in order?",
+      "options": [
+        "`4` and `1`",
+        "`3` and `1`",
+        "`2` and `0`",
+        "`3` and `0`"
+      ],
+      "explanation": "`main` did not move after `feat` was created, so `git merge feat` is a fast-forward: `main`'s pointer simply slides to `f2` and no merge commit is created. `main`'s history: c1, f1, f2 = 3 commits, and 0 merge commits. `4 1` assumes every merge creates a new commit (that happens with `--no-ff` or diverged branches). `2` forgets one of feat's commits."
+    },
+    "syscmd-w12-q12": {
+      "question": "These commands are run in a new repo (every commit succeeds, no conflicts). What does the last command print (top to bottom, shown here separated by spaces)?",
+      "options": [
+        "`f2 f1 m1 c1`",
+        "`m1 f2 f1 c1`",
+        "`f2 f1 c1`",
+        "`f2 m1 f1 c1`"
+      ],
+      "explanation": "Rebase rewrites `feat`'s commits (`f1`, `f2`) with new SHAs on top of `main`'s latest commit `m1`, so `feat`'s history becomes the straight line c1 → m1 → f1 → f2. Now `git merge feat` from `main` (sitting at `m1`) is a fast-forward, with no merge commit. The log shows newest first: `f2 f1 m1 c1`. Putting `m1` on top assumes it is still the newest after the rebase, dropping `m1` assumes the rebase removes it, and the `f2 m1 f1` order ignores the rebase."
+    },
+    "syscmd-w12-q13": {
+      "question": "There are 8 disks of 3 TB each, set up as RAID 10 (4 mirrored pairs, striped). What is the usable capacity, and how many disk failures can be survived with the data intact?",
+      "options": [
+        "12 TB; any 4 disks can fail at the same time",
+        "12 TB; only 1 guaranteed, 4 in the best case",
+        "24 TB; 1 guaranteed, and 4 in the best case",
+        "18 TB; data survives any 2 disk failures"
+      ],
+      "explanation": "RAID 10 capacity is (n/2)·S = 4 × 3 = 12 TB. Each mirror pair can lose one disk, so the best case is 4 failures (one from each pair). But if the second failure hits the other disk of the same pair, the data is gone, so only 1 is guaranteed. 'Any 4' is exactly that trap. 24 TB is the raw capacity (mirroring forgotten), and 18 TB / any 2 is the RAID 6 formula (n−2)·S."
+    },
+    "syscmd-w12-q14": {
+      "question": "There are two arrays, each with 5 disks of 10 TB: one RAID 5, one RAID 6. In both, one disk has failed and a rebuild is running. During the rebuild another disk fails in both. What happens?",
+      "options": [
+        "Both survive, because parity keeps working during a rebuild",
+        "RAID 5 (40 TB usable) survives; RAID 6 (30 TB usable) loses its data",
+        "RAID 5 (40 TB usable) loses its data; RAID 6 (30 TB usable) survives",
+        "Both RAID 5 (50 TB usable) and RAID 6 (40 TB usable) lose their data"
+      ],
+      "explanation": "Capacity: RAID 5 (n−1)·S = 4 × 10 = 40 TB, RAID 6 (n−2)·S = 3 × 10 = 30 TB. RAID 5 tolerates only 1 failure; after the first one it has no redundancy left, so a second failure during the rebuild loses the data. RAID 6 tolerates two failures, so it survives. This risk is why RAID 6 is preferred for large disks. 'Both survive' assumes RAID 5 has spare parity, the third option swaps them, and 50/40 TB forgets the parity space."
+    },
+    "syscmd-w12-q15": {
+      "question": "`origin/main` had 3 commits (`b1`, `b2`, `b3`), and your local `main` was at the same place. A teammate pushed `R1` and `R2`; you made a local commit `L1` (not pushed). After `git pull --rebase` (no conflicts), what are `git log --oneline | wc -l` and the first line of `git status -sb`?",
+      "options": [
+        "`7` and `## main...origin/main [ahead 2]`",
+        "`6` and `## main...origin/main [ahead 1, behind 2]`",
+        "`4` and `## main...origin/main [behind 2]`",
+        "`6` and `## main...origin/main [ahead 1]`"
+      ],
+      "explanation": "`pull --rebase` first fetches (`origin/main` = b1, b2, b3, R1, R2), then rewrites your `L1` on top of them. History: b1, b2, b3, R1, R2, L1' = 6 commits, no merge commit. Locally only `L1'` is extra and everything from the remote has arrived, so `[ahead 1]`. `7`/`ahead 2` is what a plain `pull` (merge) gives, with a merge commit, `behind 2` assumes R1 and R2 did not arrive even after the fetch, and `4` forgets the fetch entirely."
     }
   }
 }
