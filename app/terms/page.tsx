@@ -37,7 +37,8 @@ export default function TermsPage() {
       <ul>
         <li>New accounts get a 7-day free trial with full access. No card is needed. There is one free trial per person: a new account on an email address, device or network that has already had one may not get another, and temporary email addresses can’t be used.</li>
         <li>When the trial or a Pro period ends, notes, practice, mock tests and the other study tools lock until you buy Pro. Week 1 of every subject, Qualifier Prep and the grade calculator stay free. Your progress is kept, and comes back as soon as you pay.</li>
-        <li>Pro costs ₹99 for 30 days, paid through Razorpay. It does not renew automatically; each payment adds 30 days.</li>
+        <li>Pro costs ₹99 for 30 days, paid by UPI or through Razorpay. It does not renew automatically; each payment adds 30 days.</li>
+        <li>We sometimes run limited-time offers (for example a Diwali price). An offer price applies once per account, to a payment made during the stated dates; later payments are at the normal price.</li>
         <li>If you were charged but Pro didn’t activate, or you were charged twice, email us within 7 days and we’ll fix it or refund you.</li>
         <li>Apart from that, payments for a period that has already started are not refundable.</li>
         <li>Pro features and limits (such as the AI doubt fair-use limit) may change; we’ll announce changes on the site.</li>

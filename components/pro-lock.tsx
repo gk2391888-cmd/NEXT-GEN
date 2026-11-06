@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { PRICING, usePlan } from '@/lib/plan';
 import type { ProContentError } from '@/lib/pro-content';
 import { useAuth } from './auth/auth-provider';
+import { OfferNote, ProPrice } from './offer';
 
 /**
  * Shown in place of a trial-or-Pro feature on a page that's otherwise open to everyone
@@ -29,7 +30,8 @@ export function ProLock({ feature, children }: { feature: string; children: Reac
         </>
       ) : (
         <>
-          <p>Get Pro for ₹{PRICING.proMonthlyInr} for 30 days to unlock it, along with every subject’s notes, practice and mock tests. Your progress is saved.</p>
+          <p>Get Pro for <ProPrice /> for 30 days to unlock it, along with every subject’s notes, practice and mock tests. Your progress is saved.</p>
+          <OfferNote />
           <Link className="btn btn-primary mt-lg" href="/pricing">Get Pro</Link>
         </>
       )}

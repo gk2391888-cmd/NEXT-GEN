@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { authedFetch } from '@/lib/supabase/client';
-import { DEMO, demoFetch } from '@/lib/supabase/demo';
+import { usePaymentConfig, useProPrice } from '@/lib/pro-price';
 import { PRICING, usePlan } from '@/lib/plan';
 import { sync } from '@/lib/sync';
 import { RAW } from '@/lib/tokens';
 import { useAuth } from './auth/auth-provider';
-import { UpiPayment, type UpiConfig } from './upi-payment';
+import { UpiPayment } from './upi-payment';
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
 declare global {
@@ -37,17 +37,11 @@ function loadCheckout(): Promise<boolean> {
 export function useProCheckout() {
   const { user } = useAuth();
   const plan = usePlan();
-  const [config, setConfig] = useState<{ enabled: boolean; upi: UpiConfig | null } | null>(null);
+  const config = usePaymentConfig();
+  const { priceInr } = useProPrice();
   const [showUpi, setShowUpi] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    (DEMO ? demoFetch('/api/payments/config') : fetch('/api/payments/config'))
-      .then((r) => r.json())
-      .then((d) => setConfig({ enabled: Boolean(d.enabled), upi: d.upi ?? null }))
-      .catch(() => setConfig({ enabled: false, upi: null }));
-  }, []);
 
   async function upgrade() {
     if (!user) return;
@@ -90,8 +84,8 @@ export function useProCheckout() {
 
   const isPaidPro = plan.tier === 'pro';
   const upgradeLabel = isPaidPro
-    ? `Renew: add 30 days for ₹${PRICING.proMonthlyInr}`
-    : plan.tier === 'trial' ? `Keep Pro: ₹${PRICING.proMonthlyInr} for 30 days` : `Get Pro: ₹${PRICING.proMonthlyInr} for 30 days`;
+    ? `Renew: add 30 days for ₹${priceInr}`
+    : plan.tier === 'trial' ? `Keep Pro: ₹${priceInr} for 30 days` : `Get Pro: ₹${priceInr} for 30 days`;
   // With only UPI switched on, the QR is the way to pay, so it's shown straight away (paid Pro students open it to renew).
   const upiOnly = Boolean(config && !config.enabled && config.upi);
   const upiOpen = Boolean(user && config?.upi && (showUpi || (upiOnly && !isPaidPro)));

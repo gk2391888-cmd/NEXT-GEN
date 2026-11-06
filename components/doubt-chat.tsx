@@ -15,6 +15,7 @@ import { useInChoice } from '@/lib/programme-choice';
 import faqs from '@/content/faqs.json';
 import { useAuth } from './auth/auth-provider';
 import { RichText } from './rich-text';
+import { ProPrice } from './offer';
 
 type Turn = { role: 'user' | 'assistant'; content: string };
 
@@ -197,7 +198,7 @@ export function DoubtChat() {
       {error === 'limit' ? (
         <div className="alert alert-warn">
           You’ve used all {usage?.limit ?? freeLimits?.perDay} free doubts for today. They reset at midnight, or{' '}
-          <Link href="/pricing">go Pro for ₹{PRICING.proMonthlyInr}/month</Link> for {proLimits?.perDay} doubts a day.
+          <Link href="/pricing">go Pro for <ProPrice /> for 30 days</Link> for {proLimits?.perDay} doubts a day.
         </div>
       ) : (
         error && <p className="field-error" role="alert">{error}</p>

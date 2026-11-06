@@ -11,6 +11,7 @@
  */
 import { AI_FEATURES, isAiFeatureId, limitsFor } from '@/lib/ai/features';
 import { planFrom, PRICING } from '@/lib/plans';
+import { activeOffer } from '@/lib/offers';
 import { cleanUtr, isUtr } from '@/lib/upi';
 import { buildStats, type StatsRows } from '@/lib/admin-stats';
 
@@ -395,7 +396,15 @@ export function createDemoClient() {
 export async function demoFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   // A demo UPI ID, so the pay-by-QR flow can be tried without real payment settings.
-  if (path === '/api/payments/config') return reply({ enabled: false, upi: { id: 'nextgen.demo@okaxis', name: 'NEXT GEN (demo)', amountInr: PRICING.proMonthlyInr } });
+  if (path === '/api/payments/config') {
+    const offer = activeOffer();
+    const amountInr = offer ? offer.priceInr : PRICING.proMonthlyInr;
+    return reply({
+      enabled: false,
+      upi: { id: 'nextgen.demo@okaxis', name: 'NEXT GEN (demo)', amountInr },
+      price: { amountInr, fullPriceInr: PRICING.proMonthlyInr, offer, offerUsed: false },
+    });
+  }
   const p = read<Persona>(PERSONA_KEY, 'trial');
   if (p === 'guest') return reply({ ok: false, code: 'login_required', error: 'Log in to continue.', message: 'Log in to continue.' }, 401);
 

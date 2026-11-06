@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { AccountMenu } from './auth/account-menu';
 import { useAuth } from './auth/auth-provider';
 import { PRICING, usePlan } from '@/lib/plan';
+import { OfferBanner, ProPrice } from './offer';
 import { RenewBanner } from './renew-banner';
 import { ProgrammeSwitch } from './programme-switch';
 import { ProgrammePrompt } from './programme-prompt';
@@ -98,7 +99,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           )}
           {ready && user && !plan.isPro && !isAdmin && (
             <Link href="/pricing" className="sidebar-pro">
-              <strong>Get Pro for ₹{PRICING.proMonthlyInr}</strong>
+              <strong>Get Pro for <ProPrice /></strong>
               <span>30 days of full access, progress kept</span>
             </Link>
           )}
@@ -119,6 +120,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className={`mobile-overlay${open ? ' open' : ''}`} onClick={() => setOpen(false)} />
 
       <div className="main-wrap">
+        <OfferBanner />
         <header className="topbar">
           <div className="top-left">
             <button className="menu-toggle" aria-label="Open navigation" aria-expanded={open} onClick={() => setOpen((o) => !o)}>☰</button>

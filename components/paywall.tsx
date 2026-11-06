@@ -8,6 +8,7 @@ import { NO_TRIAL_REASON, savedTrialResult } from '@/lib/trial';
 import { useAuth } from './auth/auth-provider';
 import { useProCheckout } from './pro-checkout';
 import { PRO_FEATURES } from './pricing-plans';
+import { OfferNote, ProPrice } from './offer';
 
 const PREVIEW_NOTE = 'Week 1 of every subject, Qualifier Prep and the grade calculator stay free to use.';
 
@@ -30,7 +31,7 @@ export function Paywall({ access }: { access: Exclude<StudyAccess, 'open'> }) {
       <div className="card pro-lock paywall">
         <span className="chip chip-teal">{PRICING.trialDays} DAYS FREE · NO CARD NEEDED</span>
         <h2 className="mt-md mb-sm">Sign up free to keep studying</h2>
-        <p>Create your account to unlock everything for {PRICING.trialDays} days. After that, Pro is ₹{PRICING.proMonthlyInr} for 30 days.</p>
+        <p>Create your account to unlock everything for {PRICING.trialDays} days. After that, Pro is <ProPrice /> for 30 days.</p>
         <ul className="plan-list">
           {PRO_FEATURES.map((f) => <li key={f}>{f}</li>)}
         </ul>
@@ -68,7 +69,8 @@ function Locked() {
         </p>
       )}
       {reason && <p>{reason} A free trial is given once per person. You can still get full access with Pro.</p>}
-      <p>Get Pro for ₹{PRICING.proMonthlyInr} for 30 days to unlock every subject’s notes, practice, mock tests, Coding Lab and AI doubts.</p>
+      <p>Get Pro for <ProPrice /> for 30 days to unlock every subject’s notes, practice, mock tests, Coding Lab and AI doubts.</p>
+      <OfferNote />
       <p className="alert mt-md">Your progress, mistakes and test history are saved. They’re all here again the moment you pay.</p>
       <div className="paywall-actions mt-lg">{checkout.button}</div>
       {checkout.panel}

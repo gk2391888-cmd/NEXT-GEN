@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import { authedFetch, getSupabase } from '@/lib/supabase/client';
 import { cleanUtr, isUtr, upiLink } from '@/lib/upi';
 import { sync } from '@/lib/sync';
+import { refreshPaymentConfig } from '@/lib/pro-price';
 
 export type UpiConfig = { id: string; name: string; amountInr: number };
 type UpiRequest = { id: number; utr: string; amount_inr: number; status: 'pending' | 'approved' | 'rejected'; note: string; created_at: string };
@@ -75,6 +76,8 @@ export function UpiPayment({ upi, userId }: { upi: UpiConfig; userId: string }) 
     setUtr('');
     latestRef.current = body.request;
     setLatest(body.request);
+    // A payment at the offer price uses up the offer, so the next price may be different.
+    refreshPaymentConfig();
   }
 
   async function copyId() {
