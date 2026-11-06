@@ -720,6 +720,1086 @@
         "Different on each run; it depends on completion order"
       ],
       "explanation": "`invokeAll` waits until all tasks finish and returns the list of futures **in the same order** as the tasks were given, no matter which task completed first. The loop walks that list, so \"A\", \"B\", \"C\": output \"ABC\" (option B). Trap: option A (\"BCA\"), taking the completion order (B immediately, C after about 100 ms, A after about 300 ms) as the result order; option D comes from the same misconception. To get results in completion order you would use `ExecutorCompletionService`."
+    },
+    "java-w1-q7": {
+      "question": "What is the output of this program?",
+      "options": [
+        "0 false null",
+        "null null null",
+        "Compile error: the fields were not initialised",
+        "0 false (empty)"
+      ],
+      "explanation": "Fields get automatic defaults: `int` → 0, `boolean` → false, and `String` (an object reference) → null. In string concatenation a null reference becomes the text \"null\". Output \"0 false null\" (option A). Trap: option C, applying the local-variable rule to fields; only local variables get no default. Option D is wrong because null is not an empty string, \"null\" is printed."
+    },
+    "java-w1-q8": {
+      "question": "Which statement about this program is true?",
+      "options": [
+        "It prints 0, because the `int` default is 0",
+        "Compile error: `count` might not have been initialized",
+        "`NullPointerException` at runtime",
+        "It prints 1"
+      ],
+      "explanation": "`count` is a local variable, and local variables get no default value. The `if` has no `else`, so as far as the compiler can tell there is a path on which `count` is read without a value: compile error \"variable count might not have been initialized\" (option B). Trap: option A, giving the local variable the field default of 0. `int` is a primitive, so a `NullPointerException` (option C) is impossible."
+    },
+    "java-w1-q9": {
+      "question": "What is the output of this program?",
+      "options": [
+        "100 true false",
+        "100 false false",
+        "250 true false",
+        "250 true true"
+      ],
+      "explanation": "`b = a` does not create a new object, it only copies the reference; `a` and `b` see the same Cup, so after `b.ml = 250` `a.ml` is also 250 and `a == b` is true. `c` is a separate new object with ml 100; `==` compares references, so `a == c` is false. Output \"250 true false\" (option C). Trap: option A, treating `b = a` as a copy; option D, treating `==` as a content comparison."
+    },
+    "java-w1-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "ABC 4",
+        "CBA 4",
+        "CBA 22",
+        "A 4"
+      ],
+      "explanation": "`new Rect()` calls `this(2)` on its first line, which calls `this(2, 2)`; the innermost constructor finishes first and prints \"C\", then control returns: \"B\", then \"A\". Fields w = h = 2. In `\" \" + r.w * r.h`, `*` has higher precedence than `+`, so first 2 * 2 = 4, then \" 4\". Output \"CBA 4\" (option B). Trap: option A, taking the print order to be the call order; option C, applying `+` first and joining \"2\" and \"2\"."
+    },
+    "java-w1-q11": {
+      "question": "Which line(s) cause a compile error?",
+      "options": [
+        "Only line 2",
+        "None: `private` is visible within the same file",
+        "Lines 1, 2 and 3",
+        "Lines 2 and 3"
+      ],
+      "explanation": "A `private` member can be used only inside its own class (`Wallet`). `Main` is a different class, even in the same file, so writing `w.cash` (to read or to assign) is a compile error in both places: lines 2 and 3 (option D). Line 1 is fine because `peek()` has default access and reads `cash` from inside `Wallet`. Trap: option A, thinking only assignment is blocked, not reading; option B, treating the file as the access boundary."
+    },
+    "java-w1-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "10 0 10 1",
+        "10 20 30 3",
+        "10 20 10 3",
+        "10 20 10 1"
+      ],
+      "explanation": "a: issued 1, id 10. b: issued 2, id 20, and `keep` = 20. `reset(keep)` receives a copy of 20; `n = 0` only changes the parameter, `keep` stays 20, but the static `issued` really becomes 0. c: issued 1, id 10. Output \"10 20 10 1\" (option D). Trap: option A, thinking `n = 0` changes the caller's `keep` (primitives are passed by value); option B, ignoring the reset; option C, getting the ids right but taking `issued` as 3."
+    },
+    "java-w1-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "6 1",
+        "2 5",
+        "1 6",
+        "5 1"
+      ],
+      "explanation": "`swap` receives copies of the references: p → a's object (v 1), q → b's object (v 5). The swap changes only these local copies: now p → b's object. So `p.v = p.v + 1` sets b's object to 6. `main`'s `a` and `b` still see their original objects: a.v 1, b.v 6. Output \"1 6\" (option C). Trap: option A, thinking the swap changes the caller's variables; option B, applying the increment to the pre-swap p (a's object)."
+    },
+    "java-w1-q14": {
+      "question": "What is the output of this program?",
+      "options": [
+        "1 Asha null",
+        "2 Asha null",
+        "`NullPointerException` at runtime",
+        "2 null null"
+      ],
+      "explanation": "`new Seat[3]` creates an array of three null references, no Seat objects. row[0] is a new object, row[2] is an alias of that same object, and row[1] is null. `row[2].name = \"Asha\"` changes the shared object, so `row[0].name` is also \"Asha\". The loop counts both row[0] and row[2] (the same object in two slots), and the null one is skipped by `s != null`: filled 2. Output \"2 Asha null\" (option B). Trap: option A, counting the alias only once; option C, thinking `s.name` runs on the null slot (the `&&` short-circuit prevents it); option D, treating the alias as a copy."
+    },
+    "java-w1-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "2 180",
+        "3 130",
+        "4 -370",
+        "1 180"
+      ],
+      "explanation": "The `balance` field starts at 0. deposit(300): valid, balance 300, ok 1. withdraw(500): 500 > 300, false, nothing changes. deposit(−50): amt ≤ 0, false. withdraw(120): valid, balance 180, ok 2. Output \"2 180\" (option A). This is the point of encapsulation: the private field changes only through methods that validate. Trap: option C, running every call without the checks; option B, accepting the negative deposit; option D, miscounting ok."
+    },
+    "java-w2-q7": {
+      "question": "What is the output of this program?",
+      "options": [
+        "Got Book@6d06d69c",
+        "Got Book:Raga",
+        "Got Raga",
+        "Compile error: cannot add a `String` and a `Book`"
+      ],
+      "explanation": "String concatenation calls `toString()` on the object automatically. `Book` overrides `toString()`, so \"Book:\" + title = \"Book:Raga\" is added. Output \"Got Book:Raga\" (option B). Trap: option A, the default `Object.toString()` (class name + hash) that you would get without the override; option C, thinking only the field is printed; option D, `+` with a String is allowed for any object."
+    },
+    "java-w2-q8": {
+      "question": "`Person` and `Student` are two ordinary (non-final) classes. Which of these new class declarations causes a compile error?",
+      "options": [
+        "`class SeniorTutor extends Person {}`",
+        "`class VisitingGuest extends Object {}`",
+        "`class Aide extends Person, Student {}`",
+        "`class ClassMonitor extends Student {}`"
+      ],
+      "explanation": "In Java a class can extend only **one** class; `extends Person, Student` is a compile error (option C). Options A and D are ordinary single inheritance. Option B is also valid: every class comes from `Object` anyway, and writing it explicitly is allowed. Trap: thinking option B is wrong, since writing `Object` is redundant but not an error."
+    },
+    "java-w2-q9": {
+      "question": "What is the output of this program?",
+      "options": [
+        "Welcome",
+        ", chai?",
+        "Compile error: `super` can only be used in a constructor",
+        "Welcome, chai?"
+      ],
+      "explanation": "The object is a `TeaShop`, so dynamic dispatch runs `TeaShop.greet()`. Inside it, `super.greet()` calls the parent's version (\"Welcome\") and \", chai?\" is appended. Output \"Welcome, chai?\" (option D). Trap: option A, going by the reference type `Shop` and assuming the parent method; option C, `super.method()` can be written in any instance method, only the `super(...)` call is limited to a constructor's first line."
+    },
+    "java-w2-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "dog dog",
+        "animal dog",
+        "animal animal",
+        "Compile error: ambiguous method call"
+      ],
+      "explanation": "An overload is chosen at compile time from the argument's **declared** type. `x` has type `Animal`, so `kind(Animal)`: \"animal\", even though the object is a Dog. `y` has type `Dog`, and `kind(Dog)` is more specific: \"dog\". Output \"animal dog\" (option B). Trap: option A, choosing the overload from the runtime object (that happens only with overriding); option D, there is no ambiguity because `Dog` is more specific than `Animal`."
+    },
+    "java-w2-q11": {
+      "question": "Class `Base` has `protected Number value() { return 1; }`. Which of these methods inside `class Sub extends Base` causes a compile error?",
+      "options": [
+        "`public Number value() { return 2; }`",
+        "`protected Integer value() { return 3; }`",
+        "`Number value() { return 4; }`",
+        "`public Integer value() { return 5; }`"
+      ],
+      "explanation": "An override cannot reduce access. Default access (no modifier) is weaker than `protected`, so option C is a compile error (\"attempting to assign weaker access privileges\"). Options A and D widen access (`public`), which is allowed. Options B and D return `Integer`, a subtype of `Number`: a covariant return type is allowed. Trap: thinking B or D is wrong because the return type is \"different\"."
+    },
+    "java-w2-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "B1 D5",
+        "B5 D5",
+        "B0 D5",
+        "D5 B0"
+      ],
+      "explanation": "The first line of `Derived()` is an implicit `super()`, so `Base()` runs first. There, `size()` runs `Derived.size()` through dynamic dispatch (the object is a Derived). But the `n = 5` initialiser runs **after** `super()`, so n is still at its default value 0: \"B0 \". Then n = 5 is set and `Derived()` prints \"D5\". Output \"B0 D5\" (option C). Trap: option A, thinking the parent constructor runs the parent's `size()`; option B, running the field initialiser first; option D, reversing the constructor order."
+    },
+    "java-w2-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "true false false true",
+        "true false true true",
+        "true true false true",
+        "true false false false"
+      ],
+      "explanation": "`a.equals(b)`: both have class `Pin` and the same code: true. `a == b`: two different objects: false. `a.equals(c)`: `getClass()` is Pin and c's is GoldPin, so the first line already returns false. `a.equals(d)`: d's declared type is `Object`, but `equals(Object)` is properly overridden, so it runs and the object is b: true. Output \"true false false true\" (option A). Trap: option B, treating the `getClass()` check like `instanceof` (a subclass would pass); option C, treating `==` as a content comparison; option D, thinking the override does not run through an `Object` reference."
+    },
+    "java-w2-q14": {
+      "question": "What is the output of this program?",
+      "options": [
+        "18",
+        "9",
+        "15",
+        "6"
+      ],
+      "explanation": "Each class's `v` is its own field, and a `v` written inside a method reads that class's field (fields are not overridden). `C.get()` = 3 × `super.get()`. `B.get()` = 2 + `super.get()`, and `A.get()` = A's v = 1. So B.get() = 3 and C.get() = 3 × 3 = 9 (option B). Trap: option A, thinking the object's (C's) v = 3 is seen everywhere: 3 × (3 + 3); option C, using C's v only inside A's method: 3 × (2 + 3); option D, stopping the `super.get()` chain after one level."
+    },
+    "java-w2-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "2134 213",
+        "1234 123",
+        "34 3",
+        "234 23"
+      ],
+      "explanation": "`new Bus(40)`: its first line is `this()`, so `Bus()` runs; its first line is `super(\"bus\")`, so `Vehicle(String)` runs directly and prints \"2\". Back in `Bus()`: \"3\", then `Bus(int)`: \"4\". Then \" \". `new Bus()`: \"2\", \"3\". Output \"234 23\" (option D). Trap: option A, thinking the no-arg `Vehicle()` also runs; when a constructor writes `super(...)` itself, the compiler does not insert `super()`. Option C, forgetting the parent constructor."
+    },
+    "java-w3-q7": {
+      "question": "Which line(s) cause a compile error?",
+      "options": [
+        "Only line 2",
+        "Only line 3",
+        "Lines 2 and 3",
+        "None"
+      ],
+      "explanation": "Line 1 is an upcast (Dog → Animal), which is always implicit and safe. Line 2 is a downcast (Animal → Dog) without a cast: the compiler sees only the static type `Animal`, so it is a compile error. Line 3 has an explicit `(Dog)` cast, which compiles (and the object really is a Dog here, so it is fine at runtime too). Answer: only line 2 (option A). Trap: options B or C, treating the explicit cast as wrong; option D, thinking the compiler looks at the runtime object."
+    },
+    "java-w3-q8": {
+      "question": "What is the output of this program?",
+      "options": [
+        "false true",
+        "true true",
+        "`NullPointerException` at runtime",
+        "false false"
+      ],
+      "explanation": "`instanceof` looks at the runtime object, not the declared type. `s` is null, and `null instanceof X` is always false (no exception). `o` has declared type `Object` but the object is a String: true. Output \"false true\" (option A). Trap: option B, going by the declared type `String` and saying true; option C, `instanceof` on null throws nothing; option D, not treating the `Object` reference as a String."
+    },
+    "java-w3-q9": {
+      "question": "What is the output of this program?",
+      "options": [
+        "0",
+        "15",
+        "11",
+        "7"
+      ],
+      "explanation": "The array's element type is `Shape`, but each element has a different runtime type, and dynamic dispatch runs each object's own `sides()`: Sq 4, Shape 0, Tri 3, Sq 4. Total 4 + 0 + 3 + 4 = 11 (option C). Trap: option A, going by the reference type `Shape` and taking 0 each time; option B, counting the plain Shape as 4 as well; option D, forgetting one Sq."
+    },
+    "java-w3-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "Cc",
+        "Pp",
+        "Cp",
+        "Pc"
+      ],
+      "explanation": "Static methods are not overridden, only hidden; the call `x.who()` is decided by the reference's static type `Parent`: \"P\". `me()` is an overridden instance method, so the runtime object's (Child's) version runs: \"c\". Output \"Pc\" (option D). Trap: option A, assuming dynamic dispatch for the static method too; option B, running the instance method by static type as well; option C, both the wrong way round."
+    },
+    "java-w3-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "10151",
+        "62",
+        "61",
+        "72"
+      ],
+      "explanation": "Account: fee 10, no instanceof is true: 10. Savings: fee 0, `instanceof Savings` true: 1. Premium: the fee is inherited from Savings (0), a Premium is also a Savings so +1, and the `Premium p` pattern adds 50: 51. All three are `int`, so `+` adds: 10 + 1 + 51 = 62 (option B). Trap: option A, treating `+` as string concatenation; option C, forgetting that a Premium also gives `instanceof Savings` true; option D, taking the Premium fee as 10."
+    },
+    "java-w3-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "B-obj A-str B-obj",
+        "A-str A-str A-str",
+        "B-obj B-obj B-obj",
+        "A-obj A-str A-obj"
+      ],
+      "explanation": "Step 1 (compile time): the signature comes from the argument's static type. Step 2 (runtime): the override of that signature runs. `a.f(o)`: o has type `Object` → `f(Object)`, overridden by B: \"B-obj\". `a.f(s)`: type `String` → `f(String)`, which B does not override: \"A-str\". `a.f((Object) s)`: the cast makes the static type `Object` → `f(Object)` → \"B-obj\". Output \"B-obj A-str B-obj\" (option A). Trap: option B, choosing the overload from the runtime object (a String); option C, thinking B's method takes every call; option D, ignoring the override."
+    },
+    "java-w3-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "60 20",
+        "40 10",
+        "50 10",
+        "102020 10"
+      ],
+      "explanation": "Fields are resolved by static type, methods by the runtime object. `p.x`: type P → 10. `q.x`: type Q → 20. `p.getX()`: the object is a Q, and Q's override returns its own x → 20. All three are ints, so they are added first, left to right: 10 + 20 + 20 = 50, then \" \" is appended. `((P) q).x`: the cast makes the static type P → 10. Output \"50 10\" (option C). Trap: option A, treating fields as polymorphic too (all 20); option B, running `getX()` by static type (10); option D, treating the first `+` as string concatenation."
+    },
+    "java-w3-q14": {
+      "question": "Which statement about this code is true?",
+      "options": [
+        "Only line 4 is a compile error; lines 2 and 3 give `ClassCastException` at runtime",
+        "Lines 3 and 4 are compile errors; line 2 compiles but fails at runtime",
+        "All compile; lines 2, 3 and 4 give `ClassCastException` at runtime",
+        "Only lines 2 and 3 are compile errors; line 4 gives `ClassCastException` at runtime"
+      ],
+      "explanation": "A cast compiles only when the two types could be in one hierarchy. Lines 1 and 2: Animal → Dog/Cat, valid downcasts; line 2 compiles, but the object is a Dog, so it would throw `ClassCastException` if it ran. Line 3: `Cat` and `Dog` are siblings, neither is a subclass of the other: compile error. Line 4: `String` and `Animal` are unrelated: compile error. Answer option B. Trap: option C, treating every cast as a runtime check; option A, thinking the sibling cast (line 3) compiles."
+    },
+    "java-w3-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "110,150,351,",
+        "110,150,311,",
+        "110,110,451,",
+        "110,150,451,"
+      ],
+      "explanation": "Emp: 100 + 10 = 110. Lead: base 100, bonus = 100 / 2 = 50: 150. Head: `super.pay()` → Lead has no `pay`, so Emp's `pay()` runs, but inside it `base()` and `bonus()` still go through dynamic dispatch: base = 300 (Head), bonus = Lead's = 300 / 2 = 150. 450 + 1 = 451. Output \"110,150,451,\" (option D). Trap: option A, using Emp's base (100) in Lead's bonus; option B, using Emp's bonus (10) inside super; option C, forgetting Lead's override."
+    },
+    "java-w4-q7": {
+      "question": "An interface contains `int MAX = 5;`. Which statement about this field is true?",
+      "options": [
+        "It is implicitly a `public static final` constant",
+        "Every implementing object has its own separate copy",
+        "It is `private`, visible only inside the interface",
+        "Fields are not allowed in an interface; compile error"
+      ],
+      "explanation": "Interface fields are implicitly `public static final`: a single copy (static), visible everywhere (public), and unchangeable (final); writing `MAX = 6;` would be a compile error. Answer option A. Trap: option B, treating it as an instance field; option C, interface members are public by default; option D, constants are allowed in an interface."
+    },
+    "java-w4-q8": {
+      "question": "`Device` is a class; `Flyable` and `Recordable` are interfaces (assume they have no abstract methods). Which declaration is valid?",
+      "options": [
+        "`class Drone implements Device extends Flyable, Recordable {}`",
+        "`class Drone extends Flyable, Recordable {}`",
+        "`class Drone extends Device implements Flyable, Recordable {}`",
+        "`class Drone implements Device, Flyable, Recordable {}`"
+      ],
+      "explanation": "A class uses `extends` for a class and `implements` for interfaces, and `extends` comes first. Several interfaces can be implemented with commas. So option C is valid. Option A has both the order and the keywords reversed; in option B a class cannot `extends` interfaces; in option D `Device` is a class and cannot be used with `implements`. Trap: swapping the roles of `extends` and `implements`."
+    },
+    "java-w4-q9": {
+      "question": "What is the output of this program?",
+      "options": [
+        "null says moo",
+        "Gauri says moo",
+        "Gauri says null",
+        "Compile error: an abstract class cannot have a constructor"
+      ],
+      "explanation": "An abstract class cannot be instantiated directly, but its constructor runs when a subclass object is created: `Cow()` → `super(\"Gauri\")` → name = \"Gauri\". `intro()` is an ordinary method of the abstract class, and inside it `sound()` gives Cow's \"moo\" through dynamic dispatch. Output \"Gauri says moo\" (option B). Trap: option D, an abstract class may have a constructor; option A, ignoring the `super(...)` call; option C, assuming a call to an abstract method gives null."
+    },
+    "java-w4-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "GG",
+        "GB",
+        "Compile error: conflict over `hello()`",
+        "BB"
+      ],
+      "explanation": "Rule: a method from the class (or a superclass) always wins over an interface default method. `Kid` gets a public `hello()` from `Base`, which also implements the interface method. So both the `Greeter` reference and the `Kid` reference give \"B\": \"BB\" (option D). Trap: option B, running the default because the reference type is `Greeter`; option C, a conflict happens only when two interfaces give the same default and no class method exists."
+    },
+    "java-w4-q11": {
+      "question": "Which statement about this code is true?",
+      "options": [
+        "It compiles; `mode()` returns `null` automatically",
+        "Compile error: `Upi` must be `abstract` (`mode()` is missing)",
+        "It compiles, but `new Upi()` throws `AbstractMethodError` at runtime",
+        "Compile error: `fee` must be `public`, otherwise access is weaker"
+      ],
+      "explanation": "A concrete (non-abstract) class cannot leave any inherited abstract method unimplemented. `Upi` implements `fee` but not `mode()`, so the compiler reports an error: either implement `mode()` or declare `Upi` `abstract` (option B). Trap: options A or C, thinking a missing method gets some default; option D, the abstract class's methods have default (package) access here, so the interface `public` rule does not apply."
+    },
+    "java-w4-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "54 53",
+        "4 53",
+        "9 8",
+        "Compile error: conflict between `Walker` and `Swimmer`"
+      ],
+      "explanation": "Two interfaces give the same default, so `Duck` had to override it (it does, so it compiles). Duck.speed() = 5 × 10 + 3 = 53. RaceDuck.speed() = super (Duck) 53 + 1 = 54. Whether the reference type is `Swimmer` or `Walker`, the object's override runs: s → 54, w → 53. Output \"54 53\" (option A). Trap: option B, taking Swimmer's default (3) + 1 because of the `Swimmer` reference; option C, misplacing `*` and `+`; option D, the conflict is resolved by the override."
+    },
+    "java-w4-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "Xeoe:3 Xeoe:3",
+        "Seoe:3 Seoe:6",
+        "Xeoe:3 Xeoe:6",
+        "Xoeo:3 Xoeo:6"
+      ],
+      "explanation": "The template method `run()` fixes the order; the steps come from Export. `start()` is overridden: \"X\". times() = 3, and work at i = 0, 1, 2 gives \"e\", \"o\", \"e\". First call: \"Xeoe:3\". `steps` is a field that lives on the object, not a local, so in the second call it goes from 3 to 6: \"Xeoe:6\". Output \"Xeoe:3 Xeoe:6\" (option C). Trap: option A, treating `steps` as reset to 0 each call; option B, ignoring the overridden `start()`; option D, treating i = 0 as odd."
+    },
+    "java-w4-q14": {
+      "question": "Which line(s) cause a compile error?",
+      "options": [
+        "Lines 3 and 4",
+        "Only line 4",
+        "Lines 2, 3 and 4",
+        "None"
+      ],
+      "explanation": "An interface's `static` methods are not inherited by implementing classes; they can be called only as `Units.toKm(...)`. So line 3 (`Meter.toKm`) and line 4 (`m.toKm`, through an object) are both compile errors. Line 1 is the correct form. Line 2 is fine: `km` is a default method that `Meter` gets, and inside the interface `toKm` can be called directly. Answer option A. Trap: option B, thinking the call through the class name works; option C, treating the default method like a static one."
+    },
+    "java-w4-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "base1 shape base2 8.0",
+        "base2 shape base2 8",
+        "base1 base1 base2 8.0",
+        "base2 shape base2 8.0"
+      ],
+      "explanation": "All three objects are created while building the array, **before** the loop; each Sq constructor runs `Base()` through the implicit `super()`, so by the time the loop starts `made` = 2. `label()` is called inside the loop: Sq → Base's override \"base2\", Circle → the interface default \"shape\", Sq → \"base2\". Areas: 4.0 + 3.0 + 1.0, and `sum` is a double, so \"8.0\". Output \"base2 shape base2 8.0\" (option D). Trap: option A, treating the label as fixed when the object was created; option B, printing the double as \"8\"; option C, giving Circle the Base label too."
+    },
+    "java-w5-q7": {
+      "question": "What is the output of this program?",
+      "options": [
+        "[5, 1, 4, 3]",
+        "[1, 3, 4, 5]",
+        "[1, 1, 3, 4, 5]",
+        "[5, 4, 3, 1]"
+      ],
+      "explanation": "`TreeSet` keeps its elements in sorted (natural, here smallest to largest) order and holds no duplicates. 5, 1, 4 go in, then 3 is added, and the second 1 is ignored. Output \"[1, 3, 4, 5]\" (option B). Trap: option A, assuming insertion order (that is what `LinkedHashSet` gives); option C, keeping a duplicate in a Set; option D, the reverse order."
+    },
+    "java-w5-q8": {
+      "question": "What is the output of this program?",
+      "options": [
+        "3 7 null",
+        "2 10 null",
+        "2 7 null",
+        "2 7 0"
+      ],
+      "explanation": "Keys in a Map are unique: the second `put` for the same key \"pen\" replaces the old value 10 with 7 instead of adding an entry. Size 2. `get` on a key that is not in the map returns null (not 0). Output \"2 7 null\" (option C). Trap: option A, treating every `put` as a new entry; option B, thinking the first value stays; option D, assuming 0 for a missing key."
+    },
+    "java-w5-q9": {
+      "question": "What is the output of this program?",
+      "options": [
+        "[5, 2]",
+        "[3, 2]",
+        "[5, 3]",
+        "[5, 3, 2]"
+      ],
+      "explanation": "`remove(Integer.valueOf(1))` is an object, so it removes the value 1: [5, 3, 2]. `remove(1)` has an int argument, so it removes **index** 1, which is 3: [5, 2] (option A). Trap: option D, treating the second `remove(1)` as the value 1 too (it is already gone, so the list would stay [5, 3, 2]); option B, counting indexes from 1 and removing the first element 5."
+    },
+    "java-w5-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "[ccc, bb, ab, c, a]",
+        "[a, c, ab, bb, ccc]",
+        "[ccc, bb, ab, a, c]",
+        "[ccc, ab, bb, a, c]"
+      ],
+      "explanation": "`reversed()` reverses only the length comparator, because `thenComparing` is attached after it. So first length from largest to smallest: \"ccc\" (3), then length 2, then length 1. Ties use the strings' natural (alphabetical) order: \"ab\" < \"bb\" and \"a\" < \"c\". Output \"[ccc, ab, bb, a, c]\" (option D). Trap: option A, thinking `reversed()` applies to the whole chain; option B, ignoring `reversed()`; option C, reversing the ties in only one group."
+    },
+    "java-w5-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "{be=2, not=1, or=1, to=2}",
+        "{to=2, be=2, or=1, not=1}",
+        "{to=1, be=1, or=1, not=1}",
+        "{not=1, or=1, be=2, to=2}"
+      ],
+      "explanation": "Words: to, be, or, not, to, be. `merge(w, 1, Integer::sum)` puts 1 for a new key and old + 1 for an existing one. So to = 2, be = 2, or = 1, not = 1. `LinkedHashMap` keeps insertion order (when the key first appeared), and changing an existing key's value does not change the order. Output \"{to=2, be=2, or=1, not=1}\" (option B). Trap: option A, assuming a sorted order like `TreeMap`; option C, treating merge as `put`; option D, using the order of the last update."
+    },
+    "java-w5-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "3 [fig, kiwi, banana]",
+        "6 [fig, date, kiwi, pear, plum, banana]",
+        "3 [fig, date, banana]",
+        "4 [fig, kiwi, pear, banana]"
+      ],
+      "explanation": "`TreeSet` decides uniqueness with the comparator, not `equals`: if compare gives 0 the element is a \"duplicate\" and is not added. Here the comparator looks only at length. kiwi (4) goes in, fig (3) goes in, pear, plum and date (all 4) count as equal to kiwi and are rejected, banana (6) goes in. Sorted by length: [fig, kiwi, banana], size 3 (option A). Trap: option B, treating different strings as different; option C, thinking the new element replaces the old one; option D, rejecting only one duplicate."
+    },
+    "java-w5-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "[5, 9]",
+        "`ConcurrentModificationException`",
+        "[4, 5, 8, 9]",
+        "[4, 5, 6, 8, 9]"
+      ],
+      "explanation": "An index loop does not use an iterator, so no exception is thrown, but after a remove the elements shift left and the next element is skipped. i=0: 2 is even, removed: [4, 5, 6, 8, 9]; i=1: 5 is odd. i=2: 6 is even, removed: [4, 5, 8, 9]; i=3: 9 is odd. i=4: size is 4, loop ends. Output \"[4, 5, 8, 9]\" (option C). Trap: option A, thinking every even number is removed (4 and 8 shifted and were skipped); option B, that exception comes only with an iterator/for-each; option D, counting only the first remove."
+    },
+    "java-w5-q14": {
+      "question": "What is the output of this program?",
+      "options": [
+        "true false false",
+        "true true true",
+        "true false true",
+        "true true false"
+      ],
+      "explanation": "First: 7 − 3 = 4 > 0: true. Second: `Integer.MIN_VALUE` − 1 goes below the int range and overflows to `Integer.MAX_VALUE` (positive), so `bad` claims MIN_VALUE is greater than 1: true (a wrong result!). Third: `Integer.compare` does not overflow and returns a negative number: false. Output \"true true false\" (option D). Trap: option A, assuming `a - b` is always correct; options B/C, thinking `Integer.compare` overflows too."
+    },
+    "java-w5-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "BDAC",
+        "CADB",
+        "DBAC",
+        "DBCA"
+      ],
+      "explanation": "First score in descending order (`reversed()` covers only the score): the 95s (Bala, Dev), then the 80s (Asha, Chitra). Ties are broken by age in ascending order: Dev 22 < Bala 25, and Chitra 19 < Asha 21. Order: Dev, Bala, Chitra, Asha, first letters \"DBCA\" (option D). Trap: option A, ignoring `thenComparingInt` and keeping the original order; option B, reversing the whole order; option C, applying the age rule in only one group."
+    },
+    "java-w6-q7": {
+      "question": "What is the output of this program?",
+      "options": [
+        "16",
+        "412",
+        "chai12",
+        "Compile error: `get()` must be cast"
+      ],
+      "explanation": "`get()` on a `Box<String>` returns a `String` directly, no cast needed: \"chai\".length() = 4 (an int). `n.get()` returns the `Integer` 12. int + Integer is numeric addition (no String involved): 4 + 12 = 16 (option A). Trap: option B, treating `+` as string concatenation; option C, forgetting `length()`; option D, the whole point of generics is that no cast is needed."
+    },
+    "java-w6-q8": {
+      "question": "What is the output of this program?",
+      "options": [
+        "3",
+        "1",
+        "4",
+        "2"
+      ],
+      "explanation": "`Predicate<Integer>` is a functional interface whose `test` returns a boolean; the lambda `x -> x > 10` is an object of it. 4: false, 15: true, 10: false (10 is not > 10), 22: true. Count 2 (option D). Trap: option A, counting 10 as well (the difference between `>` and `>=`); option B, counting only one match."
+    },
+    "java-w6-q9": {
+      "question": "Which statement about this program is true?",
+      "options": [
+        "It prints 11 (the lambda took the old value)",
+        "It prints 21 (the lambda reads the new value)",
+        "Compile error: `base` is not effectively final",
+        "`IllegalStateException` is thrown at runtime"
+      ],
+      "explanation": "A lambda can use an outer local variable only if it is effectively final, meaning it is never assigned again anywhere in the method. `base = 20` comes after the lambda, but `base` is still no longer effectively final, so the lambda line is a compile error (option C). Trap: option A, thinking the lambda copies the value and gives 11; option B, thinking the new value is read at run time. The code does not compile, so a runtime exception (option D) is impossible."
+    },
+    "java-w6-q10": {
+      "question": "Which line(s) cause a compile error?",
+      "options": [
+        "Only line 2",
+        "Only line 3",
+        "Lines 2 and 3",
+        "Only line 4"
+      ],
+      "explanation": "`List<? super Integer>` asks for a list whose element type is `Integer` or a supertype of it: `List<Integer>` (line 1) and `List<Number>` (line 2) both work. `Double` is not a supertype of `Integer`, so line 3 is a compile error; otherwise `fill` would put an `Integer` into a Double list. Line 4 is fine: `Double` is a subtype of `Number`, and `? extends Number` is for reading. Answer: only line 3 (option B). Trap: options A/C, treating `? super` as an exact type; option D, treating `? extends` as invariant."
+    },
+    "java-w6-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "5",
+        "17",
+        "14",
+        "16"
+      ],
+      "explanation": "The callback `n -> n * 3 - 1` is applied twice, inner one first: f(2) = 2 × 3 − 1 = 5, then f(5) = 5 × 3 − 1 = 14 (option C). Trap: option A, applying it only once; option B, taking 3 × 3 × 2 − 1 and subtracting the 1 only once; option D, treating f(f(x)) as 9x − 2 (the correct formula is 9x − 4)."
+    },
+    "java-w6-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "44xx",
+        "8xx",
+        "x4x4",
+        "Compile error: two `Integer` values cannot be combined with `+`"
+      ],
+      "explanation": "q = (4, \"x\") and r = (\"x\", 4). So `q.first` = Integer 4, `r.second` = Integer 4, `p.first` = \"x\", `q.second` = \"x\". `+` runs from the left: Integer + Integer with no String involved, so unboxing gives numeric addition: 8. Then 8 + \"x\" = \"8x\", then \"8xx\" (option B). Trap: option A, treating the first `+` as concatenation; option C, tracing the swaps wrongly; option D, Integers are auto-unboxed and added."
+    },
+    "java-w6-q13": {
+      "question": "Which statement about this code is true?",
+      "options": [
+        "Line 4 is a compile error; without it, line 3 throws `ArrayStoreException` at runtime",
+        "Lines 3 and 4 are both compile errors, because the array is really a `String[]`",
+        "Only line 1 is a compile error, because arrays are invariant like generics",
+        "Line 4 is a compile error; line 3 runs fine because the array type is `Object[]`"
+      ],
+      "explanation": "Arrays are covariant: `Object[] arr = new String[2]` compiles (line 1), and line 3 compiles too because the static type is `Object[]`. But at runtime the array really is a `String[]`, so storing an Integer throws `ArrayStoreException`. Generics are invariant: an `ArrayList<String>` is not a `List<Object>`, so line 4 is a compile error. Answer option A. Trap: option B, assuming the array check happens at compile time; option C, treating arrays as invariant; option D, forgetting the runtime array type."
+    },
+    "java-w6-q14": {
+      "question": "What is the output of this program?",
+      "options": [
+        "[1.5, 2.0, 3.0] 3",
+        "[2, 3] 2",
+        "Compile error: an `Integer` cannot be added to a `List<Number>`",
+        "[1.5, 2, 3] 3"
+      ],
+      "explanation": "PECS: `src` is the producer (`? extends T`), `dst` the consumer (`? super T`). In the first call T = Integer: `List<Number>` is a list of a supertype of Integer, so 2 and 3 are added. They stay Integer objects and are not converted to Double: [1.5, 2, 3]. In the second call T = Number, and all three elements go into `objs`: size 3. Output \"[1.5, 2, 3] 3\" (option D). Trap: option A, thinking everything in a `Number` list becomes a double; option C, putting an Integer into a `List<Number>` is perfectly allowed; option B, forgetting the original 1.5."
+    },
+    "java-w6-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "60",
+        "6",
+        "90",
+        "Compile error: `box` is not effectively final"
+      ],
+      "explanation": "Each lambda captures its own `k` (1, 2, 3); `k` is a new final variable in every iteration. The `box` variable is never reassigned (only an element inside it changes), so it is effectively final and the code compiles. The lambdas run when `get()` is called, and by then `box[0]` = 10: 1×10 + 2×10 + 3×10 = 60 (option A). Trap: option B, thinking the value of `box[0]` (1) was captured when the lambda was created; option C, using the last k = 3 for all of them; option D, changing an array's contents is not reassigning the reference."
+    },
+    "java-w7-q7": {
+      "question": "What is the output of this program?",
+      "options": [
+        "7 9",
+        "1 2",
+        "1 9",
+        "7 2"
+      ],
+      "explanation": "`b` is built by the copy constructor, which makes a new copy of the array (`clone()`), so `b.m[0] = 7` changes only b's array. `c = a` is only a reference copy, so `c.m[1] = 9` changes a's own array. a.m = [1, 9], output \"1 9\" (option C). Trap: option A, thinking the copy constructor also shares the reference; option B, treating the alias `c` as a separate object; option D, getting both the wrong way round."
+    },
+    "java-w7-q8": {
+      "question": "You need to copy a PNG image unchanged (as-is) into another file. Which stream family is right?",
+      "options": [
+        "`FileReader` / `FileWriter`",
+        "`FileInputStream` / `FileOutputStream`",
+        "`InputStreamReader` / `OutputStreamWriter`",
+        "`BufferedReader` / `PrintWriter`"
+      ],
+      "explanation": "An image is binary data, not text. `FileInputStream`/`FileOutputStream` are byte streams that read and write raw bytes unchanged (option B). All the others are character streams: A and D are Readers/Writers, and C (`InputStreamReader`) is the bridge that turns a byte stream into characters using a charset. Charset conversion can corrupt binary data. Trap: hearing \"copy a file\" and picking `FileReader`, or picking option C because its name contains \"Stream\"."
+    },
+    "java-w7-q9": {
+      "question": "An object of a `Serializable` class is deserialized (`readObject`). Which statement is true?",
+      "options": [
+        "`transient` fields come back with their default value (null/0/false)",
+        "The class's constructor and field initialisers run again",
+        "Every field's type must be `Cloneable`",
+        "`transient` fields get their old value back"
+      ],
+      "explanation": "A `transient` field is never written to the stream, and deserialization does not run the class's constructor/initialisers, so it stays at its default value (null/0/false) (option A). Option B is wrong: values are filled from the stream, not by the constructor. Option C: field types must be `Serializable`, not `Cloneable`. Option D: transient means exactly \"do not save this\"."
+    },
+    "java-w7-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "1 2",
+        "10 20",
+        "1 20",
+        "10 2"
+      ],
+      "explanation": "An array's `clone()` is shallow: a new array is created, but its slots point at the same P objects. `b[0].x = 10` changes a shared object, so `a[0].x` is also 10. `b[1] = new P(20)` only puts a new object into b's slot; a's slot still points at the old P(2). Output \"10 2\" (option D). Trap: option A, treating clone as a deep copy; option B, thinking changing b's slot also changes a's slot; option C, both wrong."
+    },
+    "java-w7-q11": {
+      "question": "Class `Order implements Serializable` has a field `Printer printer = new Printer();`, and `Printer` is not Serializable. What happens on `writeObject(order)`, and what is the fix?",
+      "options": [
+        "`NotSerializableException`; fix: make `printer` `transient`",
+        "Nothing happens; the `printer` field is silently skipped",
+        "Compile error; fix: make the `Printer` class `Cloneable`",
+        "`InvalidClassException`; fix: change the `serialVersionUID`"
+      ],
+      "explanation": "Serialization also tries to write every non-transient field, and `Printer` is not serializable, so a `NotSerializableException` is thrown at runtime. Fix: make the field `transient` (and create a new Printer after deserializing if needed): option A. Trap: option B, only transient fields are skipped; option C, this is not caught at compile time and `Cloneable` has nothing to do with serialization; option D, `InvalidClassException` is for a version mismatch."
+    },
+    "java-w7-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "Red 1 1",
+        "Blue 2 5",
+        "Red 2 5",
+        "Red 1 5"
+      ],
+      "explanation": "`super.clone()` makes a field-by-field shallow copy. `name`: `b.name = \"Blue\"` points b's field at a new String; a keeps \"Red\" (String is immutable, so sharing it is safe). `members`: the clone made a new ArrayList, so \"Om\" is only in b: a's size is 1. `scores`: not copied, the array is shared, so `b.scores[0] = 5` shows up in a too. Output \"Red 1 5\" (option D). Trap: option A, treating everything as deep; option C, treating members as shared; option B, treating the name reassignment as shared."
+    },
+    "java-w7-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "new new ravi 6 Travi",
+        "new ravi 6 null",
+        "new ravi 0 null",
+        "new ravi 5 null"
+      ],
+      "explanation": "\"new \" is printed only once, when the object is first created with `new Session(\"ravi\")`. `readObject` does not run Session's constructor, nor its field initialisers (`hits = 5`). `user` is a normal field, and \"ravi\" comes back from the stream. `hits` and `token` are transient and were not saved, so they get defaults: 0 and null. Output \"new ravi 0 null\" (option C). Trap: option A, thinking deserialization runs the constructor; option D, giving the transient field its initialiser value (5); option B, taking the value 6 from before saving."
+    },
+    "java-w7-q14": {
+      "question": "What is the output of this program?",
+      "options": [
+        "70 Zen 120",
+        "70 Alto 140",
+        "60 Zen 120",
+        "70 Zen 140"
+      ],
+      "explanation": "The copy constructor `Car(Car o)` is shallow: b's `e` is the same Engine as a's. `deep()` made a new Engine at that moment (hp 60), so c is separate. `b.e.hp += 10`: the shared engine becomes 70, so `a.e.hp` = 70. `c.e.hp *= 2`: c's own engine 60 × 2 = 120. `a.model = \"Alto\"` only changes a's reference; b still has \"Zen\". Output \"70 Zen 120\" (option A). Trap: option B, treating the model as shared too and giving the deep copy a later value; option C, treating the copy constructor as deep; option D, starting the deep copy from 70."
+    },
+    "java-w7-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "3 6",
+        "4 6",
+        "4 7",
+        "5 6"
+      ],
+      "explanation": "`BufferedReader` wraps a character stream (`StringReader`) and provides `readLine()`. Lines: \"a,b\", \"\" (the empty line between two newlines), \"c\", \"d,e,f\"; the last line has no newline after it but is still returned, then null. lines = 4. The empty line is skipped by `continue`; fields = 2 + 1 + 3 = 6. Output \"4 6\" (option B). Trap: option A, not counting the empty line as a line; option C, counting the empty line as one field; option D, assuming an extra line at the end."
+    },
+    "java-w8-q7": {
+      "question": "Which of these classes can be used **without** writing an `import`?",
+      "options": [
+        "`ArrayList`",
+        "`Scanner`",
+        "`BufferedReader`",
+        "`Math`"
+      ],
+      "explanation": "The `java.lang` package (String, Math, System, Integer) is imported automatically, so `Math` needs no import (option D). `ArrayList` and `Scanner` are in `java.util`, `BufferedReader` is in `java.io`; these need an import (or the fully qualified name). Trap: assuming a commonly used class is built in."
+    },
+    "java-w8-q8": {
+      "question": "The file `com/shop/model/Item.java` contains class `Item`. What should the first statement of this file be?",
+      "options": [
+        "`package com.shop.model;`",
+        "`import com.shop.model;`",
+        "`package com/shop/model;`",
+        "`package com.shop.model.Item;`"
+      ],
+      "explanation": "The package declaration is the first statement of the file, written with dots, and it holds only the package name, not the class: `package com.shop.model;` (option A). The folder structure `com/shop/model` matches this name. Trap: option B, `import` is for bringing in other classes; option C, slashes belong to the folder path, not the package name; option D, the class name is not part of the package."
+    },
+    "java-w8-q9": {
+      "question": "A file `Tools.java` has two top-level classes. Which combination compiles?",
+      "options": [
+        "`public class Tools {}` and `public class Helper {}`",
+        "`public class Tools {}` and `class Helper {}`",
+        "`private class Tools {}` and `class Helper {}`",
+        "`public class Helper {}` and `class Tools {}`"
+      ],
+      "explanation": "A file can have only one public top-level class, and its name must match the file name (`Tools`). The other classes can have default access: option B. Option A has two public classes; in option C a top-level class cannot be `private` (only public or default); option D has a public class `Helper` while the file is `Tools.java`. Trap: thinking a file can hold any number of public classes."
+    },
+    "java-w8-q10": {
+      "question": "Two files are shown. Which line(s) in `Cart` cause a compile error?",
+      "options": [
+        "Only line 2",
+        "None, because `com.shop.model` is inside `com.shop`",
+        "Only line 1",
+        "Both lines"
+      ],
+      "explanation": "`max` is public, so line 1 works from anywhere. `limit` has default (package-private) access, visible only inside the `com.shop` package. Packages are not hierarchical: for access, `com.shop.model` is a completely separate package from `com.shop`, so line 2 is a compile error (option A). Trap: option B, treating name nesting as an access relationship; option D, thinking an `import` makes default members visible too."
+    },
+    "java-w8-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "body catch c2 c1 fin",
+        "body c1 c2 catch fin",
+        "body c2 c1 catch fin",
+        "body catch fin c2 c1"
+      ],
+      "explanation": "As soon as the body throws, try-with-resources closes the resources first, in reverse order of declaration (y then x: \"c2 c1\"), and this happens **before** the `catch` runs. Then catch, then finally. Output \"body c2 c1 catch fin\" (option C). Trap: options A and D, thinking close happens after catch/finally; option B, closing in declaration order."
+    },
+    "java-w8-q12": {
+      "question": "Three files are shown. Which line(s) in `Main` cause a compile error?",
+      "options": [
+        "Only line 1",
+        "None; the output is 3 and 3",
+        "Only line 2",
+        "Both lines"
+      ],
+      "explanation": "`protected` = same package + subclasses. Line 1: `t` has type `Tri`, and this version of `sides()` is declared in `Tri`, which is in package `p2`; `Main` is also in `p2`, so it gets same-package access: it compiles. Line 2: `s` has type `Shape`, so this is `p1.Shape`'s protected method; `Main` is neither in `p1` nor a subclass of `Shape`: compile error. Answer: only line 2 (option C). Trap: option B, thinking both work because the object is the same (access is checked against the static type); option A, treating the override as a member of `p1`."
+    },
+    "java-w8-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "close 0",
+        "body 1",
+        "close 1",
+        "body 0"
+      ],
+      "explanation": "The body throws the \"body\" exception. Then the resource is closed and `close()` throws too. try-with-resources passes on the main (body) exception and attaches the close one to it as **suppressed**. So in the catch, `e` is \"body\" and `getSuppressed()` holds 1 exception: output \"body 1\" (option B). Trap: options A/C, thinking the close exception overwrites the body one; option D, forgetting the close exception."
+    },
+    "java-w8-q14": {
+      "question": "What is the output of this program?",
+      "options": [
+        "3 9",
+        "6 6",
+        "5 13",
+        "6 14"
+      ],
+      "explanation": "The append flag is `i > 1`. i = 1: false, so the file is emptied (overwritten) and \"1\" is written once; that is why an existing file makes no difference. i = 2: append, \"2\" twice. i = 3: append, \"3\" three times. The file has 1 + 2 + 3 = 6 lines, sum 1 + 2×2 + 3×3 = 14. Output \"6 14\" (option D). Trap: option A, assuming an overwrite every time (only three \"3\"s); option B, adding each value only once to the sum; option C, forgetting the first line."
+    },
+    "java-w8-q15": {
+      "question": "Which statement about this code is true?",
+      "options": [
+        "Only line 2 is a compile error: the name `Date` is ambiguous",
+        "Lines 2 and 3 are both compile errors",
+        "No error: the import written first wins",
+        "Only line 3: a fully qualified name does not work with imports"
+      ],
+      "explanation": "Both wildcard imports contain a class named `Date` (`java.util.Date` and `java.sql.Date`). That is no problem until the name is used, but line 2 writes just `Date`, so the compiler cannot decide: \"reference to Date is ambiguous\" (option A). Line 3 uses the fully qualified name, which always works. Line 1 is fine: `List` and `ArrayList` exist only in `java.util`. Trap: option C, the order of imports does not matter; option D, the fully qualified name is exactly the fix for the ambiguity."
+    },
+    "java-w9-q7": {
+      "question": "What do you write in a method signature to declare that the method may throw `IOException`?",
+      "options": [
+        "`throw IOException`",
+        "`throws IOException`",
+        "`catch IOException`",
+        "`raise IOException`"
+      ],
+      "explanation": "`throws X` is a declaration written in the signature: `void read() throws IOException`. `throw` (without the s) is a statement that throws an exception object right now: `throw new IOException(...)`. Answer option B. Trap: option A, mixing up `throw` and `throws`; option C, `catch` handles, it does not declare; option D, `raise` is a Python keyword, not Java."
+    },
+    "java-w9-q8": {
+      "question": "What is the output of this program?",
+      "options": [
+        "abcde",
+        "ade",
+        "abde",
+        "abd"
+      ],
+      "explanation": "In `f()`, after \"a\", `s.length()` on null throws `NullPointerException`. `f` has no catch, but its `finally` still runs: \"b\". The exception propagates on, so \"c\" is skipped. `main`'s catch handles it: \"d\", then normal flow: \"e\". Output \"abde\" (option C). Trap: option A, thinking the rest of f runs after finally; option B, skipping finally in a try without a catch; option D, forgetting the code after the catch."
+    },
+    "java-w9-q9": {
+      "question": "Which of these methods compiles **without** a `throws` clause? (Assume the imports are correct.)",
+      "options": [
+        "`void g() { throw new CloneNotSupportedException(\"x\"); }`",
+        "`void h() { throw new FileNotFoundException(\"x\"); }`",
+        "`void k() { Thread.sleep(10); }`",
+        "`void f() { throw new IllegalArgumentException(\"x\"); }`"
+      ],
+      "explanation": "`IllegalArgumentException` is a subclass of `RuntimeException`, i.e. unchecked: it need not be declared (option D). `CloneNotSupportedException` and `FileNotFoundException` are checked (both come from `Exception`, not `RuntimeException`), and `Thread.sleep` can throw the checked `InterruptedException`; the compiler rejects all three without a catch or `throws`. Trap: option C, thinking an exception from a library method is handled automatically."
+    },
+    "java-w9-q10": {
+      "question": "The try block contains `new FileReader(\"a.txt\")`, and `main` is declared `throws Exception` (imports are correct). Which of these catches causes a compile error?",
+      "options": [
+        "`catch (IllegalArgumentException | NullPointerException e)`",
+        "`catch (FileNotFoundException | IOException e)`",
+        "`catch (RuntimeException e) {...} catch (Exception e) {...}`",
+        "`catch (Exception e)`"
+      ],
+      "explanation": "The alternatives in a multi-catch must not be subclasses of each other. `FileNotFoundException` is a subclass of `IOException`, so option B is a compile error (writing just `IOException` is enough). Option A's two types are unrelated unchecked exceptions: valid. Option C goes from specific to general: valid. Option D catches everything: valid. Trap: thinking option C is wrong; the reverse order (`Exception` first) would be the error."
+    },
+    "java-w9-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "bad input: x | 16",
+        "bad input: x | 17",
+        "bad input: x | 11",
+        "A `NumberFormatException` escapes and the program stops"
+      ],
+      "explanation": "\"12\": total 12. \"x\": `parseInt` throws `NumberFormatException`, and `parse` catches it and throws a checked `AppError` with it as the cause; `main`'s catch prints the message \"bad input: x\" and total becomes 11. The loop continues because the try is inside the loop. \"5\": total 16. Output \"bad input: x | 16\" (option A). Trap: option B, forgetting the catch's `total -= 1`; option C, thinking the loop stops after the exception; option D, the original exception has been wrapped in an AppError."
+    },
+    "java-w9-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "ab 11",
+        "abc 111",
+        "abc 11",
+        "ab 111"
+      ],
+      "explanation": "The return value is evaluated and stored before finally runs. `num()`: the stored value is the int 11; finally changes the local `n` to 111, but the saved copy stays 11. `sb()`: the stored value is a **reference** to the StringBuilder (currently \"ab\"); finally appends \"c\" to that same object, and the caller reads that object: \"abc\". Output \"abc 11\" (option C). Trap: option A, treating the object like the primitive; options B and D, thinking finally also changes the int return value."
+    },
+    "java-w9-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "tife trf tnfe",
+        "tif tr tnf",
+        "tife trfe tnfe",
+        "tife tr tnfe"
+      ],
+      "explanation": "run(0): \"t\", the IAE goes to the first catch: \"ti\", finally \"tif\", then the `return log + \"e\"` below: \"tife\". run(1): \"t\", an NPE is not an `IllegalArgumentException`, so the second catch: \"tr\", and `return log` saves the value \"tr\" right then; finally makes `log` \"trf\", but String is immutable and the saved value stays \"tr\". run(2): \"tn\", finally \"tnf\", return \"tnfe\". Output \"tife tr tnfe\" (option D). Trap: option A, adding finally's change to the return value; option C, running the lower return even after the catch's `return`; option B, forgetting the \"e\" of the last `return`."
+    },
+    "java-w9-q14": {
+      "question": "The base class has `void read() throws IOException {}`. Four subclasses override it. Which line(s) cause a compile error?",
+      "options": [
+        "Only R",
+        "R and S",
+        "P and R",
+        "None"
+      ],
+      "explanation": "An override cannot throw new or broader **checked** exceptions. P: `FileNotFoundException` is a subclass of `IOException`, i.e. narrower: allowed. Q: throwing nothing is allowed. R: `Exception` is a broader checked exception than `IOException`: compile error. S: `IllegalStateException` is unchecked, and the rule does not apply to unchecked exceptions at all: allowed. Answer: only R (option A). Trap: option B, counting the unchecked exception under the rule; option C, thinking a narrower exception is also forbidden."
+    },
+    "java-w9-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "1234B6",
+        "125A6",
+        "12345B6",
+        "1234A6"
+      ],
+      "explanation": "Inside: \"1\", the \"A\" exception goes to the inner catch: \"2\". That catch throws a new exception \"B\". Before it leaves, the inner finally runs: \"3\". Outside, \"B\" is an `IllegalArgumentException`, so the first matching catch runs: \"4B\" (only one catch runs, not the \"5\" one). Then \"6\". Output \"1234B6\" (option A). Trap: option B, thinking the original \"A\" exception escapes and finally is skipped; option C, running both outer catches; option D, taking the message \"A\"."
+    },
+    "java-w10-q7": {
+      "question": "Why is implementing `Runnable` usually considered better than extending `Thread` to create a thread?",
+      "options": [
+        "The class can extend another class; the task is separate from the thread",
+        "A `Runnable` thread always runs faster than a `Thread` subclass",
+        "Using `Runnable` means no race conditions on shared data",
+        "Extending `Thread` does not inherit the `start()` method"
+      ],
+      "explanation": "In Java a class can extend only one class; extending `Thread` uses up that chance. `Runnable` is an interface, and it keeps the task (what to do) separate from the thread (how to run it), so it can later run in a pool too (option A). Trap: option B, there is no speed difference; option C, races on shared data can happen either way; option D, a subclass of `Thread` inherits `start()`."
+    },
+    "java-w10-q8": {
+      "question": "What is guaranteed about this program's output?",
+      "options": [
+        "\"main worker\" always",
+        "Either order is possible",
+        "\"worker main\" always",
+        "Only \"main\"; the worker never runs"
+      ],
+      "explanation": "`t.join()` blocks `main` until `t` has finished. So \"worker \" is always printed before \"main\": \"worker main\" (option C). Without the join, any order would be possible (the option B situation). Trap: option A, thinking the main thread always goes first; option D, `start()` really did run the thread."
+    },
+    "java-w10-q9": {
+      "question": "Which statement about the field `volatile int count;` is true?",
+      "options": [
+        "It makes `count++` atomic, with no lock needed",
+        "Writes become visible to all, but `count++` is not made atomic",
+        "It automatically puts a `synchronized` lock on the field",
+        "It can be applied only to `static` fields"
+      ],
+      "explanation": "`volatile` gives visibility: a write by one thread is seen by other threads that read it later. But `count++` is three steps (read, add, write), and two threads can interleave and lose an update; volatile does not prevent that (option B). Atomic increments need `synchronized` or `AtomicInteger`. Trap: option A, confusing visibility with atomicity; option C, volatile takes no lock; option D, it works on instance fields too."
+    },
+    "java-w10-q10": {
+      "question": "There is only one `Bank` object, `k`. Which two calls can run **at the same time** (overlapping) in two different threads?",
+      "options": [
+        "`k.a()` and `k.b()`",
+        "`k.a()` and `k.a()`",
+        "`Bank.c()` and `Bank.c()`",
+        "`k.a()` and `Bank.c()`"
+      ],
+      "explanation": "A synchronized instance method takes the lock of `this` (here `k`), and a `static synchronized` method takes the lock of the class object `Bank.class`. `k.a()` and `Bank.c()` take different locks, so they do not block each other and can run together (option D). Options A and B both need `k`'s lock, and option C both need `Bank.class`'s; only one thread can be inside at a time. Trap: option A, thinking different methods have different locks; the lock belongs to the object, not the method."
+    },
+    "java-w10-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "1R2R",
+        "12",
+        "`IllegalThreadStateException` on the second `run()`",
+        "The order is not guaranteed; \"12RR\" is also possible"
+      ],
+      "explanation": "`t.run()` creates no new thread; it is an ordinary method call that runs the Runnable in `main` itself and finishes immediately. So everything is sequential: \"1\", \"R\", \"2\", \"R\" = \"1R2R\" (option A). Trap: option C, `IllegalThreadStateException` comes only from calling `start()` a second time, `run()` can be called any number of times; option D, there is no second thread here at all; option B, thinking nothing runs without start."
+    },
+    "java-w10-q12": {
+      "question": "What is guaranteed about this program's output?",
+      "options": [
+        "Always 10000, because both methods are synchronized and joined",
+        "No guarantee of 10000: the two methods take different locks",
+        "Always 5000, because one thread's updates are lost",
+        "Deadlock: each thread asks for the other's lock"
+      ],
+      "explanation": "`hit()` takes the lock of the `lock` object and `hit2()` (a synchronized method) takes the lock of `this`. Mutual exclusion holds only when all threads take the **same** lock; here threads a and b can do the read-add-write of `hits++` at the same time, and updates can be lost. The result is 10000 or less: no guarantee (option B). Trap: option A, seeing the word \"synchronized\" and assuming it is safe; option C, the loss is random, not fixed; option D, no thread holds two locks at once, so there is no deadlock."
+    },
+    "java-w10-q13": {
+      "question": "What is guaranteed about this program's output?",
+      "options": [
+        "30 or 60; there is no guarantee `main` sees `ta`'s write",
+        "Always 30, because `tb.run()` does nothing",
+        "Always 60",
+        "Compile error: `run()` cannot be called directly"
+      ],
+      "explanation": "Each Job computes 1 + 4 + 9 + 16 = 30. `tb.run()` starts no new thread but runs `b.run()` in `main` itself, so b.result = 30 (no visibility question, same thread). `ta` runs in a separate thread, but `ta.join()` waits for it to finish and guarantees all its writes are visible after the join: a.result = 30. The total is always 60 (option C). Trap: option A, forgetting the visibility guarantee of join; option B, treating `run()` as a no-op; option D, `run()` is a public method and can be called directly."
+    },
+    "java-w10-q14": {
+      "question": "What is guaranteed about this program's output?",
+      "options": [
+        "Always 150",
+        "100 or less, because of a race",
+        "Deadlock: `add()` holds the lock and `audit()` asks for the same lock",
+        "Always 100"
+      ],
+      "explanation": "All three methods take the lock of `this`, so each `add` (add + audit) happens as one unit, with no race. Inside `add`, `audit()` asks for the same lock again, but Java's locks are reentrant: the thread that holds the lock can take it again, so no deadlock. The total added is 90 + 60 = 150, so at some point the total goes above 100 and is capped at 100; after that every add caps at 100 again. The final value is always 100 (option D). Trap: option C, forgetting reentrancy; option A, ignoring the cap; option B, everything is synchronized, so there is no race."
+    },
+    "java-w10-q15": {
+      "question": "Which outputs of this program are possible?",
+      "options": [
+        "Only ABC",
+        "ABC or ACB",
+        "ABC, ACB or CAB",
+        "Any order"
+      ],
+      "explanation": "`t1.join()` comes before both `t2.start()` and \"C\", so \"A\" always comes first. After that `t2` and `main` run in parallel: t2's \"B\" and main's \"C\" can appear in either order (`t2.join()` is after the print, so it does not fix the order). Possible: ABC or ACB (option B). Trap: option A, thinking a thread runs first as soon as it is started; option C, allowing A after C (the join prevents it); option D, forgetting the effect of join entirely."
+    },
+    "java-w11-q7": {
+      "question": "When a thread calls `lock.wait()` inside a `synchronized` block, what happens to the lock it holds?",
+      "options": [
+        "It keeps holding the lock and just sleeps for a while",
+        "The lock passes to another waiting thread for good",
+        "It releases the lock and sleeps in the object's wait set",
+        "`wait()` does not need to hold the lock at all"
+      ],
+      "explanation": "`wait()` **releases** the lock and puts the thread to sleep in that object's wait set, so another thread (such as a producer) can enter and change the condition. After waking, the thread must get the lock back before it continues (option C). Trap: option A, confusing `wait` with `sleep` (sleep does not release the lock); option B, the lock does come back; option D, `wait()` without the lock throws `IllegalMonitorStateException`."
+    },
+    "java-w11-q8": {
+      "question": "What is the output of this program?",
+      "options": [
+        "null true 1",
+        "The program blocks forever on `poll()`",
+        "`NoSuchElementException`",
+        "null false 0"
+      ],
+      "explanation": "`poll()` does not block: on an empty queue it returns null immediately. `offer(\"x\")` does not block either; there is room, so it returns true and adds the item, size 1. Output \"null true 1\" (option A). Trap: option B, confusing `poll()` with `take()` (take blocks on an empty queue); option C, that exception comes from methods like `remove()`; option D, assuming the offer fails."
+    },
+    "java-w11-q9": {
+      "question": "Producers and consumers both `wait()` on the same object. After adding an item, which call is the safest?",
+      "options": [
+        "`notify()`, because it wakes only one thread",
+        "`Thread.sleep(100)` in a loop, then check the condition",
+        "Nothing; the threads wake up on their own",
+        "`notifyAll()`, so the right thread surely wakes"
+      ],
+      "explanation": "When threads waiting for different conditions (producers and consumers) wait on the same object, `notify()` may wake any one thread, perhaps another producer, which goes back to sleep while no consumer ever wakes (a lost wakeup). `notifyAll()` wakes everyone; each thread re-checks its own condition in a `while` loop (option D). Trap: option A, thinking waking fewer threads is better; option B, sleep does not coordinate anything; option C, threads do not wake without a notify (apart from spurious wakeups)."
+    },
+    "java-w11-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "15 6",
+        "11 3",
+        "11 6",
+        "16 6"
+      ],
+      "explanation": "\"a\": `putIfAbsent` puts 1 the first time; the second time the key exists, so nothing happens (5 does not go in). `merge` makes the old value 1 + 10 = 11. \"b\": the key is new, so `merge` simply puts 3; `compute` turns it into 3 × 2 = 6. Output \"11 6\" (option C). Trap: option A, treating the second `putIfAbsent` as an overwrite (5 + 10); option D, adding both putIfAbsent values; option B, forgetting `compute`."
+    },
+    "java-w11-q11": {
+      "question": "Which statement about a list made with `Collections.synchronizedList(new ArrayList<>())` is true?",
+      "options": [
+        "Calls are synchronized; iterating needs an outer `synchronized (list)`",
+        "Iteration is also fully thread-safe on its own, no lock needed",
+        "It is lock-free and uses CAS like `ConcurrentHashMap`",
+        "It can be used from only one thread, otherwise it throws"
+      ],
+      "explanation": "The synchronized wrapper runs every single method (`add`, `get`, `size`) under the list's lock. But iteration is a sequence of many calls (`hasNext`, `next`, ...), and another thread changing the list in between causes trouble; so when iterating, the whole loop must sit inside `synchronized (list) { ... }` (option A). Trap: option B, taking \"each call is safe\" to mean the whole sequence is safe; option C, it uses a plain lock; option D, multi-threaded use is its whole purpose."
+    },
+    "java-w11-q12": {
+      "question": "What is guaranteed about this program's output?",
+      "options": [
+        "A deadlock is possible, because t2 sends from `b` to `a`",
+        "Always \"900 1100\"",
+        "No guarantee, because of a race",
+        "Always \"1100 900\""
+      ],
+      "explanation": "Both threads take the locks in one global order: the smaller id (a) first, then b, whichever direction the transfer goes. A circular wait cannot form, so there is no deadlock. Both balances change inside both locks, so there is no race either. a: 1000 − 10×30 + 10×20 = 900; b: 1000 + 300 − 200 = 1100. Always \"900 1100\" (option B). Trap: option A, looking at the parameter order rather than the lock order; option C, ignoring the locks; option D, reversing the direction."
+    },
+    "java-w11-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "5 [40, 50]",
+        "4 [20, 30]",
+        "4 [30, 50]",
+        "The program blocks on `offer(40)`"
+      ],
+      "explanation": "Capacity 2. i=1: offer 10 → [10], accepted 1. i=2: 20 → [10, 20], accepted 2; poll removes 10 in FIFO order → [20]. i=3: 30 → [20, 30], accepted 3. i=4: the queue is full, `offer(40)` does not block, it returns false; poll removes 20 → [30]. i=5: 50 → [30, 50], accepted 4. Output \"4 [30, 50]\" (option C). Trap: option D, treating `offer` as `put`; option A, accepting even on a full queue; option B, polling from the end (LIFO)."
+    },
+    "java-w11-q14": {
+      "question": "What happens when some thread calls `new Box().put(5)`?",
+      "options": [
+        "It works; threads waiting on `lock` wake up",
+        "Compile error: `notifyAll()` cannot be written inside a block",
+        "Deadlock, because `notifyAll()` waits while holding the lock",
+        "`IllegalMonitorStateException`: the lock of `this` is not held"
+      ],
+      "explanation": "A bare `notifyAll()` really means `this.notifyAll()`. `wait`/`notify`/`notifyAll` can be called only on the object whose lock the thread holds. Here the thread holds the `lock` object's lock, not `this`'s, so an `IllegalMonitorStateException` is thrown at runtime (option D). Fix: `lock.notifyAll()`. Trap: option A, thinking the block's lock automatically becomes the notify target; option B, this compiles, the error is at runtime; option C, `notifyAll()` does not wait, it only wakes threads."
+    },
+    "java-w11-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "`ConcurrentModificationException`",
+        "4 [a, b, a!, b!]",
+        "An infinite loop, because the new elements are iterated too",
+        "2 [a, b]"
+      ],
+      "explanation": "`CopyOnWriteArrayList` makes a new copy of its internal array on every write, and the iterator walks the snapshot that existed when the loop began. So the loop sees only \"a\" and \"b\", throws nothing, and the added \"a!\", \"b!\" do not show up in the loop. The final list is \"[a, b, a!, b!]\", size 4 (option B). Trap: option A, applying ArrayList's fail-fast behaviour here; option C, thinking the iterator sees the live list; option D, thinking the adds never happened."
+    },
+    "java-w12-q7": {
+      "question": "What happens after `shutdown()` is called on an `ExecutorService`?",
+      "options": [
+        "All running and queued tasks are cancelled immediately",
+        "New tasks are rejected; already submitted tasks finish",
+        "The pool pauses and resumes when `start()` is called",
+        "Nothing; it is just a hint the pool may ignore"
+      ],
+      "explanation": "`shutdown()` stops accepting new tasks (they get `RejectedExecutionException`), but tasks already submitted still run to completion; then the pool's threads stop (option B). To wait for everything to finish, use `awaitTermination`. Trap: option A, treating `shutdown` like `shutdownNow`; option C, a shut-down pool cannot be started again; option D, it is a definite state change."
+    },
+    "java-w12-q8": {
+      "question": "Which statement about `f.get()` on a `Future<Integer> f` is true?",
+      "options": [
+        "It blocks the current thread until the result is ready",
+        "It returns `null` immediately if the task has not finished",
+        "It runs the task again on a new thread",
+        "It works only for `Runnable` tasks"
+      ],
+      "explanation": "A `Future` is a handle to a pending result. `get()` blocks the current thread until the task completes, then returns the result (or throws the task's exception wrapped in `ExecutionException`): option A. For a time limit use `get(timeout, unit)`. Trap: option B, non-blocking behaviour comes from checking `isDone()`; option C, `get` does not rerun the task; option D, its real value is with value-returning `Callable` tasks."
+    },
+    "java-w12-q9": {
+      "question": "What is the output of this program?",
+      "options": [
+        "doto doto!",
+        "data! data!",
+        "data data!",
+        "doto data!"
+      ],
+      "explanation": "`String` is immutable: `replace()` and `concat()` do not change the original, they return a new String. The result of `s.replace(...)` is not stored anywhere, so it is lost; `s` is still \"data\". `t` = \"data!\". Output \"data data!\" (option C). Trap: option A, thinking `replace` changes `s`; option B, thinking `concat` appends to `s` itself; option D, applying the replace only halfway."
+    },
+    "java-w12-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "6 true false 40",
+        "6 false false -4",
+        "5 false true 50",
+        "6 false true 50"
+      ],
+      "explanation": "`incrementAndGet()` increments first, then returns the new value: 6. `compareAndSet(expected, update)` changes the value only if the current value equals expected: the current value is 6, not 5, so p = false and the value stays 6. Then `compareAndSet(6, 60)`: a match, q = true, value 60. `addAndGet(-10)` = 50. Output \"6 false true 50\" (option D). Trap: option C, thinking `incrementAndGet` returns the old value; option A, matching the first CAS against the original 5; option B, assuming CAS always fails."
+    },
+    "java-w12-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "Infinity",
+        "The `ArithmeticException` reaches `main` directly",
+        "wrapped true",
+        "wrapped false"
+      ],
+      "explanation": "The lambda returns a value, so it is a `Callable<Integer>`. In the pool thread, `10 / d` is an int division by zero: `ArithmeticException`. This exception does not reach `main` directly; `f.get()` throws it wrapped in an `ExecutionException`, and the original is available through `getCause()`. Output \"wrapped true\" (option C). Trap: option A, int division never gives Infinity (that happens with floating point); option B, the task's exception is wrapped; option D, the cause really is an ArithmeticException."
+    },
+    "java-w12-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "4 1",
+        "10 0",
+        "`main` crashes with `IllegalStateException`",
+        "10 1"
+      ],
+      "explanation": "`invokeAll` runs all three tasks and, once all are done, returns their futures in **the same order**. The second task's exception stays inside its future; its `get()` throws `ExecutionException`, which is caught inside the loop: failed 1. The loop continues, so sum = 4 + 6 = 10. Output \"10 1\" (option D). Trap: option A, thinking the loop stops after the exception; option C, a task's exception does not reach `main` directly; option B, forgetting to count the failed task."
+    },
+    "java-w12-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "3 2",
+        "1 2",
+        "2 2",
+        "3 3"
+      ],
+      "explanation": "The constructor takes a defensive copy, so the later `src.add(\"paid\")` changes only `src` (size 2); the Order's list still holds just \"new\". The getter also returns a copy, so `o.tags().add(\"x\")` adds to a temporary copy that is thrown away at once. The next `o.tags()` again returns a fresh copy with one item: size 1. Output \"1 2\" (option B). Trap: option A, forgetting both copies and treating everything as shared; option C, remembering only the getter's copy (the constructor copied too); option D, thinking \"x\" also went into `src`."
+    },
+    "java-w12-q14": {
+      "question": "What is the output of this program?",
+      "options": [
+        "\"123\" always",
+        "\"149\" or some other order, because threads race",
+        "\"111\" always",
+        "\"149\" always"
+      ],
+      "explanation": "`newSingleThreadExecutor()` keeps a single worker thread that runs tasks one after another in submission order, so there is no race. Task k = 1: n 1, append 1×1 = 1. k = 2: n 2, append 2×2 = 4. k = 3: n 3, append 3×3 = 9. Each `f.get()` waits for its task to finish and guarantees its writes are visible to `main`. The output is always \"149\" (option D). Trap: option B, treating the single-thread pool as multi-threaded; option A, ignoring `n` and appending only k; option C, thinking each task got its own counter."
+    },
+    "java-w12-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "1000 300 1600",
+        "250 300 1600",
+        "250 300 850",
+        "250 600 850"
+      ],
+      "explanation": "`Money` is immutable: every operation returns a new object and the old one never changes. b = 250 + 50 = 300. The result of `a.times(4)` (1000) is not stored anywhere, so `a` is still 250. c = (300 × 2) + 250 = 850. Output \"250 300 850\" (option C). Trap: option A, thinking `a.times(4)` changes a; option B, printing a as 250 but using 1000 in c; option D, thinking `b.times(2)` changes b to 600."
     }
   }
 }
