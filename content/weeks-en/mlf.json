@@ -61,6 +61,96 @@
       ],
       "explanation": "The squared-loss minimiser is the mean: (1 + 2 + 3 + 10)/4 = 4 (derivative −2Σ(yᵢ − c) = 0). The absolute-loss minimiser is the median; with an even count every c between 2 and 3 gives the same loss 10 (c = 2, 2.5, 3 all give sum 10, while c = 4 gives 12). Option D is tempting because the median is usually quoted as 2.5, but for absolute loss the whole interval [2, 3] is optimal. Option B swaps mean and median; the outlier 10 pulls the mean, not the median."
     },
+    "mlf-w1-q7": {
+      "question": "A fictional weather app wants to predict tomorrow's maximum temperature from past records (humidity, wind speed, today's temperature and the actual next-day maximum temperature in °C). What type of ML problem is this?",
+      "options": [
+        "Unsupervised clustering",
+        "Supervised classification",
+        "Supervised regression",
+        "Unsupervised density estimation"
+      ],
+      "explanation": "Every record comes with the correct answer (the next day's temperature), so this is supervised, and the label is a continuous real number (°C), so it is regression. Option B is tempting because weather is often thought of in categories like sunny/rainy, but here the output is a number, not a category. Options A and D are unsupervised, while here a label is present."
+    },
+    "mlf-w1-q8": {
+      "question": "For a model, the actual values are y = (10, 12, 8, 6) and the predictions are ŷ = (11, 10, 8, 9). What is the mean absolute error (MAE)?",
+      "options": [
+        "1.5",
+        "3.5",
+        "6",
+        "1.8708"
+      ],
+      "explanation": "Errors y − ŷ: −1, 2, 0, −3. Absolute errors 1, 2, 0, 3, sum = 6, MAE = 6/4 = 1.5. Option B (3.5) is the MSE (the mean of the squares 1, 4, 0, 9), option C (6) is the sum where dividing by n = 4 was forgotten, and option D is the RMSE = √3.5."
+    },
+    "mlf-w1-q9": {
+      "question": "In a train / validation / test split, what is the correct use of the test set?",
+      "options": [
+        "To tune the learning rate after every epoch",
+        "To choose the polynomial degree",
+        "To fit the model together with the training set",
+        "To report the error once after the model is final"
+      ],
+      "explanation": "The test set is used only once at the end, when all choices are fixed, so that it gives an honest (unbiased) estimate of the error. Options A and B are hyperparameter choices, which is the job of the validation set; doing them on the test set makes the final estimate optimistic. In option C the test data goes into training, and then it can no longer estimate performance on unseen data."
+    },
+    "mlf-w1-q10": {
+      "question": "A binary classifier gives p = P(y = 1) on 5 examples: p = (0.7, 0.4, 0.9, 0.2, 0.6) and the true labels are y = (1, 1, 0, 0, 1). Predicting with threshold 0.5, what is the average 0-1 loss (empirical risk)?",
+      "options": [
+        "0.6",
+        "0.4",
+        "0.2",
+        "2"
+      ],
+      "explanation": "With threshold 0.5 the predictions are 1, 0, 1, 0, 1. Mistakes: example 2 (predicts 0 when y = 1) and example 3 (predicts 1 when y = 0), so 2 are wrong. Average 0-1 loss = 2/5 = 0.4. Option A (0.6) is the accuracy, not the loss. Option C counts only one mistake; p = 0.9 on example 3 looks confident but its label is 0, so it is wrong too. Option D is the count of mistakes without dividing by n."
+    },
+    "mlf-w1-q11": {
+      "question": "In polynomial regression, as the degree (model complexity) is gradually increased, how do the training error and test error typically change?",
+      "options": [
+        "Training error falls; test error falls, then rises",
+        "Both errors keep falling steadily with complexity",
+        "Training error rises; test error keeps falling steadily",
+        "Both fall at first, then both start rising together"
+      ],
+      "explanation": "A more flexible model fits the training data better and better, so the training error keeps falling. The test error first falls (less underfitting) and then rises once the model starts memorising noise (overfitting): a U-shape. The trap in option B is assuming the test error keeps improving like the training error. Option D is wrong because the training error does not rise with complexity."
+    },
+    "mlf-w1-q12": {
+      "question": "For the data {1, 3, 5, 7, 34}, use a constant predictor ŷ = c. Find the best c₁ for squared loss and the best c₂ for absolute loss. How much larger is the total absolute loss Σ|yᵢ − c| at c = c₁ than at c = c₂?",
+      "options": [
+        "c₁ = 5, c₂ = 10, difference 11",
+        "c₁ = 10, c₂ = 5, difference 0",
+        "c₁ = 10, c₂ = 5, difference 5",
+        "c₁ = 10, c₂ = 5, difference 11"
+      ],
+      "explanation": "The minimiser of squared loss is the mean: (1 + 3 + 5 + 7 + 34)/5 = 10. The minimiser of absolute loss is the median: 5. At c = 10, Σ|yᵢ − c| = 9 + 7 + 5 + 3 + 24 = 48; at c = 5 it is 4 + 2 + 0 + 2 + 29 = 37. Difference = 11. Option A swaps the mean and the median. Option B assumes both c give the same absolute loss, which is wrong because here the median is the unique best for absolute loss. The trap in option C is taking c₁ − c₂ = 5 as the difference in loss. The outlier 34 drags the mean but not the median."
+    },
+    "mlf-w1-q13": {
+      "question": "Two models f₁(x) = 2x + 1 and f₂(x) = 3x − 1 are compared on the validation points (1, 3.5), (2, 4.5), (3, 8). Which statement is correct in terms of validation MSE and MAE?",
+      "options": [
+        "f₁ is clearly better on both MSE and MAE",
+        "f₁ is better on MSE (0.5 vs 0.8333); MAE is a tie (0.6667)",
+        "f₂ is better on MSE (0.5 vs 0.8333); f₁ is better on MAE",
+        "f₂ is better on both MSE and MAE, one prediction is exact"
+      ],
+      "explanation": "f₁ predicts 3, 5, 7 with errors 0.5, −0.5, 1: MSE = (0.25 + 0.25 + 1)/3 = 0.5, MAE = 2/3 = 0.6667. f₂ predicts 2, 5, 8 with errors 1.5, −0.5, 0: MSE = (2.25 + 0.25 + 0)/3 = 0.8333, MAE = 2/3 = 0.6667. Squared loss punishes f₂'s one large error (1.5) more, so MSE picks f₁, while MAE rates them equally. The trap in option D is calling a model better because of one exact prediction; option A misses the MAE tie."
+    },
+    "mlf-w1-q14": {
+      "question": "A classifier gives p = P(y = 1) on 3 examples: (y = 1, p = 0.9), (y = 0, p = 0.1), (y = 1, p = 0.1). Using the natural log, what is the average cross-entropy loss?",
+      "options": [
+        "0.8378",
+        "0.1054",
+        "2.5133",
+        "0.3638"
+      ],
+      "explanation": "Loss = −[y ln p + (1 − y) ln(1 − p)]. First: −ln 0.9 = 0.1054. Second (y = 0): −ln(1 − 0.1) = −ln 0.9 = 0.1054. Third: −ln 0.1 = 2.3026. Average = 2.5133/3 = 0.8378. Option B is only the loss of the first two good examples; the third, confident-but-wrong example is what dominates the loss. Option C is the sum rather than the average, and option D used log base 10."
+    },
+    "mlf-w1-q15": {
+      "question": "50 points (all with distinct x) are split into 60% train, 20% validation and 20% test. What is the minimum degree of a polynomial that, fitted on the training set alone, gives training MSE = 0 (whatever the y values), and what should you expect for its validation error?",
+      "options": [
+        "Degree 30; validation error will also be 0",
+        "Degree 39; validation error will be about 0",
+        "Degree 29; validation error is often high",
+        "Degree 49; test error will be the lowest"
+      ],
+      "explanation": "Training set = 60% of 50 = 30 points. Fitting 30 distinct x exactly needs 30 coefficients, i.e. degree 29. Such an interpolating polynomial fits the noise too, so the validation error is often very bad. Option A takes the number of points as the degree (degree 30 has 31 coefficients). Option B counts train + validation (40 points) and option D all 50 points; both also fall for the trap of treating zero training error as a good model."
+    },
     "mlf-w2-q1": {
       "question": "For f(x) = x³ − 4x, what is f′(2)?",
       "options": [
@@ -120,6 +210,96 @@
         "2.26"
       ],
       "explanation": "f(1, 1) = 2. ∇f = (3x² + y², 2xy) = (4, 2). Hessian H = [[6x, 2y], [2y, 2x]] = [[6, 2], [2, 2]]. Δ = (0.1, −0.1). Linear part: 2 + 0.4 − 0.2 = 2.2. ΔᵀHΔ = 6(0.01) + 2·2(0.1)(−0.1) + 2(0.01) = 0.06 − 0.04 + 0.02 = 0.04, and ½ · 0.04 = 0.02. Estimate 2.22 (exact value 2.222). Option A is only the linear approximation, option C forgets the ½, and option D takes the cross term with a + sign."
+    },
+    "mlf-w2-q7": {
+      "question": "For f(x) = 3x² + ln x, what is f′(1)?",
+      "options": [
+        "6",
+        "7",
+        "3",
+        "1"
+      ],
+      "explanation": "f′(x) = 6x + 1/x, so f′(1) = 6 + 1 = 7. Option A forgets the derivative 1/x of ln x, option C is f(1) = 3 (the function value, not the derivative), and option D is only the ln x part."
+    },
+    "mlf-w2-q8": {
+      "question": "What is the derivative of the sigmoid σ(z) = 1/(1 + e⁻ᶻ) at z = 0?",
+      "options": [
+        "0.5",
+        "1",
+        "0",
+        "0.25"
+      ],
+      "explanation": "σ′(z) = σ(z)(1 − σ(z)). At z = 0, σ(0) = 0.5, so σ′(0) = 0.5 × 0.5 = 0.25. Option A is σ(0) itself, not the derivative. Option B assumes the slope is 1, and option C is wrong because the sigmoid is steepest at z = 0, not flat."
+    },
+    "mlf-w2-q9": {
+      "question": "For f(x, y) = 3x²y + y³, what is ∂f/∂y at the point (1, 2)?",
+      "options": [
+        "15",
+        "12",
+        "14",
+        "3"
+      ],
+      "explanation": "When taking ∂f/∂y, x is constant: ∂f/∂y = 3x² + 3y². At (1, 2) this is 3 + 12 = 15. Option B is ∂f/∂x = 6xy = 12 (the wrong variable), option C is f(1, 2) = 6 + 8 = 14, and option D forgets the y³ term."
+    },
+    "mlf-w2-q10": {
+      "question": "A = [[1, 2], [0, 3]] (not symmetric) and f(x) = xᵀAx. What is ∇f at the point x = (1, 1)?",
+      "options": [
+        "(6, 6)",
+        "(3, 3)",
+        "(4, 8)",
+        "(1, 5)"
+      ],
+      "explanation": "General rule: ∇(xᵀAx) = (A + Aᵀ)x. A + Aᵀ = [[2, 2], [2, 6]], so ∇f = (2 + 2, 2 + 6) = (4, 8). Check: f = x₁² + 2x₁x₂ + 3x₂², ∂f/∂x₁ = 2x₁ + 2x₂ = 4, ∂f/∂x₂ = 2x₁ + 6x₂ = 8. Option A is 2Ax = (6, 6), the formula that holds only for symmetric A; that is the main trap. Option B is Ax and option D is Aᵀx."
+    },
+    "mlf-w2-q11": {
+      "question": "For f(x, y) = x² + 3y at the point (2, 1), in which unit direction does f increase fastest, and what is that maximum rate?",
+      "options": [
+        "Rate 4, direction (1, 0)",
+        "Rate 5, direction (0.8, 0.6)",
+        "Rate 7, direction (4, 3)",
+        "Rate 25, direction (0.8, 0.6)"
+      ],
+      "explanation": "∇f = (2x, 3) = (4, 3) at (2, 1). The steepest increase is along the gradient: the unit vector (4, 3)/5 = (0.8, 0.6), and the rate = |∇f| = √(16 + 9) = 5. Option A is just the partial derivative in the x-direction. Option C adds the components to get 7, and its direction is not a unit vector. Option D gives |∇f|² = 25, forgetting the square root."
+    },
+    "mlf-w2-q12": {
+      "question": "The model is ŷ = σ(wx) and the loss is L = (ŷ − y)². For one example x = 2, y = 1, what is dL/dw at w = 0?",
+      "options": [
+        "−0.5",
+        "−2",
+        "−0.25",
+        "−1"
+      ],
+      "explanation": "Chain rule: dL/dw = 2(ŷ − y) · σ′(wx) · x. At w = 0, z = 0, ŷ = σ(0) = 0.5, σ′(0) = 0.5 × 0.5 = 0.25. So dL/dw = 2(−0.5)(0.25)(2) = −0.5. Option B drops the sigmoid derivative factor σ′. Option D uses σ = 0.5 in place of σ′. Option C forgets the inner derivative d(wx)/dw = x = 2."
+    },
+    "mlf-w2-q13": {
+      "question": "f(x) = xᵀAx + bᵀx, where A = [[2, 1], [1, 3]] (symmetric) and b = (1, −2). At the point x = (1, 1), what is the directional derivative along the unit vector u = (0.6, −0.8)?",
+      "options": [
+        "0.8",
+        "−2.8",
+        "9",
+        "−0.6"
+      ],
+      "explanation": "A is symmetric, so ∇f = 2Ax + b. Ax = (3, 4), 2Ax = (6, 8), ∇f = (7, 6). Directional derivative = ∇f · u = 7(0.6) + 6(−0.8) = 4.2 − 4.8 = −0.6. Option A used Ax instead of 2Ax (∇f = (4, 2)), option B leaves out b (∇f = (6, 8)), and option C forgets the minus sign on the second component of u."
+    },
+    "mlf-w2-q14": {
+      "question": "Using the second-order Taylor approximation of ln x at x = 1, what is the estimate of ln(1.2)?",
+      "options": [
+        "0.2",
+        "0.22",
+        "0.18",
+        "0.16"
+      ],
+      "explanation": "f(1) = 0, f′(x) = 1/x ⇒ f′(1) = 1, f″(x) = −1/x² ⇒ f″(1) = −1. ln(1 + Δ) ≈ Δ − ½Δ², with Δ = 0.2: 0.2 − 0.02 = 0.18 (the true ln 1.2 ≈ 0.1823). Option A is only the first-order (linear) approximation. Option B takes the wrong sign of the second derivative (+0.02). Option D forgets the ½ factor (0.2 − 0.04)."
+    },
+    "mlf-w2-q15": {
+      "question": "A small two-step model: h = w₁x, ŷ = w₂h, loss L = (ŷ − y)². Example x = 1, y = 5 with current w₁ = 2, w₂ = 1. What is the gradient (∂L/∂w₁, ∂L/∂w₂)?",
+      "options": [
+        "(−6, −6)",
+        "(−6, −12)",
+        "(−12, −6)",
+        "(−3, −6)"
+      ],
+      "explanation": "Forward: h = 2, ŷ = 2, ∂L/∂ŷ = 2(ŷ − y) = −6. Chain rule: ∂L/∂w₂ = (∂L/∂ŷ) · h = −6 × 2 = −12, and ∂L/∂w₁ = (∂L/∂ŷ) · w₂ · x = −6 × 1 × 1 = −6. Option C swaps the two components. Option A uses x instead of h in ∂L/∂w₂. Option D forgets the factor 2 from the derivative of the squared loss."
     },
     "mlf-w3-q1": {
       "question": "A = [[1, 0], [0, 1], [1, 1]] (3 × 2). For which b does Ax = b have an exact solution?",
@@ -181,6 +361,96 @@
       ],
       "explanation": "AᵀA = [[3, 3], [3, 5]], Aᵀb = (9, 11). 3x₁ + 3x₂ = 9 and 3x₁ + 5x₂ = 11 ⇒ x₂ = 1, x₁ = 2. p = Ax̂ = (2, 3, 4), e = (−1, 2, −1), ‖e‖² = 6, and Aᵀe = (0, 0) ✓. Option B solves the first two equations exactly (x₁ = 1, x₁ + x₂ = 5), which makes the third row's error 36. Option A is the mean-only fit (slope 0), and option D swaps intercept and slope."
     },
+    "mlf-w3-q7": {
+      "question": "For A with independent columns, what is always true about the projection matrix P = A(AᵀA)⁻¹Aᵀ?",
+      "options": [
+        "P = I always",
+        "P is always invertible",
+        "P² = P and Pᵀ = P",
+        "Pb = b for every b"
+      ],
+      "explanation": "Projecting twice changes nothing (P² = P), and an orthogonal projection is symmetric (Pᵀ = P). Options A, B and D would hold only if the column space were the whole space; with n > d, C(A) is a smaller subspace, so P is singular and Pb changes any b outside the column space."
+    },
+    "mlf-w3-q8": {
+      "question": "A fictional dataset has 50 houses with 3 features each, and the model also has an intercept. What is the size of the design matrix A for least squares?",
+      "options": [
+        "50 × 4",
+        "50 × 3",
+        "4 × 50",
+        "3 × 50"
+      ],
+      "explanation": "Each row is one example (50 rows), and the columns are the column of ones for the intercept + 3 features = 4. So A is 50 × 4. Option B forgets the intercept column. Options C and D swap rows and columns."
+    },
+    "mlf-w3-q9": {
+      "question": "For a least squares line fit with an intercept, what is always true about the residuals eᵢ = yᵢ − ŷᵢ?",
+      "options": [
+        "All residuals are zero",
+        "The residuals sum to zero",
+        "All residuals are positive",
+        "The residuals sum to ȳ"
+      ],
+      "explanation": "In the normal equations Aᵀe = 0, the equation for the column of ones says Σeᵢ = 0. Option A happens only if all points lie exactly on the line. Option C is wrong because a zero sum needs both positive and negative residuals. Option D ties the sum to ȳ; the line passes through (x̄, ȳ), but the residuals sum to 0."
+    },
+    "mlf-w3-q10": {
+      "question": "What is the orthogonal projection of b = (2, 4) onto the line of the vector a = (3, 1)?",
+      "options": [
+        "(9.49, 3.16)",
+        "(1, 2)",
+        "(2, 4)",
+        "(3, 1)"
+      ],
+      "explanation": "p = (aᵀb / aᵀa) a. aᵀb = 6 + 4 = 10, aᵀa = 9 + 1 = 10, so p = 1 · (3, 1) = (3, 1). Option A uses ‖a‖ = √10 in the denominator instead of ‖a‖². Option B is the projection the other way round (a onto the line of b). Option C takes b itself as the answer, although b is not on the line."
+    },
+    "mlf-w3-q11": {
+      "question": "A line ŷ = mx with no intercept (forced through the origin) is fitted by least squares to the points (1, 2), (2, 3), (3, 7). What is m?",
+      "options": [
+        "2",
+        "2.5",
+        "2.0714",
+        "0.4828"
+      ],
+      "explanation": "A is the single column (1, 2, 3), so m = Σxᵢyᵢ / Σxᵢ² = (2 + 6 + 21)/(1 + 4 + 9) = 29/14 ≈ 2.0714. Option A is ȳ/x̄ = 4/2, which is not least squares. Option B is the slope of the line with an intercept (Sxy/Sxx = 5/2), which this model does not allow. Option D inverts the fraction (14/29)."
+    },
+    "mlf-w3-q12": {
+      "question": "A = [[1, 0], [1, 1], [1, −1]] and b = (2, 5, 2). What are the least squares solution x̂ and the residual e = b − Ax̂?",
+      "options": [
+        "x̂ = (3, 1.5), e = (−1, 0.5, 0.5)",
+        "x̂ = (3, 1), e = (−1, 1, 0)",
+        "x̂ = (9, 3), e = (−7, −7, −4)",
+        "x̂ = (2, 3), e = (0, 0, 3)"
+      ],
+      "explanation": "The columns of A are orthogonal, so AᵀA = diag(3, 2). Aᵀb = (2 + 5 + 2, 5 − 2) = (9, 3). x̂ = (9/3, 3/2) = (3, 1.5). Ax̂ = (3, 4.5, 1.5), e = (−1, 0.5, 0.5). Check: Aᵀe = (−1 + 0.5 + 0.5, 0.5 − 0.5) = (0, 0). Option B divides both components by 3 (ignoring the 2 in AᵀA), and its Aᵀe = (0, 1) ≠ 0. Option C forgets (AᵀA)⁻¹. Option D solves only the first two equations exactly and ignores the third."
+    },
+    "mlf-w3-q13": {
+      "question": "What are the projection p of b = (4, 7, 1) onto the line of a = (1, 1, 1) and the squared error ‖b − p‖²? (This is just the fit of the intercept-only model ŷ = c.)",
+      "options": [
+        "p = (12, 12, 12), ‖e‖² = 210",
+        "p = (4, 4, 4), ‖e‖² = 6",
+        "p = (4, 4, 4), ‖e‖² = 18",
+        "p = (6.93, 6.93, 6.93), ‖e‖² = 43.72"
+      ],
+      "explanation": "aᵀb = 12, aᵀa = 3, so p = 4 · (1, 1, 1) = (4, 4, 4): the intercept-only model predicts the mean. e = (0, 3, −3), ‖e‖² = 0 + 9 + 9 = 18. Option A forgets to divide by aᵀa. Option B takes the sum of absolute errors (0 + 3 + 3), not of squares. Option D divides by ‖a‖ = √3 (12/√3 ≈ 6.93) rather than ‖a‖²."
+    },
+    "mlf-w3-q14": {
+      "question": "Fit the line ŷ = c + mx by least squares to the points (1, 1), (2, 2), (3, 2), (4, 5). What are the slope m, the intercept c and the prediction at x = 5?",
+      "options": [
+        "m = 1, c = 0; prediction 5",
+        "m = 1.33, c = −0.33; prediction 6.33",
+        "m = 1.2, c = 2.5; prediction 8.5",
+        "m = 1.2, c = −0.5; prediction 5.5"
+      ],
+      "explanation": "x̄ = 2.5, ȳ = 2.5. Sxy = Σ(xᵢ − x̄)(yᵢ − ȳ) = 2.25 + 0.25 − 0.25 + 3.75 = 6, Sxx = 2.25 + 0.25 + 0.25 + 2.25 = 5. m = 6/5 = 1.2, c = ȳ − m x̄ = 2.5 − 3 = −0.5. At x = 5, ŷ = −0.5 + 6 = 5.5. Option A draws the line through just the first two points, option B through the first and last points; neither is least squares. Option C takes c = ȳ, forgetting to subtract m x̄."
+    },
+    "mlf-w3-q15": {
+      "question": "The columns of A are a₁ = (1, 2, 3) and a₂ = (2, 4, 6) (a₂ = 2a₁), and b = (0, 4, 2). x̂ = (1, 0) is one least squares solution. Which of these x is also a least squares solution (same minimum error)?",
+      "options": [
+        "(0, 1)",
+        "(−1, 1)",
+        "(1, 1)",
+        "(2, 0.5)"
+      ],
+      "explanation": "The column space is just the line of a₁. The projection p = (a₁ᵀb / a₁ᵀa₁) a₁ = (14/14) a₁ = (1, 2, 3), which is unique. Ax = (x₁ + 2x₂) a₁, so every x with x₁ + 2x₂ = 1 is a solution: at (−1, 1), −1 + 2 = 1. Option A gives x₁ + 2x₂ = 2, i.e. Ax = (2, 4, 6) = 2p. Option C gives 3 and option D gives 3. The trap: AᵀA is singular, so x̂ is not unique, but every solution must give the same p."
+    },
     "mlf-w4-q1": {
       "question": "What are the eigenvalues of A = [[2, 5], [0, 3]]?",
       "options": [
@@ -240,6 +510,96 @@
         "(40, 25)"
       ],
       "explanation": "x = (3, 2) = 1·(1, 1) + 1·(2, 1). So A⁵x = 2⁵(1, 1) + 3⁵(2, 1) = (32, 32) + (486, 243) = (518, 275). Option B pairs the eigenvalues with the wrong eigenvectors: 3⁵(1, 1) + 2⁵(2, 1). Option C applies only 2⁵ to the whole of x, and option D multiplies by 5 instead of raising to the power (λ·5)."
+    },
+    "mlf-w4-q7": {
+      "question": "A 2 × 2 matrix has trace 7 and determinant 10. What are its eigenvalues?",
+      "options": [
+        "7 and 10",
+        "1 and 10",
+        "3 and 4",
+        "2 and 5"
+      ],
+      "explanation": "λ² − 7λ + 10 = 0 ⇒ (λ − 2)(λ − 5) = 0, so λ = 2, 5. Check: sum 7 = trace, product 10 = det. Option C has sum 7 but product 12, and option B has product 10 but sum 11; each matches only one condition. Option A takes the trace and det themselves as the eigenvalues."
+    },
+    "mlf-w4-q8": {
+      "question": "A 2 × 2 matrix A has eigenvalues 3 and −2. What are the eigenvalues of A²?",
+      "options": [
+        "9 and −4",
+        "9 and 4",
+        "6 and −4",
+        "3 and −2"
+      ],
+      "explanation": "Av = λv ⇒ A²v = λ²v, so the eigenvalues are 3² = 9 and (−2)² = 4. Option A keeps the minus sign even after squaring. Option C multiplies the eigenvalues by 2 (those would belong to 2A). Option D assumes the eigenvalues of A² stay the same."
+    },
+    "mlf-w4-q9": {
+      "question": "A square matrix A has 0 as one of its eigenvalues. What does this tell you for sure?",
+      "options": [
+        "A is singular (det A = 0)",
+        "A is not diagonalisable",
+        "The eigenvector for that eigenvalue is the zero vector",
+        "All eigenvalues of A are 0"
+      ],
+      "explanation": "det A = the product of the eigenvalues, so if one eigenvalue is 0 then det A = 0 and A is singular (Av = 0 has a non-zero solution). Option B is wrong: diag(0, 1) is diagonalisable. Option C is wrong because an eigenvector is never zero; λ = 0 is allowed, v = 0 is not. Option D cannot follow from one eigenvalue about the others."
+    },
+    "mlf-w4-q10": {
+      "question": "Which is an eigenvector of A = [[5, 2], [2, 2]] for the eigenvalue 6?",
+      "options": [
+        "(1, 2)",
+        "(1, −2)",
+        "(2, 1)",
+        "(2, −1)"
+      ],
+      "explanation": "A − 6I = [[−1, 2], [2, −4]]; the first row gives −v₁ + 2v₂ = 0 ⇒ v = (2, 1). Check: A(2, 1) = (12, 6) = 6(2, 1). Option B is the eigenvector for the other eigenvalue 1 (A(1, −2) = (1, −2)). Options A and D are not eigenvectors at all: A(1, 2) = (9, 6) and A(2, −1) = (8, 2), which are not multiples of those vectors."
+    },
+    "mlf-w4-q11": {
+      "question": "A 3 × 3 matrix A has eigenvalues 2, 4 and 5. What are the eigenvalues of B = 2A⁻¹ + I?",
+      "options": [
+        "5, 9, 11",
+        "1, 0.5, 0.4",
+        "1.5, 1.25, 1.2",
+        "2, 1.5, 1.4"
+      ],
+      "explanation": "For the same eigenvector v, A⁻¹v = (1/λ)v, so Bv = (2/λ + 1)v. From λ = 2, 4, 5: 2, 1.5, 1.4. Option A gives the eigenvalues of 2A + I (the inverse was forgotten). Option B drops the +I. Option C drops the factor 2 (A⁻¹ + I)."
+    },
+    "mlf-w4-q12": {
+      "question": "Users of a fictional app are on two plans. The monthly transition matrix is M = [[0.7, 0.4], [0.3, 0.6]] (column j = where plan j's users go). There are 1000 users in total. In the long run, about how many users will be on plan A, and what is the second eigenvalue of M?",
+      "options": [
+        "≈ 571; 0.3",
+        "≈ 429; 0.3",
+        "500; 0.3",
+        "≈ 571; 0.7"
+      ],
+      "explanation": "The steady state is the eigenvector for λ = 1: (M − I)v = 0 ⇒ −0.3v₁ + 0.4v₂ = 0 ⇒ v ∝ (4, 3). Of 1000 users, plan A gets 1000 × 4/7 ≈ 571. The second eigenvalue = trace − 1 = 1.3 − 1 = 0.3; since |λ| < 1 that component shrinks by 0.3 each month and dies out. Option B inverts the ratio (3/7). Option C assumes an equal split. Option D takes the diagonal entry 0.7 as the second eigenvalue."
+    },
+    "mlf-w4-q13": {
+      "question": "The eigenpairs of A = [[1, 2], [2, 1]] are λ = 3 with v = (1, 1), and λ = −1 with v = (1, −1). For x = (3, 1), what is A⁴x?",
+      "options": [
+        "(162, 162)",
+        "(163, 161)",
+        "(161, 163)",
+        "(243, 81)"
+      ],
+      "explanation": "x = 2(1, 1) + 1(1, −1). A⁴x = 2 · 3⁴ (1, 1) + 1 · (−1)⁴ (1, −1) = 162(1, 1) + (1, −1) = (163, 161). Option A assumes the term with the smaller eigenvalue vanishes, but |−1| = 1, so it never dies out. Option C takes (−1)⁴ as −1. Option D applies 3⁴ directly to x, as if x itself were an eigenvector."
+    },
+    "mlf-w4-q14": {
+      "question": "A = [[2, 1, 3], [0, −1, 4], [0, 0, 3]]. What is det(A² − I)?",
+      "options": [
+        "−6",
+        "36",
+        "35",
+        "0"
+      ],
+      "explanation": "A is upper triangular, so its eigenvalues are 2, −1, 3. The eigenvalues of A² − I are λ² − 1: 3, 0, 8. Determinant = product = 3 × 0 × 8 = 0. Option A is det A = −6, option B is det(A²) = 36, and option C computes det(A²) − 1, which is not det(A² − I) (the determinant does not distribute over subtraction)."
+    },
+    "mlf-w4-q15": {
+      "question": "A = [[4, k], [1, 2]]. For which value of k does A have a repeated eigenvalue, and is A diagonalisable for that k?",
+      "options": [
+        "k = 1; yes, it is diagonalisable",
+        "k = −1; yes, it is diagonalisable",
+        "k = −1; no, there is only one eigenvector direction",
+        "k = 1; no, there is only one eigenvector direction"
+      ],
+      "explanation": "The characteristic polynomial is λ² − 6λ + (8 − k). A repeated root needs the discriminant 36 − 4(8 − k) = 0 ⇒ k = −1, and λ = 3. Then A − 3I = [[1, −1], [1, −1]] has rank 1, so its null space is only the line (1, 1): defective, not diagonalisable. Option B assumes a repeated eigenvalue is automatically diagonalisable (that happens only in cases like 3I). The k = 1 in options A and D is wrong: then the discriminant is 8 and the eigenvalues are distinct."
     },
     "mlf-w5-q1": {
       "question": "Which statement is ALWAYS true for a real symmetric matrix A?",
@@ -301,6 +661,96 @@
       ],
       "explanation": "Leading principal minors: 2 > 0; det [[2, 1], [1, 2]] = 3 > 0; det A = 2(2k − 1) − 1(k − 0) + 0 = 3k − 2. PD needs 3k − 2 > 0 ⇒ k > 2/3. Option B drops the second cofactor term −1·(k) (only 2(2k − 1) > 0). The trap in option A is checking only that the diagonal entry is positive. In option D, k = 2/3 gives det = 0, so the matrix is only PSD."
     },
+    "mlf-w5-q7": {
+      "question": "What is the symmetric matrix A (with q = xᵀAx) of the quadratic form q(x) = 3x₁² − 6x₁x₂ + x₂²?",
+      "options": [
+        "[[3, −3], [−3, 1]]",
+        "[[3, −6], [−6, 1]]",
+        "[[3, −6], [0, 1]]",
+        "[[3, 3], [3, 1]]"
+      ],
+      "explanation": "In xᵀAx the cross term is 2a₁₂x₁x₂, so 2a₁₂ = −6 ⇒ a₁₂ = a₂₁ = −3. Option B forgets to halve the cross coefficient (it would give 3x₁² − 12x₁x₂ + x₂²). Option C gives the same q but is not symmetric, while the question asks for the symmetric matrix. Option D has the wrong sign."
+    },
+    "mlf-w5-q8": {
+      "question": "In the spectral decomposition A = QΛQᵀ of a real symmetric A, what is true about Q?",
+      "options": [
+        "Q is always symmetric",
+        "The determinant of Q is always 0",
+        "QᵀQ = I, so Q⁻¹ = Qᵀ",
+        "The columns of Q are the rows of A"
+      ],
+      "explanation": "The columns of Q are orthonormal eigenvectors, so QᵀQ = I and the inverse is just the transpose. Option A is wrong: an orthogonal matrix need not be symmetric (e.g. a rotation). Option B is wrong because an orthogonal Q has det ±1, never 0. Option D confuses the eigenvectors with the rows of A."
+    },
+    "mlf-w5-q9": {
+      "question": "For any real matrix X, what is always true about XᵀX?",
+      "options": [
+        "XᵀX is always positive definite",
+        "XᵀX is always positive semidefinite",
+        "XᵀX is never symmetric",
+        "XᵀX can have negative eigenvalues"
+      ],
+      "explanation": "vᵀ(XᵀX)v = ‖Xv‖² ≥ 0 for every v, and (XᵀX)ᵀ = XᵀX, so it is symmetric PSD. Option A holds only when the columns of X are independent; otherwise Xv = 0 for some v ≠ 0. Options C and D are wrong for the same reason: XᵀX is always symmetric with eigenvalues ≥ 0."
+    },
+    "mlf-w5-q10": {
+      "question": "A = [[k, 2], [2, 3]]. For what range of k is A positive definite?",
+      "options": [
+        "k > 0",
+        "k > 2",
+        "k > 3/4",
+        "k > 4/3"
+      ],
+      "explanation": "Sylvester: the leading minors need k > 0 and det = 3k − 4 > 0 ⇒ k > 4/3 (which also covers k > 0). Option A checks only the first minor; at k = 1, det = −1 < 0 and A is indefinite. Option B is sufficient but does not give the full range. Option C inverts the fraction."
+    },
+    "mlf-w5-q11": {
+      "question": "A = [[3, 2], [2, 0]]. Over unit vectors ‖x‖ = 1, what are the maximum and minimum values of xᵀAx, and what type of matrix is A?",
+      "options": [
+        "Max 4, min −1; A is indefinite",
+        "Max 3, min 0; A is PSD",
+        "Max 4, min 1; A is PD",
+        "Max 5, min −1; A is indefinite"
+      ],
+      "explanation": "Trace 3, det −4 ⇒ λ² − 3λ − 4 = 0 ⇒ λ = 4, −1. Rayleigh quotient: max = λ_max = 4, min = λ_min = −1. The eigenvalues have mixed signs (det < 0), so A is indefinite. Option B takes the diagonal entries as the extremes. Option C gets the sign of an eigenvalue wrong. Option D adds 3 + 2 = 5 for the max."
+    },
+    "mlf-w5-q12": {
+      "question": "The eigenpairs of A = [[5, 3], [3, 5]] are λ₁ = 8 with q₁ = (1, 1)/√2, and λ₂ = 2 with q₂ = (1, −1)/√2. Using the spectral form A³ = λ₁³q₁q₁ᵀ + λ₂³q₂q₂ᵀ, what is A³?",
+      "options": [
+        "[[125, 27], [27, 125]]",
+        "[[260, 252], [252, 260]]",
+        "[[520, 504], [504, 520]]",
+        "[[252, 260], [260, 252]]"
+      ],
+      "explanation": "q₁q₁ᵀ = ½[[1, 1], [1, 1]], q₂q₂ᵀ = ½[[1, −1], [−1, 1]]. A³ = 512 · ½[[1, 1], [1, 1]] + 8 · ½[[1, −1], [−1, 1]] = [[256 + 4, 256 − 4], [256 − 4, 256 + 4]] = [[260, 252], [252, 260]]. Option A cubes each entry separately, which is not a matrix power. Option C forgets the ½ in qqᵀ. Option D flips the sign of the λ₂ term."
+    },
+    "mlf-w5-q13": {
+      "question": "Write the quadratic form q(x, y, z) = x² + 2y² + 3z² + 2xy + 2yz as a symmetric matrix and classify it.",
+      "options": [
+        "PD; leading minors 1, 1, 2",
+        "PSD but not PD; minors 1, 1, 0",
+        "Indefinite; minors 1, −2, −10",
+        "PD; minors 1, 2, 6"
+      ],
+      "explanation": "Halving the cross terms: A = [[1, 1, 0], [1, 2, 1], [0, 1, 3]]. Minors: 1; 1·2 − 1·1 = 1; det = 1(6 − 1) − 1(3 − 0) + 0 = 2. All positive ⇒ PD. Option C does not halve the cross coefficients (using A = [[1, 2, 0], [2, 2, 2], [0, 2, 3]] gives minors 1, −2, −10), which is the main trap. Option D just takes products of the diagonal. Option B has the wrong det."
+    },
+    "mlf-w5-q14": {
+      "question": "Over unit vectors ‖x‖ = 1, what is the maximum value of q(x) = 2x₁² + 4x₁x₂ + 5x₂², and in which direction is it reached?",
+      "options": [
+        "Max 5, direction (0, 1)",
+        "Max 7.77, direction (0.57, 0.82)",
+        "Max 6, direction (1, 2)/√5",
+        "Max 6, direction (2, −1)/√5"
+      ],
+      "explanation": "The symmetric matrix is A = [[2, 2], [2, 5]] (half of the cross term 4). Trace 7, det 6 ⇒ λ = 6, 1. Max = λ_max = 6. For λ = 6 the first row of (A − 6I) gives −4v₁ + 2v₂ = 0 ⇒ v ∝ (1, 2). Option D has the right value but its direction is the eigenvector for λ = 1 (where q = 1). Option B does not halve the cross term (it uses [[2, 4], [4, 5]]). Option A only looks at the largest diagonal entry."
+    },
+    "mlf-w5-q15": {
+      "question": "The covariance matrix of centered data is C = [[4, 2], [2, 1]]. What is the variance wᵀCw of the combination z = x₁ − 2x₂ (w = (1, −2)), and what does it say about C?",
+      "options": [
+        "Var = 8; C is positive definite",
+        "Var = 4; C is positive definite",
+        "Var = 16; C is positive definite",
+        "Var = 0; C is PSD but not PD"
+      ],
+      "explanation": "wᵀCw = 4(1)² + 2 · 2 · (1)(−2) + 1 · (−2)² = 4 − 8 + 4 = 0. The variance is 0 for a non-zero w, so C is not PD; det C = 4 − 4 = 0 says the same (eigenvalues 5 and 0). It means the data lie on the line x₁ = 2x₂. Option A drops the cross term (4 + 4), option B does not double the cross term (4 − 4 + 4), and option C takes the wrong sign of w (16 at w = (1, 2))."
+    },
     "mlf-w6-q1": {
       "question": "For a matrix A, the eigenvalues of AᵀA are 9 and 4. What are the singular values of A?",
       "options": [
@@ -360,6 +810,96 @@
         "(2, 1)/√5, 90%"
       ],
       "explanation": "C = (1/4)XᵀX = [[2.5, 2], [2, 2.5]]. Eigenvalues 2.5 ± 2 = 4.5 and 0.5; the eigenvector for λ = 4.5 is (1, 1)/√2. Ratio 4.5/5 = 90% (with 1/(n − 1) the eigenvalues are 6 and 2/3, and the ratio is still 90%). Option A is the eigenvector of the smaller eigenvalue. Option C takes the variance of one original axis, 2.5/5. Option D is just the direction of the first data point, not the variance-maximising direction."
+    },
+    "mlf-w6-q7": {
+      "question": "A 4 × 5 matrix has singular values 7, 2, 0, 0. What is its rank?",
+      "options": [
+        "4",
+        "2",
+        "7",
+        "9"
+      ],
+      "explanation": "Rank = the number of non-zero singular values = 2. Option A is the number of rows or of singular values in total. Option C is the largest singular value and option D their sum; neither gives the rank."
+    },
+    "mlf-w6-q8": {
+      "question": "For which matrices does the singular value decomposition A = UΣVᵀ always exist?",
+      "options": [
+        "Only square matrices",
+        "Only symmetric matrices",
+        "Every real m × n matrix",
+        "Only invertible matrices"
+      ],
+      "explanation": "Every real matrix has an SVD, including rectangular and singular ones. Options A, B and D carry the conditions of eigen-decomposition (or of an inverse) over to SVD; the whole point of SVD is that it needs none of these restrictions."
+    },
+    "mlf-w6-q9": {
+      "question": "Which step is necessary on the data matrix X before applying PCA?",
+      "options": [
+        "Centering the data by subtracting each feature's mean",
+        "Sorting the rows by one feature",
+        "Removing all negative values",
+        "Multiplying each feature by its maximum"
+      ],
+      "explanation": "The covariance C = (1/n)XᵀX is correct only when every column has mean 0; without centering the first PC often just captures the direction of the mean. Option B changes nothing (row order does not affect the covariance). Options C and D distort the data and are not part of PCA."
+    },
+    "mlf-w6-q10": {
+      "question": "Centered data X with n = 50 points has singular values 10 and 5. What are the eigenvalues of the covariance C = (1/n)XᵀX and the variance explained by the first PC?",
+      "options": [
+        "10 and 5; 66.67%",
+        "2 and 0.5; 66.67%",
+        "100 and 25; 80%",
+        "2 and 0.5; 80%"
+      ],
+      "explanation": "λᵢ = σᵢ²/n: 100/50 = 2 and 25/50 = 0.5. Variance explained = 2/2.5 = 80%. Option A takes the singular values as the eigenvalues and computes the ratio from σ (10/15). Option B gets the ratio wrong, using σ instead of σ². Option C has the right ratio but forgot to divide by n."
+    },
+    "mlf-w6-q11": {
+      "question": "A matrix A has singular values 6, 4, 2, 1. For the best rank-2 approximation A₂, what are the spectral norm error ‖A − A₂‖₂ and the squared Frobenius error ‖A − A₂‖_F²?",
+      "options": [
+        "Spectral 1, Frobenius² 5",
+        "Spectral 2, Frobenius² 5",
+        "Spectral 3, Frobenius² 3",
+        "Spectral 2, Frobenius² 52"
+      ],
+      "explanation": "Eckart–Young: ‖A − A₂‖₂ = σ₃ = 2 and ‖A − A₂‖_F² = σ₃² + σ₄² = 4 + 1 = 5. Option A takes the last σ for the spectral error. Option C takes the sum of the remaining σ, not of their squares. Option D gives σ₁² + σ₂² = 52 for the part that is kept, which is not the error."
+    },
+    "mlf-w6-q12": {
+      "question": "What are the singular values of A = [[3, 0], [4, 5]]?",
+      "options": [
+        "5.000 and 3.000",
+        "45.000 and 5.000",
+        "6.708 and 2.236",
+        "6.403 and 3.000"
+      ],
+      "explanation": "AᵀA = [[9 + 16, 20], [20, 25]] = [[25, 20], [20, 25]], with eigenvalues 25 ± 20 = 45 and 5. σ = √45 ≈ 6.708 and √5 ≈ 2.236. Check: σ₁σ₂ = √225 = 15 = |det A|. Option A gives the eigenvalues of A (its diagonal); for a non-symmetric matrix these are not the singular values. Option B forgets the square root. Option D takes the norms of the rows (√41 ≈ 6.403 and 3)."
+    },
+    "mlf-w6-q13": {
+      "question": "A 200 × 150 grayscale image is to be stored with a rank-k SVD (k left vectors, k right vectors, k singular values), using less than 10% of the original storage. What is the largest allowed k?",
+      "options": [
+        "8",
+        "9",
+        "85",
+        "15"
+      ],
+      "explanation": "Original = 200 × 150 = 30000 numbers, 10% = 3000. Rank k needs k(200 + 150 + 1) = 351k < 3000 ⇒ k < 8.55, so k = 8 (351 × 8 = 2808, while k = 9 gives 3159 > 3000). Option B rounds 8.55 up. Option C forgets the 10% condition (30000/351). Option D just computes 3000/200 without the full storage formula."
+    },
+    "mlf-w6-q14": {
+      "question": "Four centered points: (4, 2), (−4, −2), (1, −2), (−1, 2). Using the covariance with (1/n), what is the first principal component and the variance it explains?",
+      "options": [
+        "(1, 0); 68%",
+        "(2, 1)/√5; 80%",
+        "(1, 2)/√5; 80%",
+        "(1, 1)/√2; 74%"
+      ],
+      "explanation": "Σx² = 34, Σy² = 16, Σxy = 8 + 8 − 2 − 2 = 12, so C = [[8.5, 3], [3, 4]]. Trace 12.5, det 34 − 9 = 25 ⇒ λ = 10, 2.5. For λ = 10, −1.5v₁ + 3v₂ = 0 ⇒ v ∝ (2, 1). Variance explained = 10/12.5 = 80%. Option C has the right ratio but swaps the components of the direction. Option A takes just the variance along the x-axis (8.5/12.5), and option D assumes the direction (1, 1), whose variance is 9.25, not the maximum."
+    },
+    "mlf-w6-q15": {
+      "question": "A dataset has mean μ = (2, 1) and first PC u = (0.6, 0.8). The raw point x = (7, 1) is represented with just 1 PC. What are the score z = uᵀ(x − μ) and the squared reconstruction error ‖(x − μ) − zu‖²?",
+      "options": [
+        "z = 5, error 25",
+        "z = 3, error 9",
+        "z = 3, error 22",
+        "z = 3, error 16"
+      ],
+      "explanation": "Centered point x − μ = (5, 0). z = 0.6 × 5 + 0.8 × 0 = 3. Reconstruction zu = (1.8, 2.4), error vector (3.2, −2.4), squared error = 10.24 + 5.76 = 16 (shortcut: ‖x − μ‖² − z² = 25 − 9). Option A forgets centering (z = uᵀx = 5). Option B takes z² as the error, but that is the part that is kept. Option C forgets to square z (25 − 3)."
     },
     "mlf-w7-q1": {
       "question": "Gradient descent is run on f(x) = x² − 4x from x₀ = 0 with learning rate η = 0.25. What is x₁?",
@@ -421,6 +961,96 @@
       ],
       "explanation": "∇f = (2x + y − 3, x + 2y) = (−3, 0) at the origin. H = [[2, 1], [1, 2]], H⁻¹ = (1/3)[[2, −1], [−1, 2]]. Step = −H⁻¹∇f = −(1/3)(−6, 3) = (2, −1). f is quadratic, so this is the exact minimum (∇f(2, −1) = (0, 0), f = −3). Option C divides only by the diagonal curvature (ignoring the xy cross term), option B is gradient descent with η = 1, and option D has the sign flipped (x + H⁻¹∇f)."
     },
+    "mlf-w7-q7": {
+      "question": "In which direction does each step of gradient descent move?",
+      "options": [
+        "Along ∇f",
+        "Along the top eigenvector of the Hessian",
+        "In a random direction at each step",
+        "Along −∇f (the local steepest descent)"
+      ],
+      "explanation": "The update is xₖ₊₁ = xₖ − η∇f(xₖ); ∇f gives the steepest increase, so to minimise we take the opposite direction −∇f. Option A would increase the function (gradient ascent). Option B uses the Hessian, which gradient descent does not. Option C gives no guarantee of descent."
+    },
+    "mlf-w7-q8": {
+      "question": "Gradient descent is run on f(x) = ½xᵀHx, where H has eigenvalues 4 and 10. The learning rate η must be below which value for convergence?",
+      "options": [
+        "0.2",
+        "0.5",
+        "0.1",
+        "0.4"
+      ],
+      "explanation": "Each eigen-direction is multiplied by the factor (1 − ηλᵢ); |1 − ηλᵢ| < 1 for all i ⇒ η < 2/λ_max = 2/10 = 0.2. Option B is 2/λ_min = 2/4; at that rate the λ = 10 direction diverges. Option C is 1/λ_max, the limit for no oscillation, not for convergence. Option D, 4/10, does not come from any rule."
+    },
+    "mlf-w7-q9": {
+      "question": "Take one step of Newton's method on f(x) = x² − 6x + 1 from x₀ = 10. What is x₁?",
+      "options": [
+        "8.6",
+        "−4",
+        "3",
+        "−18"
+      ],
+      "explanation": "f′(x) = 2x − 6 ⇒ f′(10) = 14, f″ = 2. x₁ = 10 − 14/2 = 3, which is the exact minimum (on a quadratic Newton gets there in one step). Option A is gradient descent with η = 0.1. Option B is a gradient step with η = 1, without dividing by the curvature. Option D multiplies by f″ instead of dividing."
+    },
+    "mlf-w7-q10": {
+      "question": "What are the critical points of f(x, y) = x³ + y² − 3x and how are they classified?",
+      "options": [
+        "(1, 0) local max, (−1, 0) local min",
+        "(1, 0) local min, (−1, 0) saddle",
+        "(1, 0) saddle, (−1, 0) local max",
+        "Both (1, 0) and (−1, 0) are local minima"
+      ],
+      "explanation": "∇f = (3x² − 3, 2y) = 0 ⇒ x = ±1, y = 0. Hessian = diag(6x, 2). At (1, 0), diag(6, 2) is PD ⇒ local min. At (−1, 0), diag(−6, 2) is indefinite ⇒ saddle. Option C calls (−1, 0) a local max, but the curvature in the y-direction is +2, so it cannot be a max. Option A flips the signs, and option D does not check the Hessian at all."
+    },
+    "mlf-w7-q11": {
+      "question": "Gradient descent is run on f(x) = 2x² from x₀ = 1 with η = 0.4. What is x₃ after 3 steps, and how do the iterations behave?",
+      "options": [
+        "x₃ = 0.216; converges directly (monotonically)",
+        "x₃ = −0.6; they diverge",
+        "x₃ = 4.096; they diverge",
+        "x₃ = −0.216; converges while oscillating"
+      ],
+      "explanation": "f′(x) = 4x, so xₖ₊₁ = x − 0.4 · 4x = −0.6x. x₃ = (−0.6)³ = −0.216. The factor is negative but |−0.6| < 1, so the sign flips each step and the size shrinks: oscillating convergence (η = 0.4 lies between 1/λ = 0.25 and 2/λ = 0.5). Option A forgets the sign, option B is just one step, and option C uses the factor 1 + 1.6."
+    },
+    "mlf-w7-q12": {
+      "question": "Gradient descent is run on f(x, y) = x² + 9y² from the start (1, 1) with η = 0.1. What is the point after 2 steps, and is this η stable?",
+      "options": [
+        "(0.64, 0.64); stable, since 0.1 < 2/18",
+        "(0.8, −0.8); stable, since 0.1 < 2/18",
+        "(0.64, 0.64); unstable, since 0.1 > 1/18",
+        "(0.81, 0.01); stable, since 0.1 < 2/9"
+      ],
+      "explanation": "∇f = (2x, 18y), and the Hessian eigenvalues are 2 and 18. Factors: 1 − 0.2 = 0.8 for x, 1 − 1.8 = −0.8 for y. After 2 steps: (0.8², (−0.8)²) = (0.64, 0.64). |0.8| < 1 in both directions, so it is stable (η < 2/λ_max = 2/18 ≈ 0.111). The y-direction oscillates but converges. Option B is just 1 step. Option C takes 1/λ_max as the stability limit. Option D forgets the 2 from the derivative (using λ = 1 and 9)."
+    },
+    "mlf-w7-q13": {
+      "question": "Take 2 steps of Newton's method on f(x) = eˣ − 2x from x₀ = 0. What is x₂? (The true minimum is at ln 2 ≈ 0.6931.)",
+      "options": [
+        "1",
+        "0.5",
+        "0.7358",
+        "0.6931"
+      ],
+      "explanation": "f′ = eˣ − 2, f″ = eˣ. x₁ = 0 − (1 − 2)/1 = 1. x₂ = 1 − (e − 2)/e = 2/e ≈ 0.7358. On a non-quadratic function Newton does not reach the exact minimum in one step, but it closes in quickly. Option A is just x₁. Option B is one step of gradient descent with η = 0.5. Option D is the exact minimum, which 2 Newton steps have not reached yet."
+    },
+    "mlf-w7-q14": {
+      "question": "Gradient descent is run on f(x) = 5x² from x₀ = 8 with η = 0.05. After at least how many steps is |x| < 0.1 for the first time?",
+      "options": [
+        "6",
+        "16",
+        "8",
+        "7"
+      ],
+      "explanation": "f′(x) = 10x, so xₖ₊₁ = (1 − 0.05 · 10)xₖ = 0.5xₖ and xₖ = 8 · 0.5ᵏ. At k = 6, 8/64 = 0.125 > 0.1; at k = 7, 8/128 = 0.0625 < 0.1. So 7 steps. Option A rounds log₂(80) ≈ 6.32 down. Option B assumes the derivative is 5x (factor 0.75). Option C counts one extra step."
+    },
+    "mlf-w7-q15": {
+      "question": "Take one step of Newton's method on f(x, y) = 2x² + 2xy + y² − 2y from the point (3, 3). What is the new point?",
+      "options": [
+        "(1.2, 2)",
+        "(−1, 2)",
+        "(−1.5, −2)",
+        "(1, −2)"
+      ],
+      "explanation": "∇f = (4x + 2y, 2x + 2y − 2) = (18, 10) at (3, 3). H = [[4, 2], [2, 2]], det 4, H⁻¹ = ¼[[2, −2], [−2, 4]]. H⁻¹∇f = ¼(36 − 20, −36 + 40) = (4, 1). New point (3 − 4, 3 − 1) = (−1, 2), where ∇f = (0, 0): on a quadratic Newton gives the minimum in one step. Option A is gradient descent with η = 0.1. Option C ignores the off-diagonal 2 of the Hessian (dividing by the diagonal only). Option D is a sign error."
+    },
     "mlf-w8-q1": {
       "question": "Which of these subsets of ℝ² is convex?",
       "options": [
@@ -480,6 +1110,96 @@
         "The origin is a saddle point"
       ],
       "explanation": "The Hessian [[2, −2], [−2, 2]] has eigenvalues 4 and 0 ⇒ PSD ⇒ convex, but not strictly convex. (x − y)² ≥ 0 and equals 0 on x = y, so f = 2 at every point of the line x = y (global minimum; the set of minimisers is a convex line). The trap in option A is assuming the origin is unique; f = 2 at (1, 1) as well. Option C reads PSD as 'not convex', and a saddle needs a negative eigenvalue, which is absent here."
+    },
+    "mlf-w8-q7": {
+      "question": "Which of these sets in ℝ² is NOT convex?",
+      "options": [
+        "{x : ‖x‖ ≤ 3}",
+        "{x : 1 ≤ ‖x‖ ≤ 2}",
+        "{x : x₁ ≥ 0, x₂ ≥ 0}",
+        "{x : x₁ + x₂ = 4}"
+      ],
+      "explanation": "The annulus 1 ≤ ‖x‖ ≤ 2 contains (1.5, 0) and (−1.5, 0), but the midpoint between them, (0, 0), is outside (‖x‖ = 0 < 1). Option A is a ball, option C is an intersection of two half-spaces, and option D is a line; all three are convex."
+    },
+    "mlf-w8-q8": {
+      "question": "Which of these functions is convex on the whole real line ℝ?",
+      "options": [
+        "f(x) = −x²",
+        "f(x) = x³",
+        "f(x) = eˣ",
+        "f(x) = sin x"
+      ],
+      "explanation": "f″(x) = eˣ > 0 for every x, so eˣ is (strictly) convex. Option A has f″ = −2 < 0 (concave). Option B has f″ = 6x, which is negative for x < 0, so it is convex only on x ≥ 0, not on the whole line. Option D has f″ = −sin x, which changes sign."
+    },
+    "mlf-w8-q9": {
+      "question": "You found a local minimum of a convex optimisation problem. What is certain about it?",
+      "options": [
+        "It is also a global minimum",
+        "The global minimum may be somewhere else",
+        "It must be a saddle point",
+        "It is always the unique minimiser"
+      ],
+      "explanation": "The most important property of a convex problem: every local minimum is a global minimum. Option B describes non-convex problems (such as neural networks). Option C is wrong. Option D is guaranteed only for a strictly convex objective; for example (x − y)² has a whole line of minimisers."
+    },
+    "mlf-w8-q10": {
+      "question": "Which of these functions is convex on ℝ²?",
+      "options": [
+        "f(x, y) = x² + 4xy + y²",
+        "f(x, y) = x² − y²",
+        "f(x, y) = xy",
+        "f(x, y) = x² + xy + y²"
+      ],
+      "explanation": "Hessian check: option D has H = [[2, 1], [1, 2]], det 3 > 0, H₁₁ > 0 ⇒ PD ⇒ convex. Option A has H = [[2, 4], [4, 2]], det 4 − 16 < 0 ⇒ indefinite; calling it convex because the diagonal is positive is the trap. Option B has H = diag(2, −2), which is indefinite, and option C has H = [[0, 1], [1, 0]], also indefinite (det −1)."
+    },
+    "mlf-w8-q11": {
+      "question": "f: ℝ → ℝ is differentiable and convex, with f(2) = 3 and f′(2) = 4. What is guaranteed about f(5)?",
+      "options": [
+        "f(5) ≤ 15",
+        "f(5) ≥ 15",
+        "f(5) = 15",
+        "f(5) ≥ 12"
+      ],
+      "explanation": "The graph of a convex function lies above every tangent: f(y) ≥ f(x) + f′(x)(y − x). With x = 2, y = 5: f(5) ≥ 3 + 4 · 3 = 15. Option A flips the inequality (a mix-up with the chord upper bound). Option C holds only if f is linear. Option D forgets to add f(2) = 3."
+    },
+    "mlf-w8-q12": {
+      "question": "Which statement about f(w) = max(0, 1 − 2w) + w² is correct?",
+      "options": [
+        "It is convex; global minimiser w = 0.5, minimum value 0.25",
+        "It is convex; global minimiser w = 1, minimum value 1",
+        "It is not convex (the max is non-smooth); w = 0 is a local min",
+        "It is convex; global minimiser w = 0, minimum value 1"
+      ],
+      "explanation": "max(0, 1 − 2w) is a max of affine functions (convex), w² is convex, and the sum stays convex. For w < 0.5, f = 1 − 2w + w² and f′ = 2w − 2 < 0 (decreasing); for w ≥ 0.5, f = w² and f′ = 2w > 0 (increasing). So the minimum is at the kink: w = 0.5, f = 0.25. Option B gives w = 1, the stationary point of 1 − 2w + w², which is not even in that region (w < 0.5). Option C mistakes non-smooth for non-convex. Option D has f(0) = 1, which is larger than 0.25."
+    },
+    "mlf-w8-q13": {
+      "question": "What is true about f(x, y) = 3x² + 2xy + y² − 8x?",
+      "options": [
+        "Minimiser (2, −2), value −8; but it is only a local minimum",
+        "Minimiser (4/3, 0), value −16/3; f is strictly convex",
+        "Unique global minimiser (2, −2), value −8; f is strictly convex",
+        "Unique global minimiser (−2, 2), value 24; f is strictly convex"
+      ],
+      "explanation": "Hessian [[6, 2], [2, 2]], det 12 − 4 = 8 > 0, 6 > 0 ⇒ PD ⇒ strictly convex, so the stationary point is the unique global minimiser. ∇f = (6x + 2y − 8, 2x + 2y) = 0 ⇒ y = −x, 4x = 8 ⇒ (2, −2). f = 12 − 8 + 4 − 16 = −8. Option A forgets the benefit of convexity: in a convex problem local = global. Option B ignores the cross term 2xy in the gradient. Option D flips the signs; the gradient is not zero at (−2, 2)."
+    },
+    "mlf-w8-q14": {
+      "question": "f(x) = x² and g(x) = (x − 2)². Which of these functions are convex on ℝ: h₁ = f + g, h₂ = max(f, g), h₃ = f − g, h₄ = f · g?",
+      "options": [
+        "Only h₁ and h₂",
+        "h₁, h₂ and h₃",
+        "Only h₁",
+        "All four"
+      ],
+      "explanation": "h₁ (a sum of convex functions) and h₂ (a pointwise max) are convex by the rules. h₃ = x² − (x² − 4x + 4) = 4x − 4, an affine function, which is convex; the rules give no guarantee for a difference, but here the answer is convex. h₄ = x²(x − 2)² has minima 0 at 0 and 2, while in between h₄(1) = 1 > 0, so it is not convex. Option A treats a difference as automatically non-convex, which is the trap. Option D also takes the product as convex."
+    },
+    "mlf-w8-q15": {
+      "question": "f: ℝ → ℝ is convex, with f(0) = 0, f(2) = 4 and f(4) = 8. What can be said about f(3)?",
+      "options": [
+        "Only f(3) ≤ 6 is known",
+        "Only f(3) ≥ 6 is known",
+        "f(3) = 4.5",
+        "f(3) = 6 exactly"
+      ],
+      "explanation": "Upper bound: 3 = ½ · 2 + ½ · 4, so f(3) ≤ ½f(2) + ½f(4) = 6. Lower bound: 2 = ⅓ · 0 + ⅔ · 3, so f(2) ≤ ⅓f(0) + ⅔f(3) ⇒ 4 ≤ ⅔f(3) ⇒ f(3) ≥ 6. Together f(3) = 6. Option A uses only the chord inequality, option B only the other one. Option C assumes a specific function like x²/2, which does not even match the given points (it has f(4) = 8 but f(2) = 2)."
     },
     "mlf-w9-q1": {
       "question": "What is the maximum value of f(x, y) = xy subject to the constraint x + y = 10?",
@@ -541,6 +1261,96 @@
       ],
       "explanation": "The unconstrained minimum x = 3 is infeasible (3 > 1), so the constraint is active: x* = 1. Stationarity: 2(x − 3) + μ = 0 ⇒ 2(−2) + μ = 0 ⇒ μ = 4 ≥ 0 ✓, and μ(x* − 1) = 0 ✓. Option A violates feasibility. Option B keeps μ = 0 with an active constraint, so stationarity fails (−4 ≠ 0). Option C has the wrong sign; minimisation with g ≤ 0 needs μ ≥ 0."
     },
+    "mlf-w9-q7": {
+      "question": "A logistic regression model has parameters w = (2, −1), b = −3. For the input x = (1, 1), what are the predicted class at threshold 0.5 and P(y = 1 | x)?",
+      "options": [
+        "Class 1, p ≈ 0.881",
+        "Class 1, p = 0.5",
+        "Class 0, p ≈ 0.119",
+        "Class 0, p = 0"
+      ],
+      "explanation": "z = wᵀx + b = 2 − 1 − 3 = −2. p = σ(−2) = 1/(1 + e²) ≈ 0.119 < 0.5, so class 0 (z < 0). Option A is σ(+2), the wrong sign. Option B assumes b has no effect. Option D is wrong because the sigmoid never gives exactly 0."
+    },
+    "mlf-w9-q8": {
+      "question": "In the KKT conditions, what does complementary slackness μ · g(x*) = 0 mean (constraint g(x) ≤ 0, μ ≥ 0)?",
+      "options": [
+        "Either the constraint is active (g = 0) or μ = 0",
+        "μ is always zero",
+        "The constraint is always active",
+        "g(x*) is always strictly negative"
+      ],
+      "explanation": "The product is zero, so at least one factor is zero: either x* is on the boundary (g = 0, μ ≥ 0), or the constraint is inactive and μ = 0. Option B and option D take only the inactive case as general, and option C only the active case. Both cases are possible."
+    },
+    "mlf-w9-q9": {
+      "question": "A logistic regression model gives P(y = 1 | x) = 0.9 for some input. What is the log-odds z = wᵀx + b for that input?",
+      "options": [
+        "0.9",
+        "9",
+        "≈ −2.197",
+        "≈ 2.197"
+      ],
+      "explanation": "z = ln(p/(1 − p)) = ln(0.9/0.1) = ln 9 ≈ 2.197. Option A takes the probability itself as z. Option B is the odds (9) without taking the log. Option C inverts the ratio (ln(0.1/0.9)); since p > 0.5, z must be positive."
+    },
+    "mlf-w9-q10": {
+      "question": "Minimise f(x, y) = x² + 4y² subject to x + y = 5. What are the optimum point and the minimum value?",
+      "options": [
+        "(2.5, 2.5), f = 31.25",
+        "(4, 1), f = 20",
+        "(1, 4), f = 65",
+        "(5, 0), f = 25"
+      ],
+      "explanation": "∇f = λ∇h: 2x = λ, 8y = λ ⇒ x = 4y. x + y = 5 ⇒ 5y = 5 ⇒ y = 1, x = 4. f = 16 + 4 = 20 (and λ = 8). Option A assumes symmetry, but y has weight 4, so y should be smaller. Option C swaps x and y. Option D is a corner point, not the optimum (f = 25 > 20)."
+    },
+    "mlf-w9-q11": {
+      "question": "Minimise 2x² + 2y² subject to x + y = 4. The optimum is x = y = 2, f* = 16. Using the multiplier λ, give the first-order estimate of f* when the constraint becomes x + y = 4.2.",
+      "options": [
+        "16.2",
+        "16.8",
+        "17.6",
+        "24"
+      ],
+      "explanation": "Stationarity: 4x = λ ⇒ λ = 8. Shadow price: d(f*)/dc = λ, so f*(4.2) ≈ 16 + 8 × 0.2 = 17.6 (the exact c² = 17.64 is very close). Option A adds just Δc = 0.2 without multiplying by λ. Option B takes λ = 4 (the coefficient in 2x²). Option D adds the whole λ without multiplying by Δc."
+    },
+    "mlf-w9-q12": {
+      "question": "Minimise f(x, y) = (x − 1)² + (y − 2)² subject to x + y ≤ 2. Using the Lagrangian L = f + μ(x + y − 2), what is the KKT solution?",
+      "options": [
+        "x* = (0.5, 1.5), μ = 1",
+        "x* = (1, 2), μ = 0",
+        "x* = (0.5, 1.5), μ = −1",
+        "x* = (1, 1), μ = 2"
+      ],
+      "explanation": "At the unconstrained minimum (1, 2), x + y = 3 > 2, which is infeasible, so the constraint is active: x + y = 2. Stationarity 2(x − 1) + μ = 0, 2(y − 2) + μ = 0 ⇒ y − x = 1, x + y = 2 ⇒ (0.5, 1.5). μ = −2(0.5 − 1) = 1 ≥ 0, and all KKT conditions hold. Option B ignores the constraint (the point is not even feasible). Option C has a negative μ, which breaks dual feasibility. Option D fails stationarity (the x equation demands 0 + μ = 0)."
+    },
+    "mlf-w9-q13": {
+      "question": "Logistic regression (no bias) starts at w = (0, 0). Two examples: x₁ = (1, 2), y₁ = 1 and x₂ = (1, −1), y₂ = 0. Take one gradient descent step on the NLL J(w) with η = 0.2. What is the new w?",
+      "options": [
+        "(0, −0.3)",
+        "(0.1, 0.2)",
+        "(0, 0.3)",
+        "(0.2, 0.4)"
+      ],
+      "explanation": "At w = 0 both p = σ(0) = 0.5. ∇J = Σ(pᵢ − yᵢ)xᵢ = (−0.5)(1, 2) + (0.5)(1, −1) = (0, −1.5). w ← w − 0.2∇J = (0, 0.3). Option A uses a plus sign with the gradient (ascent). Option B uses only the first example. Option D forgets the effect of p and takes just Σyᵢxᵢ."
+    },
+    "mlf-w9-q14": {
+      "question": "Maximise f(x, y) = x + 2y on the constraint x² + y² = 5, with the convention ∇f = λ∇h (h = x² + y² − 5). What are the maximum value, the point and λ?",
+      "options": [
+        "Max 4 at (2, 1), λ = 0.5",
+        "Max √5 at (1, 2)/√5, λ = 0.5",
+        "Max 5 at (1, 2), λ = 2",
+        "Max 5 at (1, 2), λ = 0.5"
+      ],
+      "explanation": "(1, 2) = λ(2x, 2y) ⇒ (x, y) ∝ (1, 2). x² + y² = 5 ⇒ (1, 2) or (−1, −2); max f = 1 + 4 = 5 at (1, 2) (the min −5 at the other). λ = 1/(2x) = 0.5. Option A swaps the coordinates (f(2, 1) = 4). Option B assumes a unit circle, forgetting the radius √5. Option C takes λ as 2x instead of 1/(2x)."
+    },
+    "mlf-w9-q15": {
+      "question": "Logistic regression (no bias), w = (0, 0), examples x₁ = (1, 1), y₁ = 1 and x₂ = (1, −1), y₂ = 0. Using the Hessian XᵀSX (S = diag(pᵢ(1 − pᵢ))), take one Newton (IRLS) step. What is the new w?",
+      "options": [
+        "(0, 0.5)",
+        "(0, 2)",
+        "(0, −2)",
+        "(0, 1)"
+      ],
+      "explanation": "At w = 0, p = 0.5 and S = 0.25I. ∇J = (−0.5)(1, 1) + (0.5)(1, −1) = (0, −1). H = 0.25[(1, 1)(1, 1)ᵀ + (1, −1)(1, −1)ᵀ] = 0.25[[2, 0], [0, 2]] = 0.5I, H⁻¹ = 2I. w ← 0 − H⁻¹∇J = (0, 2). Option A multiplies by H instead of H⁻¹. Option C flips the sign of the step. Option D ignores the Hessian and takes a gradient step with η = 1."
+    },
     "mlf-w10-q1": {
       "question": "In a fictional A/B test, 7 of 10 users clicked the button. Modelling each user as Bernoulli(θ), what is the MLE of θ?",
       "options": [
@@ -600,6 +1410,96 @@
         "0.160"
       ],
       "explanation": "Spam score = 0.4 × 0.8 × (1 − 0.5) = 0.16. Ham score = 0.6 × 0.3 × (1 − 0.6) = 0.072. Posterior = 0.16/(0.16 + 0.072) ≈ 0.690. Option A uses P(x₂ = 1 | y) even though x₂ = 0 (making the ham score 0.108). Option B ignores the priors, and option D is the unnormalised spam score, not a probability."
+    },
+    "mlf-w10-q7": {
+      "question": "5 i.i.d. samples from Bernoulli(θ) contain 3 ones and 2 zeros. What is the log-likelihood ℓ(θ)?",
+      "options": [
+        "θ³(1 − θ)²",
+        "3 ln θ − 2 ln(1 − θ)",
+        "3 ln θ · 2 ln(1 − θ)",
+        "3 ln θ + 2 ln(1 − θ)"
+      ],
+      "explanation": "L(θ) = θ³(1 − θ)², and taking the log gives ℓ(θ) = 3 ln θ + 2 ln(1 − θ). Option A is the likelihood, not the log-likelihood. Option B has the wrong sign on the zeros term; 2 ln(1 − θ) is added, not subtracted. Option C turns the log of a product into a product of logs, whereas ln(ab) = ln a + ln b."
+    },
+    "mlf-w10-q8": {
+      "question": "What type of model is logistic regression?",
+      "options": [
+        "Generative, because it learns p(x | y)",
+        "Discriminative, because it learns p(y | x) directly",
+        "An unsupervised density model, because it needs no labels",
+        "Naive Bayes, because it assumes independent features"
+      ],
+      "explanation": "Logistic regression models P(y = 1 | x) = σ(wᵀx + b) directly: discriminative. Option A is the definition of generative models (like naive Bayes), which learn p(x | y) and p(y). Option C is wrong because training needs labels. Option D: conditional independence is the naive Bayes assumption, not that of logistic regression."
+    },
+    "mlf-w10-q9": {
+      "question": "Assuming the data 3, 7, 8 come from N(μ, σ²), what is the maximum likelihood estimate of μ?",
+      "options": [
+        "6",
+        "7",
+        "5.5",
+        "18"
+      ],
+      "explanation": "For a Gaussian, μ̂ = the sample mean = (3 + 7 + 8)/3 = 6. Option B is the median, option C is the average of the min and max (the midrange), and option D is the sum without dividing by n = 3."
+    },
+    "mlf-w10-q10": {
+      "question": "A naive Bayes classifier has 2 classes and 20 binary features. How many parameters must be estimated (the class prior + P(xⱼ = 1 | y) for every feature in every class)?",
+      "options": [
+        "21",
+        "40",
+        "41",
+        "2097151"
+      ],
+      "explanation": "Prior: 1 free parameter for 2 classes (P(y = 1); the other is 1 − P(y = 1)). In each class, 20 Bernoulli parameters: 2 × 20 = 40. Total 41. Option A counts the feature parameters of only one class. Option B forgets the prior. Option D is the full joint p(x | y) without the naive assumption: 2(2²⁰ − 1) + 1, which is exactly why it is impractical."
+    },
+    "mlf-w10-q11": {
+      "question": "In a fictional email filter, P(spam) = 0.3. For the word \"lottery\", P(word | spam) = 0.6 and P(word | ham) = 0.1. An email contains this word. What is P(spam | word)?",
+      "options": [
+        "0.6",
+        "0.18",
+        "0.857",
+        "0.72"
+      ],
+      "explanation": "Bayes rule: the numerator is 0.6 × 0.3 = 0.18, and for ham 0.1 × 0.7 = 0.07. P(spam | word) = 0.18/(0.18 + 0.07) = 0.72. Option A takes the likelihood P(word | spam) as the posterior. Option B forgets to normalise. Option C ignores the prior (0.6/(0.6 + 0.1))."
+    },
+    "mlf-w10-q12": {
+      "question": "The data 1, 3, 5, 7 are compared under the model N(μ, σ² = 4). Which of μ = 4 and μ = 3 is more likely, and what is the log-likelihood difference ℓ(μ = 4) − ℓ(μ = 3)?",
+      "options": [
+        "μ = 4; difference 0.5",
+        "μ = 4; difference 4",
+        "μ = 3; difference 0.5",
+        "μ = 4; difference 1"
+      ],
+      "explanation": "ℓ(μ) = const − Σ(xᵢ − μ)²/(2σ²). Σ(xᵢ − 4)² = 9 + 1 + 1 + 9 = 20, Σ(xᵢ − 3)² = 4 + 0 + 4 + 16 = 24. Difference = (24 − 20)/(2 × 4) = 0.5, and μ = 4 (the sample mean) is more likely. Option B forgets to divide by 2σ². Option D divides only by σ² (the ½ factor is missing). Option C gets the direction backwards; a smaller squared error means a higher likelihood."
+    },
+    "mlf-w10-q13": {
+      "question": "1-D generative classifier: class 0 ~ N(2, 4), class 1 ~ N(6, 4) (variance 4), priors P(y = 0) = 0.25, P(y = 1) = 0.75. What is the decision boundary x* (class 1 above it)?",
+      "options": [
+        "4",
+        "≈ 2.90",
+        "≈ 5.10",
+        "≈ 3.45"
+      ],
+      "explanation": "x* = (μ₀ + μ₁)/2 + σ² ln(π₀/π₁)/(μ₁ − μ₀) = 4 + 4 ln(1/3)/4 = 4 − 1.0986 ≈ 2.90. Class 1 has the larger prior, so the boundary shifts towards class 0 (smaller x). Option A ignores the priors and takes the midpoint. Option C flips the sign of the ln. Option D uses σ = 2 instead of σ²."
+    },
+    "mlf-w10-q14": {
+      "question": "Bernoulli data 1, 0, 1, 1, 0, 1. What is the MLE θ̂ of θ, and what is the likelihood ratio L(θ̂)/L(0.5)?",
+      "options": [
+        "θ̂ = 0.5; ratio 1",
+        "θ̂ = 2/3; ratio ≈ 0.712",
+        "θ̂ = 2/3; ratio ≈ 1.333",
+        "θ̂ = 2/3; ratio ≈ 1.405"
+      ],
+      "explanation": "k = 4, n = 6 ⇒ θ̂ = 4/6 = 2/3. L(2/3) = (2/3)⁴(1/3)² = 16/729 ≈ 0.02195, L(0.5) = (1/2)⁶ = 1/64 = 0.015625. Ratio ≈ 1.405 > 1, as it must be for the MLE. Option B inverts the ratio (being < 1 contradicts the definition of the MLE). Option C takes the ratio of the θ values (2/3)/(1/2), not of the likelihoods. Option A takes the MLE to be 0.5."
+    },
+    "mlf-w10-q15": {
+      "question": "Model yᵢ = wxᵢ + εᵢ (no intercept), εᵢ ~ N(0, σ²) i.i.d. Data (1, 4), (2, 3), (3, 6). What are the maximum likelihood estimates of w and σ²?",
+      "options": [
+        "ŵ = 2, σ̂² = 2.5",
+        "ŵ ≈ 2.17, σ̂² ≈ 1.667",
+        "ŵ = 2, σ̂² ≈ 1.667",
+        "ŵ = 2, σ̂² = 5"
+      ],
+      "explanation": "Under Gaussian noise the MLE of w = least squares: ŵ = Σxᵢyᵢ/Σxᵢ² = (4 + 6 + 18)/14 = 2. Residuals: 4 − 2 = 2, 3 − 4 = −1, 6 − 6 = 0, Σ = 5. σ̂² = (1/n)Σ = 5/3 ≈ 1.667. Option A divides by n − 1 (the MLE divides by n). Option B takes ŵ as ȳ/x̄ = 13/6. Option D does not average the residual sum."
     },
     "mlf-w11-q1": {
       "question": "When Bernoulli(θ = 0.8) is written in exponential-family form, what is the natural parameter η?",
@@ -661,6 +1561,96 @@
       ],
       "explanation": "A′(η) = −1/η = E[X]. MLE condition: −1/η̂ = 0.5 ⇒ η̂ = −2, i.e. λ̂ = 2 (and the mean 1/λ̂ = 0.5 ✓). Option A is λ̂, not the natural parameter (η = −λ is negative). Option B takes the mean itself as η and adds a sign, and option C is the sample mean."
     },
+    "mlf-w11-q7": {
+      "question": "When Poisson(λ = 5) is written in exponential-family form, what is the natural parameter η?",
+      "options": [
+        "5",
+        "≈ 1.609",
+        "≈ 148.4",
+        "0.2"
+      ],
+      "explanation": "For the Poisson, η = ln λ = ln 5 ≈ 1.609. Option A takes λ itself as η. Option C is e⁵, the inverse transform (λ = e^η, not η = e^λ). Option D is 1/λ, which does not come from any formula."
+    },
+    "mlf-w11-q8": {
+      "question": "For n i.i.d. samples from Bernoulli(θ), which statistic contains all the information about θ?",
+      "options": [
+        "The maximum of the samples",
+        "Just the first sample x₁",
+        "Σxᵢ (the count of ones)",
+        "The median of the samples"
+      ],
+      "explanation": "For the Bernoulli T(x) = x, so the sufficient statistic of n samples is ΣT(xᵢ) = Σxᵢ; the likelihood θ^(Σxᵢ)(1 − θ)^(n − Σxᵢ) depends only on it. Options A and D throw information away (very different sequences can share the same max or median). Option B ignores the other n − 1 samples."
+    },
+    "mlf-w11-q9": {
+      "question": "In the exponential family p(x | η) = h(x) exp(ηT(x) − A(η)), what does the first derivative A′(η) of the log-partition function give?",
+      "options": [
+        "E[T(X)]",
+        "Var[T(X)]",
+        "The natural parameter η",
+        "The base measure h(x)"
+      ],
+      "explanation": "A′(η) = E[T(X)], the mean of the sufficient statistic, and the second derivative A″(η) = Var[T(X)]. Option B is the result for A″, not A′. Options C and D are other parts of the form, not derivatives of A."
+    },
+    "mlf-w11-q10": {
+      "question": "For the Poisson, A(η) = e^η. If the natural parameter is η = ln 3, what are E[X] and Var[X]?",
+      "options": [
+        "ln 3 and 3",
+        "3 and 9",
+        "3 and ln 3",
+        "3 and 3"
+      ],
+      "explanation": "E[X] = A′(η) = e^η = 3, Var[X] = A″(η) = e^η = 3. For the Poisson, mean = variance = λ. Option A takes the mean to be η itself. Option B takes the variance to be mean². Option C uses η for the variance."
+    },
+    "mlf-w11-q11": {
+      "question": "For the exponential distribution, A(η) = −ln(−η) with η = −λ < 0. At η = −4, what are E[X] and Var[X]?",
+      "options": [
+        "4 and 16",
+        "0.25 and 0.0625",
+        "−0.25 and 0.0625",
+        "0.25 and 0.25"
+      ],
+      "explanation": "A′(η) = −1/η = 0.25 = 1/λ, A″(η) = 1/η² = 1/16 = 0.0625. Option A takes λ as the mean (the mean is 1/λ). Option C gets the sign of the derivative wrong; a waiting time cannot have a negative mean. Option D takes the variance equal to the mean (that is the Poisson pattern)."
+    },
+    "mlf-w11-q12": {
+      "question": "The natural parameters of a Gaussian are η = (μ/σ², −1/(2σ²)). If η = (3, −0.5), what are E[X] and E[X²]?",
+      "options": [
+        "3 and 9",
+        "6 and 38",
+        "3 and 10",
+        "−3 and 10"
+      ],
+      "explanation": "η₂ = −1/(2σ²) = −0.5 ⇒ σ² = 1. η₁ = μ/σ² = 3 ⇒ μ = 3. E[X²] = Var + mean² = 1 + 9 = 10. Option A forgets to add the variance (taking E[X²] = μ²). Option B uses σ² = −1/η₂ = 2 (the ½ factor is missing), giving μ = 6 and 2 + 36 = 38. Option D computes μ = η₁/(2η₂) and gets the sign wrong."
+    },
+    "mlf-w11-q13": {
+      "question": "Bernoulli data 1, 1, 0, 1, 1, 0, 1, 1. Using moment matching A′(η̂) = x̄, what is the MLE η̂ of the natural parameter?",
+      "options": [
+        "η̂ = ln 3 ≈ 1.099",
+        "η̂ = 0.75",
+        "η̂ = ln 0.75 ≈ −0.288",
+        "η̂ = ln 6 ≈ 1.792"
+      ],
+      "explanation": "x̄ = 6/8 = 0.75. For the Bernoulli A′(η) = σ(η), so σ(η̂) = 0.75 ⇒ η̂ = ln(0.75/0.25) = ln 3 ≈ 1.099. Option B is θ̂, not η̂ (the mean parameter and the natural parameter are different). Option C takes just ln θ instead of the log-odds. Option D takes the log of the count of ones."
+    },
+    "mlf-w11-q14": {
+      "question": "For the Bernoulli, A(η) = ln(1 + e^η). For n = 20 i.i.d. samples, what is the second derivative of the log-likelihood ℓ(η) = η Σxᵢ − 20A(η) at η = 0?",
+      "options": [
+        "5",
+        "−5",
+        "−0.25",
+        "−20"
+      ],
+      "explanation": "ℓ″(η) = −nA″(η), and A″(η) = σ(η)(1 − σ(η)) = Var[X]. At η = 0, A″ = 0.5 × 0.5 = 0.25, so ℓ″ = −20 × 0.25 = −5. It is negative, which is why the log-likelihood is concave. Option A forgets the sign. Option C forgets to multiply by n. Option D takes A″ to be 1."
+    },
+    "mlf-w11-q15": {
+      "question": "Write the geometric pmf p(x) = θ(1 − θ)ˣ, x = 0, 1, 2, … in the form exp(ηx − A(η)). For θ = 0.25, what are the natural parameter η and the mean from A′(η)?",
+      "options": [
+        "η = ln 0.25, mean 3",
+        "η = ln 0.75, mean 4",
+        "η = ln 3, mean 3",
+        "η = ln 0.75, mean 3"
+      ],
+      "explanation": "θ(1 − θ)ˣ = exp(x ln(1 − θ) + ln θ), so T(x) = x, η = ln(1 − θ) = ln 0.75, and A(η) = −ln θ = −ln(1 − e^η). A′(η) = e^η/(1 − e^η) = 0.75/0.25 = 3. Option B takes the mean as 1/θ = 4, which is the mean for the x = 1, 2, … convention, not for this pmf. Option A confuses θ and 1 − θ in η. Option C takes the log-odds ln((1 − θ)/θ) as for the Bernoulli."
+    },
     "mlf-w12-q1": {
       "question": "In linear regression with Gaussian noise, computing the MAP estimate with a zero-mean Gaussian prior on the weights w is equivalent to which method?",
       "options": [
@@ -720,6 +1710,96 @@
         "μ₁ ≈ 1.72, π₁ = 1.8"
       ],
       "explanation": "N₁ = 0.9 + 0.8 + 0.1 = 1.8. μ₁ = (0.9·1 + 0.8·2 + 0.1·6)/1.8 = 3.1/1.8 ≈ 1.72. π₁ = N₁/n = 1.8/3 = 0.6. Option C divides the weighted sum by n = 3 instead of N₁ (3.1/3). Option A is the unweighted mean, which ignores the responsibilities. Option D forgets to divide N₁ by n, although π₁ is a probability."
+    },
+    "mlf-w12-q7": {
+      "question": "A population has variance σ² = 36. What is the variance of the sample mean x̄ of n = 9 i.i.d. samples?",
+      "options": [
+        "36",
+        "12",
+        "4",
+        "2"
+      ],
+      "explanation": "Var(x̄) = σ²/n = 36/9 = 4. Option A is the variance of a single sample. Option B is σ²/√n (the wrong formula). Option D is the standard error √4 = 2, not the variance."
+    },
+    "mlf-w12-q8": {
+      "question": "The prior on a success probability θ is Beta(2, 5). In 10 trials there were 4 successes. What is the posterior?",
+      "options": [
+        "Beta(4, 6)",
+        "Beta(6, 15)",
+        "Beta(2, 5)",
+        "Beta(6, 11)"
+      ],
+      "explanation": "Posterior Beta(k + a, n − k + b) = Beta(4 + 2, 6 + 5) = Beta(6, 11). Option A forgets the prior (data only). Option B adds the total trials n = 10 instead of the failures. Option C assumes the data do not change the prior."
+    },
+    "mlf-w12-q9": {
+      "question": "With a fixed prior, what happens to the MAP estimate as the data size n becomes very large?",
+      "options": [
+        "It approaches the MLE",
+        "It stays at the prior mean",
+        "It always becomes 0",
+        "It moves away from the MLE"
+      ],
+      "explanation": "ln p(D | θ) is a sum of n terms and grows with n, while ln p(θ) stays fixed, so the likelihood dominates and MAP → MLE. Option B is backwards: the prior matters most when the data are small. Options C and D have no basis."
+    },
+    "mlf-w12-q10": {
+      "question": "With the uniform prior Beta(1, 1), there were 0 successes in 5 trials. What are the MLE, the MAP and the posterior mean?",
+      "options": [
+        "0, 1/7, 1/7",
+        "0, 0, 1/7",
+        "0, 1/6, 1/7",
+        "1/7, 1/7, 1/7"
+      ],
+      "explanation": "MLE = 0/5 = 0. Posterior Beta(1, 6). MAP = (k + a − 1)/(n + a + b − 2) = 0/5 = 0 (with a uniform prior, MAP = MLE). Posterior mean = (k + a)/(n + a + b) = 1/7. Option A and option C get the MAP like the posterior mean or from a wrong formula. Option D smooths the MLE too, although the MLE has no prior at all."
+    },
+    "mlf-w12-q11": {
+      "question": "Two-component 1-D Gaussian mixture: π₁ = 0.25, π₂ = 0.75, component 1 = N(0, 1), component 2 = N(2, 1). In the E-step of EM, what is the responsibility r₁ of component 1 for the point x = 1?",
+      "options": [
+        "0.5",
+        "0.75",
+        "0.1",
+        "0.25"
+      ],
+      "explanation": "x = 1 is equally far from both means, so N(1; 0, 1) = N(1; 2, 1). r₁ = 0.25 · N / (0.25 · N + 0.75 · N) = 0.25. Option A looks only at distances and forgets the mixing weights, which is the main trap. Option B is the responsibility of component 2."
+    },
+    "mlf-w12-q12": {
+      "question": "True mean θ = 5, σ² = 20, n = 10. Two estimators: θ̂₁ = x̄ and the shrunk θ̂₂ = 0.8x̄. What is the MSE of each, and which is better?",
+      "options": [
+        "MSE(x̄) = 2, MSE(0.8x̄) = 2.28; x̄ is better",
+        "MSE(x̄) = 2, MSE(0.8x̄) = 1.28; 0.8x̄ is better",
+        "MSE(x̄) = 20, MSE(0.8x̄) = 13.8; 0.8x̄ is better",
+        "MSE(x̄) = 2, MSE(0.8x̄) = 2.6; x̄ is better"
+      ],
+      "explanation": "x̄ is unbiased with Var = σ²/n = 2, so MSE = 2. θ̂₂: bias = 0.8 · 5 − 5 = −1, Var = 0.64 × 2 = 1.28, MSE = 1 + 1.28 = 2.28 > 2, so x̄ is better here (with a smaller θ the shrinkage could win). Option B forgets to add bias². Option C does not divide by n. Option D scales the variance by 0.8 instead of 0.8² = 0.64."
+    },
+    "mlf-w12-q13": {
+      "question": "n = 4 samples from N(μ, σ² = 4) have sample mean x̄ = 6. The prior on μ is N(0, τ² = 1). Minimising the ridge form ‖x − μ1‖² + (σ²/τ²)μ², what is the MAP estimate μ̂?",
+      "options": [
+        "6",
+        "≈ 5.65",
+        "3",
+        "2"
+      ],
+      "explanation": "λ = σ²/τ² = 4. Derivative: −2Σ(xᵢ − μ) + 2λμ = 0 ⇒ μ̂ = Σxᵢ/(n + λ) = 24/(4 + 4) = 3. The strong prior (τ² = 1) pulls the estimate halfway towards 0. Option A is the MLE, ignoring the prior. Option B inverts λ (τ²/σ² = 0.25, 24/4.25). Option D gets the ½ factor of the penalty term wrong, doubling λ to 8: 24/12."
+    },
+    "mlf-w12-q14": {
+      "question": "Points x = 0, 2, 10. A two-component mixture starts with μ₁ = 1, μ₂ = 9, both variances 1, π₁ = π₂ = 0.5. After one full EM iteration (E-step + M-step), what are (μ₁, μ₂, π₁) approximately?",
+      "options": [
+        "(1, 9, 0.500)",
+        "(1, 10, 0.667)",
+        "(4, 4, 0.500)",
+        "(1, 10, 0.500)"
+      ],
+      "explanation": "E-step: x = 0 and 2 are 1 unit from component 1 and 9 and 7 units from component 2, so r₁ ≈ 1 (for x = 2 the ratio is e^(−0.5)/e^(−24.5) = e²⁴). For x = 10, r₁ ≈ 0. M-step: N₁ ≈ 2, μ₁ ≈ (0 + 2)/2 = 1, μ₂ ≈ 10, π₁ ≈ 2/3 ≈ 0.667. Option A assumes the parameters did not change. Option C takes the overall mean of all points. Option D forgets to update π."
+    },
+    "mlf-w12-q15": {
+      "question": "The prior on θ is the symmetric Beta(a, a). After 8 successes in 10 trials, the MAP estimate came out as 0.75. What is a, and what is the posterior mean?",
+      "options": [
+        "a = 1; posterior mean 0.75",
+        "a = 2; posterior mean 0.75",
+        "a = 3; posterior mean 0.6875",
+        "a = 2; posterior mean ≈ 0.714"
+      ],
+      "explanation": "MAP = (8 + a − 1)/(10 + 2a − 2) = (7 + a)/(8 + 2a) = 0.75 ⇒ 7 + a = 6 + 1.5a ⇒ a = 2. Posterior Beta(10, 4), mean = 10/14 ≈ 0.714. Option B takes the MAP (mode) as the mean. With a = 1 in option A the MAP would be 0.8 (the MLE). With a = 3 in option C the MAP would be 10/14 ≈ 0.714, not 0.75."
     }
   }
 }
