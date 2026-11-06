@@ -141,6 +141,8 @@ const PAIRS = [
   ['color.text.primary', 'color.bg.canvas'],
   ['color.text.inverse', 'color.feature.start'],
   ['color.selected.fg', 'color.selected.bg'],
+  ['color.offer.cta-fg', 'color.offer.cta-bg'],
+  ['color.offer.ribbon-fg', 'color.warning.solid'],
   ['color.text.inverse-muted', 'color.brand.hero-start'],
 ];
 for (const theme of Object.keys(THEMES)) {

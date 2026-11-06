@@ -67,6 +67,9 @@ export type Token =
   | 'color-nav-text-faint'
   | 'color-nav-indicator'
   | 'color-nav-status'
+  | 'color-offer-cta-bg'
+  | 'color-offer-cta-fg'
+  | 'color-offer-ribbon-fg'
   | 'color-selected-bg'
   | 'color-selected-fg'
   | 'color-feature-start'
@@ -387,6 +390,9 @@ export const RAW = {
   'color-nav-text-faint': '#617089',
   'color-nav-indicator': '#5364ef',
   'color-nav-status': '#20c8ba',
+  'color-offer-cta-bg': '#6b4a10',
+  'color-offer-cta-fg': '#ffffff',
+  'color-offer-ribbon-fg': '#6b4a10',
   'color-selected-bg': '#14213a',
   'color-selected-fg': '#ffffff',
   'color-feature-start': '#5364ef',
@@ -550,6 +556,8 @@ export const RAW_DARK: Partial<Record<keyof typeof RAW, string>> = {
   'color-nav-text-faint': '#8b99b8',
   'color-nav-indicator': '#36d6c5',
   'color-nav-status': '#36d6c5',
+  'color-offer-cta-bg': '#f6c66b',
+  'color-offer-cta-fg': '#2b2112',
   'color-selected-bg': '#e8eeff',
   'color-selected-fg': '#0b1222',
   'color-feature-start': '#2b2475',
