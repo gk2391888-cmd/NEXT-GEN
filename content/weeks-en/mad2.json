@@ -720,6 +720,1086 @@
         "800"
       ],
       "explanation": "Arrival rate = 200 / 60 ≈ 3.33 jobs/s. By Little's law the jobs running at once ≈ 3.33 × 4 ≈ 13.33. There is no such thing as a fraction of a worker, and 13 workers can finish only 13 / 4 = 3.25 jobs/s, which is below 3.33, so round up to 14. Option B is the trap of rounding down; option C computes 200 / 4 (mixing per minute with seconds); option D computes 200 × 4."
+    },
+    "mad2-w1-q7": {
+      "question": "What does this code print?",
+      "options": [
+        "5 5 5",
+        "5 0 5",
+        "0 0 5",
+        "5 0 null"
+      ],
+      "explanation": "`||` falls back on every falsy value, so `0 || 5` → 5. `??` falls back only on `null`/`undefined`: `0 ?? 5` → 0 (0 is a valid value), and `null ?? 5` → 5. Option A's trap is treating `??` like `||`; option C thinks `||` would also keep 0; option D forgets that `null ?? 5` applies the default."
+    },
+    "mad2-w1-q8": {
+      "question": "Which of these values counts as truthy in `if (value)`?",
+      "options": [
+        "`0`",
+        "`\"\"`",
+        "`\"0\"`",
+        "`NaN`"
+      ],
+      "explanation": "The list of falsy values is short: `false`, `0`, `-0`, `0n`, `\"\"`, `null`, `undefined`, `NaN`. `\"0\"` is a non-empty string, so it is truthy even though it contains a zero. The trap is treating `\"0\"` like the number 0; `0`, `\"\"` and `NaN` are all on the falsy list."
+    },
+    "mad2-w1-q9": {
+      "question": "What does this code print?",
+      "options": [
+        "true 3.5",
+        "false 3",
+        "true 3",
+        "false 3.5"
+      ],
+      "explanation": "All numbers are 64-bit floating point: 0.1 + 0.2 actually gives 0.30000000000000004, so `=== 0.3` is false. JavaScript has no separate integer division, so 7 / 2 = 3.5. Option A treats decimal maths as exact; options B and C assume integer division (3), which you only get with `Math.floor` or `Math.trunc`."
+    },
+    "mad2-w1-q10": {
+      "question": "What does this code print?",
+      "options": [
+        "false true object",
+        "true true array",
+        "true false object",
+        "false true array"
+      ],
+      "explanation": "`===` compares objects by reference: two separate `[1]` literals are two different arrays, so false. `Array.isArray([])` is true, and `typeof []` gives \"object\" because an array is an object too. The trap in options B and C is treating `[1] === [1]` as a value comparison; options B and D expect \"array\" from `typeof`."
+    },
+    "mad2-w1-q11": {
+      "question": "What does this code print?",
+      "options": [
+        "1 1",
+        "2 2",
+        "2 1",
+        "SyntaxError: b already declared"
+      ],
+      "explanation": "`var` is function-scoped (global here), so `var a = 2` inside the block reassigns the same `a`: outside, `a` is 2. `let b = 2` creates a new, separate `b` inside the block that ends with the block, so the outer `b` stays 1. Option B thinks `let` also leaks out like `var`; option A treats `var` as block-scoped; option D is wrong because declaring `let` again in a different block is allowed."
+    },
+    "mad2-w1-q12": {
+      "question": "What does this code print?",
+      "options": [
+        "function undefined ReferenceError",
+        "function function function",
+        "function undefined undefined",
+        "undefined undefined ReferenceError"
+      ],
+      "explanation": "`f1` is a function declaration, which is hoisted in full: \"function\". `f2` is a `var`, hoisted and initialised to `undefined`; the function is assigned only on its later line: \"undefined\". `f3` is a `const` still in the TDZ; inside the TDZ even `typeof` throws a `ReferenceError`, which the `catch` captures. Option C's trap is thinking `typeof` is always safe; option B treats function expressions as fully hoisted too; option D does not hoist even the declaration."
+    },
+    "mad2-w1-q13": {
+      "question": "What does this code print?",
+      "options": [
+        "13 6 6",
+        "121 33 123",
+        "121 123 123",
+        "13 33 123"
+      ],
+      "explanation": "Work left to right. (1) `\"3\" * \"4\"`: `*` turns both into numbers = 12; then in `12 + \"1\"` one side is a string, so \"121\". (2) `1 + 2` = 3 (both numbers), then `3 + \"3\"` = \"33\". (3) `\"1\" + 2` = \"12\" (a string), then `\"12\" + 3` = \"123\". Option A assumes numeric addition everywhere; option C assumes concatenation from the start in the second expression; option D treats `+ \"1\"` in the first expression as adding a number."
+    },
+    "mad2-w1-q14": {
+      "question": "What does this code print?",
+      "options": [
+        "Bela 3 4",
+        "Asha 4 4",
+        "Asha 2 3",
+        "Asha 3 3"
+      ],
+      "explanation": "Spread makes a shallow copy: changing `s.name` does not change `orig.name` (\"Asha\"), but `s.marks` and `orig.marks` are the same array, so after pushing 90 `orig.marks` has length 3. `structuredClone` is a deep copy that made its own copy of [70, 80] at the start; pushing 100 into it gives length 3. Option C treats spread as a deep copy; option B assumes `d` shares the same array too; option A thinks changing `s.name` also changes the original."
+    },
+    "mad2-w1-q15": {
+      "question": "What does this code print?",
+      "options": [
+        "2 5 3",
+        "1 5 3",
+        "2 6 3",
+        "2 5 5"
+      ],
+      "explanation": "`a`: `v == null` is true only for `null` and `undefined` = 2. `b`: the falsy values `0`, `\"\"`, `null`, `undefined`, `NaN` = 5 (`\"0\"` is truthy). `c`: with `== 0`, `0`, `\"\"` (it becomes the number 0) and `\"0\"` are true; `null == 0` is false by the special rule, and `undefined` and `NaN` are false too = 3. Option B leaves `undefined` out of `== null`; option C counts `\"0\"` as falsy; option D also counts `null` and `undefined` as `== 0`."
+    },
+    "mad2-w2-q7": {
+      "question": "What does this code print?",
+      "options": [
+        "10,30",
+        "20,40",
+        "2,4",
+        "10,20,30,40"
+      ],
+      "explanation": "`filter` keeps only the even numbers: [2, 4]. Then `map` multiplies each by 10: [20, 40], and `join` makes \"20,40\". Option A keeps the odd numbers; option C forgets the `map` step; option D assumes `filter` removes nothing."
+    },
+    "mad2-w2-q8": {
+      "question": "What does this code print?",
+      "options": [
+        "null undefined",
+        "TypeError: Cannot read properties of null",
+        "null null",
+        "undefined undefined"
+      ],
+      "explanation": "As soon as `?.` meets `null` or `undefined` in the middle, the whole expression gives `undefined` instead of an error. `u.profile` is null, so `u.profile?.city` → `undefined` (not null). `u.settings` does not exist, so `u.settings?.theme` → `undefined`. Option B is the behaviour without `?.`; options A and C assume `?.` returns the null value from the middle."
+    },
+    "mad2-w2-q9": {
+      "question": "`store.js` has `console.log(\"store ready\")` at its top level and does `export const cart = { items: [] }`. Both `a.js` and `b.js` import `cart`, and `main.js` imports `a.js` and then `b.js`. When the app runs, how many times is \"store ready\" printed, and is `cart` the same object in both files?",
+      "options": [
+        "2 times; each file gets its own `cart` copy",
+        "2 times; but `cart` is the same object in both",
+        "1 time; both files get the same single `cart` instance",
+        "0 times, until something uses `cart`"
+      ],
+      "explanation": "An ES module is evaluated only once per app: the first import runs it (\"store ready\" once), and every later importer gets the same evaluated module and the same exports. So `a.js` and `b.js` share one `cart` object. Options A and B assume each import runs the file again; option D thinks the module runs only when an export is used."
+    },
+    "mad2-w2-q10": {
+      "question": "What does this code print?",
+      "options": [
+        "{\"a\":2,\"b\":2,\"c\":1}",
+        "{\"a\":2,\"b\":1,\"c\":1}",
+        "{\"a\":1,\"b\":1,\"c\":1}",
+        "{\"a\":2,\"c\":1,\"b\":2}"
+      ],
+      "explanation": "`reduce` starts from an empty object and increases the count for each fruit's first letter. a: apple, avocado = 2; b: banana, blueberry = 2; c: cherry = 1. Keys are created in the order they are first seen (a, b, c). Option B forgets to count the last \"blueberry\"; option C assumes each key is set only once and the `+ 1` never adds up; option D gets the key order wrong, because \"b\" was first seen before \"cherry\"."
+    },
+    "mad2-w2-q11": {
+      "question": "What does this code print?",
+      "options": [
+        "dark hi 14",
+        "dark hi 0",
+        "null undefined 0",
+        "null hi 0"
+      ],
+      "explanation": "A destructuring default applies only when the value is `undefined`. `theme` is null, so it stays null; `lang` is undefined, so the default \"hi\" applies; `size` is 0 (falsy, but not undefined), so it stays 0. Option A applies defaults on every falsy value like `||`; option B also applies the default on `null`; option C does not apply it even on `undefined`."
+    },
+    "mad2-w2-q12": {
+      "question": "What does this code print?",
+      "options": [
+        "A B B C",
+        "A A B C",
+        "A A B A",
+        "A B B A"
+      ],
+      "explanation": "`bind` returns a new function whose `this` is always `a`: `bound()` → A. `call(b)` cannot change the `this` of a bound function: A again. `show` itself is not bound, so `show.call(b)` → B. `c.f()` is a method-style call, but `f` is the bound function, so `this` is still `a`: A. Option A assumes both `call` and the method call override bind; option B assumes the `obj.method()` rule beats bind; option D assumes `call` overrides bind."
+    },
+    "mad2-w2-q13": {
+      "question": "What does this code print?",
+      "options": [
+        "30 no no",
+        "30 no -10",
+        "30 -20 no",
+        "no no 60"
+      ],
+      "explanation": "Each `makeWallet()` call creates its own `balance` closure. `p`: 100 + 50 = 150, then withdrawing 120 leaves 30. `q` has a separate balance (100), and 120 > 100, so \"no\". `p.withdraw(40)`: 40 > 30, so \"no\" and the balance stays 30. Option B skips the check and does 30 − 40 = −10; option C skips the check in `q` and assumes 100 − 120 = −20; option D assumes the `deposit` never stuck in the closure."
+    },
+    "mad2-w2-q14": {
+      "question": "What does this code print?",
+      "options": [
+        "1,5,25,100 5,25,100,1 false",
+        "1,5,25,100 1,100,25,5 true",
+        "1,5,25,100 1,5,25,100 true",
+        "1,100,25,5 1,100,25,5 false"
+      ],
+      "explanation": "`[...nums]` is a copy, so the sort with a comparator puts only the copy in numeric order: 1,5,25,100. Then `nums.sort()` without a comparator compares strings (\"1\" < \"100\" < \"25\" < \"5\") and changes the original array in place; it returns that same array, so `def === nums` is true. Option A assumes `sort` leaves the original alone; option C assumes a numeric sort even without a comparator; option D ignores the comparator and assumes `sort` returns a new array."
+    },
+    "mad2-w2-q15": {
+      "question": "What does this code print?",
+      "options": [
+        "220 true",
+        "102 true",
+        "204 false",
+        "204 true"
+      ],
+      "explanation": "`super(owner)` runs the parent constructor (`fee` = 10), then the child constructor sets `fee` to 2. `p.charge(100)` is the child's method: `super.charge(100)` runs the parent's code but `this` is still `p`, so 100 + 2 = 102, then × 2 = 204. The direct prototype of `p` is `Premium.prototype`, so true. Option A assumes the parent's method uses the parent's `fee` (10); option B forgets the `* 2`; option C misreads the prototype chain."
+    },
+    "mad2-w3-q7": {
+      "question": "You need to show the text a user typed into a comment box on the page. Which is the safest way?",
+      "options": [
+        "`el.innerHTML = comment`",
+        "`el.textContent = comment`",
+        "`el.outerHTML = comment`",
+        "`document.write(comment)`"
+      ],
+      "explanation": "`textContent` inserts the string purely as text: even if the comment contains something like `<script>` or `<img onerror=...>`, no tag is created and only text is shown. `innerHTML`, `outerHTML` and `document.write` parse the string as HTML, so with user input they open the door to XSS (script injection)."
+    },
+    "mad2-w3-q8": {
+      "question": "After `fetch` you need the response's parsed JSON data. What should replace `???`?",
+      "options": [
+        "`res.body`",
+        "`res.json`",
+        "`JSON.parse(res)`",
+        "`await res.json()`"
+      ],
+      "explanation": "`res.json()` is a method that reads and parses the body and returns a promise, so you have to call it and `await` it. `res.body` is the raw stream, not a parsed object; `res.json` without calling it is just a function; and `JSON.parse(res)` treats the Response object as if it were a string."
+    },
+    "mad2-w3-q9": {
+      "question": "In `Promise.all([a, b, c])`, `b` rejects at 100 ms, while `a` and `c` fulfil at 500 ms. What does the `Promise.all` promise do?",
+      "options": [
+        "Rejects at 100 ms with `b`'s error",
+        "Waits until 500 ms, then gives `[a, undefined, c]`",
+        "Skips `b` and gives only `[a, c]` at 500 ms",
+        "Never settles, because one promise rejected"
+      ],
+      "explanation": "`Promise.all` waits for all of them to fulfil, but as soon as one rejects it rejects immediately with that error (here at 100 ms). If you need every promise's result even when some fail, use `Promise.allSettled`. Options B and C assume `Promise.all` ignores failures; option D is wrong because rejecting is also a way of settling."
+    },
+    "mad2-w3-q10": {
+      "question": "This listener is attached to `<ul id=\"list\">`, and after that a new `<li>` is appended. The user clicks the bold text \"New\" inside the new item. What appears in the console?",
+      "options": [
+        "Nothing; items created after the listener are not covered",
+        "`undefined`, because `e.target` is the `<b>`, not the `<li>`",
+        "9",
+        "9 twice, because the event comes from both `<b>` and `<li>`"
+      ],
+      "explanation": "The click happens on `<b>` and bubbles up to the `<ul>` listener. `e.target` is the `<b>`, but `closest(\"li\")` walks up from it and finds the new `<li>`, whose `data-id` is \"9\". That is the point of delegation: the listener is on the parent, so items added later are covered too. Option A is the one-listener-per-item way of thinking; option B forgets what `closest` does; option D is wrong because the listener is on just one element (`<ul>`), so it runs once per click."
+    },
+    "mad2-w3-q11": {
+      "question": "What does this code print?",
+      "options": [
+        "rejected",
+        "fulfilled,rejected",
+        "fulfilled,fulfilled,fulfilled",
+        "fulfilled,rejected,fulfilled"
+      ],
+      "explanation": "`Promise.allSettled` itself never rejects; it gives a `{ status, value/reason }` object for every input. The first is fulfilled, the second rejected, and the plain value 3 is treated like a fulfilled promise. Option A is `Promise.all` behaviour; option B ignores the plain value; option C counts the rejection as fulfilled too."
+    },
+    "mad2-w3-q12": {
+      "question": "In what order are the lines printed?",
+      "options": [
+        "s1 → a1 → b1 → s2 → a2 → p → t",
+        "s1 → a1 → s2 → b1 → a2 → p → t",
+        "s1 → a1 → b1 → s2 → p → a2 → t",
+        "s1 → a1 → b1 → a2 → s2 → p → t"
+      ],
+      "explanation": "Sync: \"s1\", the timer goes to the task queue, then `a()` runs: \"a1\", and the body of `b()` also runs synchronously: \"b1\". At `await`, `a` pauses and the rest of it is queued as a microtask; the \"p\" microtask from `then` is queued after it. After the sync \"s2\", the microtasks run in order: \"a2\", then \"p\", and finally the timer \"t\". Option B assumes the code of `b()` also runs later; option C puts \"p\" first even though the resume of `a` was queued earlier; option D treats `await` as if it never pauses."
+    },
+    "mad2-w3-q13": {
+      "question": "What does this promise code print to the console?",
+      "options": [
+        "ok 5 → next",
+        "caught e1 → next",
+        "caught e1 → caught e2",
+        "caught e1 → next → caught e2"
+      ],
+      "explanation": "A promise settles only once: `reject(e1)` ran first, so the later `resolve(5)` is ignored. The first `then` is skipped, the `catch` prints \"caught e1\" and then throws a new error `e2`, so the next `then` (\"next\") is skipped and the last `catch` prints \"caught e2\". Option A assumes `resolve` wins; option B assumes the chain always goes back to normal after a `catch`, even when it throws; option D runs the `then` that should be skipped."
+    },
+    "mad2-w3-q14": {
+      "question": "Roughly how many ms later does this code print, and what is the value of `d`?",
+      "options": [
+        "≈ 1000 ms, d = 6",
+        "≈ 800 ms, d = 6",
+        "≈ 400 ms, d = 6",
+        "≈ 800 ms, d = 3"
+      ],
+      "explanation": "The first `await` takes 300 ms. Then `Promise.all` runs both waits in parallel, so it takes the larger of 200 and 400 = 400 ms. The last `await` is 100 ms. Total ≈ 300 + 400 + 100 = 800 ms. `d` gets `a + b + c` = 1 + 2 + 3 = 6. Option A treats `Promise.all` as one after another too (300 + 200 + 400 + 100); option C assumes everything ran in parallel; option D takes `d` to be just `c`."
+    },
+    "mad2-w3-q15": {
+      "question": "The page has `<form id=\"f\"><button id=\"btn\" type=\"submit\">Save</button></form>` (inside the body) and these listeners are attached. The user clicks the button. What is the order in the console?",
+      "options": [
+        "btn → form → body → submit",
+        "btn → form (no submit, because `stopPropagation` stopped it)",
+        "submit → btn → form",
+        "btn → form → submit"
+      ],
+      "explanation": "The click runs on the target first (\"btn\"), then bubbles to the form (\"form\"). The form's handler calls `stopPropagation()`, so the click never reaches the body. But `stopPropagation` does not stop the browser's default action: clicking a submit button still fires the form's `submit` event, which prints \"submit\" and stops the page reload with `preventDefault()`. Option A ignores `stopPropagation`; option B mixes up `stopPropagation` and `preventDefault`; option C puts the submit before the click."
+    },
+    "mad2-w4-q7": {
+      "question": "A user's comment is `<img src=x onerror=alert(1)>`, and the template has `<p>{{ comment }}</p>`. What happens on the page?",
+      "options": [
+        "The text shows as typed (escaped); no script runs",
+        "An image tag is created and its `alert` runs straight away",
+        "Vue gives a compile error, because the text contains `<`",
+        "Nothing shows; Vue strips HTML-like strings"
+      ],
+      "explanation": "`{{ }}` is text interpolation and escapes HTML, so the string does not become a tag; it just shows as text. Only `v-html` renders raw HTML, and that is the XSS risk with user content. Option B is the behaviour of `v-html`; options C and D are wrong, Vue neither errors nor removes the text."
+    },
+    "mad2-w4-q8": {
+      "question": "A Vue template has `<button @click.stop=\"remove\">`. What does the `.stop` modifier do?",
+      "options": [
+        "Stops the browser's default action (such as opening a link or submitting a form)",
+        "Lets `remove` run only on the first click, not later",
+        "Calls `stopPropagation()`; the click does not reach the parent's handlers",
+        "Disables the button after the click so it cannot be pressed again"
+      ],
+      "explanation": "`.stop` = `event.stopPropagation()`: `remove` runs, but the click does not bubble up to the parent elements' `@click`. Stopping the default action is the job of `.prevent` (option A). Options B and D describe things `.stop` does not do at all."
+    },
+    "mad2-w4-q9": {
+      "question": "`isActive` is true and `isDone` is false. What is this element's final `class` attribute?",
+      "options": [
+        "`item`",
+        "`active`",
+        "`item active done`",
+        "`item active`"
+      ],
+      "explanation": "In the object syntax a key becomes a class when its value is truthy: `active` is added, `done` is not. The static `class=\"item\"` and the bound `:class` are merged, so the result is `item active`. Option A ignores the bound classes; option B assumes `:class` removes the static class; option C also adds the key whose value is false."
+    },
+    "mad2-w4-q10": {
+      "question": "In Vue 3 a developer wrote this to show only the unfinished todos. What happens?",
+      "options": [
+        "Only unfinished todos show, because `v-for` runs first and `v-if` is applied to each `t`",
+        "In Vue 3 `v-if` runs first, when `t` is not defined yet; a render error occurs. Fix: filter with a computed",
+        "All todos show, because with two directives on one element Vue ignores `v-if`",
+        "Only the first todo shows, because Vue stops the loop when `v-if` is false"
+      ],
+      "explanation": "In Vue 3, on the same element `v-if` has higher priority than `v-for`, so `v-if` is evaluated first, before the loop variable `t` even exists. Reading `t.done` causes a render error. The right way: create `computed(() => todos.value.filter(t => !t.done))` and run `v-for` over it. Option A assumes `v-for` runs first; options C and D describe rules that Vue does not have."
+    },
+    "mad2-w4-q11": {
+      "question": "A component has two inputs, neither with `v-model`: `<input v-if=\"show\">` and `<input v-show=\"show\">`. `show` is true and the user types \"abc\" into both. Then `show` becomes false and a little later true again. What do the two inputs show now?",
+      "options": [
+        "Both show \"abc\"",
+        "Both inputs become empty",
+        "The `v-if` one is empty (a new element was made), the `v-show` one has \"abc\" (the element stayed in the DOM)",
+        "The `v-if` one has \"abc\" (Vue remembers it), the `v-show` one is empty (display was reset)"
+      ],
+      "explanation": "When `v-if` is false the input is removed from the DOM; when it becomes true a brand-new input is created, so the typed text is gone. `v-show` only adds and removes `display: none`; the element stays the same, so \"abc\" is kept. Option D is the reverse; options A and B treat both directives as the same."
+    },
+    "mad2-w4-q12": {
+      "question": "In this Vue 3 component the button is clicked once. What does the button show after that?",
+      "options": [
+        "5 Tara",
+        "1 Ira",
+        "1 Tara",
+        "5 Ira"
+      ],
+      "explanation": "In `let { n, user } = state`, `n` is a primitive, so you get a plain copy: `n = 5` changes only the local variable and `state.n` stays 1. `user` is an object, so destructuring copies only the reference: it is the same (reactive) nested object as `state.user`, so `user.name = \"Tara\"` changes the real state and the template updates. Option A assumes a destructured primitive is reactive too; option B assumes object destructuring also makes a separate copy; option D gets both backwards."
+    },
+    "mad2-w4-q13": {
+      "question": "The parent passes `step` to `Stepper` as a prop. The user clicks the button 3 times (each click after the previous render). What does `total` show in the parent now?",
+      "options": [
+        "15",
+        "35",
+        "40",
+        "30"
+      ],
+      "explanation": "Click 1: the child emits the current prop 5: `total` = 5, the parent sets `step` to 10, and the new prop flows down to the child. Click 2: emits 10: `total` = 15, `step` = 20. Click 3: emits 20: `total` = 35, `step` = 40. Option A assumes the prop never updates (5 × 3); option C mistakes the last `step` for the total; option D adds the wrong values (5 + 10 + 15)."
+    },
+    "mad2-w4-q14": {
+      "question": "In this Vue 3 component, what is printed to the console the first time the \"Go\" button is clicked?",
+      "options": [
+        "0 2 3",
+        "2 2 3",
+        "0 1 2",
+        "0 2 2"
+      ],
+      "explanation": "Changing state does not change the DOM immediately: even after setting `count` to 1 and then 2, `a` reads the old DOM = \"0\". After `await nextTick()` a single render has applied both changes: `b` = \"2\" (1 never reached the DOM). Then `count.value++` (3) is read straight away while the DOM still says \"2\", so `c` = \"2\". Option A assumes changes after `nextTick` reach the DOM immediately; option B treats the DOM as synchronous; option C assumes a separate render for every change."
+    },
+    "mad2-w4-q15": {
+      "question": "In this Vue 3 component the \"Update\" button is clicked once. What does the paragraph show after that?",
+      "options": [
+        "Chitra",
+        "Deepa",
+        "Bina",
+        "Amit"
+      ],
+      "explanation": "`u` points to the old (reactive) object: `u.name = \"Bina\"` changes the data at that moment. Then `user.value` is given a new object, so the template now reads the new object's `name` (\"Chitra\"). After that, `u.name = \"Deepa\"` changes the old object, which no template shows any more. Option B assumes `u` is still linked to `user.value`; option C forgets the replacement line; option D assumes changing an object inside a ref is not reactive at all."
+    },
+    "mad2-w5-q7": {
+      "question": "In `<input v-model.trim=\"name\">` the user types `\"  Ravi Kumar  \"` (spaces at the start and end). What is `name.value`?",
+      "options": [
+        "\"RaviKumar\"",
+        "\"Ravi Kumar\"",
+        "\"  Ravi Kumar  \"",
+        "\"Ravi\""
+      ],
+      "explanation": "`.trim` removes only the spaces at the start and end (like JavaScript's `trim()`); the space in the middle stays. Option A also removes the inner space; option C ignores the modifier; option D cuts the text at the first space, which is not what `.trim` does."
+    },
+    "mad2-w5-q8": {
+      "question": "A signup form checks the email format and password length in Vue. Should the Flask API run these checks too?",
+      "options": [
+        "Yes; client-side checks are only for UX, anyone can send a request straight to the API",
+        "No; the browser checks are enough because the user cannot change them",
+        "Only when the app is not running over HTTPS",
+        "No; `@submit.prevent` never lets invalid requests reach the server"
+      ],
+      "explanation": "Client-side validation is only for instant feedback. The user can change the browser's code, or anyone can send a request straight to the API without the form, so the real validation must happen on the server. Option B is wrong because the browser code is in the user's control; option C has nothing to do with HTTPS; option D: `.prevent` only stops the page reload, not invalid data."
+    },
+    "mad2-w5-q9": {
+      "question": "There is `const agree = ref(false)` and `<input type=\"checkbox\" v-model=\"agree\">`. The user ticks the box. What is `agree.value`?",
+      "options": [
+        "`\"on\"`",
+        "`\"agree\"`",
+        "`1`",
+        "`true`"
+      ],
+      "explanation": "On a single checkbox `v-model` gives a boolean: `true` when ticked, `false` when unticked. (Bind it to an array and you get the list of checked values.) `\"on\"` is the default value of a plain HTML form submit, not Vue's; options B and C are the wrong type as well."
+    },
+    "mad2-w5-q10": {
+      "question": "A search input has a 300 ms debounce (every keystroke resets the timer; the request goes 300 ms after the last keystroke). The user types \"v\", \"u\", \"e\" at t = 0, 100, 200 ms, then \"x\" at t = 900 ms. How many requests go out, and with which queries?",
+      "options": [
+        "4 requests: v, vu, vue, vuex (one per keystroke)",
+        "1 request: vuex (t = 1200 ms), because the timer kept resetting",
+        "2 requests: vue (t = 500 ms) and vuex (t = 1200 ms)",
+        "2 requests: v (t = 300 ms) and vuex (t = 1200 ms)"
+      ],
+      "explanation": "A debounce resets the timer on every keystroke. \"v\", \"u\", \"e\" came 100 ms apart, so the timer fires 300 ms after the last keystroke (t = 200), at t = 500, sending \"vue\". Then \"x\" came at t = 900, and \"vuex\" goes at t = 1200. 2 requests in total. Option A is the count without a debounce; option B assumes the 700 ms gap would still reset the earlier timer; option D fires 300 ms after the first keystroke, even though newer keystrokes had already reset the timer by then."
+    },
+    "mad2-w5-q11": {
+      "question": "A component has this code. It has been mounted 3 times and unmounted 3 times (it is not on screen now). How many times does `measure` run now when the window is resized?",
+      "options": [
+        "0, because on each unmount `onUnmounted` removed the listener",
+        "1, because the browser merges duplicate listeners for the same event",
+        "3, because remove got a new arrow function, not the added one; no listener was removed",
+        "An error, because a function of an unmounted component can no longer be called"
+      ],
+      "explanation": "`removeEventListener` works only when given the same function reference that was added. Here a new arrow function is created each time, so remove takes nothing away and the 3 mounts leave 3 listeners. Fix: create `const onResize = () => measure();` once and pass it to both add and remove. Option A assumes what the code meant, not what it does; option B: the browser only skips re-adding the same function reference, it does not merge different functions; option D: browser listeners know nothing about the component unmounting."
+    },
+    "mad2-w5-q12": {
+      "question": "This is a simplified version of Vue search logic. `search` is called three times in quick succession, and the responses arrive after different delays. What is printed after 1 second?",
+      "options": [
+        "ABC 1",
+        "A 1",
+        "ABC 3",
+        "AB 1"
+      ],
+      "explanation": "Each call increments `latest`: \"a\" = 1, \"ab\" = 2, \"abc\" = 3. The responses arrive at 100 ms (\"ab\"), 300 ms (\"abc\") and 500 ms (\"a\"). \"ab\" has id 2 but `latest` is 3, so it is ignored. \"abc\" has id 3 = `latest`, so `results` = \"ABC\" and `assigned` = 1. \"a\" arrives last but its id is 1, so it is ignored. Option B is the race-condition bug (whichever response arrives last wins); option C assumes the id check blocks nothing; option D takes the response that arrived first."
+    },
+    "mad2-w5-q13": {
+      "question": "In Vue 3, the template of `Parent.vue` has `<ChildA />` and then `<ChildB />`. Each of the three has `console.log(\"X setup\")` and `onMounted(() => console.log(\"X mounted\"))` in its `<script setup>` (X = P, A, B). When the app loads, what is the order in the console?",
+      "options": [
+        "P setup → A setup → A mounted → B setup → B mounted → P mounted",
+        "P setup → A setup → B setup → A mounted → B mounted → P mounted",
+        "P setup → P mounted → A setup → B setup → A mounted → B mounted",
+        "A setup → B setup → P setup → A mounted → B mounted → P mounted"
+      ],
+      "explanation": "The parent's setup runs first, then while rendering it creates the children in order: A's setup, then B's setup. `onMounted` runs once the whole tree is in the DOM: the children first (A, then B), and the parent last, because the parent is \"mounted\" only when all its children are mounted. Option A assumes A's mounted runs before B's setup; option C has the parent mounted before its children; option D runs the children's setup before the parent's."
+    },
+    "mad2-w5-q14": {
+      "question": "This is a Vue 3 component's save function (`saved` starts as false). The server returns status 422 with the body `{\"errors\": {\"email\": \"Invalid email\"}}`. What are the refs' values after `save()` finishes?",
+      "options": [
+        "`errors` = `{ email: \"Invalid email\" }`, `saved` = true, `saving` = false",
+        "`errors` = `{ form: \"HTTP 422\" }`, `saved` = false, `saving` = false",
+        "`errors` = `{ email: \"Invalid email\" }`, `saved` = false, `saving` = true",
+        "`errors` = `{ email: \"Invalid email\" }`, `saved` = false, `saving` = false"
+      ],
+      "explanation": "`fetch` fulfils even on 422, `res.json()` gives the object with the errors, and the `status === 422` branch sets `errors` and does `return`, so the code never reaches `saved = true`. Even when `try` exits with `return`, `finally` still runs, so `saving` is false. Option C's trap is thinking `return` skips `finally`; option B assumes 422 reaches the `throw` line; option A ignores the `return`."
+    },
+    "mad2-w5-q15": {
+      "question": "A component does `setInterval(poll, 5000)` in `onMounted`. It mounts at t = 0 s, unmounts at t = 12 s, and mounts again at t = 20 s. How many times has `poll` run by t = 31 s: (i) when `onUnmounted` does nothing, (ii) when `onUnmounted` calls `clearInterval` with the right id?",
+      "options": [
+        "(i) 8, (ii) 4",
+        "(i) 6, (ii) 4",
+        "(i) 8, (ii) 2",
+        "(i) 12, (ii) 4"
+      ],
+      "explanation": "The first interval fires at t = 5, 10, 15, 20, 25, 30 (without cleanup it keeps going after unmount): 6 times. The second mount at t = 20 starts a new interval: t = 25, 30 = 2 times. (i) 6 + 2 = 8. (ii) With cleanup the first interval stops at t = 12: only 5 and 10 = 2, plus the second one's 2 = 4. Option B forgets the second interval; option C does not count the second mount in the cleanup case; option D assumes both intervals ran for the full 31 s."
+    },
+    "mad2-w6-q7": {
+      "question": "Theme data has to reach a component 5 levels down, and the components in between do not need it. Which Vue feature avoids this prop drilling?",
+      "options": [
+        "`provide` / `inject`",
+        "`v-show`",
+        "`nextTick`",
+        "`key` with `v-for`"
+      ],
+      "explanation": "The ancestor calls `provide(\"theme\", themeRef)` and any descendant takes it with `inject(\"theme\")`; the components in between do not have to pass a prop, and providing a ref keeps reactivity. The other options have nothing to do with passing data: `v-show` is show/hide, `nextTick` waits for the DOM update, and `key` is the identity of list items."
+    },
+    "mad2-w6-q8": {
+      "question": "In Vue Router the route is `/users/:id` and the user opens `/users/42`. What is the value of `route.params.id`?",
+      "options": [
+        "The number `42`",
+        "`undefined`, unless the URL has `?id=42`",
+        "The string `\"42\"`",
+        "`[\"users\", \"42\"]`"
+      ],
+      "explanation": "The value of the dynamic segment `:id` always arrives in `route.params.id` as a string, so if you need a number use `Number(route.params.id)`. Option A's trap is assuming a number because it looks like digits; option B mixes up `params` and `query`; option D is a list of path parts, which the router does not put in `params.id`."
+    },
+    "mad2-w6-q9": {
+      "question": "The child `Card.vue` has `<slot name=\"header\" />`. The parent wants to send its own `<h2>` into the header. What is the right syntax in the parent?",
+      "options": [
+        "`<Card header=\"<h2>Hi</h2>\" />`",
+        "`<Card @header=\"<h2>Hi</h2>\" />`",
+        "`<Card><slot name=\"header\"><h2>Hi</h2></slot></Card>`",
+        "`<Card><template #header><h2>Hi</h2></template></Card>`"
+      ],
+      "explanation": "The parent fills a named slot with `<template #header>` (full form `v-slot:header`), and that content renders in place of the child's `<slot name=\"header\" />`. Option A turns the HTML into a prop string; option B is event-listener syntax; option C writes `<slot>` in the parent, while `<slot>` belongs in the child's template."
+    },
+    "mad2-w6-q10": {
+      "question": "The parent writes `<PostEditor v-model:title=\"postTitle\" />`. Which prop and which event should the child `PostEditor` have?",
+      "options": [
+        "Prop `modelValue`, event `update:modelValue`",
+        "Prop `title`, event `update:title`",
+        "Prop `title`, event `input`",
+        "Prop `postTitle`, event `change:title`"
+      ],
+      "explanation": "`v-model:title=\"postTitle\"` = `:title=\"postTitle\"` + `@update:title=\"v => postTitle = v\"`. So the child takes a `title` prop and calls `emit(\"update:title\", newTitle)`. Option A gives the names for `v-model` without an argument; option C is a native input event; option D mistakes the parent's variable name for the prop."
+    },
+    "mad2-w6-q11": {
+      "question": "The component loads and then the user clicks once (`onClick` runs). How many times do the `watch` callback and the `watchEffect` function each run?",
+      "options": [
+        "watch 2, watchEffect 2",
+        "watch 1, watchEffect 1",
+        "watch 0, watchEffect 1",
+        "watch 1, watchEffect 2"
+      ],
+      "explanation": "`watch` is lazy by default: it does not run at setup, only when `n` changes (1 time). `watchEffect` runs once immediately at setup (to track its dependencies) and again when `n` changes: 2 times. Option A treats `watch` as immediate too; option B forgets the first run of `watchEffect`; option C assumes `watch` will not run on this change at all."
+    },
+    "mad2-w6-q12": {
+      "question": "The Vue 3 component renders for the first time, then `bumpQty()` and then `editNote()` run (with a re-render after each). What is `total` on screen now, and how many times in all did the computed getter run?",
+      "options": [
+        "400, 3 times",
+        "200, 1 time",
+        "400, 2 times",
+        "400, 6 times"
+      ],
+      "explanation": "In the first render the getter runs once (100 × 1 + 50 × 2 = 200); even though `total` appears twice in the template, the second use comes from the cache. `bumpQty()` changes a dependency (`qty`): on the next render the getter runs again = 100 × 3 + 50 × 2 = 400. `editNote()` changes only `note`, which is not a dependency of `total`, so 400 comes from the cache. 2 runs in total. Option A runs the getter on every render; option B does not count the effect of `bumpQty`; option D runs the computed like a method on every use."
+    },
+    "mad2-w6-q13": {
+      "question": "This is a Vue Router 4 config. A logged-in user (role \"editor\") is on `/home` and clicks the link to `/settings/billing`. What happens?",
+      "options": [
+        "Navigation is cancelled and the user stays on `/home`; the merged `to.meta` has `role: \"admin\"` and the guard returns `false`",
+        "Redirect to `/login`, because even though the user is logged in, the billing route has no `requiresAuth`",
+        "The billing page opens, because the parent's `meta` does not reach child routes and the `role` check is skipped",
+        "The user lands on `/settings`, because returning `false` stops the router at the parent route"
+      ],
+      "explanation": "First check: `to.meta` includes the parent's merged `requiresAuth: true`, but the user is logged in, so it passes. Second check: the merged meta also has the child's `role: \"admin\"` and the user is \"editor\", so the guard returns `false` and the navigation is cancelled; the user stays on `/home`. Option B is wrong because the redirect is only for logged-out users; option C forgets the meta merge; option D misreads `false` (there is no partial navigation)."
+    },
+    "mad2-w6-q14": {
+      "question": "The generic `TagList` component is used twice. What text appears on the page?",
+      "options": [
+        "\"chai\", \"coffee\" and \"Kuch nahi mila\"",
+        "\"1. CHAI\", \"2. COFFEE\" and \"Kuch nahi mila\"",
+        "\"0. CHAI\", \"1. COFFEE\" and an empty `<p>`",
+        "\"1. CHAI\", \"2. COFFEE\" and an empty `<p>`"
+      ],
+      "explanation": "In the first `TagList` the items are not empty, so `v-for` renders the default slot for each item and passes `item` and `index` as slot props. The parent's template builds `index + 1` and the uppercase text: \"1. CHAI\", \"2. COFFEE\". In the second `TagList` the items are empty and the parent gave no `#empty`, so the slot's fallback content \"Kuch nahi mila\" shows. Option A ignores the parent's template; option C forgets both `index + 1` and the fallback; option D misses the fallback content."
+    },
+    "mad2-w6-q15": {
+      "question": "Three watchers are set up. Then `form.value.address.city = \"Goa\"` runs. Once the watchers have run, what are `a`, `b` and `c`?",
+      "options": [
+        "1 1 1",
+        "0 0 1",
+        "1 1 0",
+        "0 1 1"
+      ],
+      "explanation": "`watch(form, ...)` watches a ref, which triggers only when `form.value` itself changes (a new object is assigned); not when the nested `city` changes, so `a` is 0. `{ deep: true }` runs on every change inside: `b` is 1. The getter `() => form.value.address.city` reads the exact field, and it went from \"Pune\" to \"Goa\": `c` is 1. Option A assumes a plain `watch` is deep too; option B forgets what `deep` does; option C misreads the getter."
+    },
+    "mad2-w7-q7": {
+      "question": "You need to add a new item to the `items` array of a Pinia store. Which statement is correct?",
+      "options": [
+        "Write `this.items.push(item)` directly in an action; Pinia has no mutations",
+        "Every change must first `commit` a mutation, not go through an action",
+        "Store state can only be changed inside getters, not in actions",
+        "After changing state the component must reload the page before it shows"
+      ],
+      "explanation": "In Pinia, actions are normal methods that can change state directly through `this`; there is no need for separate mutations as in Vuex. Option B is a Vuex rule, not a Pinia one; option C is wrong because getters are for derived values, not for changing state; option D has nothing to do with reactivity."
+    },
+    "mad2-w7-q8": {
+      "question": "Why should mutations in Vuex be synchronous?",
+      "options": [
+        "Because async functions in JavaScript cannot change objects at all",
+        "So devtools can keep an exact before/after record of every state change",
+        "Because mutations run on the server, not in the browser",
+        "So that getters are never cached and are always recalculated"
+      ],
+      "explanation": "Vuex tracks every `commit` as a record so devtools can show the before/after snapshot of the state. If a mutation has an `await` inside, the real change happens after it was recorded and the history is wrong. So async work goes in actions, and only the final change goes in a mutation. Options A, C and D are false facts."
+    },
+    "mad2-w7-q9": {
+      "question": "After a logout, the next user logs in on the same browser and sees the previous user's cart (a Pinia options store). What is the most direct fix?",
+      "options": [
+        "Save the cart in `localStorage` as well",
+        "Create a new store in each component instead of `useCartStore()`",
+        "Call `$reset()` on the user-specific stores at logout",
+        "Hide the cart with `v-show`"
+      ],
+      "explanation": "The store is one in-memory instance for the whole app, so the previous user's cart stays after logout. In an options store, `$reset()` brings the state back to the initial object from the `state()` function. Option A makes the problem worse (the data would survive a reload too); option B is wrong because `useCartStore()` always returns the same instance; option D only hides the data, it does not clear it."
+    },
+    "mad2-w7-q10": {
+      "question": "A component needs both the Pinia store's `count` (it must stay reactive) and the action `increment`. Which code is correct?",
+      "options": [
+        "`const { count, increment } = storeToRefs(store)`",
+        "`const { count, increment } = store`",
+        "`const { count } = store; const { increment } = storeToRefs(store)`",
+        "`const { count } = storeToRefs(store); const { increment } = store`"
+      ],
+      "explanation": "`storeToRefs` gives refs for state and getters, but leaves out actions; so in option A `increment` is undefined. In option B `count` is a plain copy that never updates. Option C makes both mistakes at once. Correct: state through `storeToRefs` and the action straight from the store, because Pinia keeps actions bound to the store."
+    },
+    "mad2-w7-q11": {
+      "question": "What do the `subtotal` and `total` getters give in this Pinia store?",
+      "options": [
+        "165 and 165",
+        "420 and 420",
+        "380 and 340",
+        "420 and 380"
+      ],
+      "explanation": "`subtotal` = 120 × 2 + 45 × 4 = 240 + 180 = 420. In `total`, 420 > 400, so 420 − 40 = 380. Option A adds only the prices (120 + 45) and forgets the qty; option B misses the discount condition; option C applies the discount twice."
+    },
+    "mad2-w7-q12": {
+      "question": "Two versions of a Pinia optimistic delete are written as simplified JavaScript; in both, the rollback runs because the API failed. What is the output?",
+      "options": [
+        "1,3 1,3",
+        "1,2,3 1,2,3",
+        "1,2,3 1,3",
+        "1,3 1,2,3"
+      ],
+      "explanation": "Variant P: `backup` points to the old array, and `filter` creates a new array; the old one was never touched, so after the rollback 1,2,3 is back. Variant Q: `backup` and `items.list` are the same array, and `splice` changes that array in place, so the backup became 1,3 as well; the rollback brings nothing back. Option B assumes `const backup = ...` makes a copy; option A assumes `filter` also changes the original; option D gets both backwards. Fix: `const backup = [...items.list]`."
+    },
+    "mad2-w7-q13": {
+      "question": "This is a small simplified Vuex-like store (mutation `add`, async action `addLater`). What is the output?",
+      "options": [
+        "2 7",
+        "0 7",
+        "0 5",
+        "7 7"
+      ],
+      "explanation": "`addLater(5)` starts synchronously and reads `before` = 0 before the `await`. Then the action pauses, and the next line `commit(\"add\", 2)` sets count to 2 immediately. 100 ms later the action does `commit(\"add\", 5)`: 7, and returns `before` (0). Option A assumes `before` was read after commit 2; option C forgets commit 2; option D takes `before` to be the final value."
+    },
+    "mad2-w7-q14": {
+      "question": "In this Pinia store, what does the `total` getter give before and after `update()`?",
+      "options": [
+        "675 and 1050",
+        "750 and 1050",
+        "675 and 945",
+        "825 and 1050"
+      ],
+      "explanation": "Before: `subtotal` = 300 × 2 + 150 × 1 = 750; the coupon is \"SAVE10\", so `discount` = 75; `total` = 675. `update()` removes the coupon and sets the second line's qty to 3: `subtotal` = 600 + 450 = 1050, `discount` = 0, `total` = 1050. Getters recalculate when their dependencies change. Option B forgets the discount in the first case; option C still takes 10% off after the coupon is removed; option D adds the discount instead of subtracting it."
+    },
+    "mad2-w7-q15": {
+      "question": "This code runs in a component (the store is shown below). What is the output?",
+      "options": [
+        "5 10 5",
+        "1 2 5",
+        "1 10 1",
+        "1 10 5"
+      ],
+      "explanation": "`const { n } = store` is a plain copy of a primitive: it stays 1. `inc()` twice: `store.n` = 1 + 2 + 2 = 5. `double` is a ref from `storeToRefs`, so `double.value` gives the fresh getter value: 5 × 2 = 10. Destructuring the action is fine because Pinia keeps it bound to the store. Option A treats `n` as reactive; option B treats the getter's ref as a frozen copy too; option C assumes a destructured action cannot change the store."
+    },
+    "mad2-w8-q7": {
+      "question": "`POST /api/v1/projects` creates a new project. Which status code fits success best?",
+      "options": [
+        "201 Created",
+        "204 No Content",
+        "301 Moved Permanently",
+        "404 Not Found"
+      ],
+      "explanation": "When a new resource is created, the REST convention is `201 Created`, usually with the new resource's JSON body. `204` is for success with no body (such as a DELETE); `301` is for a redirect and `404` is for \"resource not found\"."
+    },
+    "mad2-w8-q8": {
+      "question": "Which of these is an example of authorisation (not authentication)?",
+      "options": [
+        "Checking the user's password, logging them in and giving a session",
+        "Confirming the user's identity by sending and verifying an OTP",
+        "Checking before a delete that the logged-in user's role is \"admin\"",
+        "Working out from the session id cookie which user a request belongs to"
+      ],
+      "explanation": "Authentication = \"who you are\" (identifying the user from a password, OTP or session cookie). Authorisation = \"what you may do\": checking the role to allow or deny a delete. Options A, B and D are all about identity, that is, authentication."
+    },
+    "mad2-w8-q9": {
+      "question": "What is the effect of setting the `HttpOnly` flag on a session cookie?",
+      "options": [
+        "The cookie is sent only over HTTPS connections",
+        "The cookie is not sent with cross-site requests",
+        "The cookie stays forever, even after the browser is closed",
+        "JavaScript (`document.cookie`) cannot read it; protects against XSS"
+      ],
+      "explanation": "`HttpOnly` hides the cookie from JavaScript (it does not appear in `document.cookie`), so an XSS script cannot steal the session id; the cookie still goes to the server with every request. Sending only over HTTPS is what `Secure` does (option A), blocking it on cross-site requests is `SameSite` (option B), and expiry has nothing to do with `HttpOnly` (option C)."
+    },
+    "mad2-w8-q10": {
+      "question": "The page runs on `https://app.example.com`. Before which of these requests does the browser send an `OPTIONS` preflight?",
+      "options": [
+        "`fetch(\"https://app.example.com/api/items/3\", { method: \"DELETE\", headers: { \"Content-Type\": \"application/json\" } })`",
+        "`fetch(\"https://api.example.com/items/3\", { method: \"PUT\", headers: { \"Content-Type\": \"application/json\" } })`",
+        "`fetch(\"https://api.example.com/items\")` (a simple GET, no custom headers, no body)",
+        "`<img src=\"https://api.example.com/logo.png\">` loading on the page (a cross-origin image)"
+      ],
+      "explanation": "A preflight happens only for cross-origin requests, and only when the request is not \"simple\": a PUT/DELETE method, a JSON `Content-Type` or an `Authorization` header. Option B is a PUT with a JSON header to a different host (`api.example.com`), so there is a preflight. Option A has DELETE and a JSON header but is same-origin, so CORS does not apply at all; option C is cross-origin but a simple GET (no preflight, only a CORS header on the response is needed); option D is not a `fetch`, it is a normal image load."
+    },
+    "mad2-w8-q11": {
+      "question": "A mobile app uses the `name` field in the response of `/api/v1/users`. Which of these changes is breaking and should go into `/api/v2`?",
+      "options": [
+        "Adding a new optional field `avatar_url` to the response",
+        "Creating a new endpoint `GET /api/v1/teams`",
+        "Compressing the responses with gzip",
+        "Renaming the `name` field to `full_name`"
+      ],
+      "explanation": "Renaming a field breaks old clients that read `name`, so it is a breaking change and goes into a new version. Adding a new optional field or a new endpoint does not break old clients (options A, B), and compression is transparent at the HTTP level (option C)."
+    },
+    "mad2-w8-q12": {
+      "question": "A JWT's payload is `{\"sub\": \"u7\", \"role\": \"editor\", \"iat\": 1767225600, \"exp\": 1767226500}` (Unix seconds). How long is the token valid, and what happens to a request with this token at server time 1767226800?",
+      "options": [
+        "15 minutes; the request is rejected (401), because `exp` passed 300 s ago",
+        "15 minutes; the request goes through because the signature is valid",
+        "900 minutes; the request goes through",
+        "5 minutes; the request is rejected (403)"
+      ],
+      "explanation": "Validity = `exp` − `iat` = 1767226500 − 1767225600 = 900 s = 15 minutes. The request time is 300 s past `exp`, and the server must check `exp`, so the token has expired: 401 (authentication failed). Option B treats the signature as enough; option C reads seconds as minutes; option D mistakes the 300 s for the validity, and 403 is the wrong code too (this is an identity failure, not a permission one)."
+    },
+    "mad2-w8-q13": {
+      "question": "The Flask endpoint `PATCH /api/v1/documents/<id>` has only `@roles_required(\"editor\")`. User 12 (role \"editor\") sends a PATCH for document 88, whose owner is user 30. What happens, and what is the right fix?",
+      "options": [
+        "A 403, because the role decorator also checks the owner; no fix needed",
+        "The update goes through (IDOR bug); check in the endpoint that the document's owner is the current user, else 403",
+        "A 401, because user 12's token was not issued for document 88",
+        "The update goes through, and that is fine because the frontend hides the edit button on other people's documents"
+      ],
+      "explanation": "The decorator checks only the role, and user 12 is an editor, so the request passes: someone else's document was edited just by changing the id (IDOR bug). Fix: in the endpoint, load the document and check that `doc.owner_id == current_user.id` (or that the user is an admin), else 403. Option A assumes the role check also looks at ownership; option C is wrong because a token identifies the user and is not issued per document; option D treats hiding things in the frontend as security."
+    },
+    "mad2-w8-q14": {
+      "question": "The Vue dev server is on `http://localhost:5173` and Flask is on `http://localhost:5000`. The frontend calls `fetch(\"http://localhost:5000/api/tasks\", { method: \"POST\", headers: { \"Content-Type\": \"application/json\" }, body })`. Flask answers the `OPTIONS` request with a 404 and no CORS headers. What does the browser do?",
+      "options": [
+        "Sends only the POST, because the same-origin policy and CORS do not apply on localhost",
+        "Sends both OPTIONS and POST, but does not show the POST response to JavaScript",
+        "Sends OPTIONS first; since it fails, the POST is never sent and `fetch` rejects with a CORS error",
+        "When OPTIONS fails, the browser re-sends the POST in `no-cors` mode by itself"
+      ],
+      "explanation": "`5173` and `5000` are different ports, so the origin is different (CORS applies on localhost too). A POST with a JSON `Content-Type` is not a simple request, so the browser sends an `OPTIONS` preflight first. The preflight response has no CORS headers (404), so the browser never sends the real POST and `fetch` rejects with a CORS error. Option A treats localhost as an exception; option B assumes the POST still goes out after a failed preflight; option D: there is no such automatic retry."
+    },
+    "mad2-w8-q15": {
+      "question": "The access token lasts 15 minutes (the server checks only the signature + `exp`, no denylist), and the refresh token is in an `HttpOnly` cookie that can be revoked server-side. The user logs in at 10:00 (the access token was issued at 10:00). At 10:05 an XSS script steals the access token from `localStorage`. At 10:06 the user logs out and the server revokes the refresh token. Until when can the attacker use the API?",
+      "options": [
+        "Until 10:15, when the stolen access token expires",
+        "Until 10:06, access ends as soon as the user logs out",
+        "Until 10:20 (10:05 + 15 minutes)",
+        "For ever, by making new access tokens with the refresh token"
+      ],
+      "explanation": "The access token is stateless: the server only looks at the signature and `exp`, so logging out or revoking the refresh token does not stop the stolen access token. It was issued at 10:00 and lasts 15 minutes, so it works until 10:15. The refresh token was in an `HttpOnly` cookie, which XSS cannot read, and it was revoked as well, so the attacker cannot make new tokens. Option B treats a stateless JWT like a session; option C counts the expiry from the time of the theft; option D assumes the attacker also has the refresh token."
+    },
+    "mad2-w9-q7": {
+      "question": "A Flask view has `job = build_report.delay(user_id, month)`. What does this line do?",
+      "options": [
+        "Queues the message and at once returns an `AsyncResult` (with the job `id`); a worker runs it",
+        "Holds the request until the report is built and then returns the report's full result",
+        "Runs the task to completion right away in the same request thread, then moves on",
+        "Adds the task to the Celery beat schedule for the next day, so it will not run today"
+      ],
+      "explanation": "`.delay(...)` is a shortcut for `apply_async`: the message goes to the broker and you get an `AsyncResult` at once, so the endpoint can return 202 + a job id. A separate worker process does the work. Options B and C describe synchronous behaviour; option D is scheduling (beat), not what `delay` does."
+    },
+    "mad2-w9-q8": {
+      "question": "What does Celery beat do?",
+      "options": [
+        "Executing scheduled tasks itself in its own process, instead of the workers",
+        "Enqueuing the task when its time comes; the workers still run it",
+        "Storing and keeping every task's result and state in Redis",
+        "Finding failed tasks in the dead-letter queue and removing them"
+      ],
+      "explanation": "Beat is only a scheduler: for example at `crontab(minute=0, hour=18)` it puts the task message on the queue when the time comes. Workers execute it (option A is wrong), storing results is the result backend's job (option C), and the dead-letter queue has nothing to do with beat (option D)."
+    },
+    "mad2-w9-q9": {
+      "question": "On which of these errors is retrying the task with backoff the right call?",
+      "options": [
+        "400 Bad Request, because the input sent was wrong",
+        "Validation error: the email field is empty",
+        "A 503 or a network timeout from a third-party API",
+        "404: the given user id does not exist"
+      ],
+      "explanation": "Retrying only helps with transient errors: a 503 or a timeout may clear up after a while. A 400, a validation error or a missing user (options A, B, D) will not change by running again; a retry only adds load, so mark it FAILURE straight away and report it."
+    },
+    "mad2-w9-q10": {
+      "question": "The frontend polls `GET /api/jobs/abc123`, but the id `abc123` was never enqueued (a typo). What does Celery's `AsyncResult(\"abc123\").state` show?",
+      "options": [
+        "FAILURE",
+        "Error: job not found",
+        "SUCCESS",
+        "PENDING"
+      ],
+      "explanation": "Celery returns PENDING even for an unknown job id, because having no entry in the result backend can also mean \"not started yet\". So record job ids in your own DB and return 404 for an unknown id. Options A, B and C wrongly assume Celery recognises an unknown id."
+    },
+    "mad2-w9-q11": {
+      "question": "A task in Celery beat is set to `crontab(minute=30, hour=\"*/6\")`. How many times a day is it enqueued?",
+      "options": [
+        "6 times, because `*/6` means 6 runs",
+        "4 times: 00:30, 06:30, 12:30, 18:30",
+        "24 times: at minute 30 of every hour",
+        "1 time: only at 06:30"
+      ],
+      "explanation": "`hour=\"*/6\"` means every 6 hours: 0, 6, 12, 18, that is 4 hours a day, and `minute=30` fires once in each of those hours. 4 in total. Option A reads the step as a count; option C ignores `hour`; option D reads `*/6` as \"only at 6 o'clock\"."
+    },
+    "mad2-w9-q12": {
+      "question": "A task's retry delays are `min(3 × 2ⁿ, 30)` seconds (n = retries so far, starting at 0), and `max_retries` is 6. If every attempt fails, what is the total wait across all the retries?",
+      "options": [
+        "189 s",
+        "93 s",
+        "135 s",
+        "105 s"
+      ],
+      "explanation": "For n = 0 to 5: 3, 6, 12, 24, then the cap of 30 instead of 48, and 30 instead of 96 too. Total = 3 + 6 + 12 + 24 + 30 + 30 = 105 s. Option A forgets the cap (3 + 6 + ... + 96 = 189); option B counts only 5 retries without the cap (93); option C adds one extra retry (105 + 30 = 135)."
+    },
+    "mad2-w9-q13": {
+      "question": "30 tasks are put on the queue at once (FIFO order). There are 3 workers, each runs one task at a time, and each task takes 4 s. When does task #20 finish, and when are all the tasks done?",
+      "options": [
+        "28 s and 40 s",
+        "80 s and 120 s",
+        "24 s and 40 s",
+        "28 s and 36 s"
+      ],
+      "explanation": "The 3 workers finish 3 tasks in each 4 s round. Task #20 is in round ⌈20 / 3⌉ = 7 (tasks 19–21), which starts at t = 24 s and ends at 28 s. 30 tasks = 10 rounds = 40 s. Option B counts as if there were one worker (20 × 4, 30 × 4); option C gives task #20's start time; option D counts one round too few (9 × 4)."
+    },
+    "mad2-w9-q14": {
+      "question": "This consumer takes tasks from an at-least-once queue, and the third delivery is a duplicate of `o1`. What is the output?",
+      "options": [
+        "7 2",
+        "5 3",
+        "5 2",
+        "7 3"
+      ],
+      "explanation": "The bug is that stock is reduced before the duplicate check. o1: stock 8, email 1. o2: stock 7, email 2. o1 again: stock drops to 5, then the duplicate is caught, so no email. Output 5 2. Option A assumes the check blocks everything (that would be true if it were the first line); option B assumes there is no dedupe at all; option D gets the stock right but counts the email twice."
+    },
+    "mad2-w9-q15": {
+      "question": "The user starts with 100 points. `notify_crm` times out on the first 2 attempts and works on the third. When the task finishes, what are the user's points and the task's state?",
+      "options": [
+        "110, SUCCESS",
+        "130, FAILURE",
+        "100, SUCCESS",
+        "130, SUCCESS"
+      ],
+      "explanation": "Every retry runs the whole task function from the start. The UPDATE comes before the retry line and has already been committed, so every attempt adds 10: 3 attempts = 100 + 30 = 130. The third attempt succeeds and 2 retries is under `max_retries` (5), so the state is SUCCESS. Option A assumes a retry reruns only the failed line; option B treats retries as failure; option C assumes a failed attempt rolls back its DB work. Fix: make the work idempotent (for example, give the points only once per unique sync id) or move the CRM call to a separate task."
+    },
+    "mad2-w10-q7": {
+      "question": "The order service publishes events on the `order.created` topic. Now a new \"loyalty points\" service also wants to act on every order. What has to be done with pub/sub?",
+      "options": [
+        "The loyalty service subscribes to the topic; the order service's code does not change",
+        "A direct HTTP call to the loyalty service must be added to the order service",
+        "The email service must also do the loyalty points work",
+        "The topic must be turned into a point-to-point queue"
+      ],
+      "explanation": "In pub/sub every subscriber gets its own copy of the event, so a new consumer simply subscribes; the producer does not even notice. Option B is the very synchronous coupling we wanted to avoid; option C mixes up the services' responsibilities; option D is backwards, because in a queue each message goes to only one consumer."
+    },
+    "mad2-w10-q8": {
+      "question": "What is a dead-letter queue (DLQ) for?",
+      "options": [
+        "Keeping a permanent backup copy of every message",
+        "Setting aside messages that keep failing (poison messages)",
+        "Deleting old messages that are already processed",
+        "Storing messages encrypted in the broker"
+      ],
+      "explanation": "If a poison message (one that fails every time) keeps cycling through the queue, the other messages get stuck. The DLQ moves it aside after a few attempts, so someone can inspect it and the rest of the queue keeps flowing. Options A, C and D are not what a DLQ does."
+    },
+    "mad2-w10-q9": {
+      "question": "A consumer acknowledges every message before it starts processing it. Which delivery guarantee is this?",
+      "options": [
+        "Exactly-once",
+        "At-least-once: duplicates may come, but nothing is lost",
+        "At-most-once: no duplicates, but a message can be lost on a crash",
+        "Ordered delivery: messages always in the right order"
+      ],
+      "explanation": "Acking first means the broker considers the message delivered and forgets it. If the consumer crashes mid-processing, the message will not come again (it is lost), but there are never duplicates either. Option B is what happens when the ack comes after processing; option A is very hard in distributed systems and does not come from ack timing alone; option D, ordering, is a separate guarantee."
+    },
+    "mad2-w10-q10": {
+      "question": "What is the real reason to compare a webhook signature with `crypto.timingSafeEqual` instead of `===`?",
+      "options": [
+        "`===` cannot compare two strings byte by byte at all",
+        "`timingSafeEqual` decrypts the hash and matches it with the original",
+        "`timingSafeEqual` is faster than `===`, so there is less load",
+        "Equal time on every byte; the signature cannot be guessed from response time"
+      ],
+      "explanation": "`===` stops at the first differing character, so the response time for a wrong signature hints at how many leading characters were right; with many requests an attacker can guess the signature piece by piece. A constant-time compare always checks the full length. Option A is wrong (`===` does compare strings); option B: an HMAC is not decrypted; option C: speed is not the reason."
+    },
+    "mad2-w10-q11": {
+      "question": "A queue holds 1200 messages, each takes 0.5 s to process, and there are 4 competing consumers (each handles one message at a time). Roughly how long until the queue is empty?",
+      "options": [
+        "600 s",
+        "150 s",
+        "300 s",
+        "2400 s"
+      ],
+      "explanation": "Competing consumers share the work: each consumer gets 1200 ÷ 4 = 300 messages, × 0.5 s = 150 s. Option A is the time for a single consumer (1200 × 0.5); option C assumes 2 consumers instead of 4; option D multiplies by the number of consumers instead of dividing (600 × 4)."
+    },
+    "mad2-w10-q12": {
+      "question": "This is a webhook receiver's simplified accept logic (timestamp tolerance 300 s). What is the output?",
+      "options": [
+        "ok ok bad-sig dup",
+        "ok stale bad-sig ok",
+        "ok stale bad-sig dup",
+        "ok stale ok dup"
+      ],
+      "explanation": "Call 1: signature ok, age 1767225900 − 1767225800 = 100 s ≤ 300, new id: \"ok\". Call 2: age 400 s > 300: \"stale\". Call 3: wrong signature, the very first check gives \"bad-sig\". Call 4: age 50 s, but `e1` was already seen: \"dup\". Option A forgets the stale check; option B forgets the dedupe; option D ignores `sigOk` being false."
+    },
+    "mad2-w10-q13": {
+      "question": "A topic has 3 subscriber groups: email (2 instances, competing), analytics (1 instance) and inventory (3 instances, competing). 10 events are published. How many event processings happen in total, and how many events do the two email instances process between them?",
+      "options": [
+        "30 and 10",
+        "60 and 20",
+        "10 and 5",
+        "30 and 20"
+      ],
+      "explanation": "Every subscriber group gets one copy of each event, and the instances inside a group are competing consumers (only one of them processes each copy). 10 events × 3 groups = 30 processings. The email group gets 10 copies, shared between its two instances: 10 between them. Option B treats every instance as a separate subscriber (10 × 6); option C forgets the fan-out; option D gives every event to each email instance."
+    },
+    "mad2-w10-q14": {
+      "question": "A consumer reads 5 messages (m1 to m5) in order and acks each one before it starts processing it. It crashes in the middle of processing m3 and then restarts. In the end, which messages were fully processed?",
+      "options": [
+        "All of m1–m5, because m3 will be delivered again",
+        "m1, m2, m3 (twice), m4, m5",
+        "Only m1 and m2; the queue stops for good after the crash",
+        "m1, m2, m4, m5; m3 was lost (it had already been acked)"
+      ],
+      "explanation": "This is an at-most-once setup: m3 was acked before the crash, so the broker will not send it again, and its half-done work is lost. After the restart the consumer takes m4 and m5. Options A and B are at-least-once (ack after processing) behaviour; option C is wrong, the remaining messages are delivered after the restart."
+    },
+    "mad2-w10-q15": {
+      "question": "What does this code print? (The secret is for the demo only.)",
+      "options": [
+        "true false false",
+        "true true true",
+        "false false true",
+        "true false true"
+      ],
+      "explanation": "An HMAC with the same secret and the same input always gives the same output: the first is true. Changing the timestamp by one second changes the signed string and the hash is completely different: false. The third: this raw body has no extra spaces and its keys are in the same order, so `JSON.stringify(JSON.parse(raw))` produces exactly the same string: true. Option A's trap is memorising that parse + stringify always breaks the signature (it does when spaces, key order or number format change, which is why verifying the raw bytes is the safe rule); option B assumes the timestamp is not part of the signed content; option C treats HMAC as random."
+    },
+    "mad2-w11-q7": {
+      "question": "In latency metrics, what does p50 tell you?",
+      "options": [
+        "The median: half the requests are faster than it and half slower",
+        "The average response time of the slowest 50 requests",
+        "The percent of all requests that take under 50 ms",
+        "The plain average (mean) of all the requests"
+      ],
+      "explanation": "p50 is the 50th percentile, that is, the median: the typical user's experience. It is different from the mean, because a few very slow requests skew the mean but not the median (option D). Options B and C attach the \"50\" to the wrong thing."
+    },
+    "mad2-w11-q8": {
+      "question": "A Vite build produces `index.html` and content-hashed files (such as `app.3f9a1c.js`). Which header suits `index.html` best so that a new deploy shows up immediately?",
+      "options": [
+        "`Cache-Control: max-age=31536000, immutable`",
+        "`Cache-Control: no-cache`",
+        "`Cache-Control: public, max-age=86400`",
+        "No header; the browser will work it out"
+      ],
+      "explanation": "`index.html` keeps the same name on every deploy, so give it `no-cache`: the browser may store it but revalidates with the ETag every time, and a new deploy arrives at once. The year-long `immutable` (option A) is only for hashed files, whose names change when their content changes; option C can show old HTML for up to a day; with option D the browser may cache it by its own guesswork."
+    },
+    "mad2-w11-q9": {
+      "question": "`GET /api/me` returns the logged-in user's name and email, and the app sits behind a CDN. Which header should this response have?",
+      "options": [
+        "`Cache-Control: public, max-age=3600` (for one hour)",
+        "`Cache-Control: max-age=31536000, immutable` (for a whole year)",
+        "`Cache-Control: private` (or `no-store`) so the CDN does not share it",
+        "No header; the CDN spots personal data in the response by itself"
+      ],
+      "explanation": "If a personalised response lands in a shared cache (the CDN), the next user may get someone else's data. `private` lets only the user's own browser cache it; for very sensitive data use `no-store`. Options A and B allow long shared caching and can leak data; option D: a CDN does not understand what a response means, it only follows the headers."
+    },
+    "mad2-w11-q10": {
+      "question": "An API gets 2000 req/s. A cache hit takes 3 ms and a miss (from the DB) takes 80 ms. The hit ratio is 95%. What are the average latency and the DB queries/s?",
+      "options": [
+        "41.5 ms and 1000 queries/s",
+        "6.85 ms and 1900 queries/s",
+        "3 ms and 100 queries/s",
+        "6.85 ms and 100 queries/s"
+      ],
+      "explanation": "Average = 0.95 × 3 + 0.05 × 80 = 2.85 + 4 = 6.85 ms. The DB sees only the misses: 2000 × 0.05 = 100 queries/s. Option A takes a plain average of the two latencies; option B counts the hits as DB queries; option C ignores the latency of the misses."
+    },
+    "mad2-w11-q11": {
+      "question": "You need 50 posts and their authors (all different). How many queries go out with `selectinload(Post.author)` and with `joinedload(Post.author)` in SQLAlchemy?",
+      "options": [
+        "51 and 51",
+        "2 and 1",
+        "1 and 2",
+        "50 and 1"
+      ],
+      "explanation": "`selectinload` runs 2 queries: first the posts, then all the authors at once with `WHERE id IN (...)`. `joinedload` brings everything in a single query with a JOIN. Option A is the lazy-loading (N+1) number; option C swaps the two; option D is an N+1-style count too."
+    },
+    "mad2-w11-q12": {
+      "question": "An API runs at 300 req/s and each request holds a DB connection for its whole latency. The latency rises from 80 ms to 250 ms, and the pool has 40 connections. By Little's law, how many connections are needed at once before and after, and is the pool enough?",
+      "options": [
+        "24 and 75; 40 is enough both times",
+        "3.75 and 1.2; the pool is always enough",
+        "24 and 75; fine before, now 40 is too few",
+        "2400 and 7500; the pool was never enough"
+      ],
+      "explanation": "L = λ × W, with W in seconds: 300 × 0.08 = 24, and 300 × 0.25 = 75. 24 < 40 was fine, but 75 > 40, so requests will queue for a connection and latency will climb further. Option A forgets to compare 75 with 40; option B divides λ by W; option D forgets to convert ms to seconds."
+    },
+    "mad2-w11-q13": {
+      "question": "An endpoint has 20 response times (ms): 63, 40, 1200, 55, 72, 45, 90, 61, 50, 400, 42, 75, 58, 850, 47, 65, 52, 80, 60, 70. Using the nearest-rank method (position ⌈p/100 × n⌉ in the sorted list), what are p50, p95 and the mean?",
+      "options": [
+        "p50 = 61, p95 = 850, mean = 173.75",
+        "p50 = 62, p95 = 1200, mean = 173.75",
+        "p50 = 61, p95 = 400, mean = 61",
+        "p50 = 173.75, p95 = 850, mean = 61"
+      ],
+      "explanation": "Sort them: 40, 42, 45, 47, 50, 52, 55, 58, 60, 61, 63, ..., 90, 400, 850, 1200. p50: ⌈0.5 × 20⌉ = 10th = 61. p95: ⌈0.95 × 20⌉ = 19th = 850. Mean = 3475 ÷ 20 = 173.75: three slow requests pushed the mean to roughly three times the median. Option B takes the median as the average of the 10th and 11th (62) and p95 as the last value; option C takes the 18th value and uses the median as the mean; option D swaps the median and the mean."
+    },
+    "mad2-w11-q14": {
+      "question": "Every order has a different customer, and both the `customer` and `items` relationships use the default lazy loading. (i) How many queries does this code send? (ii) How many after adding `options(selectinload(Order.customer), selectinload(Order.items))`?",
+      "options": [
+        "21 and 2",
+        "40 and 3",
+        "41 and 3",
+        "41 and 1"
+      ],
+      "explanation": "Lazy loading: 1 query for the orders, then 1 for the customer and 1 for the items for each order: 1 + 20 + 20 = 41. `selectinload` runs one extra `IN (...)` query per relationship: orders + customers + items = 3. Option A counts only one relationship; option B forgets the first orders query; option D treats `selectinload` as a single JOIN-style query."
+    },
+    "mad2-w11-q15": {
+      "question": "Two files are served with an ETag: file A with `Cache-Control: max-age=60`, file B with `Cache-Control: no-cache`. The user opens the page at t = 0 s (both came with 200), then again at t = 30 s and t = 90 s. The content never changed. After t = 0, how many requests reach the server in total, and with what status?",
+      "options": [
+        "4 requests: 2 × 200 and 2 × 304",
+        "1 request (304), only for A",
+        "0 requests, both come from the cache",
+        "3 requests, all three 304 Not Modified"
+      ],
+      "explanation": "A: at t = 30 it is still fresh (within 60 s), so it comes from the cache with no network. At t = 90 it is stale, so the browser revalidates with `If-None-Match`: 304. B: `no-cache` revalidates every time, a 304 at both t = 30 and t = 90. 1 + 2 = 3 requests in total, all 304 (no body). Option A assumes some requests bring the full body again; option B reads `no-cache` as \"use the cache without asking\"; option C assumes the stale A is also used without asking."
+    },
+    "mad2-w12-q7": {
+      "question": "Where should a Flask app's JWT secret and database password be kept?",
+      "options": [
+        "In environment variables (or a secret manager); not in code or git",
+        "As a constant in `app.py`, so every developer has it",
+        "In one of the Vue frontend's `.js` files, next to the API URL",
+        "In the README, so whoever deploys the app knows it"
+      ],
+      "explanation": "Secrets should come from environment variables (or a secret manager), so they do not leak into code or git history and each environment can have its own value. Options B and D hand them to anyone who can see the repo; option C ships them to every browser user."
+    },
+    "mad2-w12-q8": {
+      "question": "What is the biggest benefit of an `api` client module in a Vue app (one that handles the base URL, the `Authorization` header, the `res.ok` check and 401s)?",
+      "options": [
+        "Requests automatically get faster because the headers are cached",
+        "This logic is not repeated in every component; behaviour stays consistent",
+        "The need to configure CORS on the backend goes away completely",
+        "Server-side validation is no longer needed, the client checks everything"
+      ],
+      "explanation": "With headers, the `res.ok` check and 401 handling in one place, no component forgets a check, and a change (such as a new header) happens in a single file. It does not change speed (option A), CORS (option C) or server validation (option D)."
+    },
+    "mad2-w12-q9": {
+      "question": "How should users' passwords be stored in the database?",
+      "options": [
+        "In plain text, so they can be sent back on forgot password",
+        "Base64-encoded",
+        "As a strong, slow password hash such as bcrypt or argon2",
+        "In the JWT payload, so they are verified with every request"
+      ],
+      "explanation": "bcrypt/argon2 are deliberately slow, one-way password hashes: even if the DB leaks, recovering a password is very expensive. Plain text and Base64 (just an encoding, easily reversed) hand over the password on a leak; and anyone can decode a JWT payload."
+    },
+    "mad2-w12-q10": {
+      "question": "At peak 90 jobs arrive per minute and each job holds a worker process for 6 s. (i) At least how many workers are needed to stop the queue growing? (ii) With 50% headroom (round up)?",
+      "options": [
+        "540 and 810",
+        "15 and 23",
+        "9 and 13",
+        "9 and 14"
+      ],
+      "explanation": "Arrival rate = 90 / 60 = 1.5 jobs/s. Little: 1.5 × 6 = 9 workers. Headroom: 9 × 1.5 = 13.5, rounded up = 14. Option C rounds 13.5 down; option B divides 90 by 6 (never turning per minute into per second); option A multiplies while mixing seconds and minutes."
+    },
+    "mad2-w12-q11": {
+      "question": "The access token has expired and `GET /api/v1/projects` returns 401. In this course's frontend design, where and how is this best handled?",
+      "options": [
+        "Each component checks for 401 itself after its `fetch`",
+        "In one place, the `api` client: clear the auth store and redirect to login",
+        "The server should send 200 and an empty list instead of 401",
+        "A router guard checks the token every 5 seconds and logs out on expiry"
+      ],
+      "explanation": "A 401 means the identity check failed; it can happen on any request, so handle it once in the central `api` client: reset the auth store and redirect to login (or get a new token with the refresh token). Option A is the very duplication we want to avoid; option C is the wrong status and hides the bug; option D is polling, which still does not handle a 401 on requests in between."
+    },
+    "mad2-w12-q12": {
+      "question": "This is a small simplified `api` client that uses `fakeFetch` instead of `fetch`. What is the output?",
+      "options": [
+        "{\"n\":1} | null | HTTP 500 null",
+        "{\"n\":1} | HTTP 401 | HTTP 500 { name: 'Zoya' }",
+        "{\"n\":1} | null | {} null",
+        "{\"n\":1} | null | HTTP 500 { name: 'Zoya' }"
+      ],
+      "explanation": "\"/a\": 200, `res.json()` gives `{ n: 1 }`, which is fulfilled and becomes `{\"n\":1}` through `JSON.stringify`. \"/b\": the 401 branch sets `auth.user` to null and returns null (fulfilled, not an error), and `JSON.stringify(null)` gives \"null\". \"/c\": on 500 `res.ok` is false and an error is thrown: rejected, with the message \"HTTP 500\". At the end `auth.user` is null. Option B assumes the 401 throws too; option C ignores the `res.ok` check; option D forgets that the 401 branch cleared `auth.user`."
+    },
+    "mad2-w12-q13": {
+      "question": "A worker pool runs two kinds of jobs: 120 email jobs per minute (1 s each) and 30 report jobs per minute (10 s each). At least how many worker processes are needed so the queue does not grow?",
+      "options": [
+        "150",
+        "11",
+        "7",
+        "5"
+      ],
+      "explanation": "Little's law for each type: emails 120 / 60 = 2 per s × 1 s = 2; reports 30 / 60 = 0.5 per s × 10 s = 5. Total 2 + 5 = 7. Option A adds up the job counts (120 + 30); option B adds only the job times (1 + 10); option D counts only the reports."
+    },
+    "mad2-w12-q14": {
+      "question": "What does this code print?",
+      "options": [
+        "false 0, then false 2",
+        "true 2, then false 2",
+        "false 2, then false 2",
+        "true 0, then false 2"
+      ],
+      "explanation": "`load()` runs synchronously up to the `await`: `loading` becomes true. At `await` the function pauses, so the next line prints `true 0`. In a microtask `load` resumes: items [1, 2] and loading false. The timer runs after the microtasks: `false 2`. Option A assumes no part of an async function runs synchronously; options B and C treat `await` as blocking."
+    },
+    "mad2-w12-q15": {
+      "question": "`GET /api/v1/projects?page=1` returns only the projects the user is a member of. The Redis cache-aside key is `projects:page:1` (TTL 60 s). At t = 0 Asha makes the request (a miss; her projects are cached). At t = 10 s Bilal (whose projects are different) opens the same URL. What does Bilal get, and what is the fix?",
+      "options": [
+        "Bilal's own projects, because every request checks the token first",
+        "A 401, because Asha's token is now stored in the cache entry",
+        "An empty list for Bilal, until the TTL runs out",
+        "Asha's projects (leak); the key needs the user id, e.g. `projects:u42:page:1`"
+      ],
+      "explanation": "The key has no user id, so at t = 10 s Bilal's request gets a cache hit and the API returns Asha's projects (within the TTL). The token check does let the request through, but the cached data belongs to another user. Fix: put everything the result depends on into the key, here the user id and the page. Option A assumes the auth check also fixes the cache; option B is wrong because the cache stores the response, not the token; option C has no basis."
     }
   }
 }

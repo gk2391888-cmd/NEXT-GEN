@@ -18,7 +18,7 @@ const MIN_QUESTIONS_PER_WEEK = 6;
 const DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
 // Students can practise one level at a time (Easy / Medium / Hard), so in these subjects every week
 // needs at least PER_LEVEL questions of each level, in both languages. Add a subject here once its weeks have them.
-const LEVELLED_SUBJECTS = new Set(['math1', 'stat1', 'ct', 'eng1', 'math2', 'stat2', 'python', 'eng2', 'mfe1', 'econ', 'estc', 'facc', 'dbms', 'cprog', 'linux', 'digital', 'eec', 'embc', 'mfe2', 'aero', 'mech', 'bstat', 'mtp', 'pdsa', 'mad1', 'java', 'syscmd', 'mlf']);
+const LEVELLED_SUBJECTS = new Set(['math1', 'stat1', 'ct', 'eng1', 'math2', 'stat2', 'python', 'eng2', 'mfe1', 'econ', 'estc', 'facc', 'dbms', 'cprog', 'linux', 'digital', 'eec', 'embc', 'mfe2', 'aero', 'mech', 'bstat', 'mtp', 'pdsa', 'mad1', 'java', 'syscmd', 'mlf', 'mad2']);
 const PER_LEVEL = 5;
 const EN_FIELDS = ['question', 'options', 'explanation'];
 

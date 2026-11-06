@@ -125,6 +125,131 @@
           "answer": 0,
           "explanation": "Spread `{ ...a }` ek naya object banata hai jisme top-level properties copy hoti hain. `n` ek number (primitive) hai, isliye `b.n = 2` sirf `b` ko badalta hai aur `a.n` 1 rehta hai. Par `tags` ek array hai: copy mein sirf uska reference gaya, dono objects ek hi array share karte hain, isliye `push` ke baad `a.tags.length` bhi 2. Option C ka trap hai spread ko deep copy samajhna, aur option B ka trap hai sochna ki `b` aur `a` ek hi object hain.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w1-q7",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log(0 || 5, 0 ?? 5, null ?? 5);",
+          "options": [
+            "5 5 5",
+            "5 0 5",
+            "0 0 5",
+            "5 0 null"
+          ],
+          "answer": 1,
+          "explanation": "`||` har falsy value par default deta hai, isliye `0 || 5` → 5. `??` sirf `null`/`undefined` par default deta hai: `0 ?? 5` → 0 (0 ek valid value hai), aur `null ?? 5` → 5. Option A ka trap hai `??` ko bhi `||` jaisa maan lena; option C sochta hai ki `||` bhi 0 rakhega; option D bhool jaata hai ki `null ?? 5` default lagata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w1-q8",
+          "question": "Inme se kaunsi value `if (value)` mein truthy maani jaayegi?",
+          "options": [
+            "`0`",
+            "`\"\"`",
+            "`\"0\"`",
+            "`NaN`"
+          ],
+          "answer": 2,
+          "explanation": "Falsy values ki list chhoti hai: `false`, `0`, `-0`, `0n`, `\"\"`, `null`, `undefined`, `NaN`. `\"0\"` ek non-empty string hai, isliye truthy hai, chahe uske andar zero likha ho. Trap hai `\"0\"` ko number 0 jaisa samajhna; `0`, `\"\"` aur `NaN` teeno falsy list mein hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w1-q9",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log(0.1 + 0.2 === 0.3, 7 / 2);",
+          "options": [
+            "true 3.5",
+            "false 3",
+            "true 3",
+            "false 3.5"
+          ],
+          "answer": 3,
+          "explanation": "Saare numbers 64-bit floating point hain: 0.1 + 0.2 asal mein 0.30000000000000004 banta hai, isliye `=== 0.3` false hai. JavaScript mein alag integer division nahi hota, isliye 7 / 2 = 3.5. Option A decimal maths ko exact maan leta hai; options B aur C integer division (3) maante hain, jo sirf `Math.floor` ya `Math.trunc` se milta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w1-q10",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log([1] === [1], Array.isArray([]), typeof []);",
+          "options": [
+            "false true object",
+            "true true array",
+            "true false object",
+            "false true array"
+          ],
+          "answer": 0,
+          "explanation": "`===` objects ke liye reference compare karta hai: do alag `[1]` literals do alag arrays hain, isliye false. `Array.isArray([])` true hai, aur `typeof []` \"object\" deta hai kyunki array bhi object hai. Options B aur C ka trap hai `[1] === [1]` ko value comparison samajhna; options B aur D `typeof` se \"array\" ki ummeed karte hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w1-q11",
+          "question": "Is code ka output kya hoga?",
+          "code": "var a = 1;\nlet b = 1;\nif (true) {\n    var a = 2;\n    let b = 2;\n}\nconsole.log(a, b);",
+          "options": [
+            "1 1",
+            "2 2",
+            "2 1",
+            "SyntaxError: b already declared"
+          ],
+          "answer": 2,
+          "explanation": "`var` function-scoped hai (yahan global), isliye block ke andar `var a = 2` wahi `a` dobara assign karta hai: bahar `a` 2 hai. `let b = 2` block ke andar ek naya, alag `b` banata hai jo block ke saath khatam ho jaata hai, isliye bahar wala `b` 1 hi rehta hai. Option B `let` ko bhi `var` ki tarah bahar leak hone wala maanta hai; option A `var` ko block-scoped samajhta hai; option D galat hai kyunki alag block mein `let` dobara declare karna allowed hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w1-q12",
+          "question": "Is code ka output kya hoga?",
+          "code": "const out = [];\nout.push(typeof f1);\nout.push(typeof f2);\ntry {\n    out.push(typeof f3);\n} catch (e) {\n    out.push(e.name);\n}\nfunction f1() {}\nvar f2 = function () {};\nconst f3 = () => {};\nconsole.log(out.join(\" \"));",
+          "options": [
+            "function undefined ReferenceError",
+            "function function function",
+            "function undefined undefined",
+            "undefined undefined ReferenceError"
+          ],
+          "answer": 0,
+          "explanation": "`f1` function declaration hai jo poori hoist hoti hai: \"function\". `f2` ek `var` hai jo hoist hokar `undefined` se initialise hota hai; function baad wali line par assign hota hai: \"undefined\". `f3` `const` hai aur abhi TDZ mein hai; TDZ mein `typeof` bhi `ReferenceError` deta hai, jo `catch` mein pakda gaya. Option C ka trap hai sochna ki `typeof` hamesha safe hai; option B function expressions ko bhi poora hoist maanta hai; option D declaration ko bhi hoist nahi maanta.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w1-q13",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log(\"3\" * \"4\" + \"1\", 1 + 2 + \"3\", \"1\" + 2 + 3);",
+          "options": [
+            "13 6 6",
+            "121 33 123",
+            "121 123 123",
+            "13 33 123"
+          ],
+          "answer": 1,
+          "explanation": "Left se right chalo. (1) `\"3\" * \"4\"`: `*` dono ko number banata hai = 12; phir `12 + \"1\"` mein ek side string hai, to \"121\". (2) `1 + 2` = 3 (dono numbers), phir `3 + \"3\"` = \"33\". (3) `\"1\" + 2` = \"12\" (string), phir `\"12\" + 3` = \"123\". Option A har jagah numeric addition maanta hai; option C doosre expression mein shuru se hi concatenation maanta hai; option D pehle expression mein `+ \"1\"` ko number jodna samajhta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w1-q14",
+          "question": "Is code ka output kya hoga?",
+          "code": "const orig = { name: \"Asha\", marks: [70, 80] };\nconst s = { ...orig };\nconst d = structuredClone(orig);\ns.name = \"Bela\";\ns.marks.push(90);\nd.marks.push(100);\nconsole.log(orig.name, orig.marks.length, d.marks.length);",
+          "options": [
+            "Bela 3 4",
+            "Asha 4 4",
+            "Asha 2 3",
+            "Asha 3 3"
+          ],
+          "answer": 3,
+          "explanation": "Spread shallow copy hai: `s.name` badalne se `orig.name` nahi badalta (\"Asha\"), par `s.marks` aur `orig.marks` ek hi array hain, isliye 90 push hone par `orig.marks` ki length 3. `structuredClone` deep copy hai jisne shuru mein [70, 80] ki alag copy banayi; usme 100 push hokar length 3. Option C spread ko deep copy maanta hai; option B maanta hai ki `d` bhi wahi array share karta hai; option A sochta hai ki `s.name` badalne se original bhi badlega.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w1-q15",
+          "question": "Is code ka output kya hoga?",
+          "code": "const vals = [0, \"\", null, undefined, NaN, \"0\", \"1\"];\nconst a = vals.filter(v => v == null).length;\nconst b = vals.filter(v => !v).length;\nconst c = vals.filter(v => v == 0).length;\nconsole.log(a, b, c);",
+          "options": [
+            "2 5 3",
+            "1 5 3",
+            "2 6 3",
+            "2 5 5"
+          ],
+          "answer": 0,
+          "explanation": "`a`: `v == null` sirf `null` aur `undefined` ke liye true hai = 2. `b`: falsy values `0`, `\"\"`, `null`, `undefined`, `NaN` = 5 (`\"0\"` truthy hai). `c`: `== 0` par `0`, `\"\"` (number 0 banta hai) aur `\"0\"` true hain; `null == 0` special rule se false hai, aur `undefined`, `NaN` bhi false = 3. Option B `undefined` ko `== null` se bahar rakhta hai; option C `\"0\"` ko falsy ginta hai; option D `null` aur `undefined` ko bhi `== 0` mein gin leta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -253,6 +378,131 @@
           "answer": 2,
           "explanation": "`d.intro()`: `intro` Dog par nahi mila, chain mein `Animal.prototype` par mila. Call `d.intro()` hai, isliye `this` = `d`, aur `this.speak()` lookup phir `d` se shuru hota hai, jahan `Dog.prototype.speak` pehle milta hai: \"woof\". Chain hai `d` → `Dog.prototype` → `Animal.prototype`, isliye do baar `getPrototypeOf` karne par `Animal.prototype` milta hai: true. Option A ka trap hai sochna ki parent ka method parent ka hi `speak` chalayega, aur option B ka trap hai sochna ki `d` ka seedha prototype `Animal.prototype` hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w2-q7",
+          "question": "Is code ka output kya hoga?",
+          "code": "console.log([1, 2, 3, 4].filter(n => n % 2 === 0).map(n => n * 10).join(\",\"));",
+          "options": [
+            "10,30",
+            "20,40",
+            "2,4",
+            "10,20,30,40"
+          ],
+          "answer": 1,
+          "explanation": "`filter` sirf even numbers rakhta hai: [2, 4]. Phir `map` har ek ko 10 se guna karta hai: [20, 40], aur `join` \"20,40\" banata hai. Option A odd numbers rakh leta hai; option C `map` wala step bhool jaata hai; option D maanta hai ki `filter` kuch nahi hataata.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w2-q8",
+          "question": "Is code ka output kya hoga?",
+          "code": "const u = { name: \"Kabir\", profile: null };\nconsole.log(u.profile?.city, u.settings?.theme);",
+          "options": [
+            "null undefined",
+            "TypeError: Cannot read properties of null",
+            "null null",
+            "undefined undefined"
+          ],
+          "answer": 3,
+          "explanation": "`?.` beech mein `null` ya `undefined` milte hi poora expression `undefined` de deta hai, error nahi. `u.profile` null hai, to `u.profile?.city` → `undefined` (null nahi). `u.settings` exist hi nahi karta, to `u.settings?.theme` → `undefined`. Option B `?.` ke bina wala behaviour hai; options A aur C maan lete hain ki `?.` beech wali null value lautata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w2-q9",
+          "question": "`store.js` ki top level par `console.log(\"store ready\")` hai aur woh `export const cart = { items: [] }` karta hai. `a.js` aur `b.js` dono `cart` import karte hain, aur `main.js` pehle `a.js` phir `b.js` import karta hai. App chalne par \"store ready\" kitni baar print hoga, aur kya dono files ka `cart` ek hi object hai?",
+          "options": [
+            "2 baar; dono files ke paas alag `cart` copy",
+            "2 baar; par `cart` dono mein same object hai",
+            "1 baar; dono files ko wahi ek `cart` instance milta hai",
+            "0 baar, jab tak koi `cart` ko use na kare"
+          ],
+          "answer": 2,
+          "explanation": "ES module ek app mein sirf ek baar evaluate hota hai: pehla import use chalata hai (\"store ready\" ek baar), aur har agla importer wahi evaluated module aur wahi exports paata hai. Isliye `a.js` aur `b.js` ek hi `cart` object share karte hain. Options A aur B maante hain ki har import file ko dobara chalata hai; option D sochta hai ki module tabhi chalega jab export use ho.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w2-q10",
+          "question": "Is code ka output kya hoga?",
+          "code": "const fruits = [\"apple\", \"avocado\", \"banana\", \"cherry\", \"blueberry\"];\nconst r = fruits.reduce((acc, f) => {\n    acc[f[0]] = (acc[f[0]] ?? 0) + 1;\n    return acc;\n}, {});\nconsole.log(JSON.stringify(r));",
+          "options": [
+            "{\"a\":2,\"b\":2,\"c\":1}",
+            "{\"a\":2,\"b\":1,\"c\":1}",
+            "{\"a\":1,\"b\":1,\"c\":1}",
+            "{\"a\":2,\"c\":1,\"b\":2}"
+          ],
+          "answer": 0,
+          "explanation": "`reduce` khaali object se shuru hota hai aur har fruit ke pehle akshar ki ginti badhata hai. a: apple, avocado = 2; b: banana, blueberry = 2; c: cherry = 1. Keys usi order mein bante hain jisme pehli baar mile (a, b, c). Option B aakhri \"blueberry\" ginna bhool jaata hai; option C maanta hai ki har key sirf ek baar set hoti hai aur `+ 1` jodta nahi; option D key order galat leta hai, kyunki \"b\" pehli baar \"cherry\" se pehle mila tha.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w2-q11",
+          "question": "Is code ka output kya hoga?",
+          "code": "const settings = { theme: null, lang: undefined, size: 0 };\nconst { theme = \"dark\", lang = \"hi\", size = 14 } = settings;\nconsole.log(theme, lang, size);",
+          "options": [
+            "dark hi 14",
+            "dark hi 0",
+            "null undefined 0",
+            "null hi 0"
+          ],
+          "answer": 3,
+          "explanation": "Destructuring default sirf tab lagta hai jab value `undefined` ho. `theme` null hai, to null hi rehta hai; `lang` undefined hai, to default \"hi\" lagta hai; `size` 0 hai (falsy, par undefined nahi), to 0 rehta hai. Option A defaults ko `||` ki tarah har falsy par lagata hai; option B `null` par bhi default maan leta hai; option C `undefined` par bhi default nahi lagata.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w2-q12",
+          "question": "Is code ka output kya hoga?",
+          "code": "function show() { return this.label; }\nconst a = { label: \"A\" };\nconst b = { label: \"B\" };\nconst bound = show.bind(a);\nconst c = { label: \"C\", f: bound };\nconsole.log(bound(), bound.call(b), show.call(b), c.f());",
+          "options": [
+            "A B B C",
+            "A A B C",
+            "A A B A",
+            "A B B A"
+          ],
+          "answer": 2,
+          "explanation": "`bind` ek naya function deta hai jiska `this` hamesha `a` rehta hai: `bound()` → A. `call(b)` bound function ka `this` nahi badal sakta: phir A. `show` khud bound nahi, to `show.call(b)` → B. `c.f()` method ki tarah call hai, par `f` bound function hai, isliye `this` ab bhi `a`: A. Option A maanta hai ki `call` aur method call dono bind ko override karte hain; option B maanta hai ki `obj.method()` wala rule bind se upar hai; option D maanta hai ki `call` bind ko override kar deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w2-q13",
+          "question": "Is code ka output kya hoga?",
+          "code": "function makeWallet() {\n    let balance = 100;\n    return {\n        deposit: (x) => (balance += x),\n        withdraw: (x) => {\n            if (x > balance) return \"no\";\n            balance -= x;\n            return balance;\n        }\n    };\n}\nconst p = makeWallet();\nconst q = makeWallet();\np.deposit(50);\nconsole.log(p.withdraw(120), q.withdraw(120), p.withdraw(40));",
+          "options": [
+            "30 no no",
+            "30 no -10",
+            "30 -20 no",
+            "no no 60"
+          ],
+          "answer": 0,
+          "explanation": "Har `makeWallet()` call apna alag `balance` closure banata hai. `p`: 100 + 50 = 150, phir 120 nikaalne par 30. `q` ka balance alag hai (100), aur 120 > 100, to \"no\". `p.withdraw(40)`: 40 > 30, to \"no\" aur balance 30 hi rehta hai. Option B check bhool kar 30 − 40 = −10 karta hai; option C `q` mein check skip karke 100 − 120 = −20 maanta hai; option D maanta hai ki `deposit` ka asar closure mein bacha hi nahi.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w2-q14",
+          "question": "Is code ka output kya hoga?",
+          "code": "const nums = [5, 25, 100, 1];\nconst asc = [...nums].sort((a, b) => a - b);\nconst def = nums.sort();\nconsole.log(asc.join(\",\"), nums.join(\",\"), def === nums);",
+          "options": [
+            "1,5,25,100 5,25,100,1 false",
+            "1,5,25,100 1,100,25,5 true",
+            "1,5,25,100 1,5,25,100 true",
+            "1,100,25,5 1,100,25,5 false"
+          ],
+          "answer": 1,
+          "explanation": "`[...nums]` ek copy hai, isliye comparator wala sort sirf copy ko numeric order mein karta hai: 1,5,25,100. Phir `nums.sort()` bina comparator ke strings compare karta hai (\"1\" < \"100\" < \"25\" < \"5\") aur original array ko hi in-place badal deta hai; woh wahi array lautata hai, isliye `def === nums` true. Option A maanta hai ki `sort` original nahi badalta; option C bina comparator ke bhi numeric sort maanta hai; option D comparator ko ignore karta hai aur `sort` ko naya array dene wala maanta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w2-q15",
+          "question": "Is code ka output kya hoga?",
+          "code": "class Account {\n    constructor(owner) {\n        this.owner = owner;\n        this.fee = 10;\n    }\n    charge(amt) { return amt + this.fee; }\n}\nclass Premium extends Account {\n    constructor(owner) {\n        super(owner);\n        this.fee = 2;\n    }\n    charge(amt) { return super.charge(amt) * 2; }\n}\nconst p = new Premium(\"Neha\");\nconsole.log(p.charge(100), Object.getPrototypeOf(p) === Premium.prototype);",
+          "options": [
+            "220 true",
+            "102 true",
+            "204 false",
+            "204 true"
+          ],
+          "answer": 3,
+          "explanation": "`super(owner)` parent constructor chalata hai (`fee` = 10), phir child constructor `fee` ko 2 kar deta hai. `p.charge(100)` child ka method hai: `super.charge(100)` parent ka code chalata hai par `this` wahi `p` hai, isliye 100 + 2 = 102, phir × 2 = 204. `p` ka direct prototype `Premium.prototype` hai, isliye true. Option A maanta hai ki parent ka method parent wala `fee` (10) lega; option B `* 2` bhool jaata hai; option C prototype chain ko galat samajhta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -379,6 +629,130 @@
           "answer": 1,
           "explanation": "Sync code: \"S\". Ab microtask queue mein P1 wala callback hai: \"P1\" print hota hai, T2 task queue mein T1 ke peeche jaata hai, aur P2 naya microtask banta hai. Microtask queue tab tak khaali hoti rehti hai jab tak usme kuch hai, isliye P2 bhi turant chalta hai, kisi timer se pehle. Phir tasks apne order mein: T1, phir T2. Option C ka trap hai sochna ki microtask ke andar bana naya microtask agle round mein jaayega; option A ka trap hai T1 ko pehle register hone ki wajah se microtasks se pehle chalana.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w3-q7",
+          "question": "Ek comment box mein user ka likha text page par dikhana hai. Sabse safe tareeka kaunsa hai?",
+          "options": [
+            "`el.innerHTML = comment`",
+            "`el.textContent = comment`",
+            "`el.outerHTML = comment`",
+            "`document.write(comment)`"
+          ],
+          "answer": 1,
+          "explanation": "`textContent` string ko sirf text ki tarah daalta hai: comment mein `<script>` ya `<img onerror=...>` jaisa kuch ho to bhi tag nahi banta, bas text dikhta hai. `innerHTML`, `outerHTML` aur `document.write` string ko HTML ki tarah parse karte hain, isliye user input ke saath XSS (script injection) ka raasta khulta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w3-q8",
+          "question": "`fetch` ke baad response ka parsed JSON data chahiye. `???` ki jagah kya likhna sahi hai?",
+          "code": "const res = await fetch(\"/api/profile\");\nconst data = ???;",
+          "options": [
+            "`res.body`",
+            "`res.json`",
+            "`JSON.parse(res)`",
+            "`await res.json()`"
+          ],
+          "answer": 3,
+          "explanation": "`res.json()` ek method hai jo body padh kar parse karta hai aur ek promise lautata hai, isliye use call karke `await` karna padta hai. `res.body` raw stream hai, parsed object nahi; `res.json` bina call kiye sirf ek function hai; aur `JSON.parse(res)` Response object ko string samajh leta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w3-q9",
+          "question": "`Promise.all([a, b, c])` mein `b` 100 ms par reject hota hai, jabki `a` aur `c` 500 ms par fulfil hote hain. `Promise.all` ka promise kya karega?",
+          "options": [
+            "100 ms par `b` ki error ke saath reject ho jaata hai",
+            "500 ms tak rukta hai, phir `[a, undefined, c]` deta hai",
+            "`b` ko chhod kar 500 ms par sirf `[a, c]` deta hai",
+            "Kabhi settle nahi hota, kyunki ek promise reject hua"
+          ],
+          "answer": 0,
+          "explanation": "`Promise.all` sab ke fulfil hone ka intezaar karta hai, par ek bhi reject hote hi turant usi error se reject ho jaata hai (yahan 100 ms par). Har promise ka result chahiye, chahe kuch fail hon, to `Promise.allSettled` use karo. Options B aur C `Promise.all` ko failures ignore karne wala maante hain; option D galat hai kyunki reject hona bhi settle hona hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w3-q10",
+          "question": "`<ul id=\"list\">` par ye listener laga hai, aur uske baad ek naya `<li>` append hota hai. User naye item ke andar ke bold text \"New\" par click karta hai. Console mein kya aayega?",
+          "code": "const list = document.querySelector(\"#list\");\nlist.addEventListener(\"click\", (e) => {\n    const li = e.target.closest(\"li\");\n    if (li) console.log(li.dataset.id);\n});\n\nconst item = document.createElement(\"li\");\nitem.dataset.id = \"9\";\nitem.innerHTML = \"<b>New</b>\";\nlist.append(item);",
+          "options": [
+            "Kuch nahi; listener lagne ke baad bane items cover nahi hote",
+            "`undefined`, kyunki `e.target` `<b>` hai, `<li>` nahi",
+            "9",
+            "Do baar 9, kyunki `<b>` aur `<li>` dono se event aata hai"
+          ],
+          "answer": 2,
+          "explanation": "Click `<b>` par hota hai aur bubble hokar `<ul>` ke listener tak pahunchta hai. `e.target` `<b>` hai, par `closest(\"li\")` usse upar chal kar naya `<li>` dhoondh leta hai, jiska `data-id` \"9\" hai. Delegation ka yahi fayda hai: listener parent par hai, isliye baad mein jode items bhi cover hote hain. Option A har item par alag listener wali soch hai; option B `closest` ka kaam bhool jaata hai; option D galat hai kyunki listener sirf ek element (`<ul>`) par hai, to woh ek click par ek hi baar chalta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w3-q11",
+          "question": "Is code ka output kya hoga?",
+          "code": "Promise.allSettled([\n    Promise.resolve(1),\n    Promise.reject(new Error(\"x\")),\n    3\n]).then(rs => console.log(rs.map(r => r.status).join(\",\")));",
+          "options": [
+            "rejected",
+            "fulfilled,rejected",
+            "fulfilled,fulfilled,fulfilled",
+            "fulfilled,rejected,fulfilled"
+          ],
+          "answer": 3,
+          "explanation": "`Promise.allSettled` khud kabhi reject nahi hota; har input ke liye ek `{ status, value/reason }` object deta hai. Pehla fulfilled, doosra rejected, aur plain value 3 ko fulfilled promise ki tarah liya jaata hai. Option A `Promise.all` ka behaviour hai; option B plain value ko ignore karta hai; option C rejection ko bhi fulfilled maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w3-q12",
+          "question": "Is code mein lines kis order mein print hongi?",
+          "code": "async function a() {\n    console.log(\"a1\");\n    await b();\n    console.log(\"a2\");\n}\nasync function b() {\n    console.log(\"b1\");\n}\nconsole.log(\"s1\");\nsetTimeout(() => console.log(\"t\"), 0);\na();\nPromise.resolve().then(() => console.log(\"p\"));\nconsole.log(\"s2\");",
+          "options": [
+            "s1 → a1 → b1 → s2 → a2 → p → t",
+            "s1 → a1 → s2 → b1 → a2 → p → t",
+            "s1 → a1 → b1 → s2 → p → a2 → t",
+            "s1 → a1 → b1 → a2 → s2 → p → t"
+          ],
+          "answer": 0,
+          "explanation": "Sync: \"s1\", timer task queue mein jaata hai, phir `a()` chalta hai: \"a1\", aur `b()` ka body bhi synchronously chalta hai: \"b1\". `await` par `a` ruk jaata hai aur uska baaki hissa microtask ki tarah queue hota hai; uske baad `then` wala \"p\" microtask peeche lagta hai. Sync \"s2\" ke baad microtasks apne order mein: \"a2\", phir \"p\", aur aakhir mein timer \"t\". Option B maanta hai ki `b()` ka code bhi baad mein chalega; option C \"p\" ko pehle maanta hai jabki `a` ka resume pehle queue hua tha; option D `await` ko bina ruke aage badhne wala samajhta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w3-q13",
+          "question": "Is promise code se console mein kya print hoga?",
+          "code": "const p = new Promise((resolve, reject) => {\n    reject(new Error(\"e1\"));\n    resolve(5);\n});\np.then(v => console.log(\"ok\", v))\n    .catch(e => { console.log(\"caught\", e.message); throw new Error(\"e2\"); })\n    .then(() => console.log(\"next\"))\n    .catch(e => console.log(\"caught\", e.message));",
+          "options": [
+            "ok 5 → next",
+            "caught e1 → next",
+            "caught e1 → caught e2",
+            "caught e1 → next → caught e2"
+          ],
+          "answer": 2,
+          "explanation": "Promise ek hi baar settle hota hai: pehle `reject(e1)` chala, isliye baad ka `resolve(5)` ignore ho jaata hai. Pehla `then` skip hota hai, `catch` \"caught e1\" print karta hai aur phir naya error `e2` throw karta hai, isliye agla `then` (\"next\") skip hokar aakhri `catch` \"caught e2\" print karta hai. Option A `resolve` ko jeetne wala maanta hai; option B maanta hai ki `catch` ke baad chain hamesha normal ho jaati hai, chahe usme throw ho; option D skip hone wale `then` ko bhi chala deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w3-q14",
+          "question": "Ye code lagbhag kitne ms baad print karega, aur `d` ki value kya hogi?",
+          "code": "const wait = (ms, v) => new Promise(r => setTimeout(() => r(v), ms));\nasync function run() {\n    const t0 = Date.now();\n    const a = await wait(300, 1);\n    const [b, c] = await Promise.all([wait(200, 2), wait(400, 3)]);\n    const d = await wait(100, a + b + c);\n    console.log(Date.now() - t0, d);\n}\nrun();",
+          "options": [
+            "≈ 1000 ms, d = 6",
+            "≈ 800 ms, d = 6",
+            "≈ 400 ms, d = 6",
+            "≈ 800 ms, d = 3"
+          ],
+          "answer": 1,
+          "explanation": "Pehla `await` 300 ms leta hai. Phir `Promise.all` dono waits ko parallel chalata hai, isliye 200 aur 400 mein se bada = 400 ms. Aakhri `await` 100 ms. Total ≈ 300 + 400 + 100 = 800 ms. `d` ko `a + b + c` = 1 + 2 + 3 = 6 milta hai. Option A `Promise.all` ko bhi ek ke baad ek maanta hai (300 + 200 + 400 + 100); option C maanta hai ki sab kuch parallel chala; option D `d` ko sirf `c` maan leta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w3-q15",
+          "question": "Page par `<form id=\"f\"><button id=\"btn\" type=\"submit\">Save</button></form>` hai (body ke andar) aur ye listeners lage hain. User button par click karta hai. Console mein order kya hoga?",
+          "code": "const form = document.querySelector(\"#f\");\nconst btn = document.querySelector(\"#btn\");\nform.addEventListener(\"submit\", (e) => {\n    e.preventDefault();\n    console.log(\"submit\");\n});\ndocument.body.addEventListener(\"click\", () => console.log(\"body\"));\nform.addEventListener(\"click\", (e) => {\n    e.stopPropagation();\n    console.log(\"form\");\n});\nbtn.addEventListener(\"click\", () => console.log(\"btn\"));",
+          "options": [
+            "btn → form → body → submit",
+            "btn → form (submit nahi hota, kyunki `stopPropagation` ne rok diya)",
+            "submit → btn → form",
+            "btn → form → submit"
+          ],
+          "answer": 3,
+          "explanation": "Click pehle target par chalta hai (\"btn\"), phir bubble hokar form par (\"form\"). Form ka handler `stopPropagation()` karta hai, isliye click body tak nahi pahunchta. Par `stopPropagation` browser ka default kaam nahi rokta: submit button ka click ab bhi form ka `submit` event chalata hai, jo \"submit\" print karta hai aur `preventDefault()` se page reload rokta hai. Option A `stopPropagation` ko ignore karta hai; option B `stopPropagation` aur `preventDefault` ko mila deta hai; option C submit ko click se pehle maanta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -504,6 +878,129 @@
           "answer": 2,
           "explanation": "`count.value++` ke baad state turant 1 hai, par Vue DOM update ko agle tick tak buffer karta hai. Isliye `before` padhte waqt `<p>` mein abhi bhi purana text \"0\" hai. `await nextTick()` tab resolve hota hai jab Vue pending DOM update laga chuka hota hai, isliye `after` \"1\" hai. Option A ka trap hai sochna ki ref badalte hi DOM synchronously badal jaata hai; option B ka trap hai sochna ki click handler ke andar DOM kabhi update nahi hota.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w4-q7",
+          "question": "Ek user ka comment `<img src=x onerror=alert(1)>` hai, aur template mein `<p>{{ comment }}</p>` likha hai. Page par kya hoga?",
+          "options": [
+            "Waisa hi text dikhega (escaped); koi script nahi chalegi",
+            "Ek image tag banega aur uska `alert` turant chal jaayega",
+            "Vue compile error dega, kyunki text mein `<` hai",
+            "Kuch nahi dikhega; Vue HTML jaisi strings hata deta hai"
+          ],
+          "answer": 0,
+          "explanation": "`{{ }}` text interpolation hai jo HTML ko escape karta hai, isliye string tag nahi banti, bas text dikhta hai. Raw HTML sirf `v-html` render karta hai, aur wahi user content ke saath XSS ka risk hai. Option B `v-html` ka behaviour hai; options C aur D galat hain, Vue na error deta hai na text hataata hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w4-q8",
+          "question": "Vue template mein `<button @click.stop=\"remove\">` likha hai. `.stop` modifier kya karta hai?",
+          "options": [
+            "Browser ka default kaam (jaise link khulna ya form submit) rokta hai",
+            "`remove` ko sirf pehle click par chalne deta hai, baad mein nahi",
+            "`stopPropagation()` call karta hai; click parent ke handlers tak nahi jaata",
+            "Click ke baad button ko disable kar deta hai taaki dobara na dabe"
+          ],
+          "answer": 2,
+          "explanation": "`.stop` = `event.stopPropagation()`: `remove` chalta hai, par click bubble hokar parent elements ke `@click` tak nahi pahunchta. Default kaam rokna `.prevent` ka kaam hai (option A). Options B aur D aise kaam batate hain jo `.stop` karta hi nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w4-q9",
+          "question": "`isActive` true aur `isDone` false hai. Is element ka final `class` attribute kya hoga?",
+          "code": "<li class=\"item\" :class=\"{ active: isActive, done: isDone }\">Task</li>",
+          "options": [
+            "`item`",
+            "`active`",
+            "`item active done`",
+            "`item active`"
+          ],
+          "answer": 3,
+          "explanation": "Object syntax mein har key tab class banti hai jab uski value truthy ho: `active` lagega, `done` nahi. Static `class=\"item\"` aur bound `:class` aapas mein jud jaate hain, isliye result `item active`. Option A bound classes ko ignore karta hai; option B maanta hai ki `:class` static class ko hata deta hai; option C false value wali key ko bhi jod deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w4-q10",
+          "question": "Vue 3 mein ek developer ne sirf adhoore todos dikhane ke liye ye likha. Kya hoga?",
+          "code": "<li v-for=\"t in todos\" v-if=\"!t.done\" :key=\"t.id\">{{ t.text }}</li>",
+          "options": [
+            "Sirf adhoore todos dikhte hain, kyunki `v-for` pehle chalta hai aur har `t` par `v-if` lagta hai",
+            "Vue 3 mein `v-if` pehle chalta hai jab `t` abhi define hi nahi; render error aata hai. Fix: computed se filter karo",
+            "Saare todos dikhte hain, kyunki ek element par do directives hon to Vue `v-if` ignore karta hai",
+            "Sirf pehla todo dikhta hai, kyunki `v-if` false milte hi Vue loop rok deta hai"
+          ],
+          "answer": 1,
+          "explanation": "Vue 3 mein ek hi element par `v-if` ki priority `v-for` se zyada hai, isliye `v-if` pehle evaluate hota hai jab loop variable `t` abhi bana hi nahi. `t.done` padhne par render error aata hai. Sahi tareeka: `computed(() => todos.value.filter(t => !t.done))` banao aur us par `v-for` chalao. Option A maanta hai ki `v-for` pehle chalta hai; options C aur D aise rules batate hain jo Vue mein hain hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w4-q11",
+          "question": "Component mein do inputs hain, dono mein koi `v-model` nahi: `<input v-if=\"show\">` aur `<input v-show=\"show\">`. `show` true hai aur user dono mein \"abc\" type karta hai. Phir `show` false hota hai aur thodi der baad dobara true. Ab dono inputs mein kya dikhega?",
+          "options": [
+            "Dono mein \"abc\" dikhega",
+            "Dono inputs khaali ho jaayenge",
+            "`v-if` waala khaali (naya element bana), `v-show` waale mein \"abc\" (element DOM mein hi tha)",
+            "`v-if` waale mein \"abc\" (Vue use yaad rakhta hai), `v-show` waala khaali (display reset hua)"
+          ],
+          "answer": 2,
+          "explanation": "`v-if` false hone par input DOM se hat jaata hai; true hone par bilkul naya input banta hai, isliye typed text chala jaata hai. `v-show` sirf `display: none` lagata aur hataata hai; element wahi rehta hai, isliye \"abc\" bacha rehta hai. Option D ulta hai; options A aur B dono directives ko ek jaisa maante hain.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w4-q12",
+          "question": "Vue 3 component mein button ek baar click hota hai. Uske baad button par kya dikhega?",
+          "code": "<script setup>\nimport { reactive } from \"vue\";\nconst state = reactive({ n: 1, user: { name: \"Ira\" } });\nlet { n, user } = state;\nfunction change() {\n    n = 5;\n    user.name = \"Tara\";\n}\n</script>\n\n<template>\n    <button @click=\"change\">{{ state.n }} {{ state.user.name }}</button>\n</template>",
+          "options": [
+            "5 Tara",
+            "1 Ira",
+            "1 Tara",
+            "5 Ira"
+          ],
+          "answer": 2,
+          "explanation": "`let { n, user } = state` mein `n` primitive hai, isliye plain copy milti hai: `n = 5` sirf local variable badalta hai aur `state.n` 1 hi rehta hai. `user` ek object hai, to destructuring sirf reference copy karta hai: ye wahi (reactive) nested object hai jo `state.user` hai, isliye `user.name = \"Tara\"` asli state badalta hai aur template update hota hai. Option A maanta hai ki destructured primitive bhi reactive hai; option B maanta hai ki object destructuring bhi alag copy banata hai; option D dono ko ulta samajhta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w4-q13",
+          "question": "Parent `step` ko prop ki tarah `Stepper` ko deta hai. User button par 3 baar click karta hai (har click pichhle render ke baad). Ab parent mein `total` kya dikhega?",
+          "code": "<!-- Parent.vue -->\n<script setup>\nimport { ref } from \"vue\";\nimport Stepper from \"./Stepper.vue\";\nconst total = ref(0);\nconst step = ref(5);\nfunction onAdd(n) {\n    total.value += n;\n    step.value = n * 2;\n}\n</script>\n<template>\n    <p>{{ total }}</p>\n    <Stepper :step=\"step\" @add=\"onAdd\" />\n</template>\n\n<!-- Stepper.vue -->\n<script setup>\nconst props = defineProps({ step: Number });\nconst emit = defineEmits([\"add\"]);\n</script>\n<template>\n    <button @click=\"emit('add', props.step)\">+{{ props.step }}</button>\n</template>",
+          "options": [
+            "15",
+            "35",
+            "40",
+            "30"
+          ],
+          "answer": 1,
+          "explanation": "Click 1: child current prop 5 emit karta hai: `total` = 5, parent `step` ko 10 karta hai, aur naya prop child tak jaata hai. Click 2: 10 emit: `total` = 15, `step` = 20. Click 3: 20 emit: `total` = 35, `step` = 40. Option A maanta hai ki prop kabhi update nahi hota (5 × 3); option C aakhri `step` ko total samajh leta hai; option D galat jodta hai (5 + 10 + 15).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w4-q14",
+          "question": "Vue 3 component mein pehli baar \"Go\" button click hone par console mein kya print hoga?",
+          "code": "<script setup>\nimport { ref, nextTick } from \"vue\";\nconst count = ref(0);\nconst el = ref(null);\nasync function run() {\n    count.value = 1;\n    count.value = 2;\n    const a = el.value.textContent;\n    await nextTick();\n    const b = el.value.textContent;\n    count.value++;\n    const c = el.value.textContent;\n    console.log(a, b, c);\n}\n</script>\n<template>\n    <p ref=\"el\">{{ count }}</p>\n    <button @click=\"run\">Go</button>\n</template>",
+          "options": [
+            "0 2 3",
+            "2 2 3",
+            "0 1 2",
+            "0 2 2"
+          ],
+          "answer": 3,
+          "explanation": "State badalne par DOM turant nahi badalta: `count` ko 1 aur phir 2 karne ke baad bhi `a` purana DOM padhta hai = \"0\". `await nextTick()` ke baad dono changes ka ek hi render ho chuka hai: `b` = \"2\" (1 kabhi DOM mein aaya hi nahi). Phir `count.value++` (3) karke turant padhne par DOM abhi bhi \"2\" hai, isliye `c` = \"2\". Option A maanta hai ki `nextTick` ke baad ke changes turant DOM mein aate hain; option B DOM ko synchronous maanta hai; option C har change ka alag render maanta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w4-q15",
+          "question": "Vue 3 component mein \"Update\" button ek baar click hota hai. Uske baad paragraph mein kya dikhega?",
+          "code": "<script setup>\nimport { ref } from \"vue\";\nconst user = ref({ name: \"Amit\" });\nfunction update() {\n    const u = user.value;\n    u.name = \"Bina\";\n    user.value = { name: \"Chitra\" };\n    u.name = \"Deepa\";\n}\n</script>\n<template>\n    <p>{{ user.name }}</p>\n    <button @click=\"update\">Update</button>\n</template>",
+          "options": [
+            "Chitra",
+            "Deepa",
+            "Bina",
+            "Amit"
+          ],
+          "answer": 0,
+          "explanation": "`u` purane (reactive) object ko point karta hai: `u.name = \"Bina\"` us waqt ka data badalta hai. Phir `user.value` ko naya object diya gaya, isliye template ab naye object ka `name` (\"Chitra\") padhta hai. Uske baad `u.name = \"Deepa\"` purane object ko badalta hai jise ab koi template nahi dikhata. Option B maanta hai ki `u` ab bhi `user.value` se juda hai; option C replacement wali line bhool jaata hai; option D maanta hai ki ref ke andar object badalna reactive hi nahi.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -627,6 +1124,126 @@
           "answer": 1,
           "explanation": "`setInterval` browser ka timer hai; Vue use track nahi karta, aur interval ka callback jab tak timer zinda hai tab tak reachable hai, isliye garbage collect nahi hota. Har mount ne ek naya interval joda: 4 intervals, yani `poll` har 5 s mein 4 baar. Fix: `const id = setInterval(...)` aur `onUnmounted(() => clearInterval(id))`. Option A ka trap hai sochna ki Vue saari cleanup khud karta hai (woh sirf apne effects aur template listeners saaf karta hai); option D ka trap hai `setInterval` ko ek global setting samajhna.",
           "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w5-q7",
+          "question": "`<input v-model.trim=\"name\">` mein user `\"  Ravi Kumar  \"` type karta hai (shuru aur end mein spaces). `name.value` kya hoga?",
+          "options": [
+            "\"RaviKumar\"",
+            "\"Ravi Kumar\"",
+            "\"  Ravi Kumar  \"",
+            "\"Ravi\""
+          ],
+          "answer": 1,
+          "explanation": "`.trim` sirf shuru aur end ke spaces hataata hai (JavaScript ke `trim()` jaisa); beech ka space rehta hai. Option A beech ka space bhi hata deta hai; option C modifier ko ignore karta hai; option D pehle space par text kaat deta hai, jo `.trim` ka kaam nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w5-q8",
+          "question": "Signup form mein Vue se email format aur password length check ho rahi hai. Kya Flask API ko bhi yahi checks karne chahiye?",
+          "options": [
+            "Haan; client-side checks sirf UX ke liye hain, koi bhi seedha API ko request bhej sakta hai",
+            "Nahi; browser ke checks kaafi hain kyunki user unhe badal nahi sakta",
+            "Sirf tab jab app HTTPS par na chal rahi ho",
+            "Nahi; `@submit.prevent` invalid requests ko server tak jaane hi nahi deta"
+          ],
+          "answer": 0,
+          "explanation": "Client-side validation sirf turant feedback ke liye hai. Browser ka code user badal sakta hai, ya koi bina form ke seedha API ko request bhej sakta hai, isliye asli validation server par honi hi chahiye. Option B galat hai kyunki browser code user ke control mein hai; option C ka HTTPS se koi lena-dena nahi; option D: `.prevent` sirf page reload rokta hai, invalid data nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w5-q9",
+          "question": "`const agree = ref(false)` aur `<input type=\"checkbox\" v-model=\"agree\">` hai. User box tick karta hai. `agree.value` kya hoga?",
+          "options": [
+            "`\"on\"`",
+            "`\"agree\"`",
+            "`1`",
+            "`true`"
+          ],
+          "answer": 3,
+          "explanation": "Akele checkbox par `v-model` boolean deta hai: tick par `true`, untick par `false`. (Array se bind karo to checked values ki list milti hai.) `\"on\"` plain HTML form submit ki default value hai, Vue ki nahi; options B aur C bhi galat type hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w5-q10",
+          "question": "Search input par 300 ms ka debounce hai (har keystroke timer reset karta hai; request aakhri keystroke ke 300 ms baad jaati hai). User t = 0, 100, 200 ms par \"v\", \"u\", \"e\" type karta hai, phir t = 900 ms par \"x\". Kitni requests jaayengi aur kin queries ke saath?",
+          "options": [
+            "4 requests: v, vu, vue, vuex (har keystroke par ek)",
+            "1 request: vuex (t = 1200 ms), kyunki timer reset hota raha",
+            "2 requests: vue (t = 500 ms) aur vuex (t = 1200 ms)",
+            "2 requests: v (t = 300 ms) aur vuex (t = 1200 ms)"
+          ],
+          "answer": 2,
+          "explanation": "Debounce har keystroke par timer reset karta hai. \"v\", \"u\", \"e\" 100 ms ke gap par aaye, isliye timer aakhri keystroke (t = 200) ke 300 ms baad, t = 500 par \"vue\" bhejta hai. Phir t = 900 par \"x\" aaya, aur t = 1200 par \"vuex\" jaati hai. Kul 2 requests. Option A bina debounce wala hisaab hai; option B maanta hai ki 700 ms ka gap bhi pichhla timer reset kar dega; option D pehle keystroke ke 300 ms baad hi request bhej deta hai, jabki tab tak naye keystrokes timer reset kar chuke the.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w5-q11",
+          "question": "Component mein ye code hai. Woh 3 baar mount aur 3 baar unmount ho chuka hai (abhi screen par nahi). Ab window resize hone par `measure` kitni baar chalega?",
+          "code": "onMounted(() => {\n    window.addEventListener(\"resize\", () => measure());\n});\nonUnmounted(() => {\n    window.removeEventListener(\"resize\", () => measure());\n});",
+          "options": [
+            "0, kyunki har unmount par `onUnmounted` ne listener hata diya",
+            "1, kyunki browser same event ke duplicate listeners ek kar deta hai",
+            "3, kyunki remove ko naya arrow function mila, add wala nahi; koi listener nahi hata",
+            "Error, kyunki unmounted component ka function ab call nahi ho sakta"
+          ],
+          "answer": 2,
+          "explanation": "`removeEventListener` tabhi kaam karta hai jab wahi function reference diya jaaye jo add kiya tha. Yahan har baar naya arrow function banta hai, isliye remove kuch nahi hataata aur 3 mounts ke 3 listeners bache hain. Fix: `const onResize = () => measure();` ek baar banao aur add/remove dono mein wahi do. Option A code ka irada maan leta hai, asli behaviour nahi; option B: browser sirf same function reference ko dobara add nahi karta, alag functions ko nahi milata; option D: browser listeners ko component ke unmount ka pata hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w5-q12",
+          "question": "Ye Vue search logic ka simplified version hai. `search` teen baar jaldi-jaldi call hota hai, aur responses alag-alag der se aate hain. 1 second baad kya print hoga?",
+          "code": "let latest = 0;\nlet assigned = 0;\nlet results = null;\nconst delay = { a: 500, ab: 100, abc: 300 };\nconst api = (q) => new Promise(r => setTimeout(() => r(q.toUpperCase()), delay[q]));\nasync function search(q) {\n    const id = ++latest;\n    const data = await api(q);\n    if (id !== latest) return;\n    results = data;\n    assigned++;\n}\nsearch(\"a\");\nsearch(\"ab\");\nsearch(\"abc\");\nsetTimeout(() => console.log(results, assigned), 1000);",
+          "options": [
+            "ABC 1",
+            "A 1",
+            "ABC 3",
+            "AB 1"
+          ],
+          "answer": 0,
+          "explanation": "Har call `latest` badhata hai: \"a\" = 1, \"ab\" = 2, \"abc\" = 3. Responses 100 ms (\"ab\"), 300 ms (\"abc\") aur 500 ms (\"a\") par aate hain. \"ab\" ka id 2 hai par `latest` 3, to ignore. \"abc\" ka id 3 = `latest`, to `results` = \"ABC\" aur `assigned` = 1. \"a\" sabse aakhir mein aata hai par uska id 1 hai, to ignore. Option B race condition wala bug hai (jo response aakhir mein aaye woh jeet jaaye); option C maanta hai ki id check kuch nahi rokta; option D sabse pehle aaye response ko le leta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w5-q13",
+          "question": "Vue 3 mein `Parent.vue` ke template mein pehle `<ChildA />` aur phir `<ChildB />` hai. Teeno ke `<script setup>` mein `console.log(\"X setup\")` aur `onMounted(() => console.log(\"X mounted\"))` hai (X = P, A, B). App load hone par console mein order kya hoga?",
+          "options": [
+            "P setup → A setup → A mounted → B setup → B mounted → P mounted",
+            "P setup → A setup → B setup → A mounted → B mounted → P mounted",
+            "P setup → P mounted → A setup → B setup → A mounted → B mounted",
+            "A setup → B setup → P setup → A mounted → B mounted → P mounted"
+          ],
+          "answer": 1,
+          "explanation": "Parent ka setup pehle chalta hai, phir render karte waqt woh children ko order mein banata hai: A ka setup, phir B ka setup. `onMounted` tab chalta hai jab poora tree DOM mein lag jaaye: children pehle (A, phir B), aur parent sabse aakhir mein, kyunki parent tabhi \"mounted\" hai jab uske saare children mount ho chuke hon. Option A maanta hai ki A ka mounted B ke setup se pehle chalega; option C parent ko children se pehle mounted maanta hai; option D children ka setup parent se pehle maanta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w5-q14",
+          "question": "Ye Vue 3 component ka save function hai (`saved` pehle false hai). Server status 422 aur body `{\"errors\": {\"email\": \"Invalid email\"}}` lautata hai. `save()` khatam hone ke baad refs ki value kya hogi?",
+          "code": "async function save() {\n    saving.value = true;\n    errors.value = {};\n    try {\n        const res = await fetch(\"/api/profile\", { method: \"POST\", body });\n        const data = await res.json();\n        if (res.status === 422) {\n            errors.value = data.errors;\n            return;\n        }\n        if (!res.ok) throw new Error(\"HTTP \" + res.status);\n        saved.value = true;\n    } catch (e) {\n        errors.value = { form: e.message };\n    } finally {\n        saving.value = false;\n    }\n}",
+          "options": [
+            "`errors` = `{ email: \"Invalid email\" }`, `saved` = true, `saving` = false",
+            "`errors` = `{ form: \"HTTP 422\" }`, `saved` = false, `saving` = false",
+            "`errors` = `{ email: \"Invalid email\" }`, `saved` = false, `saving` = true",
+            "`errors` = `{ email: \"Invalid email\" }`, `saved` = false, `saving` = false"
+          ],
+          "answer": 3,
+          "explanation": "`fetch` 422 par bhi fulfil hota hai, `res.json()` errors wala object deta hai, aur `status === 422` wali branch `errors` set karke `return` karti hai, isliye `saved = true` tak code pahunchta hi nahi. `try` se `return` hone par bhi `finally` chalta hai, isliye `saving` false. Option C ka trap hai sochna ki `return` `finally` ko skip karta hai; option B maanta hai ki 422 `throw` wali line tak jaayega; option A `return` ko ignore karta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w5-q15",
+          "question": "Component `onMounted` mein `setInterval(poll, 5000)` karta hai. Woh t = 0 s par mount, t = 12 s par unmount, aur t = 20 s par dobara mount hota hai. t = 31 s tak `poll` kitni baar chala: (i) jab `onUnmounted` mein kuch nahi hai, (ii) jab `onUnmounted` sahi id ke saath `clearInterval` karta hai?",
+          "options": [
+            "(i) 8, (ii) 4",
+            "(i) 6, (ii) 4",
+            "(i) 8, (ii) 2",
+            "(i) 12, (ii) 4"
+          ],
+          "answer": 0,
+          "explanation": "Pehla interval t = 5, 10, 15, 20, 25, 30 par chalta hai (cleanup na ho to unmount ke baad bhi): 6 baar. Doosra mount t = 20 par naya interval shuru karta hai: t = 25, 30 = 2 baar. (i) 6 + 2 = 8. (ii) cleanup ke saath pehla interval t = 12 par band ho jaata hai: sirf 5 aur 10 = 2, plus doosre ke 2 = 4. Option B doosre interval ko bhool jaata hai; option C cleanup wale case mein doosre mount ko nahi ginta; option D maanta hai ki dono intervals poore 31 s chale.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -749,6 +1366,128 @@
           ],
           "answer": 1,
           "explanation": "`/admin/users` do routes match karta hai: parent `/admin` aur child `users`. `to.meta` saare matched routes ka meta parent se child tak merge karta hai, isliye `requiresAuth` true hai aur guard redirect karta hai. `to.fullPath` mein path ke saath query bhi hoti hai, isliye `next` = \"/admin/users?page=2\", login ke baad user wahin laut sakta hai. Loop nahi banta kyunki `/login` route par `requiresAuth` nahi. Option A ka trap hai sochna ki meta sirf usi route par lagta hai jahan likha hai; option D ka trap hai `fullPath` ko `path` samajhna.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w6-q7",
+          "question": "Theme ka data 5 level neeche wale component tak pahunchana hai, aur beech ke components ko iski zaroorat nahi. Kaunsa Vue feature is prop drilling se bachata hai?",
+          "options": [
+            "`provide` / `inject`",
+            "`v-show`",
+            "`nextTick`",
+            "`v-for` ke saath `key`"
+          ],
+          "answer": 0,
+          "explanation": "Ancestor `provide(\"theme\", themeRef)` karta hai aur koi bhi descendant `inject(\"theme\")` se le leta hai; beech ke components ko prop pass nahi karna padta, aur ref provide karne se reactivity bani rehti hai. Baaki options ka data pahunchane se koi lena-dena nahi: `v-show` dikhana/chhupana hai, `nextTick` DOM update ka intezaar, aur `key` list items ki identity.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w6-q8",
+          "question": "Vue Router mein route `/users/:id` hai aur user `/users/42` kholta hai. `route.params.id` ki value kya hogi?",
+          "options": [
+            "Number `42`",
+            "`undefined`, jab tak URL mein `?id=42` na ho",
+            "String `\"42\"`",
+            "`[\"users\", \"42\"]`"
+          ],
+          "answer": 2,
+          "explanation": "Dynamic segment `:id` ki value `route.params.id` mein hamesha string ke roop mein aati hai, isliye number chahiye to `Number(route.params.id)` karo. Option A ka trap hai digits dekh kar number maan lena; option B `params` aur `query` ko mila deta hai; option D path ke hisson ki list hai jo router `params.id` mein nahi deta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w6-q9",
+          "question": "Child `Card.vue` mein `<slot name=\"header\" />` hai. Parent ko header ki jagah apna `<h2>` bhejna hai. Parent mein sahi syntax kya hai?",
+          "options": [
+            "`<Card header=\"<h2>Hi</h2>\" />`",
+            "`<Card @header=\"<h2>Hi</h2>\" />`",
+            "`<Card><slot name=\"header\"><h2>Hi</h2></slot></Card>`",
+            "`<Card><template #header><h2>Hi</h2></template></Card>`"
+          ],
+          "answer": 3,
+          "explanation": "Named slot ko parent `<template #header>` (poora roop `v-slot:header`) se bharta hai, aur woh content child ke `<slot name=\"header\" />` ki jagah render hota hai. Option A HTML ko prop string bana deta hai; option B event listener ka syntax hai; option C mein `<slot>` parent mein likha hai, jabki `<slot>` child ke template mein hota hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w6-q10",
+          "question": "Parent `<PostEditor v-model:title=\"postTitle\" />` likhta hai. Child `PostEditor` mein kaunsa prop aur kaunsa event hona chahiye?",
+          "options": [
+            "Prop `modelValue`, event `update:modelValue`",
+            "Prop `title`, event `update:title`",
+            "Prop `title`, event `input`",
+            "Prop `postTitle`, event `change:title`"
+          ],
+          "answer": 1,
+          "explanation": "`v-model:title=\"postTitle\"` = `:title=\"postTitle\"` + `@update:title=\"v => postTitle = v\"`. Isliye child `title` prop leta hai aur `emit(\"update:title\", nayaTitle)` karta hai. Option A bina argument wale `v-model` ke naam hain; option C native input ka event hai; option D parent ke variable ke naam ko prop samajh leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w6-q11",
+          "question": "Component load hota hai aur phir user ek baar click karta hai (`onClick` chalta hai). `watch` ka callback aur `watchEffect` ka function kitni-kitni baar chalenge?",
+          "code": "const n = ref(1);\nwatch(n, (v) => console.log(\"watch\", v));\nwatchEffect(() => console.log(\"effect\", n.value));\n\nfunction onClick() {\n    n.value = 2;\n}",
+          "options": [
+            "watch 2, watchEffect 2",
+            "watch 1, watchEffect 1",
+            "watch 0, watchEffect 1",
+            "watch 1, watchEffect 2"
+          ],
+          "answer": 3,
+          "explanation": "`watch` default lazy hai: setup par nahi chalta, sirf `n` badalne par (1 baar). `watchEffect` setup par turant ek baar chalta hai (dependencies track karne ke liye) aur `n` badalne par dobara: 2 baar. Option A `watch` ko bhi immediate maanta hai; option B `watchEffect` ki pehli run bhool jaata hai; option C maanta hai ki `watch` is change par chalega hi nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w6-q12",
+          "question": "Vue 3 component ka pehla render hota hai, phir `bumpQty()` aur phir `editNote()` chalte hain (har ek ke baad re-render). Ab screen par `total` kya hai, aur computed ka getter kul kitni baar chala?",
+          "code": "<script setup>\nimport { ref, computed } from \"vue\";\nconst items = ref([{ price: 100, qty: 1 }, { price: 50, qty: 2 }]);\nconst note = ref(\"\");\nlet runs = 0;\nconst total = computed(() => {\n    runs++;\n    return items.value.reduce((s, i) => s + i.price * i.qty, 0);\n});\nfunction bumpQty() { items.value[0].qty = 3; }\nfunction editNote() { note.value = \"gift\"; }\n</script>\n<template>\n    <p>{{ total }} | {{ total }} | {{ note }}</p>\n</template>",
+          "options": [
+            "400, 3 baar",
+            "200, 1 baar",
+            "400, 2 baar",
+            "400, 6 baar"
+          ],
+          "answer": 2,
+          "explanation": "Pehle render mein getter ek baar chalta hai (100 × 1 + 50 × 2 = 200); template mein do baar `total` hone par bhi doosri baar cache se aata hai. `bumpQty()` ek dependency (`qty`) badalta hai: agle render par getter dobara chalta hai = 100 × 3 + 50 × 2 = 400. `editNote()` sirf `note` badalta hai jo `total` ki dependency nahi, isliye 400 cache se. Kul 2 runs. Option A har render par getter chalata hai; option B `bumpQty` ka asar nahi ginta; option D computed ko method ki tarah har use par chalata hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w6-q13",
+          "question": "Ye Vue Router 4 config hai. Ek logged-in user (role \"editor\") `/home` par hai aur `/settings/billing` ka link click karta hai. Kya hoga?",
+          "code": "const routes = [\n    { path: \"/home\", component: Home },\n    { path: \"/login\", component: Login },\n    {\n        path: \"/settings\",\n        component: SettingsLayout,\n        meta: { requiresAuth: true },\n        children: [\n            { path: \"billing\", component: Billing, meta: { role: \"admin\" } }\n        ]\n    }\n];\n\nrouter.beforeEach((to) => {\n    if (to.meta.requiresAuth && !auth.user) return \"/login\";\n    if (to.meta.role && auth.user.role !== to.meta.role) return false;\n});",
+          "options": [
+            "Navigation cancel hota hai aur user `/home` par rehta hai; merged `to.meta` mein `role: \"admin\"` hai aur guard `false` deta hai",
+            "`/login` par redirect hota hai, kyunki logged-in hone ke bawajood billing route par `requiresAuth` likha hi nahi",
+            "Billing page khul jaata hai, kyunki parent ka `meta` child routes tak nahi pahunchta aur `role` check skip hota hai",
+            "User `/settings` par pahunch jaata hai, kyunki `false` lautane par router parent route par ruk jaata hai"
+          ],
+          "answer": 0,
+          "explanation": "Pehla check: `to.meta` mein parent ka `requiresAuth: true` merge hai, par user logged-in hai, isliye pass. Doosra check: merged meta mein child ka `role: \"admin\"` bhi hai aur user \"editor\" hai, isliye guard `false` lautata hai aur navigation cancel hota hai; user `/home` par hi rehta hai. Option B galat hai kyunki redirect sirf logged-out user ke liye hai; option C meta merge ko bhool jaata hai; option D `false` ka matlab galat samajhta hai (adhoora navigation nahi hota).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w6-q14",
+          "question": "Generic `TagList` component do baar use hota hai. Page par kaunsa text dikhega?",
+          "code": "<!-- TagList.vue -->\n<script setup>\ndefineProps({ items: Array });\n</script>\n<template>\n    <p v-if=\"!items.length\"><slot name=\"empty\">Kuch nahi mila</slot></p>\n    <ul v-else>\n        <li v-for=\"(item, i) in items\" :key=\"item\">\n            <slot :item=\"item\" :index=\"i\">{{ item }}</slot>\n        </li>\n    </ul>\n</template>\n\n<!-- Parent -->\n<TagList :items=\"['chai', 'coffee']\">\n    <template #default=\"{ item, index }\">{{ index + 1 }}. {{ item.toUpperCase() }}</template>\n</TagList>\n<TagList :items=\"[]\" />",
+          "options": [
+            "\"chai\", \"coffee\" aur \"Kuch nahi mila\"",
+            "\"1. CHAI\", \"2. COFFEE\" aur \"Kuch nahi mila\"",
+            "\"0. CHAI\", \"1. COFFEE\" aur khaali `<p>`",
+            "\"1. CHAI\", \"2. COFFEE\" aur khaali `<p>`"
+          ],
+          "answer": 1,
+          "explanation": "Pehle `TagList` mein items khaali nahi, to `v-for` har item ke liye default slot render karta hai aur `item`, `index` slot props deta hai. Parent ka template `index + 1` aur uppercase banata hai: \"1. CHAI\", \"2. COFFEE\". Doosre `TagList` mein items khaali hain aur parent ne `#empty` nahi diya, isliye slot ka fallback content \"Kuch nahi mila\" dikhta hai. Option A parent ke template ko ignore karta hai; option C `index + 1` aur fallback dono bhool jaata hai; option D fallback content ko nahi samajhta.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w6-q15",
+          "question": "Teen watchers lage hain. Phir `form.value.address.city = \"Goa\"` chalta hai. Watchers chal chukne ke baad `a`, `b`, `c` kya honge?",
+          "code": "const form = ref({ name: \"Ira\", address: { city: \"Pune\" } });\nlet a = 0, b = 0, c = 0;\nwatch(form, () => a++);\nwatch(form, () => b++, { deep: true });\nwatch(() => form.value.address.city, () => c++);",
+          "options": [
+            "1 1 1",
+            "0 0 1",
+            "1 1 0",
+            "0 1 1"
+          ],
+          "answer": 3,
+          "explanation": "`watch(form, ...)` ek ref ko watch karta hai, jo sirf tab trigger hota hai jab `form.value` khud badle (naya object assign ho); nested `city` badalne par nahi, isliye `a` 0. `{ deep: true }` andar ke har badlaav par chalta hai: `b` 1. Getter `() => form.value.address.city` exact field padhta hai, aur woh \"Pune\" se \"Goa\" hua: `c` 1. Option A maanta hai ki plain `watch` bhi deep hai; option B `deep` ka kaam bhool jaata hai; option C getter ko galat samajhta hai.",
           "difficulty": "hard"
         }
       ]
@@ -874,6 +1613,128 @@
           "answer": 1,
           "explanation": "`const backup = this.items` copy nahi banata; `backup` aur `this.items` ek hi array ko point karte hain. `splice` usi array se item 2 nikaal deta hai, isliye backup bhi `[1, 3]` ban jaata hai. Catch mein `this.items = backup` wahi badla hua array wapas rakh deta hai, rollback chupchaap fail. Fix: `const backup = [...this.items]` (shallow copy kaafi hai kyunki item objects khud nahi badle). Option A ka trap hai maan lena ki variable mein rakhna snapshot leta hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w7-q7",
+          "question": "Pinia store ke `items` array mein naya item jodna hai. Kaunsi baat sahi hai?",
+          "options": [
+            "Action mein seedha `this.items.push(item)` likho; Pinia mein mutations nahi hote",
+            "Har badlaav ke liye pehle ek mutation `commit` karna hi padta hai, action se nahi",
+            "Store ki state sirf getters ke andar hi badli ja sakti hai, actions mein nahi",
+            "State badalne ke baad component ko page reload karna padta hai, tabhi dikhega"
+          ],
+          "answer": 0,
+          "explanation": "Pinia mein actions normal methods hain jo `this` se state seedha badal sakte hain; Vuex jaise alag mutations ki zaroorat nahi. Option B Vuex ka rule hai, Pinia ka nahi; option C galat hai kyunki getters derived values ke liye hain, state badalne ke liye nahi; option D ka reactivity se koi lena-dena nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w7-q8",
+          "question": "Vuex mein mutations synchronous kyun hone chahiye?",
+          "options": [
+            "Kyunki JavaScript mein async functions objects ko badal hi nahi sakte",
+            "Taaki devtools har state badlaav ka exact pehle/baad record rakh sake",
+            "Kyunki mutations browser mein nahi, server par chalte hain",
+            "Taaki getters kabhi cache na hon aur har baar naye calculate hon"
+          ],
+          "answer": 1,
+          "explanation": "Vuex har `commit` ko ek record ki tarah track karta hai taaki devtools state ka pehle/baad snapshot dikha sake. Mutation ke andar `await` ho to asli badlaav record hone ke baad hoga aur history galat ho jaayegi. Isliye async kaam actions mein, aur sirf final badlaav mutation mein. Options A, C aur D galat facts hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w7-q9",
+          "question": "Logout ke baad agla user usi browser mein login karta hai aur use pichhle user ka cart dikhta hai (Pinia options store). Sabse seedha fix kya hai?",
+          "options": [
+            "Cart ko `localStorage` mein bhi save karo",
+            "Har component mein `useCartStore()` ki jagah naya store banao",
+            "Logout par user-specific stores par `$reset()` call karo",
+            "Cart ko `v-show` se chhupa do"
+          ],
+          "answer": 2,
+          "explanation": "Store app bhar ke liye memory mein ek hi instance hai, isliye logout ke baad bhi pichhle user ka cart bana rehta hai. Options store mein `$reset()` state ko `state()` function ke shuruaati object par wapas le aata hai. Option A problem ko aur badhata hai (data reload ke baad bhi bachega); option B galat hai kyunki `useCartStore()` hamesha wahi instance deta hai; option D data ko sirf chhupata hai, mitaata nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w7-q10",
+          "question": "Component mein Pinia store ka `count` (jo reactive bana rahe) aur action `increment` dono chahiye. Kaunsa code sahi hai?",
+          "options": [
+            "`const { count, increment } = storeToRefs(store)`",
+            "`const { count, increment } = store`",
+            "`const { count } = store; const { increment } = storeToRefs(store)`",
+            "`const { count } = storeToRefs(store); const { increment } = store`"
+          ],
+          "answer": 3,
+          "explanation": "`storeToRefs` state aur getters ke refs deta hai, par actions ko chhod deta hai; isliye option A mein `increment` undefined hoga. Option B mein `count` ek plain copy hai jo update nahi hoti. Option C dono galtiyan ek saath karta hai. Sahi: state `storeToRefs` se aur action seedha store se, kyunki Pinia actions ko store se bind rakhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w7-q11",
+          "question": "Is Pinia store mein `subtotal` aur `total` getters kya denge?",
+          "code": "export const useCartStore = defineStore(\"cart\", {\n    state: () => ({ items: [{ price: 120, qty: 2 }, { price: 45, qty: 4 }] }),\n    getters: {\n        subtotal: (state) => state.items.reduce((s, i) => s + i.price * i.qty, 0),\n        total() {\n            return this.subtotal > 400 ? this.subtotal - 40 : this.subtotal;\n        }\n    }\n});",
+          "options": [
+            "165 aur 165",
+            "420 aur 420",
+            "380 aur 340",
+            "420 aur 380"
+          ],
+          "answer": 3,
+          "explanation": "`subtotal` = 120 × 2 + 45 × 4 = 240 + 180 = 420. `total` mein 420 > 400 hai, isliye 420 − 40 = 380. Option A sirf prices jodta hai (120 + 45) aur qty bhool jaata hai; option B discount wali condition miss karta hai; option C discount do baar laga deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w7-q12",
+          "question": "Pinia optimistic delete ke do versions ko simplified JavaScript mein likha gaya hai; dono mein API fail hone par rollback chalta hai. Output kya hoga?",
+          "code": "function variantP(items, id) {\n    const backup = items.list;\n    items.list = items.list.filter(i => i !== id);\n    items.list = backup;          // API fail: rollback\n}\nfunction variantQ(items, id) {\n    const backup = items.list;\n    items.list.splice(items.list.indexOf(id), 1);\n    items.list = backup;          // API fail: rollback\n}\nconst s1 = { list: [1, 2, 3] };\nconst s2 = { list: [1, 2, 3] };\nvariantP(s1, 2);\nvariantQ(s2, 2);\nconsole.log(s1.list.join(\",\"), s2.list.join(\",\"));",
+          "options": [
+            "1,3 1,3",
+            "1,2,3 1,2,3",
+            "1,2,3 1,3",
+            "1,3 1,2,3"
+          ],
+          "answer": 2,
+          "explanation": "Variant P: `backup` purane array ko point karta hai, aur `filter` ek naya array banata hai; purana array chhua hi nahi gaya, isliye rollback ke baad 1,2,3 wapas. Variant Q: `backup` aur `items.list` ek hi array hain, aur `splice` usi array ko in-place badal deta hai, isliye backup bhi 1,3 ho gaya; rollback se kuch wapas nahi aata. Option B maanta hai ki `const backup = ...` copy banata hai; option A maanta hai ki `filter` bhi original badalta hai; option D dono ko ulta samajhta hai. Fix: `const backup = [...items.list]`.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w7-q13",
+          "question": "Ye Vuex jaisa ek chhota simplified store hai (mutation `add`, async action `addLater`). Output kya hoga?",
+          "code": "const state = { count: 0 };\nconst mutations = { add(s, n) { s.count += n; } };\nconst commit = (type, n) => mutations[type](state, n);\nconst actions = {\n    async addLater(n) {\n        const before = state.count;\n        await new Promise(r => setTimeout(r, 100));\n        commit(\"add\", n);\n        return before;\n    }\n};\nactions.addLater(5).then(before => console.log(before, state.count));\ncommit(\"add\", 2);",
+          "options": [
+            "2 7",
+            "0 7",
+            "0 5",
+            "7 7"
+          ],
+          "answer": 1,
+          "explanation": "`addLater(5)` synchronously shuru hota hai aur `await` se pehle `before` = 0 padh leta hai. Phir action ruk jaata hai, aur agli line `commit(\"add\", 2)` turant count ko 2 kar deti hai. 100 ms baad action `commit(\"add\", 5)` karta hai: 7, aur `before` (0) lautata hai. Option A maanta hai ki `before` commit 2 ke baad padha gaya; option C commit 2 ko bhool jaata hai; option D `before` ko final value samajhta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w7-q14",
+          "question": "Is Pinia store mein `update()` se pehle aur uske baad `total` getter kya dega?",
+          "code": "export const useCartStore = defineStore(\"cart\", {\n    state: () => ({\n        items: [{ price: 300, qty: 2 }, { price: 150, qty: 1 }],\n        coupon: \"SAVE10\"\n    }),\n    getters: {\n        subtotal: (s) => s.items.reduce((sum, i) => sum + i.price * i.qty, 0),\n        discount() {\n            return this.coupon === \"SAVE10\" ? Math.round(this.subtotal * 0.1) : 0;\n        },\n        total() { return this.subtotal - this.discount; }\n    },\n    actions: {\n        update() {\n            this.coupon = null;\n            this.items[1].qty = 3;\n        }\n    }\n});",
+          "options": [
+            "675 aur 1050",
+            "750 aur 1050",
+            "675 aur 945",
+            "825 aur 1050"
+          ],
+          "answer": 0,
+          "explanation": "Pehle: `subtotal` = 300 × 2 + 150 × 1 = 750; coupon \"SAVE10\" hai, to `discount` = 75; `total` = 675. `update()` coupon hata deta hai aur doosri line ki qty 3 kar deta hai: `subtotal` = 600 + 450 = 1050, `discount` = 0, `total` = 1050. Getters apni dependencies badalne par dobara calculate hote hain. Option B pehle wala discount bhool jaata hai; option C coupon hatne ke baad bhi 10% kaat-ta hai; option D discount ko ghatane ki jagah jod deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w7-q15",
+          "question": "Component mein ye code chalta hai (store neeche diya hai). Output kya hoga?",
+          "code": "// stores/counter.js\nexport const useCounter = defineStore(\"counter\", {\n    state: () => ({ n: 1 }),\n    getters: { double: (s) => s.n * 2 },\n    actions: { inc() { this.n += 2; } }\n});\n\n// component\nconst store = useCounter();\nconst { n } = store;\nconst { double } = storeToRefs(store);\nconst { inc } = store;\ninc();\ninc();\nconsole.log(n, double.value, store.n);",
+          "options": [
+            "5 10 5",
+            "1 2 5",
+            "1 10 1",
+            "1 10 5"
+          ],
+          "answer": 3,
+          "explanation": "`const { n } = store` primitive ki plain copy hai: 1 hi rahegi. `inc()` do baar: `store.n` = 1 + 2 + 2 = 5. `double` `storeToRefs` se mila ref hai, isliye `double.value` naya getter value deta hai: 5 × 2 = 10. Action destructure karna theek hai kyunki Pinia use store se bind rakhta hai. Option A `n` ko reactive maanta hai; option B getter ke ref ko bhi frozen copy maanta hai; option C maanta hai ki destructured action store ko badal nahi sakta.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -994,6 +1855,123 @@
           ],
           "answer": 2,
           "explanation": "Credentialed requests (cookies ke saath) ke liye CORS rules sakht hain: wildcard `*` allowed nahi, server ko `Access-Control-Allow-Origin: https://app.example.com` aur `Access-Control-Allow-Credentials: true` dono bhejne padte hain. Simple GET par preflight nahi hota, isliye request server tak jaa kar process ho sakti hai, par browser response ko page ki JavaScript se chhupa leta hai. Option A ka trap hai `*` ko \"sab kuch allowed\" samajhna; option B ka trap hai sochna ki CORS server lagata hai, jabki use browser enforce karta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w8-q7",
+          "question": "`POST /api/v1/projects` ek naya project bana deta hai. Success par sabse sahi status code kaunsa hai?",
+          "options": [
+            "201 Created",
+            "204 No Content",
+            "301 Moved Permanently",
+            "404 Not Found"
+          ],
+          "answer": 0,
+          "explanation": "Naya resource banne par REST convention `201 Created` hai, aksar naye resource ki JSON body ke saath. `204` tab hota hai jab success ho par body na ho (jaise DELETE); `301` redirect ke liye aur `404` \"resource nahi mila\" ke liye hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w8-q8",
+          "question": "Inme se kaunsa authorisation (authentication nahi) ka example hai?",
+          "options": [
+            "User ka password check karke use login karna aur session dena",
+            "OTP bhej kar aur verify karke user ki pehchaan pakki karna",
+            "Delete se pehle check karna ki logged-in user ka role \"admin\" hai",
+            "Session id cookie se pata lagana ki request kis user ki hai"
+          ],
+          "answer": 2,
+          "explanation": "Authentication = \"aap kaun ho\" (password, OTP ya session cookie se user ko pehchaanna). Authorisation = \"aap kya kar sakte ho\": role check karke delete allow ya deny karna. Options A, B aur D teeno pehchaan, yaani authentication ke kaam hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w8-q9",
+          "question": "Session cookie par `HttpOnly` flag lagane ka kya asar hota hai?",
+          "options": [
+            "Cookie sirf HTTPS connections par hi bheji jaati hai",
+            "Cookie cross-site requests ke saath nahi bheji jaati",
+            "Cookie browser band hone ke baad bhi hamesha rehti hai",
+            "JavaScript (`document.cookie`) use padh nahi sakti; XSS se bachav"
+          ],
+          "answer": 3,
+          "explanation": "`HttpOnly` cookie ko JavaScript se chhupa deta hai (`document.cookie` mein nahi dikhti), isliye XSS script session id nahi chura sakti; cookie phir bhi har request ke saath server tak jaati hai. Sirf HTTPS par bhejna `Secure` ka kaam hai (option A), cross-site requests par rokna `SameSite` ka (option B), aur expiry ka `HttpOnly` se koi lena-dena nahi (option C).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w8-q10",
+          "question": "Page `https://app.example.com` par chal raha hai. Inme se kis request se pehle browser `OPTIONS` preflight bhejega?",
+          "options": [
+            "`fetch(\"https://app.example.com/api/items/3\", { method: \"DELETE\", headers: { \"Content-Type\": \"application/json\" } })`",
+            "`fetch(\"https://api.example.com/items/3\", { method: \"PUT\", headers: { \"Content-Type\": \"application/json\" } })`",
+            "`fetch(\"https://api.example.com/items\")` (simple GET, koi custom header nahi, koi body nahi)",
+            "`<img src=\"https://api.example.com/logo.png\">` ka page par load hona (cross-origin image)"
+          ],
+          "answer": 1,
+          "explanation": "Preflight sirf cross-origin requests par lagta hai, aur tab jab request \"simple\" na ho: PUT/DELETE method, JSON `Content-Type` ya `Authorization` header. Option B alag host (`api.example.com`) par JSON header ke saath PUT hai, isliye preflight hoga. Option A mein DELETE aur JSON header hain par woh same origin hai, isliye CORS laagu hi nahi; option C cross-origin hai par simple GET hai (preflight nahi, sirf response par CORS header chahiye); option D `fetch` nahi, normal image load hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w8-q11",
+          "question": "Ek mobile app `/api/v1/users` ke response ka `name` field use karti hai. Inme se kaunsa change breaking hai, jise `/api/v2` mein jaana chahiye?",
+          "options": [
+            "Response mein naya optional field `avatar_url` jodna",
+            "Ek naya endpoint `GET /api/v1/teams` banana",
+            "Responses ko gzip se compress karna",
+            "`name` field ko rename karke `full_name` karna"
+          ],
+          "answer": 3,
+          "explanation": "Field rename karne se purane clients jo `name` padhte hain toot jaate hain, isliye ye breaking change hai aur naye version mein jaata hai. Naya optional field ya naya endpoint jodne se purane clients nahi toot-te (options A, B), aur compression HTTP level par transparent hai (option C).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w8-q12",
+          "question": "Ek JWT ka payload `{\"sub\": \"u7\", \"role\": \"editor\", \"iat\": 1767225600, \"exp\": 1767226500}` hai (Unix seconds). Token kitni der ke liye valid hai, aur server time 1767226800 par is token wali request ka kya hoga?",
+          "options": [
+            "15 minute; request reject (401), kyunki `exp` 300 s pehle nikal chuka",
+            "15 minute; request chal jaayegi kyunki signature valid hai",
+            "900 minute; request chal jaayegi",
+            "5 minute; request reject (403)"
+          ],
+          "answer": 0,
+          "explanation": "Validity = `exp` − `iat` = 1767226500 − 1767225600 = 900 s = 15 minute. Request ka time `exp` se 300 s aage hai, aur server ko `exp` check karna hi chahiye, isliye token expired hai: 401 (authentication fail). Option B signature ko hi kaafi maanta hai; option C seconds ko minutes padh leta hai; option D 300 s ko validity samajhta hai, aur 403 bhi galat code hai (ye permission ka nahi, pehchaan ka failure hai).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w8-q13",
+          "question": "Flask endpoint `PATCH /api/v1/documents/<id>` par sirf `@roles_required(\"editor\")` laga hai. User 12 (role \"editor\") document 88 ko PATCH karta hai, jiska owner user 30 hai. Kya hoga aur sahi fix kya hai?",
+          "options": [
+            "403 milega, kyunki role decorator owner bhi check karta hai; kuch fix nahi chahiye",
+            "Update ho jaayega (IDOR bug); endpoint mein check karo ki document ka owner current user hai, warna 403",
+            "401 milega, kyunki user 12 ka token document 88 ke liye nahi bana tha",
+            "Update ho jaayega, aur ye theek hai kyunki frontend mein doosron ke documents ka edit button chhupa hai"
+          ],
+          "answer": 1,
+          "explanation": "Decorator sirf role check karta hai, aur user 12 editor hai, isliye request pass ho jaati hai: sirf id badal kar kisi aur ka document edit ho gaya (IDOR bug). Fix: endpoint mein document load karke check karo ki `doc.owner_id == current_user.id` (ya user admin hai), warna 403. Option A maanta hai ki role check ownership bhi dekhta hai; option C galat hai kyunki token user ki pehchaan hai, kisi document ke liye nahi banta; option D frontend mein chhupane ko security maanta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w8-q14",
+          "question": "Vue dev server `http://localhost:5173` par aur Flask `http://localhost:5000` par hai. Frontend `fetch(\"http://localhost:5000/api/tasks\", { method: \"POST\", headers: { \"Content-Type\": \"application/json\" }, body })` karta hai. Flask `OPTIONS` request ka jawab CORS headers ke bina 404 se deta hai. Browser kya karega?",
+          "options": [
+            "Sirf POST bhejega, kyunki localhost par same-origin policy aur CORS laagu nahi hote",
+            "OPTIONS aur POST dono bhejega, par POST ka response JavaScript ko nahi dikhayega",
+            "Pehle OPTIONS bhejega; woh fail hua to POST bheja hi nahi jaayega, `fetch` CORS error se reject",
+            "OPTIONS fail hone par browser POST ko `no-cors` mode mein apne aap dobara bhejega"
+          ],
+          "answer": 2,
+          "explanation": "`5173` aur `5000` alag ports hain, isliye origin alag hai (localhost par bhi CORS laagu hota hai). JSON `Content-Type` wali POST simple request nahi, isliye browser pehle `OPTIONS` preflight bhejta hai. Preflight ke response mein CORS headers nahi (404), isliye browser asli POST bhejta hi nahi aur `fetch` CORS error ke saath reject hota hai. Option A localhost ko exception maanta hai; option B maanta hai ki preflight fail hone par bhi POST jaayega; option D: aisa koi automatic retry nahi hota.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w8-q15",
+          "question": "Access token 15 minute ka hai (server sirf signature + `exp` check karta hai, koi denylist nahi), aur refresh token `HttpOnly` cookie mein hai jo server-side revoke ho sakta hai. User 10:00 par login karta hai (access token 10:00 par bana). 10:05 par ek XSS script `localStorage` se access token chura leti hai. 10:06 par user logout karta hai aur server refresh token revoke kar deta hai. Attacker API ko kab tak use kar sakta hai?",
+          "options": [
+            "10:15 tak, jab chura hua access token expire hoga",
+            "10:06 tak, logout hote hi access band",
+            "10:20 tak (10:05 + 15 minute)",
+            "Hamesha, refresh token se naye access tokens bana kar"
+          ],
+          "answer": 0,
+          "explanation": "Access token stateless hai: server sirf signature aur `exp` dekhta hai, isliye logout ya refresh token revoke karne se chura hua access token band nahi hota. Woh 10:00 par bana aur 15 minute valid hai, yani 10:15 tak chalega. Refresh token `HttpOnly` cookie mein tha, jise XSS padh nahi sakti, aur woh revoke bhi ho gaya, isliye attacker naye tokens nahi bana sakta. Option B stateless JWT ko session jaisa maanta hai; option C expiry ko chori ke time se ginta hai; option D maanta hai ki attacker ke paas refresh token bhi hai.",
           "difficulty": "hard"
         }
       ]
@@ -1117,6 +2095,125 @@
           "answer": 2,
           "explanation": "`hour=\"9-17\"` mein 9 se 17 tak dono shamil hain: 9 ghante (9, 10, ..., 17). Har ghante mein `*/15` = minute 0, 15, 30, 45, yani 4 runs. Total 9 × 4 = 36, pehla 09:00 aur aakhri 17:45. Option B ka trap hai 17 − 9 = 8 ghante ginna (8 × 4 = 32); option A ka trap hai sochna ki schedule 17:00 par ruk jaata hai (32 + 1 = 33).",
           "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w9-q7",
+          "question": "Flask view mein `job = build_report.delay(user_id, month)` likha hai. Ye line kya karti hai?",
+          "options": [
+            "Message broker mein daal kar turant `AsyncResult` (job `id` ke saath) lautati hai; kaam worker karta hai",
+            "Report banne tak request ko rok kar rakhti hai aur phir report ka poora result lautati hai",
+            "Task ko usi request ke thread mein turant chala kar khatam karti hai, phir aage badhti hai",
+            "Task ko agle din ke liye Celery beat ke schedule mein jod deti hai, aaj nahi chalega"
+          ],
+          "answer": 0,
+          "explanation": "`.delay(...)` `apply_async` ka shortcut hai: message broker ko jaata hai aur turant `AsyncResult` milta hai, isliye endpoint 202 + job id lauta sakta hai. Kaam alag worker process karta hai. Options B aur C synchronous behaviour batate hain; option D scheduling (beat) ka kaam hai, `delay` ka nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w9-q8",
+          "question": "Celery beat ka kaam kya hai?",
+          "options": [
+            "Scheduled tasks ko workers ki jagah khud apne process mein execute karna",
+            "Time aane par task queue mein enqueue karna; chalate workers hi hain",
+            "Har task ka result aur state Redis mein store karke rakhna",
+            "Failed tasks ko dead-letter queue se dhoondh kar hata dena"
+          ],
+          "answer": 1,
+          "explanation": "Beat sirf scheduler hai: jaise `crontab(minute=0, hour=18)` par time aate hi task message queue mein daal deta hai. Execute workers karte hain (option A galat), result store karna result backend ka kaam hai (option C), aur dead-letter queue ka beat se koi lena-dena nahi (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w9-q9",
+          "question": "Inme se kis error par task ko backoff ke saath retry karna sabse sahi hai?",
+          "options": [
+            "400 Bad Request, kyunki input galat bheja gaya",
+            "Validation error: email field khaali hai",
+            "Third-party API ka 503 ya network timeout",
+            "404: di gayi user id exist hi nahi karti"
+          ],
+          "answer": 2,
+          "explanation": "Retry sirf transient errors par fayda deta hai: 503 ya timeout thodi der baad theek ho sakte hain. 400, validation error ya missing user (options A, B, D) dobara chalane se nahi badlenge; retry sirf load badhata hai, isliye seedha FAILURE mark karo aur report karo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w9-q10",
+          "question": "Frontend `GET /api/jobs/abc123` poll karta hai, par id `abc123` kabhi enqueue hui hi nahi (typo). Celery `AsyncResult(\"abc123\").state` kya dikhayega?",
+          "options": [
+            "FAILURE",
+            "Error: job not found",
+            "SUCCESS",
+            "PENDING"
+          ],
+          "answer": 3,
+          "explanation": "Celery anjaan job id ke liye bhi PENDING lautata hai, kyunki result backend mein entry na hone ka matlab \"abhi shuru nahi hua\" bhi ho sakta hai. Isliye job ids apne DB mein record karo aur unknown id par 404 do. Options A, B aur C galat maante hain ki Celery anjaan id ko pehchaan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w9-q11",
+          "question": "Celery beat mein ek task `crontab(minute=30, hour=\"*/6\")` par set hai. Ek din mein ye kitni baar enqueue hoga?",
+          "options": [
+            "6 baar, kyunki `*/6` ka matlab 6 runs",
+            "4 baar: 00:30, 06:30, 12:30, 18:30",
+            "24 baar: har ghante ke 30 minute par",
+            "1 baar: sirf 06:30 par"
+          ],
+          "answer": 1,
+          "explanation": "`hour=\"*/6\"` ka matlab hai har 6 ghante: 0, 6, 12, 18, yani din mein 4 ghante, aur `minute=30` har us ghante mein ek baar. Kul 4. Option A step ko ginti samajh leta hai; option C `hour` ko ignore karta hai; option D `*/6` ko \"sirf 6 baje\" padhta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w9-q12",
+          "question": "Task ke retry delays `min(3 × 2ⁿ, 30)` seconds hain (n = ab tak ke retries, 0 se shuru), aur `max_retries` 6 hai. Har attempt fail ho to saare retries ke beech kul kitna wait hoga?",
+          "options": [
+            "189 s",
+            "93 s",
+            "135 s",
+            "105 s"
+          ],
+          "answer": 3,
+          "explanation": "n = 0 se 5 tak: 3, 6, 12, 24, phir 48 ki jagah cap 30, aur 96 ki jagah bhi 30. Total = 3 + 6 + 12 + 24 + 30 + 30 = 105 s. Option A cap bhool jaata hai (3 + 6 + ... + 96 = 189); option B sirf 5 retries bina cap ke ginta hai (93); option C ek extra retry jod deta hai (105 + 30 = 135).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w9-q13",
+          "question": "Queue mein ek saath 30 tasks daale gaye (FIFO order). 3 workers hain, har worker ek samay par ek task chalata hai, aur har task 4 s leta hai. Task #20 kab khatam hoga, aur saare tasks kab tak khatam honge?",
+          "options": [
+            "28 s aur 40 s",
+            "80 s aur 120 s",
+            "24 s aur 40 s",
+            "28 s aur 36 s"
+          ],
+          "answer": 0,
+          "explanation": "3 workers har 4 s ke round mein 3 tasks karte hain. Task #20 round ⌈20 / 3⌉ = 7 mein hai (tasks 19–21), jo t = 24 s par shuru aur 28 s par khatam hota hai. 30 tasks = 10 rounds = 40 s. Option B ek hi worker maan kar ginta hai (20 × 4, 30 × 4); option C task #20 ka start time bata deta hai; option D rounds ek kam ginta hai (9 × 4).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w9-q14",
+          "question": "Ye consumer at-least-once queue se tasks leta hai, aur teesri delivery `o1` ka duplicate hai. Output kya hoga?",
+          "code": "const processed = new Set();\nlet stock = 10;\nlet emails = 0;\nfunction handle(task) {\n    stock -= task.qty;\n    if (processed.has(task.orderId)) return;\n    processed.add(task.orderId);\n    emails++;\n}\n[\n    { orderId: \"o1\", qty: 2 },\n    { orderId: \"o2\", qty: 1 },\n    { orderId: \"o1\", qty: 2 }\n].forEach(handle);\nconsole.log(stock, emails);",
+          "options": [
+            "7 2",
+            "5 3",
+            "5 2",
+            "7 3"
+          ],
+          "answer": 2,
+          "explanation": "Bug ye hai ki stock duplicate check se pehle ghat-ta hai. o1: stock 8, email 1. o2: stock 7, email 2. o1 dobara: stock 5 ho jaata hai, phir duplicate pakda jaata hai, isliye email nahi. Output 5 2. Option A maanta hai ki check sab kuch rok deta hai (aisa tab hota jab check pehli line par hota); option B maanta hai ki koi dedupe hai hi nahi; option D stock ko sahi par email ko dobara ginta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w9-q15",
+          "question": "User ke points pehle 100 hain. `notify_crm` pehle 2 attempts par timeout deta hai aur teesre attempt par chal jaata hai. Task khatam hone par user ke points aur task ki state kya hogi?",
+          "code": "@celery.task(bind=True, max_retries=5)\ndef sync_points(self, user_id):\n    db.execute(\"UPDATE users SET points = points + 10 WHERE id = ?\", (user_id,))\n    db.commit()\n    try:\n        notify_crm(user_id)\n    except Timeout as e:\n        raise self.retry(exc=e, countdown=5)",
+          "options": [
+            "110, SUCCESS",
+            "130, FAILURE",
+            "100, SUCCESS",
+            "130, SUCCESS"
+          ],
+          "answer": 3,
+          "explanation": "Har retry poora task function shuru se chalata hai. UPDATE retry wali line se pehle hai aur commit bhi ho chuka hai, isliye har attempt +10 karta hai: 3 attempts = 100 + 30 = 130. Teesra attempt successful hai aur 2 retries `max_retries` (5) se kam hain, isliye state SUCCESS. Option A maanta hai ki retry sirf fail hui line dobara chalata hai; option B retries ko failure samajhta hai; option C maanta hai ki fail hua attempt apna DB kaam rollback kar deta hai. Fix: kaam idempotent banao (jaise ek unique sync id ke saath ek hi baar points do) ya CRM call ko alag task mein bhejo.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -1239,6 +2336,125 @@
           "answer": 2,
           "explanation": "Shuru mein version 1. \"paid v2\": 2 > 1, apply (applied = 1). \"shipped v4\": 4 > 2, apply (applied = 2). \"packed v3\": 3 ≤ 4, purana event, ignore; isi se state \"shipped\" se peeche \"packed\" par nahi jaati. Doosra \"paid v2\": duplicate, ignore. Final: shipped, version 4, applied 2. Option D ka trap hai der se aaye \"packed\" ko bhi apply hua ginna; option A arrival order mein bina guard ke aakhri event lagane jaisa hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w10-q7",
+          "question": "Order service `order.created` topic par events publish karta hai. Ab ek naya \"loyalty points\" service bhi har order par kaam karna chahta hai. Pub/sub mein kya karna padega?",
+          "options": [
+            "Loyalty service topic ko subscribe kare; order service ka code nahi badalta",
+            "Order service mein loyalty service ko seedha HTTP call jodna padega",
+            "Email service ko loyalty points ka kaam bhi karna padega",
+            "Topic ko point-to-point queue mein badalna padega"
+          ],
+          "answer": 0,
+          "explanation": "Pub/sub mein har subscriber ko event ki apni copy milti hai, isliye naya consumer bas subscribe karta hai; producer ko pata bhi nahi chalta. Option B wahi synchronous coupling hai jisse bachna tha; option C services ki zimmedaari mila deta hai; option D ulta hai, kyunki queue mein har message sirf ek consumer ko milta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w10-q8",
+          "question": "Dead-letter queue (DLQ) kis kaam aati hai?",
+          "options": [
+            "Har message ki ek backup copy hamesha ke liye rakhne ke liye",
+            "Baar-baar fail hone wale (poison) messages ko alag rakhne ke liye",
+            "Purane, process ho chuke messages ko delete karne ke liye",
+            "Messages ko broker mein encrypt karke rakhne ke liye"
+          ],
+          "answer": 1,
+          "explanation": "Poison message (jo har baar fail hota hai) agar queue mein ghoomta rahe to baaki messages atak jaate hain. DLQ use kuch attempts ke baad hata kar alag rakhta hai, taaki koi uski jaanch kare aur baaki queue chalti rahe. Options A, C aur D DLQ ke kaam nahi hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w10-q9",
+          "question": "Consumer har message ko processing shuru karne se pehle hi acknowledge kar deta hai. Ye kaunsi delivery guarantee hai?",
+          "options": [
+            "Exactly-once",
+            "At-least-once: duplicates aa sakte hain, par kuch nahi khota",
+            "At-most-once: duplicate nahi aata, par crash par message kho sakta hai",
+            "Ordered delivery: messages hamesha sahi order mein"
+          ],
+          "answer": 2,
+          "explanation": "Pehle ack karne ka matlab hai broker message ko delivered maan kar bhool jaata hai. Processing ke beech crash hua to message dobara nahi aayega (kho gaya), par duplicate bhi kabhi nahi aata. Option B tab hota jab ack processing ke baad hota; option A distributed systems mein bahut mushkil hai aur sirf ack timing se nahi milta; option D ordering ek alag guarantee hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w10-q10",
+          "question": "Webhook signature ko `===` ki jagah `crypto.timingSafeEqual` se compare karne ki asli wajah kya hai?",
+          "options": [
+            "`===` do strings ko byte-by-byte compare hi nahi kar sakta",
+            "`timingSafeEqual` hash ko decrypt karke original se milaata hai",
+            "`timingSafeEqual` `===` se zyada tez hai, isliye load kam hota hai",
+            "Har byte par barabar time; response time se signature guess nahi hota"
+          ],
+          "answer": 3,
+          "explanation": "`===` pehla alag character milte hi ruk jaata hai, isliye galat signature ka response time thoda bata deta hai ki kitne shuruaati characters sahi the; bahut saari requests se attacker signature ko hissa-hissa guess kar sakta hai. Constant-time compare hamesha poori length check karta hai. Option A galat hai (`===` strings compare karta hai); option B: HMAC decrypt nahi hota; option C: speed iski wajah nahi hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w10-q11",
+          "question": "Queue mein 1200 messages hain, har message process karne mein 0.5 s lagte hain, aur 4 competing consumers hain (har ek ek samay par ek message). Queue khaali hone mein lagbhag kitna samay lagega?",
+          "options": [
+            "600 s",
+            "150 s",
+            "300 s",
+            "2400 s"
+          ],
+          "answer": 1,
+          "explanation": "Competing consumers kaam baant lete hain: har consumer ko 1200 ÷ 4 = 300 messages, × 0.5 s = 150 s. Option A ek hi consumer ka time hai (1200 × 0.5); option C 4 ki jagah 2 consumers maanta hai; option D time ko consumers se divide karne ki jagah guna kar deta hai (600 × 4).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w10-q12",
+          "question": "Ye webhook receiver ka simplified accept logic hai (timestamp tolerance 300 s). Output kya hoga?",
+          "code": "const now = 1767225900;\nconst seen = new Set();\nfunction accept(ts, sigOk, id) {\n    if (!sigOk) return \"bad-sig\";\n    if (Math.abs(now - ts) > 300) return \"stale\";\n    if (seen.has(id)) return \"dup\";\n    seen.add(id);\n    return \"ok\";\n}\nconsole.log(\n    accept(1767225800, true, \"e1\"),\n    accept(1767225500, true, \"e2\"),\n    accept(1767225890, false, \"e3\"),\n    accept(1767225850, true, \"e1\")\n);",
+          "options": [
+            "ok ok bad-sig dup",
+            "ok stale bad-sig ok",
+            "ok stale bad-sig dup",
+            "ok stale ok dup"
+          ],
+          "answer": 2,
+          "explanation": "Call 1: signature ok, umar 1767225900 − 1767225800 = 100 s ≤ 300, naya id: \"ok\". Call 2: umar 400 s > 300: \"stale\". Call 3: signature galat, pehla check hi \"bad-sig\" deta hai. Call 4: umar 50 s, par `e1` pehle dekha ja chuka: \"dup\". Option A stale check bhool jaata hai; option B dedupe bhool jaata hai; option D `sigOk` false ko ignore karta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w10-q13",
+          "question": "Ek topic par 3 subscriber groups hain: email (2 instances, competing), analytics (1 instance) aur inventory (3 instances, competing). 10 events publish hote hain. Kul kitni baar koi event process hoga, aur email group ke dono instances milkar kitne events process karenge?",
+          "options": [
+            "30 aur 10",
+            "60 aur 20",
+            "10 aur 5",
+            "30 aur 20"
+          ],
+          "answer": 0,
+          "explanation": "Har subscriber group ko har event ki ek copy milti hai, aur group ke andar instances competing consumers hain (har copy unme se sirf ek process karta hai). 10 events × 3 groups = 30 processings. Email group ko 10 copies milti hain jo do instances mein bant jaati hain: milkar 10. Option B har instance ko alag subscriber maanta hai (10 × 6); option C fan-out bhool jaata hai; option D email ke har instance ko har event de deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w10-q14",
+          "question": "Consumer 5 messages (m1 se m5) order mein padhta hai aur har message ko processing shuru karne se pehle hi ack kar deta hai. m3 ki processing ke beech woh crash hota hai aur phir restart hota hai. Aakhir mein kin messages ki processing poori hui?",
+          "options": [
+            "m1–m5 sab, kyunki m3 dobara deliver hoga",
+            "m1, m2, m3 (do baar), m4, m5",
+            "Sirf m1 aur m2; crash ke baad queue hamesha ke liye ruk jaati hai",
+            "m1, m2, m4, m5; m3 kho gaya (ack pehle hi ho chuka tha)"
+          ],
+          "answer": 3,
+          "explanation": "Ye at-most-once setup hai: m3 ka ack crash se pehle ho chuka tha, isliye broker use dobara nahi bhejega, aur uska adhoora kaam kho gaya. Restart ke baad consumer m4 aur m5 leta hai. Options A aur B at-least-once (processing ke baad ack) ka behaviour hain; option C galat hai, restart ke baad bache messages deliver hote hain.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w10-q15",
+          "question": "Is code ka output kya hoga? (Secret sirf demo ke liye hai.)",
+          "code": "const crypto = require(\"crypto\");\nconst secret = \"demo-only\";\nconst sign = (s) => crypto.createHmac(\"sha256\", secret).update(s).digest(\"hex\");\nconst raw = '{\"id\":\"evt_7\",\"amt\":500}';\nconst sig = sign(\"1700000000.\" + raw);\nconsole.log(\n    sign(\"1700000000.\" + raw) === sig,\n    sign(\"1700000001.\" + raw) === sig,\n    sign(\"1700000000.\" + JSON.stringify(JSON.parse(raw))) === sig\n);",
+          "options": [
+            "true false false",
+            "true true true",
+            "false false true",
+            "true false true"
+          ],
+          "answer": 3,
+          "explanation": "HMAC same secret aur same input par hamesha same output deta hai: pehla true. Timestamp ek second badalne se signed string badal gayi aur hash bilkul alag: false. Teesra: is raw body mein koi extra space nahi aur keys usi order mein hain, isliye `JSON.stringify(JSON.parse(raw))` hubahu wahi string banata hai: true. Option A ka trap hai rat lena ki parse + stringify hamesha signature todta hai (woh tab hota hai jab spaces, key order ya number format badle, isliye raw bytes par verify karna hi safe rule hai); option B maanta hai ki timestamp signed content ka hissa nahi; option C HMAC ko random samajhta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -1359,6 +2575,124 @@
           ],
           "answer": 1,
           "explanation": "5 naye posts sabse upar judte hain, isliye har purana post 5 position neeche khisak jaata hai. Pehle page 2 par positions 21–40 the; ab OFFSET 40 positions 41–60 deta hai, jinme purane 36–55 hain. Purane 36–40 page 2 par dikh chuke the: 5 repeats (aur dusri taraf koi item miss bhi ho sakta hai jab rows delete hon). Keyset pagination (`WHERE created_at < :last_seen`) aakhri dikhe item se aage chalta hai, isliye 0 repeats. Option A ka trap hai OFFSET ko stable maan lena.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w11-q7",
+          "question": "Latency metrics mein p50 kya batata hai?",
+          "options": [
+            "Median: aadhi requests isse tez aur aadhi isse dheemi",
+            "Sabse dheemi 50 requests ka average response time",
+            "Un requests ka percent jo 50 ms se kam leti hain",
+            "Sabhi requests ka seedha average (mean)"
+          ],
+          "answer": 0,
+          "explanation": "p50 50th percentile, yani median hai: aam user ka anubhav. Ye mean se alag hai, kyunki kuch bahut slow requests mean ko bigaad dete hain par median ko nahi (option D). Options B aur C \"50\" ko galat cheez par laga dete hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w11-q8",
+          "question": "Vite build `index.html` aur content-hashed files (jaise `app.3f9a1c.js`) banata hai. Naya deploy turant dikhe, iske liye `index.html` par kaunsa header sabse sahi hai?",
+          "options": [
+            "`Cache-Control: max-age=31536000, immutable`",
+            "`Cache-Control: no-cache`",
+            "`Cache-Control: public, max-age=86400`",
+            "Koi header nahi; browser khud samajh lega"
+          ],
+          "answer": 1,
+          "explanation": "`index.html` ka naam har deploy par same rehta hai, isliye use `no-cache` rakho: browser store kare par har baar ETag se revalidate kare, aur naya deploy turant mile. Saal bhar wala `immutable` (option A) sirf hashed files ke liye hai, jinka naam content badalne par badal jaata hai; option C ek din tak purana HTML dikha sakta hai; option D mein browser apne andaze se cache kar sakta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w11-q9",
+          "question": "`GET /api/me` logged-in user ka naam aur email lautata hai, aur app ek CDN ke peeche hai. Is response par kaunsa header hona chahiye?",
+          "options": [
+            "`Cache-Control: public, max-age=3600` (ek ghante ke liye)",
+            "`Cache-Control: max-age=31536000, immutable` (saal bhar ke liye)",
+            "`Cache-Control: private` (ya `no-store`) taaki CDN ise share na kare",
+            "Koi header nahi; CDN response mein personal data khud pehchaan leta hai"
+          ],
+          "answer": 2,
+          "explanation": "Personalised response shared cache (CDN) mein gaya to agle user ko kisi aur ka data mil sakta hai. `private` sirf user ke apne browser ko cache karne deta hai; bahut sensitive ho to `no-store`. Options A aur B lambi shared caching allow karke data leak kar sakte hain; option D: CDN response ka matlab nahi samajhta, sirf headers maanta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w11-q10",
+          "question": "Ek API par 2000 req/s aate hain. Cache hit par response 3 ms aur miss par (DB se) 80 ms leta hai. Hit ratio 95% hai. Average latency aur DB par queries/s kya honge?",
+          "options": [
+            "41.5 ms aur 1000 queries/s",
+            "6.85 ms aur 1900 queries/s",
+            "3 ms aur 100 queries/s",
+            "6.85 ms aur 100 queries/s"
+          ],
+          "answer": 3,
+          "explanation": "Average = 0.95 × 3 + 0.05 × 80 = 2.85 + 4 = 6.85 ms. DB sirf misses dekhta hai: 2000 × 0.05 = 100 queries/s. Option A dono latencies ka seedha average leta hai; option B hits ko DB queries gin leta hai; option C misses ki latency ignore karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w11-q11",
+          "question": "50 posts aur unke authors (sab alag) chahiye. SQLAlchemy mein `selectinload(Post.author)` aur `joinedload(Post.author)` ke saath kitni-kitni queries jaayengi?",
+          "options": [
+            "51 aur 51",
+            "2 aur 1",
+            "1 aur 2",
+            "50 aur 1"
+          ],
+          "answer": 1,
+          "explanation": "`selectinload` 2 queries chalata hai: pehle posts, phir `WHERE id IN (...)` se saare authors ek saath. `joinedload` JOIN se sab ek hi query mein laata hai. Option A lazy loading (N+1) wala number hai; option C dono ko ulta kar deta hai; option D bhi N+1 jaisa hisaab hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w11-q12",
+          "question": "Ek API 300 req/s par chalti hai aur har request apni poori latency tak ek DB connection gherti hai. Latency 80 ms se badh kar 250 ms ho jaati hai, aur pool mein 40 connections hain. Little ke niyam se pehle aur baad mein ek saath kitne connections chahiye, aur kya pool kaafi hai?",
+          "options": [
+            "24 aur 75; dono samay 40 kaafi hai",
+            "3.75 aur 1.2; pool hamesha kaafi hai",
+            "24 aur 75; pehle kaafi tha, ab 40 kam padega",
+            "2400 aur 7500; pool kabhi kaafi nahi tha"
+          ],
+          "answer": 2,
+          "explanation": "L = λ × W, W seconds mein: 300 × 0.08 = 24, aur 300 × 0.25 = 75. 24 < 40 theek tha, par 75 > 40, isliye requests connection ke liye line mein lagengi aur latency aur badhegi. Option A 75 ko 40 se compare karna bhool jaata hai; option B λ ko W se divide kar deta hai; option D ms ko seconds mein badalna bhool jaata hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w11-q13",
+          "question": "Ek endpoint ke 20 response times (ms) hain: 63, 40, 1200, 55, 72, 45, 90, 61, 50, 400, 42, 75, 58, 850, 47, 65, 52, 80, 60, 70. Nearest-rank method (sorted list mein position ⌈p/100 × n⌉) se p50, p95 aur mean kya hain?",
+          "options": [
+            "p50 = 61, p95 = 850, mean = 173.75",
+            "p50 = 62, p95 = 1200, mean = 173.75",
+            "p50 = 61, p95 = 400, mean = 61",
+            "p50 = 173.75, p95 = 850, mean = 61"
+          ],
+          "answer": 0,
+          "explanation": "Sort karo: 40, 42, 45, 47, 50, 52, 55, 58, 60, 61, 63, ..., 90, 400, 850, 1200. p50: ⌈0.5 × 20⌉ = 10th = 61. p95: ⌈0.95 × 20⌉ = 19th = 850. Mean = 3475 ÷ 20 = 173.75: teen slow requests ne mean ko median ka lagbhag teen guna kar diya. Option B median ko 10th aur 11th ka average (62) aur p95 ko aakhri value le leta hai; option C 18th value leta hai aur mean ko median bana deta hai; option D median aur mean ko ulta kar deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w11-q14",
+          "question": "Har order ka customer alag hai, aur `customer` aur `items` dono relationships default lazy loading par hain. (i) Is code se kitni queries jaayengi? (ii) `options(selectinload(Order.customer), selectinload(Order.items))` jodne par kitni?",
+          "code": "orders = Order.query.limit(20).all()\nfor o in orders:\n    print(o.customer.name, len(o.items))",
+          "options": [
+            "21 aur 2",
+            "40 aur 3",
+            "41 aur 3",
+            "41 aur 1"
+          ],
+          "answer": 2,
+          "explanation": "Lazy loading: 1 query orders ki, phir har order ke liye customer ki 1 aur items ki 1: 1 + 20 + 20 = 41. `selectinload` har relationship ke liye ek extra `IN (...)` query chalata hai: orders + customers + items = 3. Option A sirf ek relationship ginta hai; option B pehli orders wali query bhool jaata hai; option D `selectinload` ko JOIN jaisi ek hi query maan leta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w11-q15",
+          "question": "Do files ETag ke saath serve hoti hain: file A par `Cache-Control: max-age=60`, file B par `Cache-Control: no-cache`. User t = 0 s par page kholta hai (dono 200 se aayi), phir t = 30 s aur t = 90 s par dobara. Content kabhi nahi badla. t = 0 ke baad server tak kul kitni requests pahunchengi aur unka status kya hoga?",
+          "options": [
+            "4 requests: 2 × 200 aur 2 × 304",
+            "1 request (304), sirf A ke liye",
+            "0 requests, dono cache se aayengi",
+            "3 requests, teeno 304 Not Modified"
+          ],
+          "answer": 3,
+          "explanation": "A: t = 30 par abhi fresh hai (60 s ke andar), isliye bina network ke cache se. t = 90 par stale, to browser `If-None-Match` ke saath revalidate karta hai: 304. B: `no-cache` har baar revalidate karta hai, t = 30 aur t = 90 dono par 304. Kul 1 + 2 = 3 requests, sab 304 (body ke bina). Option A maanta hai ki kuch requests poori body dobara laayengi; option B `no-cache` ko \"cache se bina pooche use karo\" samajhta hai; option C maanta hai ki stale A bhi bina pooche chalega.",
           "difficulty": "hard"
         }
       ]
@@ -1482,6 +2816,125 @@
           ],
           "answer": 0,
           "explanation": "Arrival rate = 200 / 60 ≈ 3.33 jobs/s. Little ke niyam se ek saath chal rahe jobs ≈ 3.33 × 4 ≈ 13.33. Worker aadhe nahi hote, aur 13 workers sirf 13 / 4 = 3.25 jobs/s nipta sakte hain jo 3.33 se kam hai, isliye upar round karke 14. Option B ka trap hai neeche round karna; option C 200 / 4 karta hai (per minute aur seconds mila diye); option D 200 × 4 karta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w12-q7",
+          "question": "Flask app ka JWT secret aur database password kahan rakhne chahiye?",
+          "options": [
+            "Environment variables (ya secret manager) mein; code aur git mein nahi",
+            "`app.py` mein constant ki tarah, taaki sab developers ke paas ho",
+            "Vue frontend ki kisi `.js` file mein, API URL ke saath",
+            "README mein, taaki deploy karne wale ko pata ho"
+          ],
+          "answer": 0,
+          "explanation": "Secrets environment variables (ya secret manager) se aane chahiye, taaki code ya git history mein leak na hon aur har environment ki alag value ho. Options B aur D unhe har us insaan tak pahuncha dete hain jo repo dekh sake; option C unhe har browser user ko bhej deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w12-q8",
+          "question": "Vue app mein ek `api` client module (jo base URL, `Authorization` header, `res.ok` check aur 401 handling kare) banane ka sabse bada fayda kya hai?",
+          "options": [
+            "Requests apne aap tez ho jaati hain kyunki headers cache ho jaate hain",
+            "Ye logic har component mein dohraana nahi padta; behaviour ek jaisa rehta hai",
+            "Backend par CORS configure karne ki zaroorat poori tarah khatam ho jaati hai",
+            "Server-side validation ki zaroorat nahi rehti, client hi sab check karta hai"
+          ],
+          "answer": 1,
+          "explanation": "Ek jagah headers, `res.ok` check aur 401 handling hone se koi component check bhoolta nahi, aur badlaav (jaise naya header) ek hi file mein hota hai. Ye speed (option A), CORS (option C) ya server validation (option D) ko nahi badalta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w12-q9",
+          "question": "Users ke passwords database mein kaise store karne chahiye?",
+          "options": [
+            "Plain text mein, taaki forgot password par wapas bhej sakein",
+            "Base64 encode karke",
+            "bcrypt ya argon2 jaise strong, slow password hash mein",
+            "JWT payload mein, taaki har request ke saath verify ho"
+          ],
+          "answer": 2,
+          "explanation": "bcrypt/argon2 jaan-boojh kar slow, one-way password hashes hain: DB leak hone par bhi password wapas nikaalna bahut mehenga hai. Plain text aur Base64 (sirf encoding, aasaani se ulta ho jaata hai) leak par seedha password de dete hain; aur JWT payload koi bhi decode kar sakta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mad2-w12-q10",
+          "question": "Peak par 90 jobs per minute aate hain aur har job ek worker process ko 6 s gherta hai. (i) Queue badhne se rokne ke liye kam se kam kitne workers chahiye? (ii) 50% headroom ke saath (upar round karo)?",
+          "options": [
+            "540 aur 810",
+            "15 aur 23",
+            "9 aur 13",
+            "9 aur 14"
+          ],
+          "answer": 3,
+          "explanation": "Arrival rate = 90 / 60 = 1.5 jobs/s. Little: 1.5 × 6 = 9 workers. Headroom: 9 × 1.5 = 13.5, upar round = 14. Option C 13.5 ko neeche round karta hai; option B 90 ko 6 se divide karta hai (per minute ko per second banaya hi nahi); option A seconds aur minutes mila kar guna kar deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w12-q11",
+          "question": "Access token expire ho gaya hai aur `GET /api/v1/projects` 401 lautata hai. Is course ke frontend design mein ise kahan aur kaise handle karna sabse sahi hai?",
+          "options": [
+            "Har component apne `fetch` ke baad 401 khud check kare",
+            "Ek jagah, `api` client mein: auth store saaf karke login par redirect",
+            "Server ko 401 ki jagah 200 aur khaali list bhejni chahiye",
+            "Router guard har 5 second par token check kare aur expire hone par logout"
+          ],
+          "answer": 1,
+          "explanation": "401 ka matlab pehchaan fail hui; ye kisi bhi request par ho sakta hai, isliye ise central `api` client mein ek baar handle karo: auth store reset aur login par redirect (ya refresh token se naya token). Option A wahi duplication hai jisse bachna hai; option C galat status hai aur bug chhupata hai; option D polling hai jo phir bhi beech ki requests ka 401 nahi sambhaalti.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mad2-w12-q12",
+          "question": "Ye ek chhota simplified `api` client hai jisme `fetch` ki jagah `fakeFetch` hai. Output kya hoga?",
+          "code": "const auth = { user: { name: \"Zoya\" } };\nconst responses = {\n    \"/a\": { status: 200, body: { n: 1 } },\n    \"/b\": { status: 401, body: {} },\n    \"/c\": { status: 500, body: {} }\n};\nasync function fakeFetch(path) {\n    const r = responses[path];\n    return { status: r.status, ok: r.status >= 200 && r.status < 300, json: async () => r.body };\n}\nasync function api(path) {\n    const res = await fakeFetch(path);\n    if (res.status === 401) { auth.user = null; return null; }\n    if (!res.ok) throw new Error(\"HTTP \" + res.status);\n    return res.json();\n}\nPromise.allSettled([api(\"/a\"), api(\"/b\"), api(\"/c\")]).then((rs) => {\n    const out = rs.map(r => r.status === \"fulfilled\" ? JSON.stringify(r.value) : r.reason.message);\n    console.log(out.join(\" | \"), auth.user);\n});",
+          "options": [
+            "{\"n\":1} | null | HTTP 500 null",
+            "{\"n\":1} | HTTP 401 | HTTP 500 { name: 'Zoya' }",
+            "{\"n\":1} | null | {} null",
+            "{\"n\":1} | null | HTTP 500 { name: 'Zoya' }"
+          ],
+          "answer": 0,
+          "explanation": "\"/a\": 200, `res.json()` `{ n: 1 }` deta hai, jo fulfilled hai aur `JSON.stringify` se `{\"n\":1}` banta hai. \"/b\": 401 wali branch `auth.user` ko null karti hai aur null lautati hai (fulfilled, error nahi), aur `JSON.stringify(null)` \"null\" deta hai. \"/c\": 500 par `res.ok` false, error throw hota hai: rejected, message \"HTTP 500\". Aakhir mein `auth.user` null hai. Option B maanta hai ki 401 bhi throw hota hai; option C `res.ok` check ko ignore karta hai; option D bhool jaata hai ki 401 branch ne `auth.user` saaf kiya.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w12-q13",
+          "question": "Ek worker pool do tarah ke jobs chalata hai: 120 email jobs per minute (har ek 1 s) aur 30 report jobs per minute (har ek 10 s). Queue na badhe, iske liye kam se kam kitne worker processes chahiye?",
+          "options": [
+            "150",
+            "11",
+            "7",
+            "5"
+          ],
+          "answer": 2,
+          "explanation": "Little ka niyam har type par: emails 120 / 60 = 2 per s × 1 s = 2; reports 30 / 60 = 0.5 per s × 10 s = 5. Kul 2 + 5 = 7. Option A jobs ki ginti jod deta hai (120 + 30); option B sirf job times jodta hai (1 + 10); option D sirf reports ginta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w12-q14",
+          "question": "Is code ka output kya hoga?",
+          "code": "const store = { items: [], loading: false };\nasync function load() {\n    store.loading = true;\n    const data = await Promise.resolve([1, 2]);\n    store.items = data;\n    store.loading = false;\n}\nload();\nconsole.log(store.loading, store.items.length);\nsetTimeout(() => console.log(store.loading, store.items.length), 0);",
+          "options": [
+            "false 0, phir false 2",
+            "true 2, phir false 2",
+            "false 2, phir false 2",
+            "true 0, phir false 2"
+          ],
+          "answer": 3,
+          "explanation": "`load()` `await` tak synchronously chalta hai: `loading` true ho jaata hai. `await` par function ruk jaata hai, isliye agli line `true 0` print karti hai. Microtask mein `load` resume hota hai: items [1, 2] aur loading false. Timer microtasks ke baad chalta hai: `false 2`. Option A maanta hai ki async function ka koi bhi hissa sync nahi chalta; options B aur C `await` ko blocking maante hain.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mad2-w12-q15",
+          "question": "`GET /api/v1/projects?page=1` sirf woh projects lautata hai jinka user member hai. Redis cache-aside key `projects:page:1` hai (TTL 60 s). t = 0 par Asha request karti hai (miss, uske projects cache hue). t = 10 s par Bilal (jiske projects alag hain) wahi URL kholta hai. Bilal ko kya milega, aur fix kya hai?",
+          "options": [
+            "Bilal ke apne projects, kyunki har request pehle token check karti hai",
+            "401, kyunki cache entry mein ab Asha ka token rakha hai",
+            "Bilal ko khaali list, jab tak TTL khatam na ho",
+            "Asha ke projects (leak); key mein user id chahiye, jaise `projects:u42:page:1`"
+          ],
+          "answer": 3,
+          "explanation": "Key mein user id nahi hai, isliye t = 10 s par Bilal ki request ko cache hit milta hai aur API Asha ke projects lauta deti hai (TTL ke andar). Token check request ko pass to karta hai, par cached data kisi aur user ka hai. Fix: key mein woh sab shamil karo jis par result depend karta hai, yahan user id aur page. Option A maanta hai ki auth check cache ko bhi theek kar dega; option B galat hai kyunki cache response store karta hai, token nahi; option C ka koi kaaran nahi.",
           "difficulty": "hard"
         }
       ]
