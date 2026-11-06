@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { isIos, isStandalone, registerServiceWorker } from '@/lib/push-client';
+import { claimPromptSlot } from '@/lib/prompt-slot';
 
 /** Chrome's install event (not in TypeScript's DOM types yet). */
 type InstallEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }> };
@@ -52,13 +53,13 @@ export function InstallPrompt() {
     const onInstallable = (e: Event) => {
       e.preventDefault();
       setEvent(e as InstallEvent);
-      if (eligible) setMode('install');
+      if (eligible && claimPromptSlot('install')) setMode('install');
     };
     const onInstalled = () => setMode('none');
     window.addEventListener('beforeinstallprompt', onInstallable);
     window.addEventListener('appinstalled', onInstalled);
     // Safari on iPhone has no install event; show the steps instead.
-    if (eligible && isIos() && !/crios|fxios|edgios/i.test(navigator.userAgent)) setMode('ios');
+    if (eligible && isIos() && !/crios|fxios|edgios/i.test(navigator.userAgent) && claimPromptSlot('install')) setMode('ios');
     return () => {
       window.removeEventListener('beforeinstallprompt', onInstallable);
       window.removeEventListener('appinstalled', onInstalled);

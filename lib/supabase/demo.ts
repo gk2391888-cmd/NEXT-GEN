@@ -406,6 +406,9 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
       price: { amountInr, fullPriceInr: PRICING.proMonthlyInr, offer, offerUsed: false },
     });
   }
+  // Reminders look switched on in demo mode (so their cards show), but nothing can be subscribed.
+  if (path === '/api/reminders' && (init.method ?? 'GET') === 'GET') return reply({ publicKey: 'demo' });
+  if (path.startsWith('/api/reminders')) return reply({ error: 'Reminders can’t be turned on in demo mode.' }, 503);
   // Who an invite link is from: asked before logging in.
   if (path.startsWith('/api/referrals/owner')) return reply({ name: 'Arjun' });
   const p = read<Persona>(PERSONA_KEY, 'trial');

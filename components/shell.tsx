@@ -14,6 +14,7 @@ import { ChoiceNotice } from './choice-notice';
 import { AccessGate } from './access-gate';
 import { TabBar } from './tab-bar';
 import { InstallPrompt } from './install-prompt';
+import { ReminderPrompt } from './reminder-prompt';
 import { useChoice, useChosen } from '@/lib/programme-choice';
 import { choiceHas, QUALIFIER_PATH, type Tool } from '@/lib/programmes';
 
@@ -151,6 +152,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </div>
       <TabBar onMore={() => setOpen(true)} moreOpen={open} />
       <InstallPrompt />
+      <ReminderPrompt />
     </div>
   );
 }
