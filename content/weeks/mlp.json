@@ -120,6 +120,124 @@
           "answer": 3,
           "explanation": "Predict ke waqt Pipeline scaler ka sirf `transform` chalati hai, training ke mean 5 aur std se. StandardScaler population std (ddof = 0) use karta hai: variance = (9 + 1 + 1 + 9)/4 = 5, std = √5 ≈ 2.236. z = (10 − 5)/2.236 ≈ 2.236, ŷ = 20 + 3 × 2.236 ≈ 26.71 (option D). Option B sample std (√(20/3) ≈ 2.582) se aata hai, option A scaling bhool kar raw x = 10 daalne se, aur option C test point par scaler dobara fit karne se (z = 0).",
           "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w1-q7",
+          "question": "Ek fictional app ke liye aapko predict karna hai ki har customer agle mahine kitne rupaye ka order karega. Ye kis type ka task hai?",
+          "options": [
+            "Regression, kyunki target ek continuous number hai",
+            "Classification, kyunki har customer alag hai",
+            "Unsupervised, kyunki agle mahine ka label abhi nahi hai",
+            "Classification, kyunki rupaye poore number hote hain"
+          ],
+          "answer": 0,
+          "explanation": "Target ek numeric amount hai jo continuous range mein kuch bhi ho sakta hai, isliye ye regression hai (option A). Customers alag hona task type tay nahi karta (option B). Training ke liye purane mahinon ka data label deta hai, to ye supervised hai (option C galat). Amount integer ho tab bhi wo ordered quantity hai, category nahi (option D ka trap).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w1-q8",
+          "question": "`StandardScaler` ko `X_train` par fit karne ke baad, inme se kaunsa attribute fit ke dauraan seekha gaya hai?",
+          "options": [
+            "`with_mean`",
+            "`copy`",
+            "`mean_`",
+            "`fit_transform`"
+          ],
+          "answer": 2,
+          "explanation": "scikit-learn mein fit se seekhi gayi cheezein trailing underscore wale attributes mein milti hain, jaise `mean_` (option C). `with_mean` aur `copy` constructor ke settings hain jo aap khud dete ho, fit se nahi aate (options A, B). `fit_transform` ek method hai, attribute nahi (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w1-q9",
+          "question": "`DummyClassifier(strategy='most_frequent')` ko aise `y_train` par fit kiya jisme 70 'no' aur 30 'yes' hain. Test set mein 40 'no' aur 10 'yes' hain. Test accuracy kya hogi?",
+          "options": [
+            "0.80",
+            "0.70",
+            "0.20",
+            "0.30"
+          ],
+          "answer": 0,
+          "explanation": "Training mein sabse common class 'no' hai, to baseline har test row ke liye 'no' bolta hai. 50 mein se 40 sahi, accuracy = 40/50 = 0.80 (option A). Option B training ka 'no' ratio hai, test ka nahi. Options C aur D 'yes' ke fractions (test aur train) hain, jaise baseline 'yes' bol raha ho.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w1-q10",
+          "question": "4 test rows par actual y = [10, 20, 30, 40] aur predictions ŷ = [12, 18, 33, 31] hain. MAE aur RMSE kya hain?",
+          "options": [
+            "MAE 4.00, RMSE 24.50",
+            "MAE 1.50, RMSE 4.95",
+            "MAE 4.95, RMSE 4.00",
+            "MAE 4.00, RMSE 4.95"
+          ],
+          "answer": 3,
+          "explanation": "Errors y − ŷ: −2, 2, −3, 9. MAE = (2 + 2 + 3 + 9)/4 = 4.00. MSE = (4 + 4 + 9 + 81)/4 = 24.5, RMSE = √24.5 ≈ 4.95 (option D). Option A mein MSE ko hi RMSE likh diya (square root bhool gaye). Option B signed errors ka mean (6/4 = 1.5) hai, jisme positive-negative errors cancel ho jaate hain. Option C dono ko ulat deta hai; RMSE kabhi MAE se chhota nahi hota.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w1-q11",
+          "question": "800 rows ke data par pehle `train_test_split(X, y, test_size=0.2)` kiya, phir `cross_val_score(pipe, X_train, y_train, cv=4)` chalaya. Har CV fit kitni rows par hoga aur har fold kitni rows par score hoga?",
+          "options": [
+            "600 par fit, 200 par score",
+            "480 par fit, 160 par score",
+            "640 par fit, 160 par score",
+            "512 par fit, 128 par score"
+          ],
+          "answer": 1,
+          "explanation": "Split ke baad training mein 800 × 0.8 = 640 rows. cv=4 se har fold 640/4 = 160 rows; har fit baaki 3 folds yaani 480 rows par aur score 160 par (option B). Option A poore 800 rows ko CV mein daal deta hai, jabki CV sirf `X_train` par chal raha hai. Option C maanta hai ki fit poore training set par hota hai. Option D cv=5 ka hisaab hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w1-q12",
+          "question": "`cross_val_score(..., scoring='neg_mean_squared_error', cv=5)` ne [−16, −36, −4, −64, −25] diya. Analyst P pehle 5 scores ka mean leta hai, sign hatata hai, phir √ leta hai. Analyst Q har fold ka RMSE nikaal kar unka mean leta hai. Dono ki values (P, Q) kya hain?",
+          "options": [
+            "5.00 aur 5.39",
+            "29.00 aur 5.00",
+            "5.39 aur 5.00",
+            "5.39 aur 5.39"
+          ],
+          "answer": 2,
+          "explanation": "P: mean MSE = (16 + 36 + 4 + 64 + 25)/5 = 145/5 = 29, √29 ≈ 5.39. Q: fold RMSEs 4, 6, 2, 8, 5, mean = 25/5 = 5.00. To (5.39, 5.00) (option C). Square root ek concave function hai, isliye √(mean) hamesha mean(√) se bada ya barabar hota hai; dono ko barabar maanna (option D) galat hai. Option A order ulat deta hai, aur option B mein P ne √ liya hi nahi.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w1-q13",
+          "question": "Same 5 test rows par model A ke absolute errors [1, 1, 1, 1, 16] aur model B ke [4, 4, 4, 4, 4] hain. MAE aur RMSE ke hisaab se comparison kya hai?",
+          "options": [
+            "MAE par A behtar; RMSE dono ka 4.00",
+            "Dono metrics par A behtar, kyunki 4 rows lagbhag perfect hain",
+            "MAE barabar (4.00); RMSE par A behtar (4.00 vs 7.21)",
+            "MAE barabar (4.00); RMSE par B behtar (4.00 vs 7.21)"
+          ],
+          "answer": 3,
+          "explanation": "MAE: A = 20/5 = 4.00, B = 20/5 = 4.00, barabar. MSE: A = (1 + 1 + 1 + 1 + 256)/5 = 52, RMSE ≈ 7.21; B = 16, RMSE = 4.00. RMSE bade errors ko zyada saza deta hai, isliye B behtar (option D). Option C RMSE ka winner ulat deta hai. Option A mein MAE barabar hone ki baat chhoot gayi aur RMSE galat hai. Option B ka trap: 4 achhe rows ek bade error (16) ko chhupa nahi sakte, khaaskar RMSE mein.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w1-q14",
+          "question": "400 rows ke binary dataset mein 60 positive hain. `train_test_split(X, y, test_size=0.25, stratify=y)` ke baad `DummyClassifier(strategy='most_frequent')` ko training set par fit kiya. Test set mein kitne positives hain aur baseline ki test accuracy kya hai?",
+          "options": [
+            "15 positives, accuracy 0.85",
+            "15 positives, accuracy 0.15",
+            "45 positives, accuracy 0.85",
+            "60 positives, accuracy 0.85"
+          ],
+          "answer": 0,
+          "explanation": "Test = 400 × 0.25 = 100 rows. stratify=y se class ratio 60/400 = 15% dono hisson mein same, to test mein 15 positives aur 85 negatives. Training mein bhi majority negative hai, to baseline sab ko negative bolta hai: accuracy = 85/100 = 0.85 (option A). Option B maanta hai ki baseline positive bolta hai. Option C training ke positives (45) gin leta hai, aur option D poore dataset ke.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w1-q15",
+          "question": "Neeche wala code chalaya. `baseline` aur `pipe` (unke clones samet) par milakar `fit` kitni baar chalega, aur `StandardScaler` kitni baar fit hoga?",
+          "code": "baseline = DummyRegressor(strategy='mean')\npipe = Pipeline([('scaler', StandardScaler()), ('model', LinearRegression())])\n\nfor est in [baseline, pipe]:\n    cross_val_score(est, X_train, y_train, cv=5)\n\npipe.fit(X_train, y_train)",
+          "options": [
+            "10 fits; scaler 5 baar",
+            "11 fits; scaler 6 baar",
+            "11 fits; scaler 1 baar",
+            "12 fits; scaler 6 baar"
+          ],
+          "answer": 1,
+          "explanation": "CV mein har estimator 5 baar fit hota hai: baseline 5 + pipe 5 = 10, aur end mein `pipe.fit` ek aur, kul 11. Scaler sirf pipe ke andar hai: CV ke 5 fits mein har baar training fold par, plus final fit mein ek baar = 6 (option B). Option A final fit bhool jaata hai. Option C maanta hai ki scaler ek hi baar fit hota hai, jabki Pipeline har fit par uska `fit_transform` chalati hai. Option D baseline ka bhi final fit gin leta hai jo code mein hai hi nahi.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -241,6 +359,124 @@
           "answer": 0,
           "explanation": "Imputer observed values ka mean leta hai: (2 + 8 + 4 + 6)/4 = 5, column banta hai [2, 5, 8, 4, 5, 6]. Scaler is imputed column par fit hota hai: mean 5, population variance (9 + 0 + 9 + 1 + 0 + 1)/6 = 20/6, std ≈ 1.826. z = (9 − 5)/1.826 ≈ 2.19 (option A). Option B std ko sirf 4 observed values se (√5 ≈ 2.236) nikaalta hai, jabki scaler ko imputed data milta hai; imputation variance ghatati hai. Option C n − 1 wala std (2.0) use karta hai, option D scaling bhool jaata hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w2-q7",
+          "question": "`OneHotEncoder(handle_unknown='ignore')` ko city column ['Pune', 'Agra', 'Kota'] par fit kiya. Test row ki city 'Surat' hai. Uska encoded output kya hoga (columns sorted order Agra, Kota, Pune)?",
+          "options": [
+            "[0, 0, 1]",
+            "[1, 1, 1]",
+            "[0, 0, 0]",
+            "Error aayega"
+          ],
+          "answer": 2,
+          "explanation": "`handle_unknown='ignore'` training mein na dekhi category ko sab-zero row deta hai: [0, 0, 0] (option C). Error (option D) default setting `handle_unknown='error'` ka behaviour hai. Option A 'Surat' ko galti se kisi seen category jaisa maanta hai, aur option B one-hot ke 'sirf ek 1' rule ko hi tod deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w2-q8",
+          "question": "Column 'priority' ki values 'low', 'medium', 'high' hain, aur inka natural order hai. Sabse sahi encoding kaunsi hai?",
+          "options": [
+            "`OrdinalEncoder()` default, jo categories ko alphabetically lagata hai",
+            "`StandardScaler()` seedha text column par",
+            "Column hata do kyunki ye text hai",
+            "`OrdinalEncoder(categories=[['low', 'medium', 'high']])`"
+          ],
+          "answer": 3,
+          "explanation": "Ordered categories ke liye `OrdinalEncoder` sahi hai, par order explicitly dena padta hai: low → 0, medium → 1, high → 2 (option D). Default (option A) alphabetical order lagata hai: high → 0, low → 1, medium → 2, jo asli order tod deta hai. Scaler text par kaam nahi karta (option B), aur useful signal wali column hatana (option C) information khona hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w2-q9",
+          "question": "Ek bank loan application ke time predict karna chahta hai ki loan default hoga ya nahi. Inme se kaunsa feature target leakage hai?",
+          "options": [
+            "Application ke time applicant ki monthly income",
+            "Applicant ki age",
+            "Maangi gayi loan amount",
+            "Kya loan baad mein recovery agency ko bheja gaya"
+          ],
+          "answer": 3,
+          "explanation": "Recovery agency ko loan tabhi bheja jaata hai jab default ho chuka ho; prediction ke time ye information hoti hi nahi, to ye target leakage hai (option D). Income, age aur requested amount (options A, B, C) application ke waqt available hain, isliye ye jaayaz features hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w2-q10",
+          "question": "X ke columns: age, income (numeric), city (training mein 5 categories), gender (text, 2 values) aur signup_day (numeric). Neeche wala ColumnTransformer fit karne ke baad output mein kitne columns honge?",
+          "code": "ct = ColumnTransformer([\n    ('num', StandardScaler(), ['age', 'income']),\n    ('cat', OneHotEncoder(), ['city']),\n], remainder='passthrough')\nZ = ct.fit_transform(X)",
+          "options": [
+            "9",
+            "7",
+            "10",
+            "8"
+          ],
+          "answer": 0,
+          "explanation": "num: 2 columns. cat: city ke 5 one-hot columns. `remainder='passthrough'` baaki columns (gender, signup_day) ko bina badle as-is jodta hai: 2 aur. Total 2 + 5 + 2 = 9 (option A). Option B default `remainder='drop'` ka jawab hai. Option C maanta hai ki gender bhi one-hot ho jaayega, jabki passthrough koi transform nahi lagata. Option D ek passthrough column bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w2-q11",
+          "question": "`RobustScaler()` (default: median center, 25–75 percentile IQR) ko training column [2, 4, 6, 8, 100] par fit kiya. Value 10 ka scaled output kya hoga?",
+          "options": [
+            "0.50",
+            "−0.37",
+            "1.00",
+            "2.00"
+          ],
+          "answer": 2,
+          "explanation": "Median = 6. Q1 = 4, Q3 = 8 (5 sorted values mein positions 1 aur 3, interpolation ki zaroorat nahi), IQR = 4. Output = (10 − 6)/4 = 1.00 (option C). Option B `StandardScaler` ka result hai: mean 24 aur std ≈ 38.05 outlier 100 se khinch gaye, (10 − 24)/38.05 ≈ −0.37; yahi wajah hai ki outliers ke saath RobustScaler behtar hai. Option A Q3 (8) se divide karta hai, option D IQR ka aadha (2) leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w2-q12",
+          "question": "Numeric pipe `SimpleImputer(strategy='median', add_indicator=True)` → `StandardScaler` ['age', 'income'] par, aur categorical pipe one-hot ['city' (4 categories), 'plan' (3 categories)] par. Training mein sirf income mein NaN hain, age mein koi nahi. ColumnTransformer ke output mein kitne columns honge?",
+          "options": [
+            "11",
+            "10",
+            "9",
+            "12"
+          ],
+          "answer": 1,
+          "explanation": "`add_indicator=True` (default `features='missing-only'`) sirf un columns ka 0/1 indicator banata hai jinme fit ke waqt missing values thi: yahan sirf income. Numeric output: 2 + 1 = 3. Categorical: 4 + 3 = 7. Total 10 (option B). Option A dono numeric columns ka indicator maan leta hai. Option C indicator bhool jaata hai. Option D har column (categorical bhi) ka indicator jod deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w2-q13",
+          "question": "Training values [2, 4, 6] aur ek test value 20 hai. Sahi tareeka: `StandardScaler` sirf training par fit. Leaky tareeka: scaler ko chaaron values [2, 4, 6, 20] par fit. Test value 20 ka scaled output dono tareekon se kya hoga (sahi, leaky)?",
+          "options": [
+            "9.80 aur 1.70",
+            "1.70 aur 9.80",
+            "8.00 aur 1.70",
+            "9.80 aur 1.47"
+          ],
+          "answer": 0,
+          "explanation": "Sahi: mean 4, population std (ddof = 0) = √(8/3) ≈ 1.633, (20 − 4)/1.633 ≈ 9.80. Leaky: mean 8, variance (36 + 16 + 4 + 144)/4 = 50, std ≈ 7.07, (20 − 8)/7.07 ≈ 1.70 (option A). Leakage mein test value khud mean aur std ko khinch leti hai aur 'extreme' value normal dikhne lagti hai. Option C aur option D sample std (ddof = 1) use karte hain, jo `StandardScaler` nahi karta. Option B order ulat deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w2-q14",
+          "question": "Pipeline `SimpleImputer(strategy='most_frequent')` → `OneHotEncoder()` ko training column ['B', NaN, 'A', 'B', 'C', NaN, 'A', 'B'] par fit karke isi column ko transform kiya. Output matrix ke columns (order A, B, C) ka sum kya hoga?",
+          "options": [
+            "[2, 5, 1]",
+            "[4, 3, 1]",
+            "[2, 3, 1]",
+            "[2, 3, 3]"
+          ],
+          "answer": 0,
+          "explanation": "Counts: B = 3, A = 2, C = 1, NaN = 2. Most frequent 'B' hai, to dono NaN 'B' ban jaate hain: A = 2, B = 5, C = 1. One-hot mein har row ka ek 1 apni category ke column mein, to column sums [2, 5, 1] (option A). Option B NaN ko 'A' se bhar deta hai. Option C NaN rows ko sab-zero chhod deta hai (imputer bhool gaye). Option D NaN ko 'C' maan leta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w2-q15",
+          "question": "Training column [10, 12, 14, NaN, 200, NaN] hai. Median impute ke baad column ka mean, aur mean impute ke baad column ka mean kya hoga (isi order mein)?",
+          "options": [
+            "13.00 aur 59.00",
+            "59.00 aur 43.67",
+            "43.67 aur 39.33",
+            "43.67 aur 59.00"
+          ],
+          "answer": 3,
+          "explanation": "Observed: 10, 12, 14, 200; sum 236, mean 59, median (12 + 14)/2 = 13. Median impute: (236 + 13 + 13)/6 = 262/6 ≈ 43.67. Mean impute: mean ki jagah mean bharne se mean wahi rehta hai, 59.00 (option D). Option A median ko hi naya mean maan leta hai. Option B order ulat deta hai. Option C mean impute mein 236 ko 6 se divide kar deta hai, jaise NaN zero ho.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -359,6 +595,123 @@
           ],
           "answer": 1,
           "explanation": "Sample 1: gradient = 2(0 − 2)(1) = −4, w = 0 + 0.4 = 0.4. Sample 2: ŷ = 0.8, gradient = 2(0.8 − 4)(2) = −12.8, w = 0.4 + 1.28 = 1.68 (option B). Option A batch GD ka ek step hai (average gradient −10, sab samples purane w = 0 par), jabki SGD doosre sample par updated w use karta hai. Option C sirf pehla update hai, option D optimum hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w3-q7",
+          "question": "2000 training rows par pure stochastic gradient descent (har sample par ek update) 3 epochs chalaya. Kul kitne parameter updates hue?",
+          "options": [
+            "3",
+            "2000",
+            "667",
+            "6000"
+          ],
+          "answer": 3,
+          "explanation": "SGD ek epoch mein har sample par ek update karta hai: 2000 updates per epoch, 3 epochs mein 6000 (option D). Option A batch GD ka count hai (har epoch ek update). Option B sirf ek epoch ginta hai. Option C (2000/3) ka koi matlab nahi banta.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w3-q8",
+          "question": "Ek regressor ka test set par R² = −0.4 aaya. Iska sahi matlab kya hai?",
+          "options": [
+            "Model ne test variance ka 40% explain kiya",
+            "Calculation galat hai, R² negative nahi ho sakta",
+            "Model test par sirf mean predict karne se bhi bura hai",
+            "Model perfect hai, bas predictions ka sign ulta hai"
+          ],
+          "answer": 2,
+          "explanation": "R² = 1 − SS_res/SS_tot. Negative R² ka matlab SS_res > SS_tot, yaani mean predict karne se bhi zyada error (option C). Test data par R² negative ho sakta hai, isliye option B galat hai. Option A negative ko positive ki tarah padhta hai. Ulte sign wale predictions ka R² bhi bahut kharab aata hai, perfect nahi (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w3-q9",
+          "question": "`LinearRegression()` ko fit karne ke baad model ka bias term (b) kis attribute mein milta hai?",
+          "options": [
+            "`coef_`",
+            "`fit_intercept`",
+            "`intercept_`",
+            "`bias_`"
+          ],
+          "answer": 2,
+          "explanation": "scikit-learn mein weights `coef_` mein aur bias `intercept_` mein milta hai (option C). `coef_` weights hain, bias nahi (option A). `fit_intercept` constructor setting hai jo batati hai ki bias fit karna hai ya nahi (option B). `bias_` naam ka attribute exist hi nahi karta (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w3-q10",
+          "question": "`LinearRegression()` ko ek feature par fit kiya: x = [1, 2, 3, 4, 5], y = [3, 5, 4, 8, 10]. Seekhe gaye slope w aur intercept b kya hain?",
+          "options": [
+            "w = 1.70, b = 6.00",
+            "w = 2.00, b = 0.00",
+            "w = 1.70, b = −0.90",
+            "w = 1.70, b = 0.90"
+          ],
+          "answer": 3,
+          "explanation": "x̄ = 3, ȳ = 6. Σ(x − x̄)(y − ȳ) = 6 + 1 + 0 + 2 + 8 = 17, Σ(x − x̄)² = 10, w = 1.7. b = ȳ − w·x̄ = 6 − 5.1 = 0.9 (option D). Option A b ko ȳ maan leta hai. Option B sirf ȳ/x̄ = 2 leta hai, jo least squares nahi hai. Option C b ka sign ulta karta hai (w·x̄ − ȳ).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w3-q11",
+          "question": "Test set par y = [2, 4, 6, 8] aur ŷ = [3, 3, 7, 7] hain. R² kya hai?",
+          "options": [
+            "0.20",
+            "0.80",
+            "0.97",
+            "0.50"
+          ],
+          "answer": 1,
+          "explanation": "SS_res = 1 + 1 + 1 + 1 = 4. ȳ = 5, SS_tot = 9 + 1 + 1 + 9 = 20. R² = 1 − 4/20 = 0.80 (option B). Option A sirf SS_res/SS_tot hai (1 − karna bhool gaye). Option C SS_tot mein ȳ ghatana bhool jaata hai (Σy² = 120, 1 − 4/120 ≈ 0.97). Option D squared ki jagah absolute deviations (3 + 1 + 1 + 3 = 8) leta hai: 1 − 4/8.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w3-q12",
+          "question": "Data (x, y): (1, 2), (2, 4), (3, 6). Model ŷ = wx (bias nahi), start w = 0. Cost J = (1/n)Σ(ŷ − y)², learning rate 0.05. Do batch gradient descent steps ke baad w kya hoga?",
+          "options": [
+            "0.93",
+            "1.43",
+            "1.87",
+            "2.00"
+          ],
+          "answer": 1,
+          "explanation": "∂J/∂w = (2/3)Σ(wx − y)x = (2/3)(14w − 28). Step 1: gradient = (2/3)(−28) ≈ −18.67, w = 0 + 0.05 × 18.67 ≈ 0.933. Step 2: gradient = (2/3)(13.07 − 28) ≈ −9.96, w ≈ 0.933 + 0.498 ≈ 1.43 (option B). Option A sirf pehla step hai. Option C maanta hai ki doosra step bhi utna hi bada hoga (0.933 × 2), par gradient minimum ke paas chhota ho jaata hai. Option D closed-form answer hai jo do steps mein nahi milta.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w3-q13",
+          "question": "Same data (1, 2), (2, 4), (3, 6), model ŷ = wx, cost J = (1/n)Σ(ŷ − y)². Batch GD ka update w ← w − η(28/3)(w − 2) banta hai. Inme se kis learning rate par GD diverge karega?",
+          "options": [
+            "η = 0.25",
+            "η = 0.20",
+            "η = 0.10",
+            "η = 0.01"
+          ],
+          "answer": 0,
+          "explanation": "Minimum se doori (w − 2) har step par factor (1 − 28η/3) se guna hoti hai. Converge ke liye |1 − 9.33η| < 1, yaani η < 6/28 ≈ 0.214. η = 0.25 par factor ≈ −1.33: har step overshoot aur doori badhti hai, divergence (option A). η = 0.20 par factor ≈ −0.87: oscillate karta hai par converge hota hai (option B ka trap: jhoolna ≠ diverge). η = 0.10 tez converge, η = 0.01 bahut dheere par converge.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w3-q14",
+          "question": "Model ŷ = wx + b, start w = 0, b = 0. SGD har sample par loss (ŷ − y)² ka gradient leta hai, learning rate 0.1. Samples isi order mein: (2, 5) phir (1, 2). Dono updates ke baad w aur b kya honge?",
+          "options": [
+            "w = 2.00, b = 1.00",
+            "w = 2.20, b = 1.20",
+            "w = 1.05, b = 0.55",
+            "w = 1.80, b = 0.80"
+          ],
+          "answer": 3,
+          "explanation": "Sample 1: ŷ = 0, error = −5. ∂/∂w = 2(−5)(2) = −20, ∂/∂b = −10; w = 2.0, b = 1.0. Sample 2: ŷ = 2 + 1 = 3, error = +1. ∂/∂w = 2(1)(1) = 2, ∂/∂b = 2; w = 1.8, b = 0.8 (option D). Option A sirf pehla update hai. Option B doosre update ka sign ulta karta hai (gradient add kar diya). Option C gradient mein factor 2 bhool jaata hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w3-q15",
+          "question": "Test targets ka population variance 8 hai. Model A ka test MSE 6 hai, aur model B ka test R² −0.5 hai. Model A ka R² aur model B ka MSE kya hai?",
+          "options": [
+            "0.25 aur 12",
+            "0.75 aur 12",
+            "0.25 aur 4",
+            "0.75 aur 4"
+          ],
+          "answer": 0,
+          "explanation": "SS_res/n = MSE aur SS_tot/n = population variance, isliye R² = 1 − MSE/Var. A: 1 − 6/8 = 0.25. B: −0.5 = 1 − MSE/8 ⇒ MSE = 1.5 × 8 = 12 (option A). Option B mein A ke liye MSE/Var (0.75) ko R² maan liya. Options C aur D B ke liye (1 − 0.5) × 8 = 4 lete hain, yaani R² ka sign bhool gaye; negative R² ka MSE hamesha variance se bada hota hai.",
           "difficulty": "hard"
         }
       ]
@@ -479,6 +832,123 @@
           "answer": 1,
           "explanation": "Degree ≤ 3 ke saare monomials (constant samet) = C(3 + 3, 3) = 20. `include_bias=False` constant column hata deta hai: 20 − 1 = 19 (option B). Ginti: degree 1 ke 3, degree 2 ke 6, degree 3 ke 10. Option A bias column ko gin leta hai; option C sirf x, x², x³ har feature ke liye (interactions bhool kar) ginta hai; option D 3³ hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w4-q7",
+          "question": "Ek feature x par `PolynomialFeatures(degree=2, include_bias=False)` lagaya. Input x = 3 ka output kya hoga?",
+          "options": [
+            "[3, 9]",
+            "[1, 3, 9]",
+            "[3, 6]",
+            "[9]"
+          ],
+          "answer": 0,
+          "explanation": "Degree 2 tak ke monomials: x aur x², yaani [3, 9]; `include_bias=False` constant 1 wala column hata deta hai (option A). Option B default `include_bias=True` ka output hai. Option C x² ki jagah 2x leta hai. Option D original feature x ko hi chhod deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w4-q8",
+          "question": "Ek model ki learning curve: training RMSE 12.0 aur validation RMSE 12.5, dono jaldi plateau kar gaye aur zyada data se bhi nahi girte. Sabse sahi agla kadam kya hai?",
+          "options": [
+            "Aur zyada training data ikattha karo",
+            "Ridge alpha bahut bada kar do taaki variance ghate",
+            "Model ko flexible banao (degree ya features badhao)",
+            "Validation set chhota kar do taaki score sudhre"
+          ],
+          "answer": 2,
+          "explanation": "Dono errors high aur paas-paas hain: ye high bias (underfitting) hai. Iska ilaaj model ya features ko zyada flexible banana hai (option C). Plateau ka matlab hai ki zyada data se fayda nahi (option A). Alpha badhana bias aur badhata hai (option B). Validation set chhota karne se model nahi sudharta (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w4-q9",
+          "question": "`Ridge(alpha=0)` kis model ke barabar hai?",
+          "options": [
+            "Plain least squares, yaani `LinearRegression`",
+            "Lasso, kyunki L2 penalty hat gayi",
+            "Aisa model jiske saare weights exactly zero hain",
+            "ElasticNet with `l1_ratio=1` aur same alpha"
+          ],
+          "answer": 0,
+          "explanation": "Ridge ‖y − Xw‖² + α‖w‖² minimise karta hai; α = 0 par sirf least-squares term bachta hai, jo `LinearRegression` hai (option A). Lasso ka matlab L1 penalty hai, penalty ka na hona nahi (option B). Saare weights zero bahut bade α par hote hain, α = 0 par nahi (option C). `l1_ratio=1` wala ElasticNet Lasso jaisa hai (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w4-q10",
+          "question": "4 features par `PolynomialFeatures(degree=2)` (default `include_bias=True`) lagaya. Output mein kitne columns honge?",
+          "options": [
+            "14",
+            "15",
+            "11",
+            "9"
+          ],
+          "answer": 1,
+          "explanation": "Columns = C(n + d, d) = C(6, 2) = 15: constant 1 + 4 linear + 4 squares + 6 pairwise interactions (option B). Option A bias column bhool jaata hai. Option C squares chhod deta hai (1 + 4 + 6). Option D interactions chhod deta hai (1 + 4 + 4).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w4-q11",
+          "question": "Ek feature, bias nahi: x = [1, 2, 3, 4], y = [2, 3, 5, 6]. Ridge objective Σ(yᵢ − wxᵢ)² + αw², α = 10. Optimal w kya hai?",
+          "options": [
+            "1.57",
+            "4.70",
+            "1.34",
+            "1.18"
+          ],
+          "answer": 3,
+          "explanation": "w = Σxy/(Σx² + α). Σxy = 2 + 6 + 15 + 24 = 47, Σx² = 1 + 4 + 9 + 16 = 30. w = 47/40 ≈ 1.18 (option D). Option A penalty ignore karta hai (47/30, plain least squares). Option B Σxy ko sirf α se divide karta hai. Option C α/2 = 5 jodta hai (47/35), jaise penalty αw²/2 ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w4-q12",
+          "question": "Ek test point par model A ka bias = 3 aur variance = 1 hai; model B ka bias = 1 aur variance = 4 hai. Irreducible noise σ² = 2. Kaunsa model behtar hai aur uska expected squared error kya hai?",
+          "options": [
+            "Model A, expected error 6",
+            "Model B, expected error 5",
+            "Model A, expected error 12",
+            "Model B, expected error 7"
+          ],
+          "answer": 3,
+          "explanation": "Expected error = bias² + variance + σ². A: 9 + 1 + 2 = 12. B: 1 + 4 + 2 = 7. B behtar, 7 (option D). Option A bias ko square nahi karta (A: 3 + 1 + 2 = 6 jo B ke 7 se kam dikhta hai), yahi sabse bada trap hai. Option B noise bhool jaata hai (B: 5). Option C A ki sahi value hai par A behtar nahi.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w4-q13",
+          "question": "Ek feature, bias nahi: x = [1, 2, 3], y = [1, 2, 2]. L1 objective Σ(yᵢ − wxᵢ)² + λ|w|. λ = 8 aur λ = 30 par optimal w kya hai (isi order mein)?",
+          "options": [
+            "0.50 aur −0.29",
+            "0.50 aur 0",
+            "0.21 aur 0",
+            "0.79 aur 0.79"
+          ],
+          "answer": 1,
+          "explanation": "Σxy = 1 + 4 + 6 = 11, Σx² = 14. w > 0 maan kar derivative: −2(11 − 14w) + λ = 0 ⇒ w = (11 − λ/2)/14. λ = 8: (11 − 4)/14 = 0.50. λ = 30: formula (11 − 15)/14 negative deta hai, jo w > 0 assumption todta hai; w < 0 par bhi koi solution nahi banta, to optimum exactly w = 0 hai (option B). Yahi L1 ka exact-zero effect hai. Option A formula ko bina check kiye negative tak le jaata hai. Option C λ/2 ki jagah λ ghata deta hai. Option D penalty ko ignore karta hai (11/14).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w4-q14",
+          "question": "Ek feature, bias nahi, Ridge objective Σ(y − wx)² + αw², α = 7, y = [2, 4, 6]. Pehle x metre mein [1, 2, 3] hai; phir wahi data cm mein [100, 200, 300] likha, α wahi 7. 2 metre (200 cm) wale input ki prediction dono cases mein kya hogi (metre, cm)?",
+          "options": [
+            "2.67 aur 2.67",
+            "4.00 aur 4.00",
+            "2.67 aur lagbhag 4.00",
+            "Lagbhag 4.00 aur 2.67"
+          ],
+          "answer": 2,
+          "explanation": "w = Σxy/(Σx² + α). Metre: 28/(14 + 7) ≈ 1.333, prediction 1.333 × 2 ≈ 2.67. Cm: Σxy = 2800, Σx² = 140000, w = 2800/140007 ≈ 0.0200, prediction ≈ 4.00 (option C). Sirf unit badalne se penalty ka asar lagbhag gaayab ho gaya, kyunki bade-unit feature ka weight chhota hota hai aur use kam saza milti hai. Isiliye regularisation se pehle scaling zaroori hai. Option B maanta hai ki penalty ka koi asar nahi, option A maanta hai ki unit se farak nahi padta, aur option D dono ulat deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w4-q15",
+          "question": "Ek dataset mein feature x₁ ka plain least-squares weight 4 hai. Ab x₁ ki exact copy x₂ bhi features mein jod di. Chhote α wala Ridge aur Lasso lagbhag kya weights (w₁, w₂) denge?",
+          "options": [
+            "Ridge ≈ (4, 0); Lasso weight baantega, ≈ (2, 2)",
+            "Dono ≈ (4, 4), kyunki dono features utne hi useful hain",
+            "Ridge ≈ (2, 2); Lasso ek ko chunega, jaise ≈ (4, 0)",
+            "Dono ≈ (2, 2), kyunki dono penalties symmetric hain"
+          ],
+          "answer": 2,
+          "explanation": "Fit sirf w₁ + w₂ ≈ 4 par depend karta hai. Ridge penalty w₁² + w₂² is sum ke liye tab sabse kam hai jab weight barabar bante: ≈ (2, 2). Lasso penalty |w₁| + |w₂| har non-negative split ke liye same (4) hai, to wo ek ko rakh kar doosre ko zero kar deta hai, jaise ≈ (4, 0) (option C). Option A dono ko ulat deta hai. Option B ka sum 8 hai, jo predictions ko double kar dega. Option D L1 aur L2 ka farak bhool jaata hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -596,6 +1066,123 @@
           ],
           "answer": 2,
           "explanation": "Odds = 0.2/0.8 = 0.25. Log-odds 2 × 0.7 = 1.4 badhta hai, to odds e^1.4 ≈ 4.055 guna: 0.25 × 4.055 ≈ 1.014. p = 1.014/(1 + 1.014) ≈ 0.50 (option C). Option A probability ko hi e^1.4 se multiply karta hai (0.2 × 4.055); multiplier odds par lagta hai, probability par nahi. Option B sirf ek unit (e^0.7) ka asar leta hai, aur option D derivative wala linear approximation hai jo itne bade change par kaam nahi karta.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w5-q7",
+          "question": "Binary classification mein fit kiye `LogisticRegression` par `predict_proba(X_test)` chalaya, jahan `X_test` mein 200 rows hain. Output ki shape kya hogi?",
+          "options": [
+            "(200,)",
+            "(2, 200)",
+            "(200, 1)",
+            "(200, 2)"
+          ],
+          "answer": 3,
+          "explanation": "`predict_proba` har row ke liye har class ki probability deta hai, columns `classes_` ke order mein: binary mein [P(class 0), P(class 1)], to shape (200, 2) (option D). Option A `predict` ke labels ki shape hai. Option B rows aur columns ulat deta hai. Option C sirf ek class ki probability maanta hai; wo `[:, 1]` lene ke baad bhi (200,) hogi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w5-q8",
+          "question": "Logistic model mein feature 'referrals' ka coefficient 0.693 (≈ ln 2) hai. Baaki sab same rakh kar referrals 1 badhane par kya hota hai?",
+          "options": [
+            "Probability 0.693 badh jaati hai",
+            "Probability 2 guna ho jaati hai",
+            "Log-odds 2 guna ho jaate hain",
+            "Odds lagbhag 2 guna ho jaate hain"
+          ],
+          "answer": 3,
+          "explanation": "Coefficient log-odds mein additive badlav hai: log-odds 0.693 badhte hain, to odds e^0.693 ≈ 2 guna ho jaate hain (option D). Probability par asar current p par depend karta hai, na +0.693 (option A) na ×2 (option B). Log-odds mein 0.693 jodna hai, unhe double karna nahi (option C).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w5-q9",
+          "question": "Chaar predictions mein se kiska log-loss sabse zyada hai?",
+          "options": [
+            "True y = 1, predicted p = 0.40",
+            "True y = 0, predicted p = 0.10",
+            "True y = 1, predicted p = 0.01",
+            "True y = 1, predicted p = 0.90"
+          ],
+          "answer": 2,
+          "explanation": "y = 1 ke liye loss −ln p, y = 0 ke liye −ln(1 − p). Values: −ln 0.01 ≈ 4.61, −ln 0.40 ≈ 0.92, y = 0 aur p = 0.10 ke liye −ln 0.90 ≈ 0.11, aur y = 1, p = 0.90 ke liye bhi ≈ 0.11. Galat class par confident prediction (option C) ko sabse badi saza milti hai. Option A galat hai par confident nahi, aur options B, D sahi aur confident hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w5-q10",
+          "question": "Training data mein 800 negative aur 200 positive samples hain. `class_weight='balanced'` negative aur positive class ko kya weights dega (isi order mein)?",
+          "options": [
+            "0.8 aur 0.2",
+            "1.25 aur 5.0",
+            "0.25 aur 4.0",
+            "0.625 aur 2.5"
+          ],
+          "answer": 3,
+          "explanation": "Weight = n_samples/(n_classes × n_c). Negative: 1000/(2 × 800) = 0.625. Positive: 1000/(2 × 200) = 2.5 (option D). Option A sirf class fractions hain, jo majority ko hi zyada weight denge. Option B n_classes se divide karna bhool jaata hai. Option C classes ka aapas ka ratio (200/800, 800/200) leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w5-q11",
+          "question": "6 test rows ke liye `predict_proba(X)[:, 1]` = [0.2, 0.45, 0.35, 0.8, 0.31, 0.6] hai. Default `predict` aur custom rule `proba >= 0.3` kitne rows ko positive bolenge (isi order mein)?",
+          "options": [
+            "5 aur 2",
+            "2 aur 1",
+            "2 aur 5",
+            "4 aur 5"
+          ],
+          "answer": 2,
+          "explanation": "Default 0.5 threshold: sirf 0.8 aur 0.6, yaani 2. Threshold 0.3: 0.45, 0.35, 0.8, 0.31, 0.6, yaani 5 (sirf 0.2 neeche hai) (option C). Option A order ulat deta hai. Option B maanta hai ki threshold ghatane se positives kam hote hain, jabki ulta hota hai. Option D default threshold ko 0.3 ke paas samajh kar 0.45 aur 0.35 ko bhi positive gin leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w5-q12",
+          "question": "Logistic model: z = −6 + 2x₁ + 3x₂. Points P = (1, 1), Q = (0, 3), R = (2, 0.5), S = (4, −0.5). Default threshold par kaunse points class 1 milenge?",
+          "options": [
+            "Sirf Q",
+            "Sirf Q aur S",
+            "P, Q aur S",
+            "Q, R aur S"
+          ],
+          "answer": 1,
+          "explanation": "p ≥ 0.5 ⇔ z ≥ 0. P: −6 + 2 + 3 = −1 (class 0). Q: −6 + 0 + 9 = 3 (class 1). R: −6 + 4 + 1.5 = −0.5 (class 0). S: −6 + 8 − 1.5 = 0.5 (class 1). Answer Q aur S (option B). Option A S ko miss karta hai, shayad negative x₂ dekh kar. Option C P ko class 1 deta hai (z = −1 ko positive maan liya). Option D R ko bhi class 1 deta hai, jabki uska z = −0.5 hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w5-q13",
+          "question": "True labels y = [1, 1, 0, 0]. Model A ki probabilities P(y = 1) = [0.9, 0.6, 0.4, 0.1] aur model B ki [0.99, 0.99, 0.01, 0.6]. Average log-loss (natural log) dono ka kya hai, aur log-loss par kaunsa behtar hai?",
+          "options": [
+            "A ≈ 0.237, B ≈ 0.308; A behtar",
+            "A ≈ 0.308, B ≈ 0.237; B behtar",
+            "A ≈ 0.134, B ≈ 0.103; B behtar",
+            "A ≈ 0.308, B ≈ 0.916; A behtar"
+          ],
+          "answer": 1,
+          "explanation": "A: (0.105 + 0.511 + 0.511 + 0.105)/4 ≈ 0.308. B: teen confident sahi predictions ka loss ≈ 0.010 each, aur aakhri (y = 0, p = 0.6) ka −ln 0.4 ≈ 0.916; average (0.030 + 0.916)/4 ≈ 0.237. To B behtar (option B), jabki 0.5 threshold par A ki accuracy 1.00 aur B ki 0.75 hai: log-loss confidence ko bhi ginta hai. Option C log base 10 use karta hai. Option D B ka sirf galat prediction wala loss leta hai, average nahi. Option A values ulat deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w5-q14",
+          "question": "Pipeline `PolynomialFeatures(degree=2, include_bias=False)` → `LogisticRegression` ek feature x par. Seekha gaya score z = −4 + 0·x + 1·x². Inputs x = −3, −1, 0, 2.5 mein se kaunse class 1 milenge?",
+          "options": [
+            "Sirf x = 2.5",
+            "x = −1 aur x = 0",
+            "x = −3 aur x = 2.5",
+            "Koi nahi, boundary linear hai"
+          ],
+          "answer": 2,
+          "explanation": "z = x² − 4 ≥ 0 ⇔ |x| ≥ 2. x = −3: z = 5 (class 1). x = −1: −3, x = 0: −4 (class 0). x = 2.5: 2.25 (class 1). Answer x = −3 aur 2.5 (option C). Boundary expanded features (x, x²) mein linear hai par x mein do points (x = ±2) par hai. Option A maanta hai ki sirf bade x positive hain, x² ka symmetric asar bhool kar. Option D polynomial features ka matlab hi bhool jaata hai. Option B boundary ulat deta hai (|x| < 2 ko positive maan leta hai).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w5-q15",
+          "question": "Pipeline `StandardScaler` → `LogisticRegression`. Feature 'tenure_months' ki training std (ddof = 0) 4 hai, aur scaled feature ka coefficient 0.5 hai. Baaki sab same rakh kar raw tenure 8 months badhe to odds kitne guna honge?",
+          "options": [
+            "54.60",
+            "1.65",
+            "7.39",
+            "2.72"
+          ],
+          "answer": 3,
+          "explanation": "Raw 8 months = 8/4 = 2 scaled units. Log-odds badlav = 0.5 × 2 = 1, odds × e¹ ≈ 2.72 (option D). Option A coefficient ko raw unit par laga deta hai: e^(0.5 × 8) = e⁴. Option C coefficient bhool kar sirf 2 scaled units ka e² leta hai. Option B sirf ek scaled unit (e^0.5) ka asar hai.",
           "difficulty": "hard"
         }
       ]
@@ -716,6 +1303,125 @@
           ],
           "answer": 0,
           "explanation": "AUC = un (positive, negative) pairs ka fraction jahan positive ka score zyada hai. 3 × 2 = 6 pairs: 0.8 > 0.7 ✓, 0.8 > 0.2 ✓, 0.6 > 0.7 ✗, 0.6 > 0.2 ✓, 0.3 > 0.7 ✗, 0.3 > 0.2 ✓ → 4/6 ≈ 0.667 (option A). Option B threshold 0.5 par accuracy (3/5) hai. Option D sirf threshold 0.5 ke ek point (FPR 0.5, TPR 0.667) se trapezoid banane par aata hai, yaani hard labels se AUC nikaalne wali galti.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w6-q7",
+          "question": "Ek classifier ke liye TP = 40, FN = 20, FP = 10, TN = 90. Specificity kya hai?",
+          "options": [
+            "0.10",
+            "0.80",
+            "0.67",
+            "0.90"
+          ],
+          "answer": 3,
+          "explanation": "Specificity = TN/(TN + FP) = 90/100 = 0.90 (option D). Option A FPR hai (1 − specificity). Option B precision hai, 40/50. Option C recall hai, 40/60.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w6-q8",
+          "question": "Ek fictional clinic ka screening model ek gambhir beemari pakadta hai. Asli patient ko miss karna bahut mehnga hai, jabki false alarm par sirf ek extra test hota hai. Kaunsa metric sabse zyada dhyaan maangta hai?",
+          "options": [
+            "Precision",
+            "Accuracy",
+            "Recall",
+            "Specificity"
+          ],
+          "answer": 2,
+          "explanation": "Miss = FN, aur recall = TP/(TP + FN) seedha batata hai ki asli positives mein se kitne pakde gaye (option C). Precision false alarms ki keemat dekhta hai, jo yahan sasti hai (option A). Rare beemari mein accuracy 'sab healthy' bol kar bhi high aa sakti hai (option B). Specificity negatives par focus karti hai (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w6-q9",
+          "question": "Fit kiye binary classifier `clf` ke liye `roc_auc_score(y_test, ...)` ke doosre argument mein kya dena sahi hai?",
+          "options": [
+            "`clf.predict_proba(X_test)[:, 1]`",
+            "`clf.predict(X_test)`",
+            "`clf.predict_proba(X_test)[:, 0]`",
+            "`clf.score(X_test, y_test)`"
+          ],
+          "answer": 0,
+          "explanation": "AUC ranking quality hai, isliye positive class ke scores chahiye: `predict_proba(X_test)[:, 1]` (option A). Hard labels (option B) sirf ek threshold ka point dete hain. Column 0 class 0 ki probability hai; usse ranking ulat jaati hai aur AUC 1 − sahi AUC aata hai (option C). `score` ek single accuracy number hai, scores ki list nahi (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w6-q10",
+          "question": "Labels 0 aur 1 ke saath `confusion_matrix(y_true, y_pred)` ne [[70, 30], [10, 90]] diya. Positive class ke liye precision aur recall kya hain?",
+          "options": [
+            "P = 0.90, R = 0.75",
+            "P = 0.75, R = 0.90",
+            "P = 0.70, R = 0.90",
+            "P = 0.75, R = 0.70"
+          ],
+          "answer": 1,
+          "explanation": "Layout [[TN, FP], [FN, TP]]: TN = 70, FP = 30, FN = 10, TP = 90. P = 90/(90 + 30) = 0.75, R = 90/(90 + 10) = 0.90 (option B). Option A matrix ko transpose padhta hai (FP aur FN ulat). Option C mein precision ki jagah specificity-jaisa 70/100 aa gaya. Option D mein recall ki jagah 70/100 lagaya.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w6-q11",
+          "question": "8 samples ke true labels aur scores neeche hain. Rule p ≥ t ⇒ positive. Threshold 0.5 aur 0.25 par F1 kya hai (isi order mein)?",
+          "code": "y_true = [1,    0,    1,   1,    0,   0,   1,   0]\nproba  = [0.95, 0.85, 0.7, 0.45, 0.4, 0.3, 0.2, 0.1]",
+          "options": [
+            "0.571 aur 0.600",
+            "0.600 aur 0.571",
+            "0.667 aur 0.500",
+            "0.500 aur 0.750"
+          ],
+          "answer": 0,
+          "explanation": "t = 0.5: positives 0.95 (1), 0.85 (0), 0.7 (1); TP = 2, FP = 1, FN = 2, F1 = 2·2/(4 + 1 + 2) = 4/7 ≈ 0.571. t = 0.25: aur 0.45 (1), 0.4 (0), 0.3 (0) jud gaye; TP = 3, FP = 3, FN = 1, F1 = 6/(6 + 3 + 1) = 0.600 (option A). Option B order ulat deta hai. Option C dono thresholds ki precision hai, aur option D dono ki recall.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w6-q12",
+          "question": "Teen positive samples ke scores [0.9, 0.5, 0.4] aur teen negative samples ke scores [0.5, 0.3, 0.1] hain. ROC-AUC kitna hai (tie ko aadha count karo, jaise `roc_auc_score` karta hai)?",
+          "options": [
+            "0.778",
+            "0.833",
+            "0.889",
+            "0.750"
+          ],
+          "answer": 1,
+          "explanation": "AUC = (positive > negative wale pairs + 0.5 × ties)/(3 × 3). 0.9 teeno negatives se upar: 3. 0.5: 0.5 ke saath tie (0.5), 0.3 aur 0.1 se upar: 2.5. 0.4: 0.3 aur 0.1 se upar: 2. Total 7.5/9 ≈ 0.833 (option B). Option A tie ko 0 ginta hai (7/9), option C tie ko poora 1 ginta hai (8/9). Option D pairs ki ginti galat karta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w6-q13",
+          "question": "Ek fraud model ka recall (TPR) 0.90 aur FPR 0.05 hai. 10000 transactions mein sirf 2% fraud hain. Is population par precision lagbhag kya hoga?",
+          "options": [
+            "0.27",
+            "0.90",
+            "0.95",
+            "0.73"
+          ],
+          "answer": 0,
+          "explanation": "Positives = 200, negatives = 9800. TP = 0.90 × 200 = 180, FP = 0.05 × 9800 = 490. Precision = 180/(180 + 490) ≈ 0.27 (option A). Kam FPR bhi bade negative group par bahut saare false alarms deta hai. Option B recall ko precision maan leta hai. Option C accuracy hai, (180 + 9310)/10000 ≈ 0.95. Option D 1 − precision hai, yaani alerts mein false alarms ka fraction.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w6-q14",
+          "question": "6 samples neeche hain. Rule p ≥ t ⇒ positive. Threshold 0.6 aur 0.35 ke ROC points (FPR, TPR) kya hain (isi order mein)?",
+          "code": "y_true = [1,   1,    0,   1,   0,   0]\nproba  = [0.8, 0.65, 0.6, 0.4, 0.3, 0.2]",
+          "options": [
+            "(0.67, 0.33) aur (1.00, 0.33)",
+            "(0.33, 0.67) aur (0.67, 1.00)",
+            "(0.00, 0.67) aur (0.33, 1.00)",
+            "(0.33, 0.67) aur (0.33, 1.00)"
+          ],
+          "answer": 3,
+          "explanation": "3 positive, 3 negative. t = 0.6: positive predictions 0.8 (1), 0.65 (1), 0.6 (0, kyunki ≥); TPR = 2/3, FPR = 1/3. t = 0.35: 0.4 (1) aur jud gaya; TPR = 3/3 = 1, FPR = 1/3 (option D). Option A axes ulat deta hai (TPR, FPR). Option B t = 0.35 par 0.3 ko bhi positive gin leta hai. Option C t = 0.6 par ≥ ki jagah > lagata hai aur 0.6 wala negative chhod deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w6-q15",
+          "question": "Test set mein 200 asli positives hain. Ek model ka precision 0.8 aur recall 0.5 hai. TP, FP aur F1 kya hain?",
+          "options": [
+            "TP 100, FP 25, F1 ≈ 0.615",
+            "TP 100, FP 20, F1 ≈ 0.650",
+            "TP 160, FP 40, F1 ≈ 0.615",
+            "TP 100, FP 25, F1 ≈ 0.650"
+          ],
+          "answer": 0,
+          "explanation": "Recall: TP = 0.5 × 200 = 100. Precision: TP/(TP + FP) = 0.8 ⇒ predicted positives = 125, FP = 25. F1 = 2 × 0.8 × 0.5/1.3 ≈ 0.615 (check: 200/(200 + 25 + 100)) (option A). Options B aur D F1 ko arithmetic mean (0.65) maan lete hain; harmonic mean chhote value ki taraf jhukta hai. Option B FP ko 0.2 × TP bhi le leta hai. Option C precision ko 200 positives par laga deta hai (TP = 0.8 × 200).",
           "difficulty": "hard"
         }
       ]
@@ -839,6 +1545,126 @@
           "answer": 2,
           "explanation": "Kul label-entries 3 × 4 = 12. Galat entries: row 1 mein 3rd label, row 3 mein 2nd label = 2. Hamming loss = 2/12 ≈ 0.167. Subset accuracy mein poori row exactly match honi chahiye: sirf row 2, to 1/3 ≈ 0.333 (option C). Option B subset accuracy ki jagah 1 − Hamming loss (per-label accuracy 10/12) likh deta hai; option A dono ko ulat deta hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w7-q7",
+          "question": "4 classes wale problem par One-vs-Rest strategy kitne binary classifiers train karegi?",
+          "options": [
+            "6",
+            "4",
+            "12",
+            "16"
+          ],
+          "answer": 1,
+          "explanation": "OvR har class ke liye ek classifier banata hai (wo class vs baaki sab): K = 4 (option B). Option A One-vs-One ka count hai, K(K − 1)/2 = 6. Option C ordered pairs K(K − 1) ginta hai, aur option D K² hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w7-q8",
+          "question": "Softmax model ke 3 class scores z = [2, 1, 0.5] hain. Agar har score mein 5 jod diya jaaye (z = [7, 6, 5.5]), to class probabilities ka kya hoga?",
+          "options": [
+            "Bilkul nahi badlengi",
+            "Sab probabilities 5 guna ho jaayengi",
+            "Sabse bade score wali class ki probability 1 ho jaayegi",
+            "Probabilities ka sum 1 se zyada ho jaayega"
+          ],
+          "answer": 0,
+          "explanation": "p_k = e^(z_k)/Σ e^(zⱼ). Har score mein constant c jodne se numerator aur denominator dono e^c se guna hote hain, jo cancel ho jaata hai, to probabilities same rehti hain (option A). Softmax ka output hamesha sum 1 hota hai (option D galat), aur scores ke beech ka farak wahi hai, to koi class 1 tak nahi pahunchti (option C). Option B ka koi aadhar nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w7-q9",
+          "question": "`MultiLabelBinarizer` ko label lists [['comedy', 'action'], ['drama'], ['comedy']] par fit karke transform kiya (classes sorted: action, comedy, drama). Pehli row ka output kya hoga?",
+          "options": [
+            "[0, 1, 1]",
+            "[1, 0, 1]",
+            "[1, 1, 0]",
+            "[2, 0, 0]"
+          ],
+          "answer": 2,
+          "explanation": "Pehli row ke labels comedy aur action hain; columns action, comedy, drama mein unke 1 aate hain: [1, 1, 0] (option C). List mein label ka order matter nahi karta, sirf column ka order karta hai. Options A aur B galat columns mein 1 daalte hain. Option D labels ki ginti ek column mein daal deta hai, jo multilabel 0/1 matrix nahi hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w7-q10",
+          "question": "3-class confusion matrix (rows true, columns predicted, order A, B, C) neeche hai. Macro recall aur weighted recall kya hain (isi order mein)?",
+          "code": "cm = [[8, 2,  0],    # true A\n      [1, 3,  1],    # true B\n      [0, 1, 34]]    # true C",
+          "options": [
+            "0.900 aur 0.790",
+            "0.790 aur 0.790",
+            "0.787 aur 0.900",
+            "0.790 aur 0.900"
+          ],
+          "answer": 3,
+          "explanation": "Recall = diagonal/row sum: A 8/10 = 0.8, B 3/5 = 0.6, C 34/35 ≈ 0.971. Macro = (0.8 + 0.6 + 0.971)/3 ≈ 0.790. Weighted (support 10, 5, 35) = (8 + 3 + 34)/50 = 0.900, jo accuracy ke barabar hai, kyunki weighted recall hamesha accuracy hi hota hai (option D). Option A order ulat deta hai. Option B weighting bhool jaata hai. Option C macro mein row sums ki jagah column sums (9, 6, 35) le leta hai, yaani macro precision (≈ 0.787) nikaal deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w7-q11",
+          "question": "Softmax model ne 3 classes ke liye scores z = [2, 0, −1] diye. True class 1 (beech wali) hai. Is sample ka cross-entropy loss (natural log) lagbhag kya hai?",
+          "options": [
+            "2.17",
+            "0.17",
+            "0.11",
+            "0.94"
+          ],
+          "answer": 0,
+          "explanation": "e² ≈ 7.389, e⁰ = 1, e⁻¹ ≈ 0.368, sum ≈ 8.757. p(class 1) = 1/8.757 ≈ 0.114, loss = −ln 0.114 ≈ 2.17 (option A). Option B class 0 ka loss hai (−ln(7.389/8.757)), jaise predicted class ko true maan liya. Option C probability khud hai, loss nahi. Option D natural log ki jagah log base 10 leta hai (−log₁₀ 0.114).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w7-q12",
+          "question": "3-class confusion matrix (rows true, columns predicted, order A, B, C) neeche hai. `f1_score(y_true, y_pred, average='macro')` lagbhag kya dega?",
+          "code": "cm = [[9, 1,  0],    # true A\n      [4, 4,  2],    # true B\n      [1, 3, 16]]    # true C",
+          "options": [
+            "0.725",
+            "0.720",
+            "0.679",
+            "0.688"
+          ],
+          "answer": 2,
+          "explanation": "Column sums 14, 8, 18; row sums 10, 10, 20. A: P = 9/14 ≈ 0.643, R = 0.9, F1 = 0.75. B: P = 0.5, R = 0.4, F1 ≈ 0.444. C: P = 16/18 ≈ 0.889, R = 0.8, F1 ≈ 0.842. Macro F1 = (0.75 + 0.444 + 0.842)/3 ≈ 0.679 (option C). Option A accuracy (29/40) yaani micro F1 hai. Option B support se weighted F1 hai. Option D pehle macro P (0.677) aur macro R (0.700) nikaal kar unka F1 leta hai, jo scikit-learn ka macro F1 nahi hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w7-q13",
+          "question": "4 classes A, B, C, D par One-vs-One classifiers ke results: A vs B → A, A vs C → C, A vs D → A, B vs C → C, B vs D → D, C vs D → C. Final prediction kya hogi, aur kitne classifiers ne vote diya?",
+          "options": [
+            "A, 2 votes ke saath; kul 6 classifiers",
+            "C, 3 votes ke saath; kul 6 classifiers",
+            "C, 3 votes ke saath; kul 4 classifiers",
+            "A aur C ka tie; kul 6 classifiers"
+          ],
+          "answer": 1,
+          "explanation": "OvO mein K(K − 1)/2 = 6 classifiers. Votes: A = 2 (A vs B, A vs D), B = 0, C = 3 (A vs C, B vs C, C vs D), D = 1. Sabse zyada votes C ko (option B). Option A sirf pehle results dekh kar A chun leta hai. Option C classifiers ki ginti OvR ki tarah 4 maanta hai. Option D votes galat ginta hai; C ke 3 votes A ke 2 se zyada hain.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w7-q14",
+          "question": "Ek multilabel problem mein 4 samples aur 3 labels hain. Micro-averaged precision aur micro-averaged recall kya hain (isi order mein)?",
+          "code": "Y_true = [[1, 1, 0],\n          [0, 1, 1],\n          [1, 0, 0],\n          [0, 0, 1]]\nY_pred = [[1, 0, 0],\n          [0, 1, 1],\n          [1, 1, 0],\n          [1, 0, 1]]",
+          "options": [
+            "0.833 aur 0.714",
+            "0.714 aur 0.833",
+            "0.750 aur 0.750",
+            "0.250 aur 0.250"
+          ],
+          "answer": 1,
+          "explanation": "Saari entries jod kar: TP = 1 + 2 + 1 + 1 = 5. FP (predicted 1, true 0): row 3 ka label 2 aur row 4 ka label 1, yaani 2. FN (true 1, predicted 0): row 1 ka label 2, yaani 1. Micro P = 5/7 ≈ 0.714, micro R = 5/6 ≈ 0.833 (option B). Option A dono ulat deta hai. Option C 1 − Hamming loss (1 − 3/12) hai. Option D subset accuracy (sirf row 2 exact match, 1/4) aur Hamming loss ka mix hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w7-q15",
+          "question": "1000 training rows, 4 classes, har class ke 250 rows. OvR mein har binary classifier kitni rows par train hota hai aur usme positive fraction kya hai? OvO mein har classifier kitni rows par?",
+          "options": [
+            "OvR: 250 rows, 100% positive; OvO: 500 rows",
+            "OvR: 1000 rows, 50% positive; OvO: 1000 rows",
+            "OvR: 1000 rows, 25% positive; OvO: 250 rows",
+            "OvR: 1000 rows, 25% positive; OvO: 500 rows"
+          ],
+          "answer": 3,
+          "explanation": "OvR: har model poora data dekhta hai (1000 rows), ek class positive (250) aur baaki 750 negative, to 25% positive; isi wajah se OvR mein imbalance aata hai. OvO: har model sirf do classes ka data leta hai, 250 + 250 = 500 rows (option D). Option A OvR mein sirf positive class ki rows le leta hai, jisse binary problem hi nahi banta. Option B OvR ko balanced maanta hai aur OvO ko poora data deta hai. Option C OvO mein sirf ek class ki rows ginta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -958,6 +1784,123 @@
           "answer": 3,
           "explanation": "f = x₁ + x₂ − 2. y·f: P = 1·(3 − 2) = 1, Q = 1·(6 − 2) = 4, R = −1·(0 − 2) = 2, S = −1·(1 − 2) = 1. Hard margin mein support vectors wahi hain jo exactly margin par hain (y·f = 1): P aur S (option D). Option C ye maan leta hai ki class −1 ke saare points support vectors hain, par R (y·f = 2) margin ke bahar hai. Option B Q ko bhi gin leta hai, jo boundary se sabse door hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w8-q7",
+          "question": "Linear SVM mein ek point ka label y = +1 aur score f(x) = 0.5 hai. Iska hinge loss max(0, 1 − y·f) kitna hai?",
+          "options": [
+            "0",
+            "1.5",
+            "1.0",
+            "0.5"
+          ],
+          "answer": 3,
+          "explanation": "1 − (+1)(0.5) = 0.5, max(0, 0.5) = 0.5 (option D). Point sahi side par hai par margin ke andar, isliye loss zero nahi (option A ka trap: 'sahi classify hua to loss 0'). Option B sign ulta leta hai (1 + 0.5). Option C tab hota jab point boundary par ho (f = 0).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w8-q8",
+          "question": "Aapke paas 20 lakh rows ka dataset hai aur linear decision boundary kaafi hai. SVM-style model ke liye sabse practical choice kya hai?",
+          "options": [
+            "`LinearSVC` ya `SGDClassifier(loss='hinge')`",
+            "`SVC(kernel='rbf')` bade C aur gamma ke saath",
+            "`SVC(kernel='poly', degree=5)` default C ke saath",
+            "`SVC(kernel='rbf')` bina kisi scaling ke"
+          ],
+          "answer": 0,
+          "explanation": "Kernel `SVC` ka training time samples ke saath kam se kam quadratic badhta hai, to lakhon rows par ye bahut slow hai. Linear boundary ke liye `LinearSVC` ya hinge loss wala `SGDClassifier` tez hain (option A). Options B aur C abhi bhi kernel SVC hain (aur bina zaroorat complex). Option D slow bhi hai aur scaling ke bina kharab bhi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w8-q9",
+          "question": "`SVR(epsilon=0.5)` ke liye ek training point ka actual y = 10 aur prediction f(x) = 10.3 hai. Is point ka epsilon-insensitive loss kitna hai?",
+          "options": [
+            "0",
+            "0.3",
+            "0.2",
+            "0.8"
+          ],
+          "answer": 0,
+          "explanation": "Loss = max(0, |y − f| − ε) = max(0, 0.3 − 0.5) = 0 (option A). Error tube (±0.5) ke andar hai, isliye ignore hota hai. Option B plain absolute error hai. Option C |0.3 − 0.5| leta hai, max(0, ...) bhool kar. Option D ε ko ghatane ki jagah jod deta hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w8-q10",
+          "question": "Ek linear SVM ne w = (2, −1), b = 1 seekha. Margin ki chaudai kya hai, aur point (1, 4) ki predicted class kya hai?",
+          "options": [
+            "0.447, class −1",
+            "0.894, class +1",
+            "2.236, class −1",
+            "0.894, class −1"
+          ],
+          "answer": 3,
+          "explanation": "‖w‖ = √(4 + 1) = √5 ≈ 2.236, margin width = 2/‖w‖ ≈ 0.894. f(1, 4) = 2 − 4 + 1 = −1 < 0, class −1 (aur ye point exactly margin line par hai) (option D). Option A 1/‖w‖ hai, yaani boundary se ek margin line tak ki doori. Option B sign galat padhta hai. Option C ‖w‖ ko hi margin maan leta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w8-q11",
+          "question": "Polynomial kernel K(x, x′) = (γ x·x′ + r)^d, jahan γ = 0.5, r = 1, d = 2. Points x = (1, 2) aur x′ = (2, 3) ke liye K kya hai?",
+          "options": [
+            "25",
+            "81",
+            "5",
+            "33"
+          ],
+          "answer": 0,
+          "explanation": "x·x′ = 1 × 2 + 2 × 3 = 8. K = (0.5 × 8 + 1)² = 5² = 25 (option A). Option B γ ko ignore karta hai: (8 + 1)². Option C square karna bhool jaata hai. Option D power ko sirf dot product par lagata hai: 0.5 × 8² + 1.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w8-q12",
+          "question": "Soft-margin linear SVM ne w = (1, −1), b = 0 seekha. Training points: A = (3, 0) class +1, B = (1, 0.5) class +1, C = (0, 2) class −1, D = (1, 0) class −1, E = (0, 1) class −1. Kitne support vectors hain (yᵢ·f(xᵢ) ≤ 1), aur kul hinge loss kya hai?",
+          "options": [
+            "2 support vectors, kul hinge 2.5",
+            "3 support vectors, kul hinge 2.5",
+            "3 support vectors, kul hinge 1.5",
+            "5 support vectors, kul hinge 2.5"
+          ],
+          "answer": 1,
+          "explanation": "f = x₁ − x₂. y·f: A = 3, B = 0.5, C = 2, D = −1 × 1 = −1 (galat side), E = −1 × (−1) = 1 (exactly margin par). Support vectors (y·f ≤ 1): B, D, E = 3. Hinge: B 0.5, D 2, baaki 0; total 2.5 (option B). Option A margin par baithe E ko bhool jaata hai; uska hinge 0 hai par wo support vector hai. Option C D ka hinge 1 maanta hai, jabki galat side par loss 1 − (−1) = 2 hai. Option D saare points ko support vector maan leta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w8-q13",
+          "question": "Do points ki Euclidean doori 2 hai. RBF kernel K = exp(−γ‖x − x′‖²) ki value γ = 0.1 aur γ = 1 par kya hai (isi order mein)?",
+          "options": [
+            "0.018 aur 0.670",
+            "0.819 aur 0.135",
+            "0.670 aur 0.018",
+            "0.670 aur 0.135"
+          ],
+          "answer": 2,
+          "explanation": "‖x − x′‖² = 4. γ = 0.1: exp(−0.4) ≈ 0.670. γ = 1: exp(−4) ≈ 0.018 (option C). Bade γ par same doori ke points lagbhag 'unrelated' ho jaate hain, yaani har point ka asar local: isi se wiggly boundary aur overfitting aati hai. Option B doori ko square karna bhool jaata hai (exp(−0.2), exp(−2)). Option D sirf γ = 1 mein square bhoolta hai. Option A order ulat deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w8-q14",
+          "question": "Do customers: salary 5 lakh aur 6 lakh (farak 1 lakh), age 30 aur 50. `StandardScaler` ke baad salary ki std 2 lakh aur age ki std 10 hai. Scaled features par in dono points ki squared distance kya hai, aur usme age ka hissa kitna hai?",
+          "options": [
+            "4.25, age ka hissa ≈ 94%",
+            "4.25, age ka hissa ≈ 6%",
+            "2.50, age ka hissa ≈ 80%",
+            "4.50, age ka hissa ≈ 89%"
+          ],
+          "answer": 0,
+          "explanation": "Scaled farak: salary 1/2 = 0.5, age 20/10 = 2. Squared distance = 0.25 + 4 = 4.25, age ka hissa 4/4.25 ≈ 94% (option A). Bina scaling ke salary ka farak rupaye mein 1,00,000 hai aur age ka 20, to distance mein age ka hissa lagbhag 0% hota; scaling ne age ko wapas meaningful bana diya. Option B hisse ulat deta hai. Option C squares ki jagah seedhe farak jodta hai (0.5 + 2). Option D salary ka farak square karna bhool jaata hai (0.5 + 4 = 4.5, age ka hissa 4/4.5).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w8-q15",
+          "question": "`SVR(epsilon=1)` ke chaar training points par actual y = [10, 12, 15, 20] aur predictions f = [10.5, 14, 15, 17.5] hain. Kul epsilon-insensitive loss kya hai, aur kitne points tube ke bahar hain?",
+          "options": [
+            "5.0, 3 points tube ke bahar",
+            "2.5, 3 points tube ke bahar",
+            "1.5, 1 point tube ke bahar",
+            "2.5, 2 points tube ke bahar"
+          ],
+          "answer": 3,
+          "explanation": "|y − f| = 0.5, 2, 0, 2.5. Loss max(0, |e| − 1) = 0, 1, 0, 1.5; total 2.5. Tube ke bahar (|e| > 1) sirf doosra aur chautha point, yaani 2 (option D); yahi support vectors banenge. Option A plain absolute errors jodta hai aur har non-zero error ko bahar ginta hai. Option B loss sahi par 0.5 error wale point ko bhi bahar gin leta hai. Option C sirf sabse bada violation dekhta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -1076,6 +2019,123 @@
           ],
           "answer": 1,
           "explanation": "Gini: root 0.5, [45, 15] = 0.375, [5, 35] ≈ 0.219, [40, 0] = 0, [5, 15] = 0.375. f1 ka weighted decrease = 1.0 × 0.5 − 0.6 × 0.375 − 0.4 × 0.219 = 0.1875. f2 ka = 0.6 × 0.375 − 0.4 × 0 − 0.2 × 0.375 = 0.15. Normalise: 0.1875/(0.1875 + 0.15) ≈ 0.556 (option B). Option D node ke decrease ko N_t/N se weight karna bhool jaata hai (f2 ka 0.25 lene se 0.429), option A f2 ki importance hai, aur option C har split ko barabar maan leta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w9-q7",
+          "question": "`max_depth=4` wale binary decision tree mein zyada se zyada kitni leaves ho sakti hain?",
+          "options": [
+            "8",
+            "16",
+            "15",
+            "32"
+          ],
+          "answer": 1,
+          "explanation": "Depth d ke binary tree mein max leaves 2^d = 2⁴ = 16 (option B). Option A depth 3 ka count hai. Option C internal nodes ki max sankhya (2⁴ − 1) hai, leaves ki nahi. Option D depth 5 ka count hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w9-q8",
+          "question": "Features hain income (rupaye mein, lakhon tak) aur age (saal mein). `DecisionTreeClassifier` se pehle `StandardScaler` lagana zaroori hai kya?",
+          "options": [
+            "Nahi, har split ek hi feature ka threshold hai",
+            "Haan, warna income har split par haavi ho jaayegi",
+            "Haan, warna Gini impurity negative aa sakti hai",
+            "Nahi, kyunki tree sirf categorical features leta hai"
+          ],
+          "answer": 0,
+          "explanation": "Tree har split mein ek hi feature par 'x ≤ threshold' poochta hai; scaling sirf values ko monotonic tareeke se badalti hai, to wahi splits milte hain (option A). Income haavi hone wali baat distance-based models (kNN, SVM) ki hai, trees ki nahi (option B). Gini kabhi negative nahi hota (option C). Trees numeric features bilkul lete hain (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w9-q9",
+          "question": "`DecisionTreeRegressor` ke training targets 10 se 50 ke beech hain. Ek naye input ka feature training range se bahut bahar hai. Uski prediction kaisi hogi?",
+          "options": [
+            "Trend ke hisaab se 50 se bahut zyada",
+            "Hamesha 0, kyunki koi leaf match nahi karti",
+            "Error aayega, kyunki input range ke bahar hai",
+            "Kisi leaf ka mean, yaani 10–50 ke andar hi"
+          ],
+          "answer": 3,
+          "explanation": "Har input kisi na kisi leaf tak pahunchta hai (sabse bahar wala threshold bhi ek side chun leta hai), aur leaf apne training samples ka mean deti hai, to prediction training target range ke andar rehti hai (option D). Trees extrapolate nahi karte (option A galat). Koi 'no match' case nahi hota (option B), aur error bhi nahi aata (option C).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w9-q10",
+          "question": "Parent node [4 yes, 4 no] ko ek split left [4 yes, 1 no] aur right [0 yes, 3 no] mein todta hai. Entropy (log base 2) ke saath information gain lagbhag kya hai?",
+          "options": [
+            "0.639",
+            "0.451",
+            "0.549",
+            "0.300"
+          ],
+          "answer": 2,
+          "explanation": "Parent entropy = 1. Left [4, 1]: −0.8 log₂ 0.8 − 0.2 log₂ 0.2 ≈ 0.722. Right [0, 3]: pure, 0. Weighted = (5/8) × 0.722 ≈ 0.451. Gain = 1 − 0.451 ≈ 0.549 (option C). Option A children ka simple average (0.361) leta hai, weights bhool kar. Option B weighted child entropy hai, gain nahi. Option D Gini se nikla decrease hai (parent 0.5 − weighted (5/8) × 0.32 = 0.2), entropy wala gain nahi.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w9-q11",
+          "question": "Ek node mein teen classes ke counts [2, 3, 5] hain. Is node ki Gini impurity kya hai?",
+          "options": [
+            "0.38",
+            "0.62",
+            "0.67",
+            "0.50"
+          ],
+          "answer": 1,
+          "explanation": "p = 0.2, 0.3, 0.5. Gini = 1 − (0.04 + 0.09 + 0.25) = 1 − 0.38 = 0.62 (option B). Option A sirf Σp² hai (1 − karna bhool gaye). Option C 3 classes ka maximum Gini (1 − 1/3) hai, jo sirf barabar split par aata hai. Option D 2-class maximum hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w9-q12",
+          "question": "Regression data: x = [1, 2, 3, 4, 5, 6], y = [5, 6, 5, 20, 21, 22]. Depth-1 `DecisionTreeRegressor` (squared error) kaunsa threshold chunega, aur x = 3.2 ki prediction kya hogi?",
+          "options": [
+            "x ≤ 3.5; prediction 13.17",
+            "x ≤ 2.5; prediction 5.50",
+            "x ≤ 3.5; prediction 5.33",
+            "x ≤ 4.5; prediction 9.00"
+          ],
+          "answer": 2,
+          "explanation": "Candidate thresholds midpoints par hain. x ≤ 3.5 par left [5, 6, 5] aur right [20, 21, 22]: weighted MSE ≈ 0.44, jo baaki sab (2.5 par ≈ 32.4, 4.5 par ≈ 27.1) se bahut kam hai. x = 3.2 left leaf mein jaata hai, prediction = (5 + 6 + 5)/3 ≈ 5.33 (option C). Option A poore data ka mean deta hai, jaise split hua hi na ho. Option B x ≤ 2.5 ka left mean hai, par wahan bhi 3.2 right mein jaata. Option D x ≤ 4.5 ka left mean hai, jo galat split hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w9-q13",
+          "question": "Cost-complexity pruning mein score R_α(T) = R(T) + α × (leaves ki sankhya) hota hai, jahan R(T) training error hai. Tree A: 8 leaves, R = 0.10. Tree B (A ka pruned version): 3 leaves, R = 0.16. α ki kis value se upar B ka score A se behtar (kam) ho jaata hai?",
+          "options": [
+            "0.060",
+            "0.020",
+            "0.012",
+            "0.0075"
+          ],
+          "answer": 2,
+          "explanation": "Barabar score: 0.10 + 8α = 0.16 + 3α ⇒ 5α = 0.06 ⇒ α = 0.012. Isse upar B ka score kam (option C). Check: α = 0.01 par A 0.18, B 0.19 (A behtar); α = 0.02 par A 0.26, B 0.22 (B behtar). Option A sirf error ka farak hai, leaves ke farak (5) se divide nahi kiya. Option B ek aisi value hai jahan B pehle se behtar hai, threshold nahi. Option D 8 leaves se divide karta hai, farak 5 se nahi.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w9-q14",
+          "question": "Parent node [4, 6] (10 samples). Split A: left [2, 0], right [2, 6]. Split B: left [3, 1], right [1, 5]. Tree `min_samples_leaf=3` ke saath hai. Gini criterion kaunsa split chunega, aur uska weighted child Gini kya hai?",
+          "options": [
+            "Split B, 0.317",
+            "Split A, 0.300",
+            "Split B, 0.326",
+            "Split A, 0.188"
+          ],
+          "answer": 0,
+          "explanation": "A: left pure (0), right [2, 6] Gini 0.375; weighted 0.8 × 0.375 = 0.300. B: left [3, 1] Gini 0.375, right [1, 5] Gini ≈ 0.278; weighted 0.4 × 0.375 + 0.6 × 0.278 ≈ 0.317. A ka Gini kam hai, par uska left child sirf 2 samples ka hai, jo `min_samples_leaf=3` ko todta hai, to A allowed hi nahi. Tree B chunega, 0.317 (option A). Option B constraint bhool jaata hai. Options C aur D children ka simple average lete hain (0.326 aur 0.188).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w9-q15",
+          "question": "Regression tree ka ek node targets [2, 4, 6, 8, 20] rakhta hai aur split use [2, 4, 6, 8] aur [20] mein todta hai. Parent MSE, weighted child MSE aur impurity decrease kya hain (isi order mein)?",
+          "options": [
+            "40, 4, 36",
+            "40, 2.5, 37.5",
+            "200, 20, 180",
+            "40, 5, 35"
+          ],
+          "answer": 0,
+          "explanation": "Parent mean 8, squared deviations 36 + 16 + 4 + 0 + 144 = 200, MSE = 40. Left mean 5, MSE = (9 + 1 + 1 + 9)/4 = 5; right [20] ka MSE 0. Weighted = (4/5) × 5 + (1/5) × 0 = 4, decrease = 36 (option A). Option B children ka simple average (2.5) leta hai. Option C MSE ki jagah squared errors ke sums leta hai. Option D left ka MSE seedha le leta hai, weight 4/5 lagaye bina.",
           "difficulty": "hard"
         }
       ]
@@ -1197,6 +2257,123 @@
           "answer": 0,
           "explanation": "Var = ρσ² + (1 − ρ)σ²/B = 0.25 × 4 + 0.75 × 4/100 = 1 + 0.03 = 1.03 (option A). Option B models ko independent maan leta hai (σ²/B = 0.04); correlation ki wajah se variance 1 se neeche nahi ja sakta, chahe kitne bhi models jodo. Option D formula mein ρ aur 1 − ρ ko ulat deta hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w10-q7",
+          "question": "Deep decision trees par bagging mukhya roop se error ke kis hisse ko ghatata hai?",
+          "options": [
+            "Bias",
+            "Irreducible noise",
+            "Variance",
+            "Training time"
+          ],
+          "answer": 2,
+          "explanation": "Bagging kai bootstrap models ka average leta hai; averaging high-variance models (deep trees) ka variance ghatata hai (option C). Bias ghatana mainly boosting ka kaam hai (option A). Irreducible noise kisi model se nahi ghatta (option B). Bagging B models train karta hai, to time badhta hai, ghatta nahi (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w10-q8",
+          "question": "500 rows ke training set se size 500 ka ek bootstrap sample banaya. Lagbhag kitni rows is sample ke liye out-of-bag (OOB) hongi?",
+          "options": [
+            "316",
+            "250",
+            "184",
+            "0"
+          ],
+          "answer": 2,
+          "explanation": "Ek row ke ek bhi baar na chune jaane ki probability (1 − 1/500)^500 ≈ e⁻¹ ≈ 0.368. 500 × 0.368 ≈ 184 rows OOB (option C). Option A in-bag unique rows (≈ 63.2%) hain. Option B 50% maan leta hai. Option D bhool jaata hai ki sampling with replacement hai, to kuch rows repeat hoti hain aur kuch chhoot jaati hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w10-q9",
+          "question": "Random forest mein `n_estimators` ko 200 se 2000 kar diya, baaki sab same. Sabse sambhavit asar kya hai?",
+          "options": [
+            "Model bahut overfit ho jaayega, jaise boosting mein",
+            "Score lagbhag same, par training time kaafi badhega",
+            "Har tree chhota aur kam gehra ho jaayega",
+            "Model sequential ban kar gradient boosting ban jaayega"
+          ],
+          "answer": 1,
+          "explanation": "Random forest mein zyada trees se overfitting nahi badhti; averaging ka fayda dheere-dheere saturate hota hai aur time trees ke saath badhta hai (option B). Option A boosting ka risk hai, forest ka nahi. Tree ka size `max_depth` jaise parameters tay karte hain, sankhya nahi (option C). Trees ab bhi independent hain, sequential nahi (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w10-q10",
+          "question": "`RandomizedSearchCV(model, param_distributions, n_iter=20, cv=5)` (default `refit=True`) `fit` hone par kul kitni baar model fit karega?",
+          "options": [
+            "101",
+            "100",
+            "21",
+            "25"
+          ],
+          "answer": 0,
+          "explanation": "20 sampled combinations × 5 folds = 100 fits, plus best combination ka poore training data par ek refit = 101 (option A). Option B refit bhool jaata hai. Option C folds ko ignore karta hai. Option D combinations aur folds ko guna karne ki jagah jodta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w10-q11",
+          "question": "Gradient boosting regressor (squared error), targets y = [4, 8]. F₀ = training mean. Har round ka tree residuals ko exactly fit karta hai, learning rate 0.5. Do rounds ke baad sample 1 ki prediction kya hogi?",
+          "options": [
+            "5.0",
+            "4.0",
+            "4.5",
+            "3.0"
+          ],
+          "answer": 2,
+          "explanation": "F₀ = 6. Round 1: residual −2, F₁ = 6 + 0.5 × (−2) = 5. Round 2: naya residual 4 − 5 = −1, F₂ = 5 + 0.5 × (−1) = 4.5 (option C). Option A sirf ek round hai. Option B learning rate ignore karta hai (pehle round mein hi exact fit). Option D doosre round mein purana residual (−2) dobara use karta hai, naya residual nikaale bina.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w10-q12",
+          "question": "Ek ensemble ke har model ki prediction ka variance 9 hai aur kisi bhi do models ke beech correlation 0.2 hai. Kam se kam kitne models chahiye taaki average ka variance 2.4 ya kam ho, aur models ki sankhya infinite karne par variance kahan tak girega?",
+          "options": [
+            "4 models; limit 0",
+            "12 models; limit 0",
+            "15 models; limit 1.8",
+            "12 models; limit 1.8"
+          ],
+          "answer": 3,
+          "explanation": "Variance = ρσ² + (1 − ρ)σ²/B = 1.8 + 7.2/B. 1.8 + 7.2/B ≤ 2.4 ⇒ B ≥ 12. B → ∞ par variance → ρσ² = 1.8 (option D). Option B limit ko 0 maanta hai, jo sirf uncorrelated models (ρ = 0) mein hota. Option A correlation hi ignore karta hai: 9/B ≤ 2.4 ⇒ B ≥ 4. Option C zaroorat se zyada models bolta hai; 12 par hi 2.4 aa jaata hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w10-q13",
+          "question": "Teen models ek sample ke liye classes (A, B, C) par ye probabilities dete hain: M1 = [0.90, 0.05, 0.05], M2 = [0.30, 0.40, 0.30], M3 = [0.35, 0.45, 0.20]. Hard voting aur soft voting kya predict karenge?",
+          "options": [
+            "Hard: A, soft: B",
+            "Hard: B, soft: B",
+            "Hard: B, soft: A",
+            "Hard: A, soft: A"
+          ],
+          "answer": 2,
+          "explanation": "Hard: har model ki top class: M1 → A, M2 → B, M3 → B; majority B. Soft: average probabilities: A = (0.90 + 0.30 + 0.35)/3 ≈ 0.517, B = (0.05 + 0.40 + 0.45)/3 = 0.30, C ≈ 0.183; to A (option C). Soft voting M1 ke bahut confident vote ko zyada wazan deta hai, jabki M2, M3 ki jeet kamzor hai. Option A dono ulat deta hai. Options B aur D maante hain ki dono tareeke hamesha same answer dete hain.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w10-q14",
+          "question": "Bahut bade training set par 10 trees ka bagging (har tree ka apna bootstrap sample) kiya. Kisi row ko ek bhi OOB prediction na milne ki probability kya hai, aur average kitne trees mein ek row OOB hoti hai?",
+          "options": [
+            "≈ 0.368; ≈ 3.7 trees",
+            "≈ 0.010; ≈ 6.3 trees",
+            "≈ 0.000; ≈ 5.0 trees",
+            "≈ 0.010; ≈ 3.7 trees"
+          ],
+          "answer": 3,
+          "explanation": "Har tree mein row ke OOB hone ki probability ≈ 0.368, in-bag ≈ 0.632. Koi OOB prediction nahi = saare 10 trees mein in-bag: 0.632^10 ≈ 0.010. Average OOB trees = 10 × 0.368 ≈ 3.7 (option D). Isi liye bahut kam trees par `oob_score` kuch rows ke liye warning de sakta hai. Option A ek tree ki OOB probability ko 10 trees par laga deta hai. Option B average in-bag trees (6.3) deta hai. Option C 50% maan kar chalta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w10-q15",
+          "question": "Gradient boosting (squared error), targets y = [10, 14, 30, 34], F₀ = mean, learning rate 0.2. Har round ka tree samples {1, 2} ko ek leaf aur {3, 4} ko doosri leaf mein rakhta hai; leaf value = us leaf ke residuals ka mean. Do rounds ke baad sample 1 aur sample 4 ki predictions kya hongi?",
+          "options": [
+            "18.4 aur 25.6",
+            "20.0 aur 24.0",
+            "18.0 aur 26.0",
+            "12.0 aur 32.0"
+          ],
+          "answer": 0,
+          "explanation": "F₀ = 22. Round 1 residuals −12, −8, 8, 12; leaf values −10, +10; F₁ = 22 ∓ 0.2 × 10 = [20, 20, 24, 24]. Round 2 residuals −10, −6, 6, 10; leaf values −8, +8; F₂ = [20 − 1.6, ..., 24 + 1.6] = [18.4, 18.4, 25.6, 25.6] (option A). Option B sirf ek round hai. Option D learning rate ignore karta hai (ek round mein hi leaf mean tak). Option C doosre round mein purane residuals (leaf value ±10) dobara use karta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -1316,6 +2493,123 @@
           "answer": 0,
           "explanation": "Layer 1: 20 × 64 + 64 = 1344. Layer 2: 64 × 32 + 32 = 2080. Output: 32 × 1 + 1 = 33. Kul 1344 + 2080 + 33 = 3457 (option A). Option B do output units (softmax jaisa) maan leta hai (32 × 2 + 2 = 66); option C saare biases chhod deta hai; option D output layer hi bhool jaata hai (1344 + 2080).",
           "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w11-q7",
+          "question": "`MLPClassifier(hidden_layer_sizes=(50, 20, 10))` mein kitni hidden layers hain?",
+          "options": [
+            "1",
+            "3",
+            "80",
+            "5"
+          ],
+          "answer": 1,
+          "explanation": "Tuple ka har element ek hidden layer hai, aur value us layer ke neurons: 3 hidden layers, 50, 20 aur 10 neurons (option B). Option C neurons ka total hai, layers nahi. Option A tuple ko ek layer samajhta hai. Option D input aur output layers bhi gin leta hai, jo hidden nahi hain.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w11-q8",
+          "question": "Ek MLP mein 4 hidden layers hain par sab ka `activation='identity'` hai. Ye network kis tarah ke patterns seekh sakta hai?",
+          "options": [
+            "Koi bhi curved pattern, kyunki 4 layers hain",
+            "Sirf linear patterns, jitni bhi layers hon",
+            "Sirf gol (circular) decision boundaries",
+            "Kuch bhi nahi, identity par training nahi hoti"
+          ],
+          "answer": 1,
+          "explanation": "Identity activation ke saath har layer W·x + b hai, aur linear functions ka composition bhi linear hota hai, to poora network ek linear model hai (option B). Depth akele non-linearity nahi deti (option A ka trap). Option C ka koi aadhar nahi. Training ho jaati hai, bas model linear rehta hai (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w11-q9",
+          "question": "`MLPClassifier` training accuracy 99% aur validation accuracy 80% de raha hai. Inme se kaunsa badlav overfitting ghatane ki sabse sahi disha hai?",
+          "options": [
+            "`max_iter` badhao",
+            "`hidden_layer_sizes` ko (512, 512) karo",
+            "`alpha` badhao",
+            "`alpha` ko 0 kar do"
+          ],
+          "answer": 2,
+          "explanation": "`alpha` L2 penalty ki strength hai; bada alpha chhote weights aur simpler model deta hai (option C). Zyada epochs (option A) training data ko aur ratwa sakte hain. Bada network (option B) parameters badhata hai, overfitting ka khatra badhta hai. Alpha 0 regularisation hata deta hai (option D).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w11-q10",
+          "question": "5 input features par `MLPRegressor(hidden_layer_sizes=(8,))` banaya (ek numeric output). Kul kitne trainable parameters (weights + biases) hain?",
+          "options": [
+            "48",
+            "57",
+            "40",
+            "66"
+          ],
+          "answer": 1,
+          "explanation": "Hidden layer: 5 × 8 + 8 = 48. Output layer: 8 × 1 + 1 = 9. Total 57 (option B). Option A sirf hidden layer ginta hai (ya saare weights bina biases ke: 40 + 8 = 48). Option C sirf pehli layer ke weights hain. Option D output par 2 units maan leta hai (8 × 2 + 2 = 18), jaise classification ho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w11-q11",
+          "question": "Regression network: input x = (1, −1). Ek hidden unit, activation 'logistic': h = σ(2x₁ + 1·x₂). Output (identity): ŷ = 4h − 1. ŷ lagbhag kya hai?",
+          "options": [
+            "3.00",
+            "1.92",
+            "0.73",
+            "2.92"
+          ],
+          "answer": 1,
+          "explanation": "Pre-activation = 2 × 1 + (−1) = 1. h = σ(1) ≈ 0.731. ŷ = 4 × 0.731 − 1 ≈ 1.92 (option B). Option A activation ko ReLU maan leta hai (h = 1). Option C hidden output h hi hai, final ŷ nahi. Option D bias −1 bhool jaata hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w11-q12",
+          "question": "3-class `MLPClassifier`: input x = (2, 1). Hidden ReLU units: h₁ = ReLU(x₁ − x₂), h₂ = ReLU(x₂ − x₁), h₃ = ReLU(x₁ + x₂ − 2). Output scores: z₀ = h₁ + h₃, z₁ = 2h₂, z₂ = h₁ − h₃ + 1, phir softmax. Predicted class aur uski probability kya hai?",
+          "options": [
+            "Class 0, p ≈ 0.667",
+            "Class 2, p ≈ 0.245",
+            "Class 0, p ≈ 0.665",
+            "Class 0, p ≈ 0.881"
+          ],
+          "answer": 2,
+          "explanation": "h₁ = ReLU(1) = 1, h₂ = ReLU(−1) = 0, h₃ = ReLU(1) = 1. z = [2, 0, 1]. Softmax: e² ≈ 7.389, e⁰ = 1, e¹ ≈ 2.718, sum ≈ 11.107; p₀ ≈ 0.665, to class 0 (option C). Option A scores ko seedha unke sum se divide karta hai (2/3), exponent ke bina. Option B class 2 ki probability hai, jo top class nahi. Option D σ(2) hai, jaise binary output ho.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w11-q13",
+          "question": "30 features aur 5 classes wale problem par `MLPClassifier(hidden_layer_sizes=(128, 64))` fit kiya (multiclass mein softmax output, har class ka ek unit). Kul trainable parameters kitne hain?",
+          "options": [
+            "12352",
+            "12289",
+            "12544",
+            "12549"
+          ],
+          "answer": 3,
+          "explanation": "30 → 128: 30 × 128 + 128 = 3968. 128 → 64: 128 × 64 + 64 = 8256. 64 → 5: 64 × 5 + 5 = 325. Total 12549 (option D). Option A biases bhool jaata hai (3840 + 8192 + 320). Option B output ko binary jaisa ek unit maanta hai (64 + 1 = 65). Option C sirf output layer ke 5 biases chhod deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w11-q14",
+          "question": "Early stopping ka rule: agar validation score lagaatar 3 epochs tak ab tak ke best score se behtar na ho, to training roko. Epoch-wise validation scores: [0.62, 0.70, 0.74, 0.73, 0.75, 0.74, 0.745, 0.72, 0.76]. Training kis epoch ke baad rukegi, aur tab tak ka best score kya hai?",
+          "options": [
+            "Epoch 9; best 0.76",
+            "Epoch 6; best 0.74",
+            "Epoch 8; best 0.75",
+            "Epoch 7; best 0.75"
+          ],
+          "answer": 2,
+          "explanation": "Best: e1 0.62, e2 0.70, e3 0.74. e4 (0.73) sudhaar nahi, count 1. e5 (0.75) naya best, count 0. e6 (0.74) count 1, e7 (0.745 < 0.75) count 2, e8 (0.72) count 3 → epoch 8 ke baad stop, best 0.75 (option C). Epoch 9 ka 0.76 kabhi dekha hi nahi jaata (option A ka trap). Option D counter ko epoch 5 par reset karna bhool jaata hai (e4, e6, e7). Option B maanta hai ki pehli girawat par hi ruk jaata hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w11-q15",
+          "question": "Chhota network: x = 2, h = ReLU(w₁x) jahan w₁ = 0.5, aur ŷ = w₂h jahan w₂ = 3. Target y = 1, loss L = (ŷ − y)². Backpropagation se ek gradient descent step (learning rate 0.01) ke baad w₁ aur w₂ kya honge?",
+          "options": [
+            "w₁ = 0.74, w₂ = 3.04",
+            "w₁ = 0.38, w₂ = 2.96",
+            "w₁ = 0.26, w₂ = 2.96",
+            "w₁ = 0.26, w₂ = 2.92"
+          ],
+          "answer": 2,
+          "explanation": "Forward: h = ReLU(1) = 1, ŷ = 3, error ŷ − y = 2. ∂L/∂w₂ = 2 × 2 × h = 4. ∂L/∂w₁ = 2 × 2 × w₂ × ReLU′ × x = 2 × 2 × 3 × 1 × 2 = 24 (ReLU active, slope 1). Update: w₁ = 0.5 − 0.24 = 0.26, w₂ = 3 − 0.04 = 2.96 (option C). Option A gradient ko jodta hai (uphill). Option B chain rule mein x = 2 bhool jaata hai. Option D w₂ ke gradient mein galti se x bhi guna kar deta hai.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -1433,6 +2727,123 @@
           ],
           "answer": 3,
           "explanation": "a = point 2 ki apne cluster ke baaki points se mean distance = (|2 − 1| + |2 − 4|)/2 = 1.5. b = cluster B ke points se mean distance = (5 + 6 + 8)/3 ≈ 6.333. s = (6.333 − 1.5)/6.333 ≈ 0.763 (option D). Option A a mein point ko khud se bhi gin leta hai ((0 + 1 + 2)/3 = 1); option B points ki jagah centroid se distance leta hai (a = |2 − 2.333|); option C 1 − s hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w12-q7",
+          "question": "Fit kiye `IsolationForest` ka `predict` ek anomaly (outlier) ke liye kya return karta hai?",
+          "options": [
+            "−1",
+            "0",
+            "1",
+            "NaN"
+          ],
+          "answer": 0,
+          "explanation": "`IsolationForest.predict` outlier ke liye −1 aur normal point ke liye 1 deta hai (option A). Option C normal points ka label hai. 0 (option B) aur NaN (option D) is API mein output hi nahi hote; 0/1 sochna binary classifiers ki aadat ka trap hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w12-q8",
+          "question": "Data mein income (rupaye, lakhon mein range) aur age (saal) hain. PCA lagane se pehle sabse sahi kadam kya hai?",
+          "options": [
+            "Kuch nahi, PCA khud scale kar leta hai",
+            "Income column hata do",
+            "Data ko sort kar do",
+            "`StandardScaler` se features scale karo"
+          ],
+          "answer": 3,
+          "explanation": "PCA data ko center karta hai par scale nahi; bade unit wale income ka variance haavi hoga aur PC1 lagbhag sirf income ban jaayega. Isliye pehle `StandardScaler` (option D). Option A isi galatfehmi ka trap hai. Income hatana information khona hai (option B), aur sorting ka PCA se koi lena-dena nahi (option C).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w12-q9",
+          "question": "Ek sensor ki readings ka mean 50 aur std 5 hai. Rule: |z| > 3 ho to anomaly. Inme se kaunsi reading anomaly hai?",
+          "options": [
+            "62",
+            "68",
+            "37",
+            "57"
+          ],
+          "answer": 1,
+          "explanation": "z = (x − 50)/5. 68: 3.6 (anomaly) (option B). 62: 2.4, 37: −2.6, 57: 1.4; teeno |z| ≤ 3, to normal. 37 ka trap ye hai ki wo mean se neeche hai, par |−2.6| abhi bhi 3 se kam hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "mlp-w12-q10",
+          "question": "1D points [1, 3, 8, 10, 12] do clusters mein hain: {1, 3} aur {8, 10, 12}. Centroids cluster means hain. Inertia kya hai?",
+          "options": [
+            "6",
+            "10",
+            "5",
+            "86.8"
+          ],
+          "answer": 1,
+          "explanation": "Centroids 2 aur 10. Squared distances: 1, 1 aur 4, 0, 4. Inertia = 10 (option B). Option A absolute distances jodta hai (1 + 1 + 2 + 0 + 2), square nahi karta. Option C sum ko clusters ki sankhya se divide karta hai; inertia sum hai, average nahi. Option D sab points ko ek hi cluster (centroid 6.8) maan kar k = 1 ka inertia hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w12-q11",
+          "question": "1D clustering: point 4 cluster {2, 4, 5} mein hai, aur doosra (aur nazdeeki) cluster {9, 11} hai. Point 4 ka silhouette value kya hai?",
+          "options": [
+            "0.833",
+            "0.250",
+            "4.500",
+            "0.750"
+          ],
+          "answer": 3,
+          "explanation": "a = apne cluster ke baaki points se mean distance = (|4 − 2| + |4 − 5|)/2 = 1.5. b = (5 + 7)/2 = 6. s = (6 − 1.5)/max(1.5, 6) = 4.5/6 = 0.750 (option D). Option A a mein point ko khud se (distance 0) bhi gin leta hai: a = 1, s = 5/6. Option B a/b hai. Option C b − a hai, max se divide kiye bina.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "mlp-w12-q12",
+          "question": "1D points [1, 2, 3, 9, 10, 20], k = 2, initial centroids 1 aur 2 (`n_init=1`). k-means ko converge hone tak chalao. Final centroids aur inertia kya hain?",
+          "options": [
+            "1 aur 8.8; inertia 206.8",
+            "2 aur 13; inertia 76",
+            "2 aur 13; inertia 16",
+            "2 aur 13; inertia 12.67"
+          ],
+          "answer": 1,
+          "explanation": "Iter 1: 1 → centroid 1; 2, 3, 9, 10, 20 → centroid 2. Update: 1 aur (2 + 3 + 9 + 10 + 20)/5 = 8.8. Iter 2: midpoint 4.9, to {1, 2, 3} aur {9, 10, 20}; centroids 2 aur 13. Iter 3: midpoint 7.5, assignments same, converge. Inertia = (1 + 0 + 1) + (16 + 9 + 49) = 76 (option B). Option A sirf pehli iteration ke baad ruk jaata hai. Option C squared ki jagah absolute distances jodta hai. Option D sum ki jagah average squared distance (76/6) leta hai; inertia sum hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w12-q13",
+          "question": "Do uncorrelated features: A ka variance 9 aur B ka variance 1. Bina scaling ke PCA aur `StandardScaler` ke baad PCA mein PC1 ka `explained_variance_ratio_` kya hoga (isi order mein)?",
+          "options": [
+            "0.50 aur 0.90",
+            "0.90 aur 0.90",
+            "0.75 aur 0.50",
+            "0.90 aur 0.50"
+          ],
+          "answer": 3,
+          "explanation": "Uncorrelated features mein principal components khud feature axes hain, aur variances 9 aur 1. Bina scaling: PC1 = A, ratio 9/10 = 0.90. Scaling ke baad dono ka variance 1, ratio 1/2 = 0.50 (option D). Yaani unscaled PCA ka 'structure' sirf units ka asar tha. Option A order ulat deta hai. Option B maanta hai ki scaling se farak nahi padta. Option C variance ki jagah std (3 aur 1) se ratio leta hai: 3/4.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w12-q14",
+          "question": "1D data par clusters A = {0, 2} aur B = {6, 7, 8} (distance = |x − y|). `silhouette_score` (saare points ke silhouette ka average) lagbhag kya hai?",
+          "options": [
+            "0.841",
+            "0.715",
+            "0.727",
+            "0.657"
+          ],
+          "answer": 2,
+          "explanation": "Point 0: a = 2, b = (6 + 7 + 8)/3 = 7, s = 5/7 ≈ 0.714. Point 2: a = 2, b = 5, s = 0.6. Point 6: a = 1.5, b = 5, s = 0.7. Point 7: a = 1, b = 6, s ≈ 0.833. Point 8: a = 1.5, b = 7, s ≈ 0.786. Average = 3.633/5 ≈ 0.727 (option C). Option A a mein point ko khud se bhi gin leta hai, jisse a chhota aur s bada aata hai. Option B pehle har cluster ka average aur phir un do ka average leta hai, jabki `silhouette_score` saare points ka seedha average hai. Option D sirf cluster A ke do points ka average hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "mlp-w12-q15",
+          "question": "1D points [1, 2, 4, 8, 9, 15] par agglomerative clustering ko 2 clusters tak chalaya. Single linkage aur complete linkage kaunse clusters denge?",
+          "options": [
+            "Single: {1, 2, 4}, {8, 9, 15}; complete: {1, 2, 4, 8, 9}, {15}",
+            "Single: {1, 2, 4, 8, 9}, {15}; complete: {1, 2, 4}, {8, 9, 15}",
+            "Dono: {1, 2, 4}, {8, 9, 15}",
+            "Dono: {1, 2, 4, 8, 9}, {15}"
+          ],
+          "answer": 1,
+          "explanation": "Dono mein pehle {1, 2} aur {8, 9} (distance 1), phir {1, 2} + {4}. Single (nazdeeki pair): {1, 2, 4}–{8, 9} = 4, {8, 9}–{15} = 6, to {1, 2, 4, 8, 9} aur {15}. Complete (sabse door pair): {1, 2, 4}–{8, 9} = 8, {8, 9}–{15} = 7, to {8, 9, 15} banta hai aur {1, 2, 4} alag (option B). Single linkage chain bana kar bade cluster jodta hai, complete compact clusters pasand karta hai. Option A dono ulat deta hai, aur options C, D maante hain ki linkage se farak nahi padta.",
           "difficulty": "hard"
         }
       ]
