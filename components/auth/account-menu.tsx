@@ -7,6 +7,7 @@ import { useProgress } from '@/lib/progress/store';
 import { useSyncStatus } from '@/lib/sync';
 import { usePlan } from '@/lib/plan';
 import { initials, useAuth } from './auth-provider';
+import { AppearanceSetting, ThemeToggle } from '@/components/theme-switch';
 
 const STATUS_TEXT = { idle: '', syncing: 'Saving…', synced: '✓ Synced', offline: 'Offline · will sync later' } as const;
 
@@ -38,6 +39,7 @@ export function AccountMenu() {
   if (!user) {
     return (
       <div className="account">
+        <ThemeToggle />
         <span className="muted hide-tablet">Progress is saved on this device only</span>
         <Link className="btn btn-primary" href={`/login?next=${encodeURIComponent(pathname)}`}>Log in<span className="hide-phone"> to save progress</span></Link>
       </div>
@@ -48,6 +50,7 @@ export function AccountMenu() {
 
   return (
     <div className="account" ref={ref}>
+      <ThemeToggle />
       {STATUS_TEXT[status] && <span className={`sync-chip hide-tablet ${status}`}>{STATUS_TEXT[status]}</span>}
       {plan.tier === 'trial' && <Link href="/pricing" className="plan-chip pro">Free trial · {plan.daysLeft}d left</Link>}
       {plan.tier === 'pro' && <span className="plan-chip pro">Pro</span>}
@@ -67,6 +70,7 @@ export function AccountMenu() {
           <Link role="menuitem" className="menu-item" href="/profile">My profile</Link>
           <Link role="menuitem" className="menu-item" href="/progress">My progress</Link>
           <Link role="menuitem" className="menu-item" href="/pricing">Plan and billing</Link>
+          <AppearanceSetting />
           <button role="menuitem" className="menu-item danger" onClick={() => signOut()}>Logout</button>
         </div>
       )}

@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Plus_Jakarta_Sans } from 'next/font/google';
+import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Shell } from '@/components/shell';
 import { AuthProvider } from '@/components/auth/auth-provider';
 import { RAW } from '@/lib/tokens';
 import { SITE_URL } from '@/lib/site';
+import { THEME_BOOT_SCRIPT } from '@/lib/theme-boot';
 import './tokens.css';
 import './globals.css';
 
@@ -28,8 +30,11 @@ export const viewport: Viewport = { themeColor: RAW['color-nav-bg'] };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${jakarta.variable}`}>
+    // data-theme is set by the boot script before React loads, hence suppressHydrationWarning.
+    <html lang="en" className={`${dmSans.variable} ${jakarta.variable}`} suppressHydrationWarning>
       <body>
+        {/* Sets data-theme before first paint, so dark-mode students don't see a white flash. */}
+        <Script id="theme-boot" strategy="beforeInteractive">{THEME_BOOT_SCRIPT}</Script>
         <AuthProvider>
           <Shell>{children}</Shell>
         </AuthProvider>

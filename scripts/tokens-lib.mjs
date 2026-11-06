@@ -35,6 +35,23 @@ function walk(node, path, inheritedType, visit) {
   }
 }
 
+/**
+ * A theme's overrides (tokens/theme/<name>.json): semantic colour tokens with a
+ * different value in that theme. Each must name an existing semantic colour and
+ * alias a primitive, like the semantic tier itself.
+ */
+export function loadTheme(tokens, name) {
+  const file = `theme/${name}.json`;
+  const overrides = [];
+  walk(JSON.parse(readFileSync(join(root, 'tokens', 'theme', `${name}.json`), 'utf8')), [], undefined, (path, node) => {
+    const base = tokens.get(path.join('.'));
+    if (!base) throw new Error(`${file}: ${path.join('.')} is not a token`);
+    if (base.tier !== 'semantic' || base.type !== 'color') throw new Error(`${file}: ${path.join('.')} must be a semantic colour token`);
+    overrides.push({ ...base, value: node.$value, file });
+  });
+  return overrides;
+}
+
 const ALIAS = /^\{([^}]+)\}$/;
 const isAlias = (v) => typeof v === 'string' && ALIAS.test(v);
 

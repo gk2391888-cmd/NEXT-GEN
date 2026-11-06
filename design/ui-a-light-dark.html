@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXT GEN design A light and dark</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#d9dfe9;color:#14213a;font:14px/1.5 'DM Sans',sans-serif;padding:32px 16px}
+h1,h2,h3{margin:0;line-height:1.2}
+p{margin:0}
+.label{max-width:1460px;margin:0 auto 6px;font:800 13px 'Plus Jakarta Sans';letter-spacing:1px;color:#3d4bc4}
+.sub{max-width:1460px;margin:0 auto 14px;color:#4a5872;font-size:13.5px}
+.pair{max-width:1460px;margin:0 auto 46px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.trio{max-width:1460px;margin:0 auto 46px;display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.frame{border-radius:16px;overflow:hidden;box-shadow:0 20px 50px rgba(15,25,50,.18)}
+.phone{width:340px;border-radius:34px;overflow:hidden;border:8px solid #111827;box-shadow:0 20px 50px rgba(15,25,50,.25)}
+
+/* ---------- theme tokens ---------- */
+.light{--canvas:#f7f8fc;--surface:#fff;--line:#e8ebf3;--line2:#f0f2f7;--ink:#14213a;--body:#3c4a63;--muted:#7b879c;--accent:#5364ef;--accent-soft:#eef0fe;--accent-ink:#3d4bc4;--teal:#20c8ba;--teal-ink:#06302c;--danger-soft:#fdecef;--danger:#a3203a;--ring-track:#e9ecf5;--hero:linear-gradient(120deg,#5364ef,#7a6cf6);--glow:none;--code:#f3f6fb}
+.dark{--canvas:#0b1222;--surface:#121a2e;--line:#1f2a44;--line2:#1a2440;--ink:#e8eeff;--body:#c3cde6;--muted:#8796b8;--accent:#8b7dff;--accent-soft:rgba(139,125,255,.16);--accent-ink:#c5bdff;--teal:#36d6c5;--teal-ink:#062b28;--danger-soft:rgba(255,120,145,.14);--danger:#ff8aa0;--ring-track:#22304d;--hero:linear-gradient(120deg,#3a2f9e,#2b4a94);--glow:0 0 24px rgba(54,214,197,.35);--code:#0e1628}
+
+.app{background:var(--canvas);color:var(--ink);display:flex;min-height:560px}
+.dark .app,.dark.app{background:var(--canvas);background-image:radial-gradient(800px 360px at 85% -10%,rgba(98,84,239,.22),transparent)}
+.side{width:216px;background:var(--surface);border-right:1px solid var(--line);padding:20px 12px;flex:none}
+.logo{display:flex;align-items:center;gap:10px;margin:0 8px 22px;font:800 16px 'Plus Jakarta Sans'}
+.logo i{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#60d6ee,#6254ef);color:#fff;font-style:normal;display:grid;place-items:center;box-shadow:var(--glow)}
+.nav{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:10px;color:var(--muted);font-weight:600;font-size:13px;margin:1px 0}
+.nav.on{background:var(--accent-soft);color:var(--accent-ink)}
+.main{flex:1;padding:20px 24px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px}
+.search{flex:1;max-width:320px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 13px;color:var(--muted);font-size:13px}
+.chip{font-size:11px;font-weight:800;border-radius:20px;padding:5px 10px;background:var(--accent-soft);color:var(--accent-ink);white-space:nowrap}
+.av{width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--canvas);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
+.theme{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:3px}
+.theme span{width:28px;height:26px;border-radius:16px;display:grid;place-items:center;font-size:13px;color:var(--muted)}
+.theme span.on{background:var(--accent-soft);color:var(--accent-ink)}
+h1.hello{font:800 23px 'Plus Jakarta Sans';letter-spacing:-.4px}
+.hello+p{color:var(--muted);margin-top:3px}
+.g2{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.cont{display:flex;gap:14px;align-items:center;background:var(--hero);color:#fff;border:0}
+.cont small{font-weight:700;letter-spacing:1px;font-size:10px;opacity:.8}
+.cont h3{font:800 17px 'Plus Jakarta Sans';margin:3px 0}
+.cont .bar{height:6px;background:rgba(255,255,255,.25);border-radius:4px;margin-top:9px}
+.cont .bar span{display:block;height:100%;width:60%;background:#fff;border-radius:4px}
+.btnw{margin-left:auto;background:#fff;color:#3d4bc4;font-weight:800;border-radius:10px;padding:9px 13px;white-space:nowrap;font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.stat strong{display:block;font:800 20px 'Plus Jakarta Sans'}
+.stat span{color:var(--muted);font-size:11.5px}
+.dark .stat strong.hl{color:#6ff0e1}
+h2{font:800 14px 'Plus Jakarta Sans';margin-bottom:8px}
+.li{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line2);font-size:13px}
+.li:first-of-type{border-top:0}
+.li i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-style:normal;flex:none;background:var(--accent-soft);color:var(--accent-ink)}
+.li i.red{background:var(--danger-soft);color:var(--danger)}
+.li small{color:var(--muted)}
+.ring{--p:0;--c:var(--accent);width:40px;height:40px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--ring-track) 0);display:grid;place-items:center;flex:none}
+.ring::after{content:attr(data-v);width:31px;height:31px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font:800 10px 'Plus Jakarta Sans';color:var(--ink)}
+
+/* notes page */
+.notes h1{font:800 22px 'Plus Jakarta Sans';margin:8px 0 6px}
+.notes p.sum{color:var(--body)}
+.pill{display:inline-block;font-size:10.5px;font-weight:800;border-radius:7px;padding:3px 8px;background:var(--accent-soft);color:var(--accent-ink)}
+.sec{border-top:1px solid var(--line);padding:14px 0 2px;margin-top:14px}
+.sec h3{font:800 14px 'Plus Jakarta Sans';margin-bottom:8px}
+.sec ul{margin:0;padding-left:18px;color:var(--body);font-size:13.5px}
+.sec li{margin:4px 0}
+.ex{background:var(--code);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--body)}
+.wk{display:flex;gap:9px;align-items:center;padding:7px 9px;border-radius:9px;font-size:12.5px;color:var(--body)}
+.wk.on{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+.dot{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;background:var(--ring-track);color:var(--muted)}
+.dot.done{background:rgba(32,200,186,.18);color:var(--teal)}
+.dot.cur{background:var(--accent);color:#fff}
+.btnp{display:inline-block;background:var(--teal);color:var(--teal-ink);font-weight:800;border-radius:10px;padding:9px 14px;font-size:13px;box-shadow:var(--glow)}
+
+/* phone */
+.m{background:var(--canvas);color:var(--ink);min-height:640px;position:relative;padding-bottom:66px}
+.dark.m{background-image:radial-gradient(400px 260px at 90% 0%,rgba(98,84,239,.3),transparent)}
+.m .mt{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 2px}
+.m .pad{padding:10px 16px}
+.m .s2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.m .tab{position:absolute;left:0;right:0;bottom:0;height:60px;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;font-size:10px;color:var(--muted);font-weight:700}
+.m .tab div{text-align:center}.m .tab i{display:block;font-style:normal;font-size:16px}
+.m .tab .on{color:var(--accent-ink)}
+
+/* menu */
+.menu{width:270px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(10,20,40,.25);padding:6px;color:var(--ink)}
+.menu .h{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.menu .it{padding:8px 10px;font-size:13.5px;border-radius:8px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--canvas);border-radius:10px;padding:4px;margin:4px 10px 8px}
+.seg span{text-align:center;padding:7px 0;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted)}
+.seg span.on{background:var(--surface);color:var(--accent-ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+@media(max-width:1100px){.pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="label">OVERVIEW · LIGHT (left) and DARK (right)</div>
+<div class="sub">Same layout in both themes. Dark mode uses deep navy (not pure black) with soft violet and teal glow, so it’s easy on the eyes at night. The ☀ / 🌙 switch sits in the topbar.</div>
+<div class="pair">
+  <div class="frame light"><div class="app">
+    <div class="side"><div class="logo"><i>N</i>NEXT GEN</div><div class="nav on">◈ Overview</div><div class="nav">★ Qualifier Prep</div><div class="nav">▣ Study Library</div><div class="nav">▤ Practice Quiz</div><div class="nav">↻ My Mistakes</div><div class="nav">◷ Mock Tests</div><div class="nav">⌘ Coding Lab</div><div class="nav">✦ AI Doubt Solver</div><div class="nav">▦ Exam Planner</div><div class="nav">∑ Grade Calculator</div><div class="nav">▥ My Progress</div></div>
+    <div class="main">
+      <div class="top"><div class="search">⌕ Search notes and questions…</div><div style="display:flex;gap:8px;align-items:center"><div class="theme"><span class="on">☀</span><span>🌙</span></div><span class="chip">Pro trial · 5d left</span><span class="av">GK</span></div></div>
+      <h1 class="hello">Good evening, Gaurav 👋</h1><p>You’re on a 6-day streak. Keep it going today.</p>
+      <div class="g2">
+        <div class="card cont"><div style="flex:1;min-width:0"><small>CONTINUE WHERE YOU LEFT OFF</small><h3>Statistics I · Week 3</h3><p style="opacity:.85;font-size:13px">Describing numerical data</p><div class="bar"><span></span></div></div><span class="btnw">Continue →</span></div>
+        <div class="card"><h2>Today</h2><div class="li"><i class="red">↻</i>Revise 4 mistakes</div><div class="li"><i>▦</i>Quiz 2 in 9 days · see plan</div></div>
+      </div>
+      <div class="stats"><div class="card stat"><strong>18/96</strong><span>Weeks completed</span></div><div class="card stat"><strong>342</strong><span>Questions attempted</span></div><div class="card stat"><strong class="hl">78%</strong><span>Overall accuracy</span></div><div class="card stat"><strong>6 days</strong><span>Practice streak</span></div></div>
+      <div class="g2">
+        <div class="card"><h2>Your subjects</h2><div class="li"><span class="ring" style="--p:42" data-v="42%"></span><div><b>Mathematics for Data Science I</b><br><small>BSMA1001 · 5 of 12 weeks</small></div></div><div class="li"><span class="ring" style="--p:25;--c:#20c8ba" data-v="25%"></span><div><b>Statistics for Data Science I</b><br><small>BSMA1002 · 3 of 12 weeks</small></div></div></div>
+        <div class="card"><h2>Topics to revisit</h2><div class="li">Statistics I · Week 3<span style="margin-left:auto;color:var(--danger);font-weight:700">48%</span></div><div class="li">Maths I · Week 4<span style="margin-left:auto;color:var(--danger);font-weight:700">55%</span></div></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="frame dark"><div class="app">
+    <div class="side"><div class="logo"><i>N</i>NEXT GEN</div><div class="nav on">◈ Overview</div><div class="nav">★ Qualifier Prep</div><div class="nav">▣ Study Library</div><div class="nav">▤ Practice Quiz</div><div class="nav">↻ My Mistakes</div><div class="nav">◷ Mock Tests</div><div class="nav">⌘ Coding Lab</div><div class="nav">✦ AI Doubt Solver</div><div class="nav">▦ Exam Planner</div><div class="nav">∑ Grade Calculator</div><div class="nav">▥ My Progress</div></div>
+    <div class="main">
+      <div class="top"><div class="search">⌕ Search notes and questions…</div><div style="display:flex;gap:8px;align-items:center"><div class="theme"><span>☀</span><span class="on">🌙</span></div><span class="chip">Pro trial · 5d left</span><span class="av">GK</span></div></div>
+      <h1 class="hello">Good evening, Gaurav 👋</h1><p>You’re on a 6-day streak. Keep it going today.</p>
+      <div class="g2">
+        <div class="card cont"><div style="flex:1;min-width:0"><small>CONTINUE WHERE YOU LEFT OFF</small><h3>Statistics I · Week 3</h3><p style="opacity:.85;font-size:13px">Describing numerical data</p><div class="bar"><span></span></div></div><span class="btnw">Continue →</span></div>
+        <div class="card"><h2>Today</h2><div class="li"><i class="red">↻</i>Revise 4 mistakes</div><div class="li"><i>▦</i>Quiz 2 in 9 days · see plan</div></div>
+      </div>
+      <div class="stats"><div class="card stat"><strong>18/96</strong><span>Weeks completed</span></div><div class="card stat"><strong>342</strong><span>Questions attempted</span></div><div class="card stat"><strong class="hl">78%</strong><span>Overall accuracy</span></div><div class="card stat"><strong>6 days</strong><span>Practice streak</span></div></div>
+      <div class="g2">
+        <div class="card"><h2>Your subjects</h2><div class="li"><span class="ring" style="--p:42" data-v="42%"></span><div><b>Mathematics for Data Science I</b><br><small>BSMA1001 · 5 of 12 weeks</small></div></div><div class="li"><span class="ring" style="--p:25;--c:#36d6c5" data-v="25%"></span><div><b>Statistics for Data Science I</b><br><small>BSMA1002 · 3 of 12 weeks</small></div></div></div>
+        <div class="card"><h2>Topics to revisit</h2><div class="li">Statistics I · Week 3<span style="margin-left:auto;color:var(--danger);font-weight:700">48%</span></div><div class="li">Maths I · Week 4<span style="margin-left:auto;color:var(--danger);font-weight:700">55%</span></div></div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<div class="label">NOTES PAGE · LIGHT and DARK</div>
+<div class="sub">Where students spend the most time. Text stays high-contrast in both themes; worked examples and code get their own soft panel.</div>
+<div class="pair">
+  <div class="frame light"><div class="app" style="min-height:470px">
+    <div class="side"><div class="logo"><i>N</i>NEXT GEN</div><b style="font-size:12.5px;padding:0 9px">Statistics I</b><div class="wk"><span class="dot done">✓</span>Week 1 · Types of data</div><div class="wk"><span class="dot done">✓</span>Week 2 · Categorical data</div><div class="wk on"><span class="dot cur">3</span>Week 3 · Numerical data</div><div class="wk"><span class="dot">4</span>Week 4 · Association</div><div class="wk"><span class="dot">5</span>Week 5 · Counting</div></div>
+    <div class="main notes"><span class="pill">WEEK 3 · 15 MIN READ</span><h1>Describing numerical data</h1><p class="sum">Numerical data ka center (mean, median, mode) aur spread (range, variance, IQR) nikalna seekho.</p>
+      <div class="sec"><h3>1 · Concept</h3><ul><li><b>Mean</b> = sum ÷ count. Outliers se zyada affect hota hai.</li><li><b>Median</b> = sorted data ka middle value.</li></ul></div>
+      <div class="sec"><h3>2 · Solved example</h3><div class="ex">Data: 2, 4, 4, 5, 10 → Mean 5 · Median 4 · Mode 4 · Range 8</div></div>
+      <div style="margin-top:16px"><span class="btnp">Practice week 3 →</span></div>
+    </div>
+  </div></div>
+  <div class="frame dark"><div class="app" style="min-height:470px">
+    <div class="side"><div class="logo"><i>N</i>NEXT GEN</div><b style="font-size:12.5px;padding:0 9px">Statistics I</b><div class="wk"><span class="dot done">✓</span>Week 1 · Types of data</div><div class="wk"><span class="dot done">✓</span>Week 2 · Categorical data</div><div class="wk on"><span class="dot cur">3</span>Week 3 · Numerical data</div><div class="wk"><span class="dot">4</span>Week 4 · Association</div><div class="wk"><span class="dot">5</span>Week 5 · Counting</div></div>
+    <div class="main notes"><span class="pill">WEEK 3 · 15 MIN READ</span><h1>Describing numerical data</h1><p class="sum">Numerical data ka center (mean, median, mode) aur spread (range, variance, IQR) nikalna seekho.</p>
+      <div class="sec"><h3>1 · Concept</h3><ul><li><b>Mean</b> = sum ÷ count. Outliers se zyada affect hota hai.</li><li><b>Median</b> = sorted data ka middle value.</li></ul></div>
+      <div class="sec"><h3>2 · Solved example</h3><div class="ex">Data: 2, 4, 4, 5, 10 → Mean 5 · Median 4 · Mode 4 · Range 8</div></div>
+      <div style="margin-top:16px"><span class="btnp">Practice week 3 →</span></div>
+    </div>
+  </div></div>
+</div>
+
+<div class="label">PHONE · LIGHT and DARK, plus the theme setting</div>
+<div class="sub">On phones a bottom tab bar replaces the slide-out menu. The account menu gets an Appearance setting: Light, Dark or System (follows the phone’s own dark mode). The choice is remembered.</div>
+<div class="trio">
+  <div class="phone"><div class="m light">
+    <div class="mt"><b style="font:800 15px 'Plus Jakarta Sans'">NEXT GEN</b><span class="av">GK</span></div>
+    <div class="pad"><h1 class="hello" style="font-size:19px">Good evening, Gaurav 👋</h1><p style="color:var(--muted);font-size:12.5px">6-day streak · Pro trial 5d left</p></div>
+    <div class="pad"><div class="card cont" style="display:block"><small>CONTINUE</small><h3>Statistics I · Week 3</h3><span class="btnw" style="display:inline-block;margin-top:8px">Continue →</span></div></div>
+    <div class="pad"><div class="s2"><div class="card stat"><strong>18/96</strong><span>Weeks done</span></div><div class="card stat"><strong class="hl">78%</strong><span>Accuracy</span></div><div class="card stat"><strong>342</strong><span>Questions</span></div><div class="card stat"><strong style="color:var(--danger)">4</strong><span>Mistakes due</span></div></div></div>
+    <div class="tab"><div class="on"><i>◈</i>Home</div><div><i>▣</i>Library</div><div><i>▤</i>Practice</div><div><i>✦</i>Ask AI</div><div><i>☰</i>More</div></div>
+  </div></div>
+  <div class="phone"><div class="m dark">
+    <div class="mt"><b style="font:800 15px 'Plus Jakarta Sans'">NEXT GEN</b><span class="av">GK</span></div>
+    <div class="pad"><h1 class="hello" style="font-size:19px">Good evening, Gaurav 👋</h1><p style="color:var(--muted);font-size:12.5px">6-day streak · Pro trial 5d left</p></div>
+    <div class="pad"><div class="card cont" style="display:block"><small>CONTINUE</small><h3>Statistics I · Week 3</h3><span class="btnw" style="display:inline-block;margin-top:8px">Continue →</span></div></div>
+    <div class="pad"><div class="s2"><div class="card stat"><strong>18/96</strong><span>Weeks done</span></div><div class="card stat"><strong class="hl">78%</strong><span>Accuracy</span></div><div class="card stat"><strong>342</strong><span>Questions</span></div><div class="card stat"><strong style="color:var(--danger)">4</strong><span>Mistakes due</span></div></div></div>
+    <div class="tab"><div class="on"><i>◈</i>Home</div><div><i>▣</i>Library</div><div><i>▤</i>Practice</div><div><i>✦</i>Ask AI</div><div><i>☰</i>More</div></div>
+  </div></div>
+  <div style="display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center">
+    <div class="menu light"><div class="h"><span class="av">GK</span><div><b>Gaurav kumar</b><br><small style="color:var(--muted)">gaurav…@gmail.com</small></div></div><div class="it">My profile</div><div class="it">My progress</div><div class="it">Plan and billing</div><div style="font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);padding:8px 10px 2px">APPEARANCE</div><div class="seg"><span>☀ Light</span><span>🌙 Dark</span><span class="on">⚙ System</span></div><div class="it" style="color:#a3203a">Logout</div></div>
+    <div class="menu dark"><div class="h"><span class="av">GK</span><div><b>Gaurav kumar</b><br><small style="color:var(--muted)">gaurav…@gmail.com</small></div></div><div style="font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted);padding:8px 10px 2px">APPEARANCE</div><div class="seg"><span>☀ Light</span><span class="on">🌙 Dark</span><span>⚙ System</span></div></div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -9,12 +9,18 @@
 // - Key text/background pairs meet WCAG AA contrast (4.5:1).
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { cssName, loadTokens, rawValue, root } from './tokens-lib.mjs';
+import { cssName, loadTheme, loadTokens, rawValue, root } from './tokens-lib.mjs';
 
 const tokens = loadTokens();
 const names = new Set([...tokens.values()].map((t) => cssName(t).slice(2)));
 /** Variables that come from outside the token system (next/font). */
-const EXTERNAL_VARS = new Set(['font-dm-sans', 'font-jakarta']);
+const EXTERNAL_VARS = new Set([
+  'font-dm-sans',
+  'font-jakarta',
+  // Per-element inputs set inline by a component (e.g. ProgressRing's percentage and colour token).
+  'ring-value',
+  'ring-color',
+]);
 const breakpoints = new Set([...tokens.values()].filter((t) => t.path[0] === 'breakpoint').map((t) => `${t.value.value}px`));
 
 const problems = [];
@@ -95,8 +101,9 @@ for (const { id } of JSON.parse(readFileSync(join(root, 'content', 'subjects.jso
 }
 
 /* ---------------- Contrast ---------------- */
-const hex = (key) => {
-  const t = tokens.get(key);
+const THEMES = { light: new Map(), dark: new Map(loadTheme(tokens, 'dark').map((t) => [t.path.join('.'), t])) };
+const hex = (key, theme) => {
+  const t = THEMES[theme].get(key) ?? tokens.get(key);
   if (!t) throw new Error(`Contrast check: unknown token ${key}`);
   return rawValue(tokens, t);
 };
@@ -118,7 +125,7 @@ const PAIRS = [
   ['color.text.link', 'color.bg.surface'],
   ['color.action.primary.fg', 'color.action.primary.bg'],
   ['color.text.inverse', 'color.accent.solid'],
-  ['color.text.inverse', 'color.danger.fg'],
+  ['color.text.inverse', 'color.danger.emphasis'],
   ['color.accent.on-soft', 'color.accent.soft'],
   ['color.success.fg', 'color.success.soft'],
   ['color.success.fg-strong', 'color.success.bg'],
@@ -130,11 +137,17 @@ const PAIRS = [
   ['color.info.fg', 'color.info.bg'],
   ['color.nav.text', 'color.nav.bg'],
   ['color.nav.text-muted', 'color.nav.bg'],
+  ['color.nav.text-active', 'color.nav.bg-active'],
+  ['color.text.primary', 'color.bg.canvas'],
+  ['color.text.inverse', 'color.feature.start'],
+  ['color.selected.fg', 'color.selected.bg'],
   ['color.text.inverse-muted', 'color.brand.hero-start'],
 ];
-for (const [fg, bg] of PAIRS) {
-  const r = ratio(hex(fg), hex(bg));
-  if (r < 4.5) problems.push(`tokens  ${fg} on ${bg} has contrast ${r.toFixed(2)}:1 (needs 4.5:1)`);
+for (const theme of Object.keys(THEMES)) {
+  for (const [fg, bg] of PAIRS) {
+    const r = ratio(hex(fg, theme), hex(bg, theme));
+    if (r < 4.5) problems.push(`tokens  [${theme}] ${fg} on ${bg} has contrast ${r.toFixed(2)}:1 (needs 4.5:1)`);
+  }
 }
 
 if (problems.length) {
@@ -142,4 +155,4 @@ if (problems.length) {
   for (const p of problems) console.log(`   ${p}`);
   process.exit(1);
 }
-console.log(`✓ Styles use design tokens (${names.size} tokens, ${PAIRS.length} contrast pairs pass AA)`);
+console.log(`✓ Styles use design tokens (${names.size} tokens, ${PAIRS.length} contrast pairs pass AA in light and dark)`);
