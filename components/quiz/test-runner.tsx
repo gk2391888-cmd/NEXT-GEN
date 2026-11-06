@@ -12,6 +12,7 @@ import type { ActiveTest, NewAnswer, TestAttempt } from '@/lib/progress/types';
 import { pickQuestions, testKey, testMix, type MockTest } from '@/lib/tests';
 import { countByLevel, DIFFICULTIES, DIFFICULTY_CHIP, levelLabel, levelOf, type Level } from '@/lib/levels';
 import type { Question, Subject } from '@/lib/types';
+import { ShareResult } from '@/components/share-result';
 import { accuracyColor, accuracyTone, formatClock, InlineText, ProgressBar } from '@/components/ui';
 import { Explanation, letter, QuestionView } from './question-view';
 import { LanguageSwitch } from './language-switch';
@@ -103,7 +104,7 @@ export function TestRunner({ subject, test, pool: original, weekTitles, sections
   }
 
   if (viewing) {
-    return <TestResult attempt={viewing} byId={byId} group={group} extra={resultExtra} onRetake={start} />;
+    return <TestResult attempt={viewing} byId={byId} group={group} extra={resultExtra} onRetake={start} shareTitle={`${subject.name} · ${test.title}`} />;
   }
 
   return (
@@ -342,10 +343,10 @@ function RunningTest({ active, storeKey, test, subject, byId, group, sectioned, 
 
 /* ---------------- Result ---------------- */
 
-type ResultProps = { attempt: TestAttempt; byId: Map<string, Question>; group: Grouping; extra?: Props['resultExtra']; onRetake: () => void };
+type ResultProps = { attempt: TestAttempt; byId: Map<string, Question>; group: Grouping; extra?: Props['resultExtra']; onRetake: () => void; shareTitle: string };
 type Filter = 'all' | 'wrong' | 'skipped';
 
-function TestResult({ attempt, byId, group, extra, onRetake }: ResultProps) {
+function TestResult({ attempt, byId, group, extra, onRetake, shareTitle }: ResultProps) {
   const [filter, setFilter] = useState<Filter>('all');
   const { isPro } = usePlan();
   const rows = attempt.questionIds
@@ -403,6 +404,7 @@ function TestResult({ attempt, byId, group, extra, onRetake }: ResultProps) {
           ))}
           <div className="stack mt-lg">
             {revise && <Link className="btn btn-primary btn-block" href={revise.href}>{revise.label}</Link>}
+            <ShareResult correct={attempt.correct} total={attempt.total} title={shareTitle} />
             <button className="btn btn-secondary btn-block" onClick={onRetake}>Take a new test</button>
           </div>
           <div className="divider-top">

@@ -13,6 +13,7 @@ import { ProgrammePrompt } from './programme-prompt';
 import { ChoiceNotice } from './choice-notice';
 import { AccessGate } from './access-gate';
 import { TabBar } from './tab-bar';
+import { InstallPrompt } from './install-prompt';
 import { useChoice, useChosen } from '@/lib/programme-choice';
 import { choiceHas, QUALIFIER_PATH, type Tool } from '@/lib/programmes';
 
@@ -29,6 +30,7 @@ const NAV: { href: string; label: string; icon: string; tag?: string; tool?: Too
   { href: '/planner', label: 'Exam Planner', icon: '▦', tool: 'planner' },
   { href: '/grades', label: 'Grade Calculator', icon: '∑', tag: 'NEW', tool: 'grades' },
   { href: '/progress', label: 'My Progress', icon: '▥' },
+  { href: '/invite', label: 'Invite Friends', icon: '♡', tag: 'NEW' },
 ];
 
 /** Topbar titles for pages that aren't in the sidebar. */
@@ -148,6 +150,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </footer>
       </div>
       <TabBar onMore={() => setOpen(true)} moreOpen={open} />
+      <InstallPrompt />
     </div>
   );
 }

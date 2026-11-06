@@ -86,6 +86,7 @@ export type Token =
   | 'color-brand-glow-start'
   | 'color-brand-glow-end'
   | 'color-brand-google'
+  | 'color-brand-whatsapp'
   | 'color-code-editor-bg'
   | 'color-code-editor-fg'
   | 'color-code-editor-focus'
@@ -409,6 +410,7 @@ export const RAW = {
   'color-brand-glow-start': '#60d6ee40',
   'color-brand-glow-end': '#6254ef0d',
   'color-brand-google': '#4285f4',
+  'color-brand-whatsapp': '#0e7a3f',
   'color-code-editor-bg': '#0f1b33',
   'color-code-editor-fg': '#d6e2ff',
   'color-code-editor-focus': '#5364ef99',

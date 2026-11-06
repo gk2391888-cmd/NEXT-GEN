@@ -7,6 +7,8 @@ import { getAuthProviders, getSupabase } from '@/lib/supabase/client';
 import { isDisposableEmail } from '@/lib/disposable-email';
 import { PRICING } from '@/lib/plans';
 import { useAuth } from './auth-provider';
+import { InvitedBanner, useInviter } from '@/components/referral';
+import { REFERRAL } from '@/lib/referrals';
 
 const RESEND_SECONDS = 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,7 +38,9 @@ function friendlyError(message: string) {
 
 export function LoginForm() {
   const router = useRouter();
-  const next = safeNext(useSearchParams().get('next'));
+  const params = useSearchParams();
+  const next = safeNext(params.get('next'));
+  const inviter = useInviter(params.get('ref'));
   const { user, ready } = useAuth();
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
@@ -115,8 +119,9 @@ export function LoginForm() {
 
       {step === 'email' ? (
         <form onSubmit={sendCode} noValidate>
-          <h1 className="login-title">Log in or sign up</h1>
-          <p className="mt-sm mb-xl">New accounts get {PRICING.trialDays} days of full access free, no card needed. Your progress is saved on every device.</p>
+          {inviter && <InvitedBanner name={inviter} />}
+          <h1 className="login-title">{inviter ? 'Create your account' : 'Log in or sign up'}</h1>
+          <p className="mt-sm mb-xl">New accounts get {inviter ? REFERRAL.friendTrialDays : PRICING.trialDays} days of full access free, no card needed. Your progress is saved on every device.</p>
           {googleEnabled && (
             <>
               <button type="button" className="btn btn-secondary btn-block btn-lg btn-google" onClick={google}>

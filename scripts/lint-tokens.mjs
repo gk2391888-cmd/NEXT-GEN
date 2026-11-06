@@ -142,6 +142,7 @@ const PAIRS = [
   ['color.text.inverse', 'color.feature.start'],
   ['color.selected.fg', 'color.selected.bg'],
   ['color.offer.cta-fg', 'color.offer.cta-bg'],
+  ['color.text.inverse', 'color.brand.whatsapp'],
   ['color.offer.ribbon-fg', 'color.warning.solid'],
   ['color.text.inverse-muted', 'color.brand.hero-start'],
 ];

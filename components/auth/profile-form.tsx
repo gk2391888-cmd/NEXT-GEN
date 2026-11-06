@@ -10,6 +10,7 @@ import type { Subject } from '@/lib/types';
 import { PageHead } from '@/components/ui';
 import { useConfirm } from '@/components/confirm-dialog';
 import { ProgrammeSwitch } from '@/components/programme-switch';
+import { ReminderSettings } from '@/components/reminder-settings';
 import { useAuth } from './auth-provider';
 
 export function ProfileForm({ subjects: allSubjects }: { subjects: Subject[] }) {
@@ -127,6 +128,7 @@ export function ProfileForm({ subjects: allSubjects }: { subjects: Subject[] }) 
           </div>
         </div>
       </form>
+      <ReminderSettings />
       {dialog}
     </>
   );

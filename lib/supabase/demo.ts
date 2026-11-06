@@ -14,6 +14,7 @@ import { planFrom, PRICING } from '@/lib/plans';
 import { activeOffer } from '@/lib/offers';
 import { cleanUtr, isUtr } from '@/lib/upi';
 import { buildStats, type StatsRows } from '@/lib/admin-stats';
+import { REFERRAL, type ReferralSummary } from '@/lib/referrals';
 
 export const DEMO = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_DEMO_MODE === '1';
 
@@ -405,6 +406,8 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
       price: { amountInr, fullPriceInr: PRICING.proMonthlyInr, offer, offerUsed: false },
     });
   }
+  // Who an invite link is from: asked before logging in.
+  if (path.startsWith('/api/referrals/owner')) return reply({ name: 'Arjun' });
   const p = read<Persona>(PERSONA_KEY, 'trial');
   if (p === 'guest') return reply({ ok: false, code: 'login_required', error: 'Log in to continue.', message: 'Log in to continue.' }, 401);
 
@@ -460,15 +463,32 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
     });
   }
 
-  // Same contract as /api/trial/start: a new account gets 7 days, anyone else already had their turn.
+  // Same contract as /api/trial/start: a new account gets 7 days (14 with an invite code), anyone else already had their turn.
   if (path === '/api/trial/start') {
     const db = loadDb();
     const profile = (db.profiles ?? []).find((r) => r.id === userId(p));
-    if (!profile || profile.trial_ends_at || profile.pro_until) return reply({ result: 'already' });
-    profile.trial_ends_at = day(PRICING.trialDays);
+    if (!profile || profile.trial_ends_at || profile.pro_until) return reply({ result: 'already', referred: false });
+    const referred = Boolean(JSON.parse(String(init.body ?? '{}')).ref);
+    profile.trial_ends_at = day(referred ? REFERRAL.friendTrialDays : PRICING.trialDays);
     saveDb(db);
-    return reply({ result: 'granted' });
+    return reply({ result: 'granted', referred });
   }
+
+  // Same contract as /api/referrals and /api/referrals/owner, with three made-up friends.
+  if (path === '/api/referrals') {
+    const summary: ReferralSummary = {
+      code: `${NAMES[p].split(' ')[0].toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5)}7K`.padEnd(6, 'X'),
+      friends: p === 'new' ? [] : [
+        { name: 'Aman M.', status: 'joined', joinedAt: day(-1), rewardedAt: null, answered: 4 },
+        { name: 'Priya K.', status: 'rewarded', joinedAt: day(-2), rewardedAt: day(-1), answered: 10 },
+        { name: 'Rahul S.', status: 'rewarded', joinedAt: day(-3), rewardedAt: day(-2), answered: 10 },
+      ],
+      earnedDays: p === 'new' ? 0 : 2 * REFERRAL.rewardDays,
+      rewardedThisMonth: p === 'new' ? 0 : 2,
+    };
+    return reply(summary);
+  }
+
 
   if (path === '/api/payments/order' || path === '/api/payments/verify') return reply({ error: 'Payments are switched off in demo mode.' }, 503);
 

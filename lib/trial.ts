@@ -1,4 +1,5 @@
 import { authedFetch } from './supabase/client';
+import { clearReferral, pendingReferral } from './referrals';
 
 /** What POST /api/trial/start answers (from claim_trial() in migration 0009). */
 export type TrialResult = 'granted' | 'already' | 'email' | 'device' | 'network' | 'disposable';
@@ -46,9 +47,11 @@ export function savedTrialResult(userId: string): TrialResult | null {
  */
 export async function claimTrial(userId: string): Promise<TrialResult | null> {
   try {
-    const res = await authedFetch('/api/trial/start', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) });
+    const res = await authedFetch('/api/trial/start', { method: 'POST', body: JSON.stringify({ deviceId: deviceId(), ref: pendingReferral() }) });
     if (!res.ok) return null;
     const { result } = (await res.json()) as { result: TrialResult };
+    // Used up either way: a referral only counts with the account's first trial.
+    clearReferral();
     try {
       // Keep the first real answer: later calls only say 'already'.
       if (result !== 'already' || !savedTrialResult(userId)) window.localStorage.setItem(resultKey(userId), result);

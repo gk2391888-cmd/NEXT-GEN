@@ -2,6 +2,7 @@ import { createHmac, randomUUID } from 'node:crypto';
 import { isDisposableEmail } from '@/lib/disposable-email';
 import { adminClient, getUserFromRequest } from '@/lib/server/supabase';
 import type { TrialResult } from '@/lib/trial';
+import { normaliseCode } from '@/lib/referrals';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,7 @@ function clientIp(req: Request) {
  * database by claim_trial() (migration 0009): no trial when this email (Gmail dots and +tags
  * ignored), this device or, more than 3 times a day, this network already had one, or when
  * the email is a throwaway inbox. Without a trial the account still works and can buy Pro.
+ * With an invite code (`ref`), a granted trial becomes 14 days and the inviter is recorded (0011).
  */
 export async function POST(req: Request) {
   const auth = await getUserFromRequest(req);
@@ -56,7 +58,16 @@ export async function POST(req: Request) {
     return reply({ error: 'Could not start your free trial. Please try again.' }, 502);
   }
 
+  // Only a trial that was just granted can come from an invite, so it gets the same checks.
+  let referred = false;
+  const ref = normaliseCode(typeof body?.ref === 'string' ? body.ref : null);
+  if (data === 'granted' && ref) {
+    const attached = await admin.rpc('attach_referral', { p_friend: auth.user.id, p_code: ref });
+    if (attached.error) console.error('[trial] referral', attached.error);
+    referred = attached.data === 'attached';
+  }
+
   // The id also lives in a cookie, so clearing local storage alone doesn't make this a new device.
   const deviceCookie = `${COOKIE}=${fromCookie ?? fromBrowser ?? randomUUID()}; Path=/; Max-Age=${COOKIE_MAX_AGE}; HttpOnly; Secure; SameSite=Lax`;
-  return reply({ result: data as TrialResult }, 200, { 'Set-Cookie': deviceCookie });
+  return reply({ result: data as TrialResult, referred }, 200, { 'Set-Cookie': deviceCookie });
 }
