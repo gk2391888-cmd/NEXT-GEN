@@ -58,7 +58,7 @@ export function ProgrammePrompt() {
               <div className="field-label mb-xs">{p.name}</div>
               <div className="check-grid">
                 {CHOICES.filter((c) => c.programme === p).map((c) => (
-                  <Option key={c.id} id={c.id} label={c.label.slice(p.short.length + 3)} note={c.comingSoon ? 'Notes coming soon' : undefined} picked={picked} onPick={setPicked} />
+                  <Option key={c.id} id={c.id} label={c.option} note={c.comingSoon ? 'Notes coming soon' : undefined} picked={picked} onPick={setPicked} />
                 ))}
               </div>
             </div>

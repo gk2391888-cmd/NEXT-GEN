@@ -20,27 +20,41 @@ export function ProgrammeSwitch({ variant = 'sidebar' }: { variant?: 'sidebar' |
     if (qualifier) router.push(`${QUALIFIER_PATH}/${qualifier}`);
   }
 
+  const current = CHOICES.find((c) => c.id === choice.id);
+
+  // Options carry only their own name ("Foundation") because the heading above them already says
+  // the programme. The closed control can't show a heading, so a two-line face sits under a
+  // transparent native select: the phone's own picker opens, and nothing gets cut off.
   return (
     <div className={variant === 'sidebar' ? 'side-programme' : undefined}>
       <label className={variant === 'sidebar' ? 'side-eyebrow' : 'field-label'} htmlFor={id}>
         {variant === 'sidebar' ? 'PREPARING FOR' : 'What are you preparing for?'}
       </label>
-      <select id={id} className={variant === 'sidebar' ? 'programme-select' : 'select w-full'} value={choice.id} onChange={(e) => change(e.target.value)}>
-        {PROGRAMMES.map((p) => (
-          <optgroup key={p.id} label={variant === 'sidebar' ? p.short : p.name}>
-            {CHOICES.filter((c) => c.programme === p).map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}{c.comingSoon ? ' (notes coming soon)' : ''}
-              </option>
+      <div className={`picker picker-${variant}`}>
+        <span className="picker-face" aria-hidden="true">
+          <span className="picker-text">
+            <small>{current?.group}</small>
+            <strong>{current?.option}</strong>
+          </span>
+          <span className="picker-chevron">▾</span>
+        </span>
+        <select id={id} className="picker-select" value={choice.id} onChange={(e) => change(e.target.value)}>
+          {PROGRAMMES.map((p) => (
+            <optgroup key={p.id} label={p.short}>
+              {CHOICES.filter((c) => c.programme === p).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.option}{c.comingSoon ? ' (notes coming soon)' : ''}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+          <optgroup label={variant === 'sidebar' ? 'Qualifier exam' : 'Qualifier exam (not admitted yet)'}>
+            {CHOICES.filter((c) => !c.programme).map((c) => (
+              <option key={c.id} value={c.id}>{c.option}</option>
             ))}
           </optgroup>
-        ))}
-        <optgroup label={variant === 'sidebar' ? 'Qualifier exam' : 'Qualifier exam (not admitted yet)'}>
-          {CHOICES.filter((c) => !c.programme).map((c) => (
-            <option key={c.id} value={c.id}>{c.label}</option>
-          ))}
-        </optgroup>
-      </select>
+        </select>
+      </div>
     </div>
   );
 }

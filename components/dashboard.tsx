@@ -13,6 +13,7 @@ import { AnnouncementBar } from '@/components/announcement-bar';
 import { LevelComingSoon, useLevelComingSoon } from '@/components/coming-soon';
 import { useAuth } from '@/components/auth/auth-provider';
 import { computeMistakes, isDue } from '@/lib/progress/mistakes';
+import { useFestival } from '@/lib/festival';
 
 export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
@@ -43,6 +44,7 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
 
   const firstName = (state.profile?.fullName || user?.user_metadata?.full_name || user?.user_metadata?.name || '').trim().split(/\s+/)[0];
   const mockHref = choice.qualifier ? `${QUALIFIER_PATH}/${choice.qualifier}` : '/tests';
+  const festival = useFestival();
 
   return (
     <>
@@ -55,7 +57,12 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
       )}
 
       <header className="greeting">
-        <h1>{firstName ? `Welcome back, ${firstName} 👋` : 'Welcome to NEXT GEN 👋'}</h1>
+        <h1>
+          {festival
+            ? `${festival.greeting}${firstName ? `, ${firstName}` : ' from NEXT GEN'} ${festival.emoji}`
+            : firstName ? `Welcome back, ${firstName} 👋` : 'Welcome to NEXT GEN 👋'}
+        </h1>
+        {festival && <p className="greeting-festival">{festival.message}</p>}
         <p>
           {streak > 0
             ? `You’re on a ${streak}-day practice streak. Keep it going today.`

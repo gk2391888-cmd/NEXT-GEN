@@ -42,6 +42,9 @@ export const CHOICES = [
       id: `${p.id}/${l.id}`,
       programme: p as Programme | undefined,
       label: `${p.short} – ${l.name}`,
+      /** The heading it sits under in pickers, and its name within that heading. */
+      group: p.short,
+      option: l.name,
       /** No notes in any of the level's subjects yet. */
       comingSoon: l.subjects.every((id) => planned.has(id)),
     })),
@@ -50,6 +53,8 @@ export const CHOICES = [
     id: `${QUALIFIER}/${q.id}`,
     programme: undefined,
     label: `Qualifier – ${PROGRAMMES.find((p) => p.id === q.id)?.short ?? q.short}`,
+    group: 'Qualifier exam',
+    option: PROGRAMMES.find((p) => p.id === q.id)?.short ?? q.short,
     comingSoon: false,
   })),
 ];
