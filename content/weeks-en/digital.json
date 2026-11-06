@@ -61,6 +61,96 @@
       ],
       "explanation": "NMH = 4.6 − 3.2 = 1.4 V and NML = 1.4 − 0.3 = 1.1 V. Noise does not know whether the wire holds 0 or 1, so the guarantee holds only up to the smaller margin: 1.1 V. 1.4 V is safe only for a 1 (on a 0, 1.4 V of noise would push the wire to 1.7 V, which is forbidden). 2.5 V is the sum of both and 1.8 V is the forbidden width."
     },
+    "digital-w1-q7": {
+      "question": "A logic family has VOH = 2.9 V, VOL = 0.3 V, VIH = 2.1 V, VIL = 0.9 V. What is the high noise margin NMH?",
+      "options": [
+        "0.6 V",
+        "1.2 V",
+        "0.8 V",
+        "2.6 V"
+      ],
+      "explanation": "NMH = VOH − VIH = 2.9 − 2.1 = 0.8 V. 0.6 V is NML (VIL − VOL), 1.2 V is the width of the forbidden region (VIH − VIL), and 2.6 V is just the output swing (VOH − VOL); none of these is NMH."
+    },
+    "digital-w1-q8": {
+      "question": "A receiver has VIL = 1.2 V and VIH = 3.0 V. Which input-voltage range is forbidden (undefined)?",
+      "options": [
+        "From 0 V up to 1.2 V",
+        "Everything above 3.0 V",
+        "From VOL up to 1.2 V",
+        "Between 1.2 V and 3.0 V"
+      ],
+      "explanation": "A voltage at or below VIL is a 0, at or above VIH is a 1, and the part in between (1.2 V to 3.0 V) is forbidden. 0 to 1.2 V is a valid 0 and above 3.0 V is a valid 1; calling them forbidden gets the input levels backwards. The gap from VOL to VIL is a noise margin, not the forbidden region."
+    },
+    "digital-w1-q9": {
+      "question": "According to the static discipline, what must a gate's output be when it gets a valid input?",
+      "options": [
+        "At most VIL, or at least VIH",
+        "Exactly 0 V or exactly the supply voltage",
+        "At most VOL, or at least VOH",
+        "Any value, as long as the average is right"
+      ],
+      "explanation": "Static discipline: for a valid input (≤ VIL or ≥ VIH) the output must be ≤ VOL or ≥ VOH. Since VOL < VIL and VOH > VIH, the output is cleaner than the input and there is room for noise in between. An output that is only as clean as VIL/VIH leaves zero margin. Exactly 0 V or the supply is not needed; the range is enough, and an 'average' means nothing in digital."
+    },
+    "digital-w1-q10": {
+      "question": "A family has VOH = 3.3 V, VOL = 0.4 V, NMH = 0.9 V and NML = 0.6 V. What are VIH and VIL?",
+      "options": [
+        "VIH = 1.0 V, VIL = 2.4 V",
+        "VIH = 2.7 V, VIL = 1.3 V",
+        "VIH = 4.2 V, VIL = −0.2 V",
+        "VIH = 2.4 V, VIL = 1.0 V"
+      ],
+      "explanation": "From NMH = VOH − VIH, VIH = 3.3 − 0.9 = 2.4 V. From NML = VIL − VOL, VIL = 0.4 + 0.6 = 1.0 V. 2.7 V and 1.3 V come from swapping NMH and NML. 4.2 V and −0.2 V come from flipping the sign in the formulas. Swapping 1.0 and 2.4 makes VIH < VIL, which is impossible."
+    },
+    "digital-w1-q11": {
+      "question": "On an inverter's VTC, the slope = −1 points are at Vin = 1.1 V and Vin = 1.9 V. Its VOH = 3.0 V and VOL = 0.2 V. What is the overall noise margin?",
+      "options": [
+        "0.9 V",
+        "1.1 V",
+        "0.8 V",
+        "2.0 V"
+      ],
+      "explanation": "The slope −1 points are exactly VIL = 1.1 V and VIH = 1.9 V. NMH = 3.0 − 1.9 = 1.1 V, NML = 1.1 − 0.2 = 0.9 V, and the overall margin is the smaller one, 0.9 V. 1.1 V is the larger margin (not the minimum), 0.8 V is the forbidden-region width (1.9 − 1.1), and 2.0 V is the sum of both margins."
+    },
+    "digital-w1-q12": {
+      "question": "Family P: VOH = 3.4 V, VOL = 0.2 V, VIH = 2.0 V, VIL = 0.8 V. Family Q: VOH = 4.5 V, VOL = 0.5 V, VIH = 3.5 V, VIL = 1.0 V. Which connection (driver → receiver) is reliable?",
+      "options": [
+        "Both directions, since each family's own margins are positive",
+        "Only Q → P; P → Q gives NMH = −0.1 V",
+        "Only P → Q; Q → P gives a negative NML",
+        "Neither direction, since their levels are different"
+      ],
+      "explanation": "P → Q: NMH = 3.4 − 3.5 = −0.1 V (negative), NML = 1.0 − 0.2 = 0.8 V, so P's 1 is not a valid 1 for Q. Q → P: NMH = 4.5 − 2.0 = 2.5 V, NML = 0.8 − 0.5 = 0.3 V, both positive, so this one works. Trap: saying 'both work' from each family's own (positive) margins; you must pair the driver's VOH/VOL with the receiver's VIH/VIL. Different levels are not a problem by themselves."
+    },
+    "digital-w1-q13": {
+      "question": "Driver: VOH = 3.0 V, VOL = 0.3 V. Receiver: VIH = 2.2 V, VIL = 0.9 V. Noise on the wire drops a 1 by 0.7 V and raises a 0 by 0.7 V. What does the receiver read?",
+      "options": [
+        "Both are read correctly, because the noise margins are positive",
+        "The 1 is read correctly, but the 0 reaches the forbidden region (1.0 V)",
+        "The 0 is read correctly, but the 1 reaches the forbidden region (2.3 V)",
+        "Both end up in the forbidden region, because the noise is 0.7 V"
+      ],
+      "explanation": "1: 3.0 − 0.7 = 2.3 V ≥ 2.2 V, a valid 1 (NMH = 0.8 V > 0.7 V). 0: 0.3 + 0.7 = 1.0 V > VIL = 0.9 V, the forbidden region (NML = 0.6 V < 0.7 V). Trap: assuming any noise is fine because the margins are positive; noise hits both levels, so the smaller margin (NML) decides. The reversed answer comes from swapping NMH and NML."
+    },
+    "digital-w1-q14": {
+      "question": "A receiver has VIH = 2.0 V and VIL = 0.8 V. The wire can pick up to 0.5 V of noise in either direction. What minimum VOH and maximum VOL does the driver need?",
+      "options": [
+        "VOH ≥ 2.5 V, VOL ≤ 0.3 V",
+        "VOH ≥ 1.5 V, VOL ≤ 1.3 V",
+        "VOH ≥ 2.5 V, VOL ≤ 1.3 V",
+        "VOH ≥ 2.0 V, VOL ≤ 0.8 V"
+      ],
+      "explanation": "A 1 must stay ≥ VIH after noise: VOH − 0.5 ≥ 2.0, so VOH ≥ 2.5 V (NMH ≥ 0.5 V). A 0 must stay ≤ VIL: VOL + 0.5 ≤ 0.8, so VOL ≤ 0.3 V (NML ≥ 0.5 V). 1.5 V and 1.3 V come from applying the noise in the wrong direction (the third option gets VOH right but makes this mistake for VOL). 2.0 V and 0.8 V give zero margin, which fails with even a little noise."
+    },
+    "digital-w1-q15": {
+      "question": "A signal passes through a chain of 5 digital buffers, so there are 4 wires in between. The worst noise on those wires is 0.2 V, 0.4 V, 0.3 V and 0.45 V. Each buffer's overall noise margin is 0.5 V. What is true about the final output?",
+      "options": [
+        "It stays correct: each wire's noise is below 0.5 V, and every buffer cleans the signal",
+        "It can go wrong, because the total noise on all the wires is 1.35 V, more than 0.5 V",
+        "It is correct only up to the first two buffers, because 0.2 + 0.4 = 0.6 V already exceeds 0.5 V",
+        "It can go wrong, because 0.45 V is so close to the margin that nothing is guaranteed"
+      ],
+      "explanation": "Each buffer turns its input into a clean VOH/VOL (regeneration), so noise does not carry into the next wire. Look at each wire on its own: 0.2, 0.4, 0.3, 0.45 are all below 0.5 V, so every stage reads the bit correctly. 1.35 V (the sum) and 0.6 V are analog-chain thinking, where noise adds up. 0.45 V is close to the margin but still below it, so the guarantee holds."
+    },
     "digital-w2-q1": {
       "question": "Convert (10110110)₂ to hexadecimal.",
       "options": [
@@ -120,6 +210,96 @@
         "19.625"
       ],
       "explanation": "25 = 11001 and 0.625 = 0.101 (0.625·2 = 1.25 → 1, 0.25·2 = 0.5 → 0, 0.5·2 = 1.0 → 1). Binary 11001.101. Hex groups: integer 0001 1001 = 19, fraction grouped rightward from the point 1010 = A. So 19.A. 19.5 comes from padding the fraction with a zero on the left (0101), and 31.5 is the octal answer."
+    },
+    "digital-w2-q7": {
+      "question": "What is the decimal value of (11010.11)₂?",
+      "options": [
+        "26.3",
+        "26.75",
+        "13.75",
+        "26.11"
+      ],
+      "explanation": "Integer: 16 + 8 + 2 = 26. Fraction: 1/2 + 1/4 = 0.75. So 26.75. 26.3 comes from reading the fraction bits '11' as binary 3 and writing it after the point, 26.11 just copies the bits, and 13.75 comes from counting one integer bit too few (1101.11)."
+    },
+    "digital-w2-q8": {
+      "question": "Convert (2A)₁₆ to octal.",
+      "options": [
+        "42",
+        "52",
+        "210",
+        "25"
+      ],
+      "explanation": "Hex to binary: 2 = 0010, A = 1010, so 00101010. Now 3-bit groups from the point leftwards: 101 010 → 5 2, i.e. (52)₈. 42 is its decimal value (not octal), 210 comes from writing '2' and 'A = 10' side by side, and 25 from reading the digits backwards."
+    },
+    "digital-w2-q9": {
+      "question": "What range can 6-bit 2's complement represent?",
+      "options": [
+        "−31 to +31",
+        "0 to 63",
+        "−32 to +31",
+        "−32 to +32"
+      ],
+      "explanation": "The range for n bits is −2ⁿ⁻¹ to 2ⁿ⁻¹ − 1: with 6 bits, −32 to +31. −31 to +31 is the sign-magnitude or 1's complement range (which have two zeros), 0 to 63 is the unsigned range, and +32 needs 7 bits."
+    },
+    "digital-w2-q10": {
+      "question": "If the 6-bit pattern 101101 is read as a 1's complement signed number, what is its value?",
+      "options": [
+        "−13",
+        "−19",
+        "45",
+        "−18"
+      ],
+      "explanation": "The MSB is 1, so the number is negative. In 1's complement, flip all bits to get the magnitude: 010010 = 18, so −18. −13 is the sign-magnitude reading (01101 = 13), −19 is the 2's complement reading (−32 + 8 + 4 + 1), and 45 is the unsigned value."
+    },
+    "digital-w2-q11": {
+      "question": "Sign-extend the 5-bit 2's complement number 10110 to 8 bits.",
+      "options": [
+        "11110110",
+        "00010110",
+        "10000110",
+        "11101100"
+      ],
+      "explanation": "Sign extension copies the MSB (here 1) to the left: 111 + 10110 = 11110110. Both have the value −10 (−16 + 4 + 2 = −10). 00010110 pads with zeros and becomes +22, 10000110 is the sign-magnitude style, which is −122 in 2's complement, and 11101100 is a left shift (−20), not an extension."
+    },
+    "digital-w2-q12": {
+      "question": "In 8-bit 2's complement, which addition overflows?",
+      "options": [
+        "01100100 + 00110010",
+        "11000000 + 01111111",
+        "11110000 + 11110000",
+        "00111111 + 01000000"
+      ],
+      "explanation": "First: +100 + +50 = +150, which is above +127; the bits come out as 10010110 with MSB 1: two positives giving a negative = overflow. 11000000 + 01111111 has different signs (−64 + 127 = 63); that never overflows, even if a carry out appears. 11110000 + 11110000 = −16 + −16 = −32, in range; the carry out is 1 but that is not overflow. 00111111 + 01000000 = 63 + 64 = 127, right at the edge of the range but inside it."
+    },
+    "digital-w2-q13": {
+      "question": "Convert (0.3)₁₀ to binary, keeping only 6 bits after the point (drop the rest).",
+      "options": [
+        "0.110010",
+        "0.11",
+        "0.010011",
+        "0.100110"
+      ],
+      "explanation": "Multiply by 2 repeatedly: 0.6 → 0, 1.2 → 1, 0.4 → 0, 0.8 → 0, 1.6 → 1, 1.2 → 1. Read the integer parts top to bottom: 0.010011 (after that 0011 keeps repeating). 0.110010 reads the bits bottom to top as for an integer part, 0.11 turns '3' straight into binary 11, and 0.100110 drops the first step's 0 (0.6 → 0)."
+    },
+    "digital-w2-q14": {
+      "question": "Write −20 in 8-bit 2's complement and give it in hex.",
+      "options": [
+        "EC",
+        "94",
+        "EB",
+        "14"
+      ],
+      "explanation": "+20 = 00010100. Flip the bits: 11101011, then +1: 11101100. Hex: 1110 = E, 1100 = C, so EC. Check: −128 + 64 + 32 + 8 + 4 = −20. 94 is the hex of the sign-magnitude form (10010100), EB is only the 1's complement (+1 forgotten), and 14 is the hex of +20."
+    },
+    "digital-w2-q15": {
+      "question": "An 8-bit register computes 0xB4 + 0x6F. What is the 8-bit result, and was there a signed (2's complement) overflow?",
+      "options": [
+        "0x23, overflow (carry out 1)",
+        "0x123, no overflow",
+        "0x13, no overflow",
+        "0x23, no overflow (different signs)"
+      ],
+      "explanation": "4 + F = 19 = 0x13: digit 3, carry 1. B + 6 + 1 = 18 = 0x12: digit 2, carry out 1. The 8-bit result is 0x23. As signed values 0xB4 = −76 and 0x6F = +111; adding numbers of different signs (+35 = 0x23) never overflows. Treating carry out 1 as overflow is the trap; 0x123 is 9 bits, which an 8-bit register cannot hold, and 0x13 comes from forgetting the carry from the low digit."
     },
     "digital-w3-q1": {
       "question": "When is the output of a 2-input NOR gate 1?",
@@ -181,6 +361,96 @@
       ],
       "explanation": "A ⊕ B is 1 in rows 010, 011, 100, 101 (4 rows). B'C is 1 in rows 001 and 101 (2 rows). Row 101 is common to both, so the total is 4 + 2 − 1 = 5 rows (001, 010, 011, 100, 101). 6 comes from counting the overlapping row twice."
     },
+    "digital-w3-q7": {
+      "question": "A 4-input XOR gate has inputs 1, 1, 0, 1. What is the output?",
+      "options": [
+        "1",
+        "0",
+        "3",
+        "Undefined"
+      ],
+      "explanation": "A multi-input XOR is 1 when the number of 1s is odd. Here there are 3 ones (odd), so the output is 1. 0 would need an even count. 3 is just the count of 1s; a gate outputs only 0 or 1. An XOR of many inputs is perfectly defined (an odd-parity detector)."
+    },
+    "digital-w3-q8": {
+      "question": "How many rows does the truth table of a 5-input function have?",
+      "options": [
+        "25",
+        "10",
+        "16",
+        "32"
+      ],
+      "explanation": "n inputs → 2ⁿ rows: 2⁵ = 32. 25 = 5² (the power the wrong way round), 10 = 2 × 5, and 16 is for only 4 inputs."
+    },
+    "digital-w3-q9": {
+      "question": "What is the dual of the identity A + A'B = A + B?",
+      "options": [
+        "A' + AB = A' + B",
+        "A(A' + B) = AB",
+        "A + A'B = AB",
+        "A(A' + B) = A + B"
+      ],
+      "explanation": "For the dual, swap AND ↔ OR and leave the variables alone: the dual of A + A'B is A(A' + B), and the dual of A + B is AB. A' + AB = A' + B complements the variables; it is a true identity but not the dual. The other two options take the dual of only one side."
+    },
+    "digital-w3-q10": {
+      "question": "What is the simplest form of (A + B')(A + B)?",
+      "options": [
+        "B",
+        "A + B",
+        "A",
+        "AB'"
+      ],
+      "explanation": "Use the distributive law (X + Y)(X + Z) = X + YZ: (A + B')(A + B) = A + B'B = A + 0 = A. The truth table agrees: for A = 1 both brackets are 1, for A = 0 it is B'·B = 0. A + B is wrong because at A = 0, B = 1 the original gives 0; B and AB' also differ in some rows (for example B is 0 at A = 1, B = 0)."
+    },
+    "digital-w3-q11": {
+      "question": "What is (A ⊕ B)' equal to?",
+      "options": [
+        "AB + A'B'",
+        "A'B + AB'",
+        "A' ⊕ B'",
+        "A'B'"
+      ],
+      "explanation": "(A ⊕ B)' is XNOR: 1 when the inputs are equal, i.e. AB + A'B'. A'B + AB' is XOR itself. A' ⊕ B' is also just XOR, since flipping both inputs does not change whether they differ. A'B' catches only the 00 row and misses the 11 row."
+    },
+    "digital-w3-q12": {
+      "question": "Simplify ((A + B)' + C)' to SOP.",
+      "options": [
+        "A'B'C'",
+        "A + B + C'",
+        "A'B' + C'",
+        "AC' + BC'"
+      ],
+      "explanation": "Outer De Morgan: ((A + B)' + C)' = (A + B)''·C' = (A + B)C' = AC' + BC'. A'B'C' comes from keeping the inner bar instead of cancelling the double bar. A + B + C' forgets to turn the OR into an AND. A'B' + C' complements things without changing operators; it gives 1 at row 000, where the real function is 0."
+    },
+    "digital-w3-q13": {
+      "question": "What is the simplest form of F = AB + A'C + B'C?",
+      "options": [
+        "AB + A'C",
+        "AB + C",
+        "A + B + C",
+        "C"
+      ],
+      "explanation": "Combine the C terms: A'C + B'C = C(A' + B') = C(AB)'. Now F = AB + (AB)'C, and X + X'Y = X + Y gives F = AB + C. AB + A'C looks like a consensus case, but here B'C is not redundant: at A = 1, B = 0, C = 1, AB + A'C = 0 while F = 1. C alone misses row 110 (AB = 1, C = 0), and A + B + C wrongly gives 1 at row 100."
+    },
+    "digital-w3-q14": {
+      "question": "F(A, B, C, D) = (A ⊕ B) + (C ⊕ D). In the 16-row truth table, in how many rows is F = 1?",
+      "options": [
+        "12",
+        "8",
+        "4",
+        "16"
+      ],
+      "explanation": "Count the opposite: F = 0 only when both XORs are 0, i.e. A = B and C = D. There are 2 ways for A = B and 2 for C = D, so 2 × 2 = 4 rows are 0, and 16 − 4 = 12 rows are 1. Directly: 8 + 8 − 4 (both XORs 1) = 12. 16 counts the overlap twice, 8 is the rows of just one XOR, and 4 is the count of rows where F = 0."
+    },
+    "digital-w3-q15": {
+      "question": "The outputs of NAND(A, B) and OR(A, B) go into a 2-input AND gate. What is the final output function?",
+      "options": [
+        "(A ⊕ B)'",
+        "A + B",
+        "A ⊕ B",
+        "AB"
+      ],
+      "explanation": "Output = (AB)'·(A + B) = (A' + B')(A + B) = A'A + A'B + AB' + B'B = A'B + AB' = A ⊕ B. Truth table: 00 → 1·0 = 0, 01 → 1, 10 → 1, 11 → 0·1 = 0. A + B is wrong at row 11 (the NAND forces a 0 there), (A ⊕ B)' gives 1 at 00 and 11, the exact opposite, and AB is 1 only at 11, where the real output is 0."
+    },
     "digital-w4-q1": {
       "question": "In F(A, B, C), what is the minterm of row ABC = 110?",
       "options": [
@@ -240,6 +510,96 @@
         "BD"
       ],
       "explanation": "First two terms: A'B'D'(C' + C) = A'B'D'. Last two: AB'D'(C' + C) = AB'D'. Then A'B'D' + AB'D' = B'D'(A' + A) = B'D'. All four terms share B = 0 and D = 0, while A and C take every value. A'B'D' comes from stopping after the first step, which misses the AB'D' terms."
+    },
+    "digital-w4-q7": {
+      "question": "For F(A, B, C), what is minterm m3?",
+      "options": [
+        "A'BC",
+        "AB'C'",
+        "A + B' + C'",
+        "ABC'"
+      ],
+      "explanation": "3 = 011. In a minterm, bit 0 → complemented, bit 1 → plain: A'BC. AB'C' (that is m4) comes from applying the rule backwards, A + B' + C' is the maxterm M3 of row 011, and ABC' is m6 (bits 110)."
+    },
+    "digital-w4-q8": {
+      "question": "F(A, B, C) = Σm(0, 5, 7). What is the canonical SOP of F' (the complement)?",
+      "options": [
+        "ΠM(1, 2, 3, 4, 6)",
+        "Σm(0, 5, 7)",
+        "Σm(2, 3, 4, 6)",
+        "Σm(1, 2, 3, 4, 6)"
+      ],
+      "explanation": "F' is 1 where F = 0, i.e. the remaining indices: Σm(1, 2, 3, 4, 6). ΠM(1, 2, 3, 4, 6) is F itself (its POS form), not F'. Σm(0, 5, 7) is just F, and Σm(2, 3, 4, 6) misses index 1."
+    },
+    "digital-w4-q9": {
+      "question": "The canonical SOP of a 4-variable function has 5 minterms. How many literals does it have in total?",
+      "options": [
+        "20",
+        "5",
+        "9",
+        "4"
+      ],
+      "explanation": "Every minterm contains all 4 variables once, so 5 × 4 = 20 literals. 5 is just the number of terms, 4 is the literals in one term, and 9 = 5 + 4 adds instead of multiplying."
+    },
+    "digital-w4-q10": {
+      "question": "What is the minimal SOP of F(A, B, C) = Σm(1, 4, 5, 6, 7)?",
+      "options": [
+        "A + C",
+        "AB + B'C",
+        "A + B'C",
+        "AB' + C"
+      ],
+      "explanation": "m4 to m7 have A = 1 with B and C taking all values: together they give A. m1 (001) is left: m1 + m5 = B'C (A drops out). F = A + B'C. A + C is wrong: it gives 1 at row 011 (m3), which is not in F. AB + B'C misses m4 (100), and AB' + C brings in m3 again and misses m6."
+    },
+    "digital-w4-q11": {
+      "question": "F(A, B, C) = ΠM(0, 2, 4). What is its minimal SOP?",
+      "options": [
+        "A'C' + B'C'",
+        "C + AB",
+        "C + A'B",
+        "AC + B"
+      ],
+      "explanation": "ΠM(0, 2, 4) means F is 0 only in rows 0, 2, 4; so F = Σm(1, 3, 5, 6, 7). m1, m3, m5, m7 (C = 1) → C; m6 (110) + m7 → AB. F = C + AB. A'C' + B'C' is F' (the SOP of rows 0, 2, 4). C + A'B misses row 6 and takes row 2, and AC + B wrongly gives 1 at row 2 (010)."
+    },
+    "digital-w4-q12": {
+      "question": "What is the minimal POS of (A + B)(A' + C)(B + C)?",
+      "options": [
+        "(A + B)(B + C)",
+        "(A' + C)(B + C)",
+        "AB + A'C",
+        "(A + B)(A' + C)"
+      ],
+      "explanation": "This is the dual of the consensus theorem: (B + C) is the consensus of (A + B) and (A' + C), so it is redundant. Check: at A = 0 the expression is B·(B + C) = B, at A = 1 it is C·(B + C) = C; (A + B)(A' + C) also gives B at A = 0 and C at A = 1. (A + B)(B + C) = B + AC, which gives 1 at A = 1, B = 1, C = 0 where the real value is 0. (A' + C)(B + C) gives 1 at A = 0, B = 0, C = 1 (real value 0). AB + A'C is the swapped function (B at A = 1, C at A = 0)."
+    },
+    "digital-w4-q13": {
+      "question": "F = A'BC'D + A'BCD + ABC'D + ABCD + AB'CD. What is its minimal SOP?",
+      "options": [
+        "BD + CD",
+        "BD + AD",
+        "BD + ACD",
+        "ABD + ACD"
+      ],
+      "explanation": "The first four terms share B = 1, D = 1 while A and C take all values: BD. AB'CD (1011) is left; pair it with ABCD (1111) → ACD. F = BD + ACD. BD + CD brings in A'B'CD (0011), which is not in F. BD + AD brings in AB'C'D (1001), and ABD + ACD misses A'BC'D (0101) and A'BCD."
+    },
+    "digital-w4-q14": {
+      "question": "F(A, B, C) = AB + C'. What is its canonical POS?",
+      "options": [
+        "ΠM(1, 3, 5)",
+        "ΠM(0, 2, 4, 6, 7)",
+        "ΠM(1, 3, 5, 7)",
+        "ΠM(6, 7)"
+      ],
+      "explanation": "First find the minterms: AB → rows 110, 111 (6, 7); C' → rows 0, 2, 4, 6. F = Σm(0, 2, 4, 6, 7). The POS uses the rows where F is 0: 1, 3, 5, so ΠM(1, 3, 5). ΠM(0, 2, 4, 6, 7) reuses the minterm indices, ΠM(1, 3, 5, 7) treats row 7 as 0 (the AB term is forgotten), and ΠM(6, 7) is just the indices of AB."
+    },
+    "digital-w4-q15": {
+      "question": "F(A, B, C) = Σm(0, 1, 2, 4, 5). How many terms and literals does its minimal SOP have?",
+      "options": [
+        "2 terms, 4 literals",
+        "2 terms, 3 literals",
+        "3 terms, 6 literals",
+        "5 terms, 15 literals"
+      ],
+      "explanation": "m0, m1, m4, m5 have B = 0 with A and C taking all values: B' (1 literal). m2 (010) is left: m0 + m2 = A'C' (2 literals). F = B' + A'C': 2 terms, 3 literals. 5 terms, 15 literals is the canonical SOP. 3 terms, 6 literals comes from using two small pairs (B'C' + B'C) instead of B'. No correct cover has 2 terms and 4 literals; for example B'C' + A'C' misses m1 and m5."
     },
     "digital-w5-q1": {
       "question": "In a 3-variable K-map, how many literals does a valid group of 4 cells give?",
@@ -301,6 +661,96 @@
       ],
       "explanation": "B'C' = m0, m1, m8, m9 (group of 4). B'D' = the four corners m0, m2, m8, m10 (group of 4). m5 is left: m1 + m5 = A'C'D (group of 2). Total 3 terms, 7 literals. B'D' + A'C'D misses m9 (1001). Options A and C also give the right function but cost 8 literals: A'BC'D takes m5 alone, and B'CD' (m2, m10) uses a small group instead of the group of 4 corners."
     },
+    "digital-w5-q7": {
+      "question": "In a 4-variable K-map, which cell is NOT a neighbour of m5 (0101)?",
+      "options": [
+        "m6",
+        "m4",
+        "m7",
+        "m13"
+      ],
+      "explanation": "Neighbour = differs in exactly one bit. The neighbours of m5 = 0101 are m4 (0100), m7 (0111), m1 (0001) and m13 (1101). m6 = 0110 differs in two bits (C and D), so it is not a neighbour, even though it is in the same row. Trap: thinking of the columns in binary order and treating m6 as the cell right after m5."
+    },
+    "digital-w5-q8": {
+      "question": "In a 3-variable K-map (rows A, columns BC = 00, 01, 11, 10), m0 and m2 are grouped. What term does this give?",
+      "options": [
+        "A'B'",
+        "A'C'",
+        "A'",
+        "This group is not valid; the cells are not neighbours"
+      ],
+      "explanation": "m0 = 000 and m2 = 010: only B changes, A = 0 and C = 0 stay fixed, so the term is A'C'. The left and right edges are neighbours by wrap-around, so the group is valid. A'B' would need C to change (m0, m1), and A' is the term for the whole row (4 cells)."
+    },
+    "digital-w5-q9": {
+      "question": "Which statement about don't-care (X) cells in a K-map is correct?",
+      "options": [
+        "Every X must be included in some group",
+        "Treat an X as 1 if it makes a group bigger, otherwise leave it",
+        "An X must always be treated as 0",
+        "An X cannot be grouped together with 1s"
+      ],
+      "explanation": "A don't-care's output can be anything, so treat it as 1 only when that makes a group bigger and the term smaller; otherwise treat it as 0 and leave it. Forcing every X into a group adds extra terms. Always treating it as 0 throws away the chance of bigger groups, and grouping X with 1s is exactly how it helps."
+    },
+    "digital-w5-q10": {
+      "question": "What is the minimal SOP of F(A, B, C) = Σm(1, 3, 4, 6)?",
+      "options": [
+        "A'C + AC",
+        "C + AC'",
+        "A'C + AC'",
+        "B'C + BC'"
+      ],
+      "explanation": "m1, m3 (001, 011): A = 0, C = 1 → A'C. m4, m6 (100, 110): A = 1, C = 0 → AC' (a wrap-around group). F = A'C + AC' = A ⊕ C. A'C + AC = C, which also takes m5, m7; C + AC' also brings in m5, m7; and B'C + BC' (m1, m5, m2, m6) picks the wrong cells."
+    },
+    "digital-w5-q11": {
+      "question": "F(A, B, C) = Σm(0, 1, 2, 3, 5). Group the 0s to find the minimal POS.",
+      "options": [
+        "(A + B)(A + C')",
+        "(A' + B)(A' + C')",
+        "(A' + B')(A + C)",
+        "(A' + B')(A' + C)"
+      ],
+      "explanation": "The 0s are at rows 4, 6, 7. 4 + 6 (100, 110): A = 1, C = 0 → the F' term AC'. 6 + 7 (110, 111): A = 1, B = 1 → AB. F' = AC' + AB, and De Morgan gives F = (A' + C)(A' + B'). (A + B)(A + C') comes from turning the F' terms into sums without complementing. (A' + B)(A' + C') has the literals flipped: it gives 0 at row 5 (101) where F = 1. (A' + B')(A + C) gives 0 at row 0, where F = 1."
+    },
+    "digital-w5-q12": {
+      "question": "F(A, B, C, D) = Σm(3, 7, 10, 14) + d(2, 6). What is the minimal SOP?",
+      "options": [
+        "A'CD + ACD'",
+        "C",
+        "A'C + CD'",
+        "A'C + BCD'"
+      ],
+      "explanation": "Treat d2 and d6 as 1: m2, m3, m6, m7 → A'C (a group of 4). m2, m6, m10, m14 → CD' (a group of 4; C = 1, D = 0, A and B change). 4 literals in total. Ignoring the don't-cares gives A'CD + ACD' (6 literals). C alone also takes m11 and m15, which are 0, and A'C + BCD' misses m10 (1010)."
+    },
+    "digital-w5-q13": {
+      "question": "F(A, B, C) = Σm(0, 1, 2, 5, 6, 7). How many essential prime implicants does this function have?",
+      "options": [
+        "2",
+        "0",
+        "3",
+        "6"
+      ],
+      "explanation": "Prime implicants: A'B' (0, 1), A'C' (0, 2), B'C (1, 5), BC' (2, 6), AC (5, 7), AB (6, 7), 6 in all, each covering 2 cells. Every 1 is covered by two prime implicants (for example m0 by A'B' or A'C'), so none is essential: 0. This is a cyclic K-map; the minimal answer has 3 terms (such as A'B' + BC' + AC), but those 3 are not essential, just one choice. 6 is the count of all prime implicants."
+    },
+    "digital-w5-q14": {
+      "question": "There are 3 inputs A, B, C. The output must be 1 only when exactly two inputs are 1. What is the minimal SOP?",
+      "options": [
+        "A'BC + AB'C + ABC'",
+        "AB + BC + AC",
+        "A'B + B'C + AC'",
+        "AB + BC"
+      ],
+      "explanation": "The 1s: 011, 101, 110 (m3, m5, m6). No two of them are neighbours (each pair differs in two bits), and their common neighbour m7 = 111 has output 0, so no group can be formed: F = A'BC + AB'C + ABC'. AB + BC + AC is majority, which is also 1 at 111. A'B + B'C + AC' is the 'not all equal' function, which also takes rows with a single 1. AB + BC misses m5 and takes m7."
+    },
+    "digital-w5-q15": {
+      "question": "The input is a BCD digit ABCD (A = MSB); 1010 to 1111 never occur. The output is 1 when the digit is 3, 5 or 7. What is the minimal SOP?",
+      "options": [
+        "A'BD + A'CD",
+        "D",
+        "BCD + C'D",
+        "BD + CD"
+      ],
+      "explanation": "1s: m3, m5, m7; don't-cares: 10 to 15. m3, m7, d11, d15 → CD (a group of 4). m5, m7, d13, d15 → BD. F = BD + CD. Check: m1 (0001) and m9 (1001) have B = C = 0, so the output is 0 ✓. Not using the don't-cares gives A'BD + A'CD (6 literals). D alone also makes 1 and 9 output 1, and in BCD + C'D the C'D term makes the same mistake (m1, m9)."
+    },
     "digital-w6-q1": {
       "question": "In a 3-to-8 decoder with active-high outputs, inputs A B C = 1 1 0 (A = MSB) are applied with enable on. Which output becomes 1?",
       "options": [
@@ -360,6 +810,96 @@
         "(A' + B')(C' + D')"
       ],
       "explanation": "First level: (A + B)' and (C + D)'. Third NOR: ((A + B)' + (C + D)')' = (A + B)(C + D) (De Morgan, the double bars cancel). This is the NOR-NOR = POS rule. AB + CD is what a NAND-NAND structure gives; reading NOR-NOR as SOP is a common trap."
+    },
+    "digital-w6-q7": {
+      "question": "Both inputs of a 2-input NOR gate are tied to A. What is the output?",
+      "options": [
+        "A",
+        "0",
+        "A'",
+        "1"
+      ],
+      "explanation": "NOR(A, A) = (A + A)' = A' (idempotent law: A + A = A). That is how NOR makes a NOT, and why NOR is universal too. A would come from treating the gate as OR; a constant 0 or 1 would need one input fixed at 1 or 0."
+    },
+    "digital-w6-q8": {
+      "question": "How many select lines does a 16:1 MUX have?",
+      "options": [
+        "16",
+        "4",
+        "8",
+        "2"
+      ],
+      "explanation": "2ⁿ data inputs need n select lines: 2⁴ = 16, so 4. 16 is the number of data inputs, 8 = 16 / 2 is a wrong formula, and 2 select lines are for a 4:1 MUX."
+    },
+    "digital-w6-q9": {
+      "question": "A 3-to-8 decoder has its enable at 0 and inputs ABC = 101. What are the outputs?",
+      "options": [
+        "Only Y5 = 1 (for input 101)",
+        "All outputs inactive (0)",
+        "Only Y0 = 1 (the default output)",
+        "All outputs 1 together"
+      ],
+      "explanation": "With enable = 0 the decoder is off: whatever the input, no output is active. Only Y5 = 1 would need enable = 1. Treating Y0 as a 'default' output is a trap, and all outputs are never active together."
+    },
+    "digital-w6-q10": {
+      "question": "A 4:1 MUX has select lines A (S1) and B (S0), and data inputs I0 = 1, I1 = 0, I2 = C, I3 = C'. Which function F(A, B, C) is this?",
+      "options": [
+        "Σm(0, 1, 4, 7)",
+        "Σm(2, 3, 5, 6)",
+        "Σm(0, 1, 3, 6)",
+        "Σm(0, 1, 5, 6)"
+      ],
+      "explanation": "AB = 00 → I0 = 1: rows 0, 1. AB = 01 → I1 = 0: nothing. AB = 10 → I2 = C: only row 5 (C = 1). AB = 11 → I3 = C': only row 6 (C = 0). F = Σm(0, 1, 5, 6). Σm(0, 1, 4, 7) comes from reading C and C' the wrong way round, Σm(2, 3, 5, 6) from swapping I0 and I1, and Σm(0, 1, 3, 6) from reversing the select-line order (B = S1)."
+    },
+    "digital-w6-q11": {
+      "question": "Outputs Y1, Y2, Y4 and Y7 of a 3-to-8 decoder (inputs A B C, A = MSB) are ORed together. Which function is the output?",
+      "options": [
+        "(A ⊕ B ⊕ C)'",
+        "AB + BC + AC",
+        "A + B + C",
+        "A ⊕ B ⊕ C"
+      ],
+      "explanation": "The OR output = m1 + m2 + m4 + m7. Rows 001, 010, 100, 111 all have an odd number of 1s (1 or 3), so F = A ⊕ B ⊕ C. (A ⊕ B ⊕ C)' is the even-count rows (0, 3, 5, 6). AB + BC + AC (majority) is rows 3, 5, 6, 7, and A + B + C also takes rows 3, 5, 6."
+    },
+    "digital-w6-q12": {
+      "question": "Circuit: G1 = NAND(A, B), G2 = NAND(C, D'), Y = NAND(G1, G2), with D' made by an inverter. The inverter delay is 1 ns and each NAND is 2 ns. What are the worst-case propagation delay and the contamination delay?",
+      "options": [
+        "4 ns and 4 ns",
+        "5 ns and 4 ns",
+        "5 ns and 1 ns",
+        "7 ns and 4 ns"
+      ],
+      "explanation": "Paths: A or B → G1 → Y = 2 + 2 = 4 ns; C → G2 → Y = 4 ns; D → inverter → G2 → Y = 1 + 2 + 2 = 5 ns. Propagation delay (longest path) = 5 ns, contamination delay (shortest) = 4 ns. '4 ns and 4 ns' forgets the inverter path, 1 ns is the delay of one gate (not a path to the output), and 7 ns adds every gate's delay even though G1 and G2 work in parallel."
+    },
+    "digital-w6-q13": {
+      "question": "F = AC' + BC is built from AND-OR gates with an inverter for C'. In which situation can a static-1 hazard occur, and which term removes it?",
+      "options": [
+        "When C changes with A = B = 1; add the term AB",
+        "When C changes with A = B = 0; add the term A'B'",
+        "When A changes with B = C = 1; add the term AC",
+        "No hazard is possible in this circuit"
+      ],
+      "explanation": "With A = B = 1, F = C' + C should stay 1 whatever C is. But when C changes, C' changes late because of the inverter delay, so for an instant both terms can be 0: a static-1 glitch. The consensus of AC' and BC is AB, which stays 1 at A = B = 1 independent of C, and does not change the function. At A = B = 0, F is just 0, so there is no 1 to hold. At B = C = 1, F = BC = 1 directly, with no race on A. And with two paths of different delay, a hazard is certainly possible."
+    },
+    "digital-w6-q14": {
+      "question": "Three 2-input NAND gates: G1 = NAND(A, B'), G2 = NAND(A', C), and F = NAND(G1, G2). What is F as an SOP?",
+      "options": [
+        "AB' + A'C",
+        "A'B + AC'",
+        "(A + B')(A' + C)",
+        "(A' + B)(A + C')"
+      ],
+      "explanation": "F = ((AB')'·(A'C)')' = (AB')'' + (A'C)'' = AB' + A'C (De Morgan, the double bars cancel). This is the NAND-NAND = AND-OR rule. A'B + AC' flips every literal. Both POS options are NOR-NOR style thinking; for example (A + B')(A' + C) gives 0 at A = 1, B = 0, C = 0, while F = AB' = 1."
+    },
+    "digital-w6-q15": {
+      "question": "F(A, B, C) = Σm(1, 3, 6, 7) is to be built with a 4:1 MUX, but the select lines are B (S1) and C (S0). What are the data inputs I0, I1, I2, I3?",
+      "options": [
+        "0, A, A', 1",
+        "1, A, A', 0",
+        "0, A', A, 1",
+        "A', 0, 1, A"
+      ],
+      "explanation": "Pair the rows by BC (the A = 0 row and the A = 1 row). BC = 00 → m0, m4 = 0, 0 → I0 = 0. BC = 01 → m1, m5 = 1, 0 → I1 = A'. BC = 10 → m2, m6 = 0, 1 → I2 = A. BC = 11 → m3, m7 = 1, 1 → I3 = 1. '0, A, A', 1' swaps A' and A (reading the pair backwards). '1, A, A', 0' is all of F'. 'A', 0, 1, A' puts the pairs on the wrong select values and builds Σm(0, 2, 6, 7)."
     },
     "digital-w7-q1": {
       "question": "An 8:1 MUX must be built using only 2:1 MUXes. How many 2:1 MUXes are needed?",
@@ -421,6 +961,96 @@
       ],
       "explanation": "S3 S2 = 10 = 2 → third group (I8–I11). S1 S0 = 11 = 3 → fourth input of that group: 8 + 3 = I11. Plain binary 1011 = 11 says the same. I14 comes from swapping the roles of the selects (choosing the group with S1 S0 and the input inside it with S3 S2)."
     },
+    "digital-w7-q7": {
+      "question": "In a simple 4-to-2 encoder (Y1 = D2 + D3, Y0 = D1 + D3), only D2 = 1. What is Y1Y0?",
+      "options": [
+        "10",
+        "01",
+        "11",
+        "00"
+      ],
+      "explanation": "Y1 = 1 + 0 = 1, Y0 = 0 + 0 = 0, so 10 = 2, the code of D2. 01 comes from reading the bits backwards, 11 is the code of D3, and 00 is the code of D0 (or of no active input)."
+    },
+    "digital-w7-q8": {
+      "question": "A 4-to-16 decoder is built from two 3-to-8 decoders (with enable). What does the MSB A3 do?",
+      "options": [
+        "It goes to the A0 input of both decoders",
+        "It selects which decoder is enabled",
+        "It drives an OR gate after the outputs",
+        "Nothing; 3 bits are enough"
+      ],
+      "explanation": "A2 A1 A0 go to both decoders; A3 = 0 enables the upper one (Y0–Y7) and A3 = 1 the lower one (Y8–Y15). Putting the MSB on A0 swaps the roles of the bits, ORing outputs destroys the decoder's 'only one output active' property, and 16 outputs need 4 bits."
+    },
+    "digital-w7-q9": {
+      "question": "All inputs of a 4-input priority encoder (outputs Y1 Y0 and valid bit V) are 0. What is the output?",
+      "options": [
+        "V = 1; Y1Y0 comes out 00",
+        "V = 0; Y1Y0 comes out 11",
+        "V = 1; Y1Y0 comes out 11",
+        "V = 0; Y1Y0 is a don't-care"
+      ],
+      "explanation": "V = D3 + D2 + D1 + D0 = 0, i.e. no input is active; in this case Y1Y0 is a don't-care and should not be read at all. V = 1 with 00 would mean D0 is active; V is exactly what tells 'D0 active' apart from 'nothing active'. V = 1 with 11 is the code for D3 active."
+    },
+    "digital-w7-q10": {
+      "question": "4 devices (0 to 3) share a bus through tri-state buffers, and their enables come from the outputs of a 2-to-4 decoder (inputs S1 S0). What happens on the bus when S1S0 = 10?",
+      "options": [
+        "Only device 1 drives the bus, the rest are Z",
+        "Device 1 and device 0 both drive the bus",
+        "Only device 2 drives the bus, the rest are Z",
+        "All devices drive and there is contention"
+      ],
+      "explanation": "A decoder makes only one output active at a time: 10 = 2, so only device 2's buffer is enabled and the rest are Z. Device 1 comes from reading the bits LSB-first, and 'device 1 and 0' treats the bits as separate enables. Because of the decoder, two drivers can never be enabled together, so there is no contention."
+    },
+    "digital-w7-q11": {
+      "question": "An 8:1 MUX is made from two 4:1 MUXes (upper I0–I3, lower I4–I7, both on S1 S0) and one 2:1 MUX (select S2). What happens when S2 S1 S0 = 110?",
+      "options": [
+        "The upper 4:1 MUX sends its input 2 (I2), and the 2:1 MUX selects it",
+        "The lower 4:1 MUX sends its input 2 (I6), and the 2:1 MUX selects it",
+        "The lower 4:1 MUX sends its input 3 (I7), and the 2:1 MUX selects it",
+        "The upper 4:1 MUX sends its input 3 (I3), and the 2:1 MUX selects it"
+      ],
+      "explanation": "S1 S0 = 10 = 2, so both 4:1 MUXes pass their input 2: the upper one I2, the lower one I6. S2 = 1 selects the lower group, so the output is I6 (110 = 6 ✓). I2 comes from ignoring S2, and I7 or I3 from using S2 S1 = 11 as the inner select instead of S1 S0."
+    },
+    "digital-w7-q12": {
+      "question": "In this 4-input priority encoder D0 has the HIGHEST priority and D3 the lowest. Codes: D0 → 00, D1 → 01, D2 → 10, D3 → 11. What is the correct equation for Y0? (With no input active the output is a don't-care.)",
+      "options": [
+        "Y0 = D3 + D2'D1",
+        "Y0 = D1 + D3",
+        "Y0 = D0'D1 + D2'D3",
+        "Y0 = D0'(D1 + D2'D3)"
+      ],
+      "explanation": "Y0 = 1 when the winning input is D1 or D3. D1 wins when D0 = 0, D1 = 1: D0'D1. D3 wins when D0 = D1 = D2 = 0, D3 = 1: D0'D1'D2'D3. Together: D0'(D1 + D1'D2'D3) = D0'(D1 + D2'D3). D3 + D2'D1 is the old (D3 highest) equation. D1 + D3 ignores priority completely, and D0'D1 + D2'D3 gives 1 at D0 = 1, D2 = 0, D3 = 1 although D0 wins there (code 00)."
+    },
+    "digital-w7-q13": {
+      "question": "Two tri-state drivers share one bus line. Driver 1's enable is E1 = S and driver 2's enable is E2 = S' + T. When can contention happen, and will the bus ever float (both Z)?",
+      "options": [
+        "Contention at S = 1, T = 1; floating at S = 0, T = 0",
+        "Contention at S = 0, T = 1; floating at S = 1, T = 0",
+        "Contention at S = 1, T = 1; the bus never floats",
+        "Never contention; floating at S = 1, T = 0"
+      ],
+      "explanation": "Contention = both enabled: E1·E2 = S(S' + T) = ST, i.e. S = 1, T = 1. Floating = both off: E1'·E2' = S'·S·T' = 0, i.e. never. At S = 0, T = 0, E2 = 1, so the bus is driven. At S = 1, T = 0, E1 = 1, so there is a driver there too. At S = 0, T = 1 only E2 = 1, no contention. Trap: reading E2 as just T."
+    },
+    "digital-w7-q14": {
+      "question": "A 6-to-64 decoder is to be built only from a tree of 2-to-4 decoders (with enable). How many 2-to-4 decoders are needed?",
+      "options": [
+        "21",
+        "16",
+        "32",
+        "3"
+      ],
+      "explanation": "The last level needs 64 outputs / 4 = 16 decoders (lowest 2 bits). Their 16 enables need 16 / 4 = 4 decoders (middle 2 bits). Those 4 are enabled by 1 decoder (top 2 bits). Total 16 + 4 + 1 = 21. 16 is just the last level, 3 is the number of levels, and 32 = 64 / 2 treats each decoder as having 2 outputs."
+    },
+    "digital-w7-q15": {
+      "question": "A 16:1 MUX is built only from a tree of 2:1 MUXes. Each 2:1 MUX has a data-to-output delay of 3 ns. How many MUXes are needed, and what is the delay from a data input to the output?",
+      "options": [
+        "15 MUX, 45 ns",
+        "15 MUX, 12 ns",
+        "16 MUX, 12 ns",
+        "8 MUX, 24 ns"
+      ],
+      "explanation": "Levels: 8 + 4 + 2 + 1 = 15 MUXes (2⁴ − 1). Each data input follows a single path with one MUX per level: 4 levels × 3 ns = 12 ns. 45 ns adds the delays of all 15 MUXes, though the MUXes of one level work in parallel. 16 comes from counting the inputs, and 8 is just the first level."
+    },
     "digital-w8-q1": {
       "question": "In a full adder A = 1, B = 1, Cin = 1. What are S and Cout?",
       "options": [
@@ -480,6 +1110,96 @@
         "0111, V = 1"
       ],
       "explanation": "1100 = −4, 1011 = −5, the true sum −9 is outside the 4-bit range (−8 to +7). Bits: 1100 + 1011 = 10111, the 4-bit result is 0111 (+7). The lower 3 bits 100 + 011 = 111 produce no carry into bit 3: C3 = 0, and C4 = 1, so V = 1 ⊕ 0 = 1. Two negatives giving a positive = overflow. 'V = 0' comes from looking only at the carry out and assuming all is well."
+    },
+    "digital-w8-q7": {
+      "question": "A half adder has A = 1 and B = 1. What are the sum S and carry C?",
+      "options": [
+        "S = 0, C = 1",
+        "S = 1, C = 0",
+        "S = 1, C = 1",
+        "S = 0, C = 0"
+      ],
+      "explanation": "1 + 1 = 2 = binary 10: S = A ⊕ B = 0, C = AB = 1. S = 1, C = 0 happens when only one input is 1. S = 1, C = 1 is the full adder's 1 + 1 + 1 case, and S = 0, C = 0 is when both inputs are 0."
+    },
+    "digital-w8-q8": {
+      "question": "In a 4-bit adder-subtractor, what happens when the control M = 1?",
+      "options": [
+        "Only the B bits are inverted, Cin stays 0",
+        "The A bits are inverted and Cin = 1",
+        "Every B bit is inverted and Cin = 1",
+        "The adder's output is inverted"
+      ],
+      "explanation": "With M = 1 the XOR gates turn B into B', and M itself provides Cin = 1: A + B' + 1 = A − B. Inverting alone gives the 1's complement (the answer comes out 1 too small). Inverting A gives something like B − A − 1, not A − B. It is the input B that changes, not the output."
+    },
+    "digital-w8-q9": {
+      "question": "A 1-bit magnitude comparator gets A = 0, B = 1. Which output is 1?",
+      "options": [
+        "A > B (AB' = 1)",
+        "A < B (A'B = 1)",
+        "A = B (XNOR = 1)",
+        "All three outputs are 0"
+      ],
+      "explanation": "A'B = 1·1 = 1, so A < B. AB' = 0·0 = 0, and XNOR(0, 1) = 0 because the bits differ. Exactly one of the comparator's three outputs is always 1, so 'all three 0' cannot happen."
+    },
+    "digital-w8-q10": {
+      "question": "An 8-bit ripple-carry adder adds the unsigned numbers 11001000 and 01010000. What are the 8-bit result and the carry out?",
+      "options": [
+        "00011000, carry out 0 (all fine)",
+        "10011000, carry out 1 (unsigned overflow)",
+        "00011000, carry out 1, but no unsigned overflow",
+        "00011000, carry out 1 (unsigned overflow)"
+      ],
+      "explanation": "200 + 80 = 280 = 100011000 (9 bits). The 8-bit result is 00011000 (= 24) and the carry out is 1. In unsigned addition the carry out 1 is the overflow, since 280 > 255. 10011000 comes from mishandling the carry into bit 7, carry out 0 forgets bit 8, and 'no overflow' wrongly applies the signed rule (V = Cn ⊕ Cn−1) to unsigned numbers."
+    },
+    "digital-w8-q11": {
+      "question": "A 3-input LUT (address ABC, A = MSB) stores the bits 0, 0, 0, 1, 0, 1, 1, 1 at addresses 000 to 111. Which function does the LUT implement?",
+      "options": [
+        "A ⊕ B ⊕ C",
+        "AB + BC + AC",
+        "ABC",
+        "A + B + C"
+      ],
+      "explanation": "The addresses holding 1 are 011, 101, 110, 111, i.e. where at least two inputs are 1: majority = AB + BC + AC. A ⊕ B ⊕ C would be 1 at 001, 010, 100, 111, ABC only at 111, and A + B + C at every address except 000."
+    },
+    "digital-w8-q12": {
+      "question": "4-bit ripple-carry adder: each full adder has a 2 ns delay from any input to Cout and 3 ns from any input to S. All A, B bits and C0 arrive at t = 0. In the worst case, when does S3 (the MSB sum) settle?",
+      "options": [
+        "12 ns",
+        "8 ns",
+        "9 ns",
+        "11 ns"
+      ],
+      "explanation": "Carry chain: C1 at 2 ns, C2 at 4 ns, C3 at 6 ns. FA3's sum comes 3 ns after C3: 6 + 3 = 9 ns. 8 ns is the time of C4 (not of a sum). 11 ns = 4 × 2 + 3 assumes S3 waits for C4, but S3 is made from C3. 12 ns = 4 × 3 chains the sum delays together."
+    },
+    "digital-w8-q13": {
+      "question": "A 4-bit adder-subtractor (M = 1) gets A = 0101 and B = 1010 (both 2's complement). What are the 4-bit result and the overflow flag V = C4 ⊕ C3?",
+      "options": [
+        "1011, V = 0",
+        "1111, V = 0",
+        "1010, V = 1",
+        "1011, V = 1"
+      ],
+      "explanation": "B' = 0101 and Cin = 1: 0101 + 0101 + 1 = 1011, C4 = 0. Lower 3 bits: 101 + 101 + 1 = 1011, so a carry goes into bit 3: C3 = 1. V = 0 ⊕ 1 = 1. Meaning: 5 − (−6) = +11, outside the 4-bit range (up to +7), so 1011 = −5 is wrong. 'V = 0' comes from looking only at the carry out (0), 1111 from adding A + B instead of subtracting, and 1010 from forgetting Cin = 1."
+    },
+    "digital-w8-q14": {
+      "question": "The correct A > B output of a 3-bit comparator is G = A2B2' + (A2 ⊙ B2)A1B1' + (A2 ⊙ B2)(A1 ⊙ B1)A0B0'. A student dropped (A2 ⊙ B2) from the middle term: Gs = A2B2' + A1B1' + (A2 ⊙ B2)(A1 ⊙ B1)A0B0'. For which input does the student's circuit give a wrong answer?",
+      "options": [
+        "A = 011, B = 100",
+        "A = 110, B = 101",
+        "A = 101, B = 100",
+        "A = 010, B = 011"
+      ],
+      "explanation": "A = 011, B = 100: really 3 < 4, so G = 0. In the student's circuit A1B1' = 1·1 = 1, so Gs = 1, which is wrong. B is bigger at the MSB, so A1 > B1 means nothing; that is why the (A2 ⊙ B2) check was needed. In the other three pairs (110/101, 101/100, 010/011) the MSBs are equal, so the dropped factor would have been 1 anyway and both circuits agree."
+    },
+    "digital-w8-q15": {
+      "question": "The 4-input function F(A, B, C, D) = Σm(1, 6, 7, 9, 12, 15) is built from two 3-input LUTs (inputs B, C, D) and a 2:1 MUX (select A). Which bits go into the A = 1 LUT at addresses BCD = 000 to 111?",
+      "options": [
+        "01000011",
+        "01001001",
+        "10010010",
+        "10110110"
+      ],
+      "explanation": "The minterms with A = 1: 9 = 1001, 12 = 1100, 15 = 1111, i.e. BCD = 001, 100, 111. Put 1 at those addresses (1, 4, 7) and 0 elsewhere: 0 1 0 0 1 0 0 1. 01000011 is the A = 0 LUT (m1, m6, m7 → BCD 001, 110, 111). 10010010 writes the right bits in reverse order (111 down to 000), and 10110110 is the complement of the right bits."
     },
     "digital-w9-q1": {
       "question": "In an SR latch made of NOR gates, S = 0 and R = 0 are applied. What happens to Q?",
@@ -541,6 +1261,96 @@
       ],
       "explanation": "Q_next = Q ⊕ X: Q toggles when X = 1 and holds when X = 0. 0 → (X = 1) 1 → (X = 0) 1 → (X = 1) 0 → (X = 1) 1. Sequence 1, 1, 0, 1. '1, 0, 1, 1' just copies X (as if D = X). This circuit actually behaves like a T flip-flop."
     },
+    "digital-w9-q7": {
+      "question": "In an SR latch made of NAND gates (active-low), S' = 0 and R' = 1 are applied. What is Q?",
+      "options": [
+        "Q = 1 (set)",
+        "Q = 0 (reset)",
+        "Q keeps its previous value",
+        "Q and Q' both 1 (forbidden)"
+      ],
+      "explanation": "The NAND latch is active-low: S' = 0 means set, so Q = 1. Q = 0 would need R' = 0. Hold happens at S' = R' = 1, and the forbidden case with both outputs 1 is S' = R' = 0."
+    },
+    "digital-w9-q8": {
+      "question": "In a rising-edge D flip-flop, D changes twice after one edge and before the next. What does Q do meanwhile?",
+      "options": [
+        "It changes along with every change of D",
+        "It toggles its value on every change of D",
+        "It holds the value taken at the last edge",
+        "It resets to 0 before the next edge"
+      ],
+      "explanation": "A flip-flop samples D only at the edge; changes in between have no effect until the next edge. Following D is what a D latch (EN = 1) does. Toggling is the job of a T or JK flip-flop, and there is no reason for a reset to 0."
+    },
+    "digital-w9-q9": {
+      "question": "A D flip-flop has D = Q' connected, and the clock is 50 MHz. What is the frequency of Q?",
+      "options": [
+        "50 MHz",
+        "25 MHz",
+        "100 MHz",
+        "12.5 MHz"
+      ],
+      "explanation": "Q toggles on every rising edge, so one full cycle of Q (0 → 1 → 0) takes 2 clock cycles: 50 / 2 = 25 MHz. 100 MHz multiplies instead, 50 MHz treats Q like the clock, and 12.5 MHz divides twice (that would be the MSB of a 2-bit counter)."
+    },
+    "digital-w9-q10": {
+      "question": "A 3-bit up counter (Q2Q1Q0) gets an 8 kHz clock. What is the frequency of Q2?",
+      "options": [
+        "2 kHz",
+        "4 kHz",
+        "2.67 kHz",
+        "1 kHz"
+      ],
+      "explanation": "Bit k divides the clock by 2ᵏ⁺¹: for Q2 that is 2³ = 8, so 8 / 8 = 1 kHz. Over the full 8-count cycle Q2 is 0 once and 1 once (0 for 0–3, 1 for 4–7). 4 kHz is the frequency of Q0, 2 kHz of Q1, and 2.67 kHz comes from dividing by 3."
+    },
+    "digital-w9-q11": {
+      "question": "A gated D latch has EN = 1 from t = 0 to t = 10 ns, and EN = 0 after that. D: 0 at t = 0, 1 at t = 4 ns, 0 at t = 8 ns, 1 at t = 12 ns. What is Q at t = 15 ns?",
+      "options": [
+        "1, because D is 1 now",
+        "1, because D was 1 at some point while EN = 1",
+        "0, because D was 0 when EN fell",
+        "Undefined, because D changed twice while EN = 1"
+      ],
+      "explanation": "While EN = 1 (0 to 10 ns) the latch is transparent: Q = D, so Q goes to 1 at 4 ns and back to 0 at 8 ns. When EN = 0 at 10 ns, Q = 0 is locked in. The change at 12 ns happens with EN = 0, so it has no effect. 'D is 1 now' treats the latch as always transparent, 'was 1 at some point' treats it as sticky, and several changes do not make a latch undefined."
+    },
+    "digital-w9-q12": {
+      "question": "A D flip-flop has tsu = 1.5 ns and th = 0.5 ns. Rising edges are at t = 10, 20, 30 ns. D changes only at t = 8.2, 20.4 and 28.7 ns. Where are the timing violations?",
+      "options": [
+        "Only setup at the 30 ns edge; the rest is fine",
+        "Setup violations at both the 10 ns and 30 ns edges",
+        "Hold at the 20 ns edge, and setup at the 30 ns edge",
+        "No violation; every change is outside the windows"
+      ],
+      "explanation": "Each edge's window is [edge − 1.5, edge + 0.5]: 10 ns → 8.5 to 10.5, 20 ns → 18.5 to 20.5, 30 ns → 28.5 to 30.5. 8.2 is before its window, so it is fine. 20.4 is 0.4 ns after the edge (less than 0.5): a hold violation. 28.7 is 1.3 ns before the edge (less than 1.5): a setup violation. Calling 8.2 a violation measures the window wrongly, and missing 20.4 forgets the hold time."
+    },
+    "digital-w9-q13": {
+      "question": "In a 3-bit counter, D2 = Q2 ⊕ Q1 was connected by mistake (D0 = Q0' and D1 = Q1 ⊕ Q0 are correct). Start at Q2Q1Q0 = 000. What is the state after 3 clock edges?",
+      "options": [
+        "011",
+        "111",
+        "100",
+        "110"
+      ],
+      "explanation": "000 → (D2 = 0 ⊕ 0 = 0, D1 = 0 ⊕ 0 = 0, D0 = 1) 001 → (D2 = 0 ⊕ 0 = 0, D1 = 0 ⊕ 1 = 1, D0 = 0) 010 → (D2 = 0 ⊕ 1 = 1, D1 = 1 ⊕ 0 = 1, D0 = 1) 111. A correct counter would give 011 after 3 edges; here Q2 toggles already at state 010 because the AND with Q0 is missing. 100 is the correct counter's result after 4 edges, and 110 comes from forgetting D0 = 1 in the last step."
+    },
+    "digital-w9-q14": {
+      "question": "Two D flip-flops: on every rising edge Q1 ← X and Q2 ← Q1. Output Y = Q1·Q2'. Initially Q1 = Q2 = 0. Over 5 edges X = 0, 1, 1, 0, 1. What is the sequence of Y after each edge?",
+      "options": [
+        "0, 1, 0, 0, 1",
+        "0, 1, 1, 0, 1",
+        "0, 0, 1, 0, 0",
+        "0, 1, 0, 1, 1"
+      ],
+      "explanation": "At each edge Q1 takes the new X and Q2 takes the old Q1. Edge 1: Q1 = 0, Q2 = 0 → Y = 0. Edge 2: Q1 = 1, Q2 = 0 → 1. Edge 3: Q1 = 1, Q2 = 1 → 0. Edge 4: Q1 = 0, Q2 = 1 → 0. Edge 5: Q1 = 1, Q2 = 0 → 1. Y catches each 0-to-1 change (a rising-edge detector). 0, 1, 1, 0, 1 is just Q1 (that is, X). 0, 0, 1, 0, 0 is Q1·Q2 (the complement on Q2 is forgotten), and 0, 1, 0, 1, 1 is Q1 ⊕ Q2, which catches every change, not only 0 to 1."
+    },
+    "digital-w9-q15": {
+      "question": "A 3-bit up counter (Q2Q1Q0) starts at 110. What is the state after 11 clock edges, and how many times did Q2 change along the way?",
+      "options": [
+        "001, Q2 changed 2 times",
+        "011, Q2 changed 3 times",
+        "111, Q2 changed 2 times",
+        "001, Q2 changed 3 times"
+      ],
+      "explanation": "6 + 11 = 17, and 17 mod 8 = 1, so the state is 001. Path: 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1. Q2 changes at 7 → 0 (1 to 0), 3 → 4 (0 to 1), and again 7 → 0 (1 to 0): 3 times in all. 011 treats 11 directly as the binary state, '2 times' misses one transition (such as the first 7 → 0), and 111 comes from miscounting the wrap-around."
+    },
     "digital-w10-q1": {
       "question": "In a JK flip-flop, Q = 0 now and J = 1, K = 1. What is Q after the next clock edge?",
       "options": [
@@ -600,6 +1410,96 @@
         "0111"
       ],
       "explanation": "Sequence: 0000, 1000, 1100, 1110, 1111, 0111, 0011, 0001, then it repeats; cycle length 8. 13 mod 8 = 5, so state number 5 = 0111. 1101 is just 13 in binary; a Johnson counter does not count in binary. 0011 comes from counting one step too far (6)."
+    },
+    "digital-w10-q7": {
+      "question": "A T flip-flop has T = 0. What does Q do after the next clock edge?",
+      "options": [
+        "Flips (toggle)",
+        "Becomes 0 (reset)",
+        "Becomes 1 (set)",
+        "Stays the same (hold)"
+      ],
+      "explanation": "Q+ = T ⊕ Q = 0 ⊕ Q = Q, so it holds. Toggle happens at T = 1. A T flip-flop has no direct set or reset input; it only holds or toggles."
+    },
+    "digital-w10-q8": {
+      "question": "How many distinct states does a ring counter made of 6 flip-flops go through?",
+      "options": [
+        "12",
+        "6",
+        "64",
+        "3"
+      ],
+      "explanation": "In a ring counter a single 1 circulates: n flip-flops → n states, so 6. 12 = 2n is the Johnson counter answer, 64 = 2⁶ is a full binary counter, and 3 = n / 2 has no meaning here."
+    },
+    "digital-w10-q9": {
+      "question": "A JK flip-flop currently has Q = 1, with J = 0, K = 1. What is Q after the next edge?",
+      "options": [
+        "0",
+        "1",
+        "Holds the previous value",
+        "Undefined (forbidden)"
+      ],
+      "explanation": "J = 0, K = 1 is reset: Q+ = JQ' + K'Q = 0 + 0 = 0. Staying at 1 would need hold (J = K = 0) or set (J = 1, K = 0). A JK has no forbidden combination; even J = K = 1 is a valid toggle."
+    },
+    "digital-w10-q10": {
+      "question": "In a counter design, a JK flip-flop must go from Q = 1 to Q+ = 1. From the excitation table, what should J and K be? (X = don't care)",
+      "options": [
+        "J = 1, K = 0",
+        "J = X, K = 1",
+        "J = 0, K = X",
+        "J = X, K = 0"
+      ],
+      "explanation": "1 → 1 can happen two ways: hold (J = 0, K = 0) or set (J = 1, K = 0). Both have K = 0, and J can be anything: J = X, K = 0. 'J = 1, K = 0' would work but throws away the don't-care that gives bigger K-map groups. J = X, K = 1 is the 1 → 0 entry, and J = 0, K = X is 0 → 0."
+    },
+    "digital-w10-q11": {
+      "question": "An 8-bit shift register holds 00010110 (decimal 22). What is the value after two left shifts (a 0 enters from the right)?",
+      "options": [
+        "00101100 (44)",
+        "00000101 (5)",
+        "01011000 (88)",
+        "10110000 (176)"
+      ],
+      "explanation": "Each left shift multiplies by 2: 22 → 44 → 88 = 01011000 (no 1 fell off, so no overflow). 00101100 is just one shift, 00000101 is two right shifts (divide by 4, leaving 5), and 10110000 is three left shifts."
+    },
+    "digital-w10-q12": {
+      "question": "A JK flip-flop starts at Q = 0. Over the next 5 edges (J, K) = (1, 0), (1, 1), (0, 0), (1, 1), (0, 1). What is the sequence of Q after each edge?",
+      "options": [
+        "1, 1, 1, 1, 0",
+        "1, 0, 0, 1, 0",
+        "1, 0, 1, 0, 0",
+        "1, 0, 0, 1, 1"
+      ],
+      "explanation": "(1, 0) set → 1. (1, 1) toggle → 0. (0, 0) hold → 0. (1, 1) toggle → 1. (0, 1) reset → 0. Sequence 1, 0, 0, 1, 0. '1, 1, 1, 1, 0' treats J = K = 1 as 'do nothing' like SR, '1, 0, 1, 0, 0' comes from treating (0, 0) as toggle, and '1, 0, 0, 1, 1' from treating (0, 1) as set."
+    },
+    "digital-w10-q13": {
+      "question": "A 4-bit Johnson counter (D0 = Q3', Q1 ← Q0, Q2 ← Q1, Q3 ← Q2) runs from 0000. Which 2-input AND gate is 1 only in the state Q0Q1Q2Q3 = 1110 (and 0 in the other 7 states)?",
+      "options": [
+        "Q0·Q1",
+        "Q1·Q2",
+        "Q2·Q3'",
+        "Q0·Q3'"
+      ],
+      "explanation": "States: 0000, 1000, 1100, 1110, 1111, 0111, 0011, 0001. Q2 = 1 with Q3 = 0 happens only in 1110 (1111, 0111, 0011 have Q3 = 1; the rest have Q2 = 0). A Johnson state is decoded from the two adjacent bits at the boundary between 1s and 0s. Q0·Q1 is 1 in 1100, 1110 and 1111, Q1·Q2 in 1110, 1111, 0111, and Q0·Q3' in 1000, 1100, 1110."
+    },
+    "digital-w10-q14": {
+      "question": "A 4-bit PISO register is loaded with Q3Q2Q1Q0 = 1011. Each clock shifts right (Q3 → Q2 → Q1 → Q0), a 0 enters Q3, and the Q0 from before the shift appears on the serial output. After 2 clocks, what is in the register, and which bits have come out so far?",
+      "options": [
+        "Register 0010; bits out 1, 1",
+        "Register 1100; bits out 1, 0",
+        "Register 0010; bits out 1, 0",
+        "Register 0101; bits out 1, 1"
+      ],
+      "explanation": "Clock 1: Q0 = 1 comes out, register 0101. Clock 2: Q0 = 1 comes out, register 0010. So the register is 0010 and the bits are 1, 1 (LSB first). 1100 comes from shifting left (then the MSB would come out first: 1, then 0), 'register 0010, bits 1, 0' reads the bits MSB-first, and 0101 is the register after only one clock."
+    },
+    "digital-w10-q15": {
+      "question": "A counter made of 2 JK flip-flops (Q1Q0) must run 00 → 01 → 11 → 10 → 00. From the excitation table, what are J1 and K1?",
+      "options": [
+        "J1 = Q0', K1 = Q0",
+        "J1 = Q0, K1 = Q0",
+        "J1 = Q0, K1 = Q0'",
+        "J1 = 1, K1 = Q0'"
+      ],
+      "explanation": "Transitions of Q1: 00 → 01: 0 → 0 (J1 = 0, K1 = X). 01 → 11: 0 → 1 (J1 = 1, K1 = X). 11 → 10: 1 → 1 (J1 = X, K1 = 0). 10 → 00: 1 → 0 (J1 = X, K1 = 1). In the Q1 = 0 rows J1 equals Q0 → J1 = Q0; in the Q1 = 1 rows K1 is the opposite of Q0 → K1 = Q0'. 'J1 = Q0', K1 = Q0' is exactly reversed (from 00 it jumps straight to 1x), 'J1 = Q0, K1 = Q0' toggles Q1 to 0 at state 11, and J1 = 1 would set Q1 = 1 already from state 00."
     },
     "digital-w11-q1": {
       "question": "What does the output of a Moore machine depend on?",
@@ -661,6 +1561,96 @@
       ],
       "explanation": "Positions 1–8: 1 0 1 0 1 1 0 1. Overlapping matches: 1–3, 3–5 (bit 3 reused), 6–8 → 3. Non-overlapping: after the 1–3 match a fresh start at bit 4; 4–6 = 011 is not a match, then 6–8 = 101 → 2. The 3–5 match does not count in non-overlapping mode because bit 3 was already used in the first match."
     },
+    "digital-w11-q7": {
+      "question": "An arrow in a Mealy state diagram is labelled '0/1'. What does it mean?",
+      "options": [
+        "This transition happens on input 0, and the output is 1",
+        "This transition happens on input 1, and the output is 0",
+        "The machine goes from state 0 to state 1",
+        "The output can be either 0 or 1"
+      ],
+      "explanation": "Mealy notation is 'input/output': 0/1 = input 0, output 1. Reading it backwards (input 1, output 0) is the most common mistake. State numbers are not written on arrows; states live in the circles. And the '/' does not mean 'or'."
+    },
+    "digital-w11-q8": {
+      "question": "An FSM with 5 states is to be built with one-hot encoding. How many flip-flops are needed?",
+      "options": [
+        "3",
+        "5",
+        "2",
+        "32"
+      ],
+      "explanation": "One-hot gives every state its own flip-flop: N = 5. 3 = ⌈log₂5⌉ is the binary-encoding answer, 2 flip-flops can only give 4 states, and 32 = 2⁵ is the calculation turned around."
+    },
+    "digital-w11-q9": {
+      "question": "The input 1111 goes into an '11' sequence detector. How many times does an overlapping detector output 1?",
+      "options": [
+        "2",
+        "4",
+        "3",
+        "1"
+      ],
+      "explanation": "With overlap, every new 1 forms a fresh '11' with the previous 1: positions 1–2, 2–3, 3–4 → 3 times. 2 is the non-overlapping count (1–2, 3–4), 4 counts every 1 as a match, and 1 is only the first match."
+    },
+    "digital-w11-q10": {
+      "question": "The Moore machine below starts in S0 and receives the input 1, 0, 1, 0, 1. What is the output (of the new state) after each clock edge?",
+      "options": [
+        "0, 0, 1, 0, 0",
+        "0, 1, 0, 1, 0",
+        "0, 0, 0, 1, 0",
+        "0, 0, 1, 0, 1"
+      ],
+      "explanation": "S0 −1→ S1 (out 0), −0→ S2 (0), −1→ S3 (1), −0→ S2 (0), −1→ S3 (1). A Moore output belongs to the state, so 0, 0, 1, 0, 1. Going from S3 to S2 on input 0 is the overlap ('10' is still there), which is why the second 101 is caught too; '0, 0, 1, 0, 0' is non-overlapping thinking. '0, 0, 0, 1, 0' reads the output one more step late, and no correct trace of this table gives '0, 1, 0, 1, 0'."
+    },
+    "digital-w11-q11": {
+      "question": "An FSM with 9 states is to be built with binary encoding. How many flip-flops are needed, and how many state codes are never used?",
+      "options": [
+        "3 flip-flops, 0 unused codes",
+        "4 flip-flops, 9 unused codes",
+        "4 flip-flops, 7 unused codes",
+        "9 flip-flops, 0 unused codes"
+      ],
+      "explanation": "⌈log₂9⌉ = 4, since 3 flip-flops give only 8 states. 4 bits make 16 codes and 9 are used, so 16 − 9 = 7 are unused (they can be don't-cares in the design). 3 flip-flops rounds the log down, 9 unused codes confuses 'unused' with the number of states, and 9 flip-flops is the one-hot answer."
+    },
+    "digital-w11-q12": {
+      "question": "The state table below is to be built with D flip-flops (Q1Q0); the unused code 11 is a don't-care. What are the minimal D1 and D0?",
+      "options": [
+        "D1 = xQ0, D0 = xQ1'",
+        "D1 = x(Q1 + Q0), D0 = xQ0'",
+        "D1 = x(Q1 + Q0), D0 = xQ1'Q0'",
+        "D1 = Q1 + Q0, D0 = xQ1'Q0'"
+      ],
+      "explanation": "D = the bits of the next state. Next Q1 = 1 only for B −1→ C and C −1→ C: xQ0 + xQ1 = x(Q1 + Q0) (the 11 don't-care enlarges the groups). Next Q0 = 1 only for A −1→ B: xQ1'Q0'. Here the 11 don't-care does not help, because a bigger group like xQ0' or xQ1' would also set C −1→ C or B −1→ C to 1, where D0 must be 0. D1 = xQ0 misses C −1→ C, and D1 = Q1 + Q0 sets Q1 = 1 even at x = 0, while on x = 0 every state goes to A."
+    },
+    "digital-w11-q13": {
+      "question": "Below is the table of a non-overlapping '101' Mealy detector (next state / output). Starting in S0, the input is 1, 0, 1, 0, 1, 1, 0, 1. What is the output sequence?",
+      "options": [
+        "0, 0, 1, 0, 1, 0, 0, 1",
+        "0, 0, 0, 1, 0, 0, 0, 1",
+        "0, 0, 1, 0, 0, 0, 1, 0",
+        "0, 0, 1, 0, 0, 0, 0, 1"
+      ],
+      "explanation": "S0 −1→ S1/0, −0→ S2/0, −1→ S0/1 (a match; it is non-overlapping, so back to S0). S0 −0→ S0/0, −1→ S1/0, −1→ S1/0, −0→ S2/0, −1→ S0/1. Outputs 0, 0, 1, 0, 0, 0, 0, 1. '0, 0, 1, 0, 1, 0, 0, 1' is the overlapping detector's answer (bit 3 is reused). '0, 0, 0, 1, 0, 0, 0, 1' reads the first output one cycle late, and '..., 1, 0' puts the last match one bit early."
+    },
+    "digital-w11-q14": {
+      "question": "An overlapping '1101' Mealy detector has the states S0 (nothing found), S1 ('1' found), S2 ('11' found), S3 ('110' found). In S3 the input is 1. What are the output and the next state?",
+      "options": [
+        "Output 1, next state S1",
+        "Output 1, next state S0",
+        "Output 1, next state S2",
+        "Output 0, next state S3"
+      ],
+      "explanation": "S3 + 1 = '1101', a full match, so the output is 1. For the overlap, find the longest suffix of '1101' that is also a prefix of the pattern: '101' no, '01' no, '1' yes. So the next state is S1. S0 is non-overlapping thinking. S2 ('11') is wrong, because the last two bits are '01', not '11'. Output 0 and staying in S3 simply fails to recognise the match."
+    },
+    "digital-w11-q15": {
+      "question": "Moore FSM: D1 = Q0, D0 = x + Q1, and output Z = Q1Q0. Initially Q1Q0 = 00. Over 4 edges the input is x = 1, 0, 1, 1. What is Z after each edge?",
+      "options": [
+        "0, 1, 1, 1",
+        "0, 0, 0, 1",
+        "0, 1, 0, 1",
+        "0, 0, 0, 0"
+      ],
+      "explanation": "00, x = 1: D1 = 0, D0 = 1 → 01 (Z = 0). 01, x = 0: D1 = 1, D0 = 0 + 0 = 0 → 10 (Z = 0). 10, x = 1: D1 = 0, D0 = 1 + 1 = 1 → 01 (Z = 0). 01, x = 1: D1 = 1, D0 = 1 + 0 = 1 → 11 (Z = 1). So 0, 0, 0, 1. '0, 1, 1, 1' comes from using the just-updated (new) Q1 inside D0; all D inputs come from the current state at the same time. '0, 1, 0, 1' and '0, 0, 0, 0' come from miscalculating D at some step."
+    },
     "digital-w12-q1": {
       "question": "For the 7-bit data 1101001, what is the even parity bit, and how many 1s are in the 8-bit word after adding the parity?",
       "options": [
@@ -720,6 +1710,96 @@
         "1010"
       ],
       "explanation": "s1 (1, 3, 5, 7) = 1 ⊕ 1 ⊕ 1 ⊕ 1 = 0. s2 (2, 3, 6, 7) = 0 ⊕ 1 ⊕ 1 ⊕ 1 = 1. s4 (4, 5, 6, 7) = 0 ⊕ 1 ⊕ 1 ⊕ 1 = 1. Syndrome s4 s2 s1 = 110 = 6, so flip position 6: 1010101. Data (3, 5, 6, 7) = 1, 1, 0, 1 → 1101. 1111 is reading the data without correcting, and 0111 comes from reading the syndrome backwards (011 = 3) and flipping position 3."
+    },
+    "digital-w12-q7": {
+      "question": "What is true about a code that adds one parity bit to the data?",
+      "options": [
+        "It catches a single-bit error, but cannot tell which bit is wrong",
+        "It catches a single-bit error and also fixes the wrong bit",
+        "It catches the error even when two bits flip together",
+        "It catches no errors; it only tells the data length"
+      ],
+      "explanation": "Flipping one bit changes the parity of the count of 1s, so the receiver sees an error; but it cannot tell which bit flipped. Correction needs a code like Hamming. If two bits flip, the parity comes back the same and the error is hidden."
+    },
+    "digital-w12-q8": {
+      "question": "In the Hamming(7,4) code, at which positions are the parity bits?",
+      "options": [
+        "5, 6, 7",
+        "1, 3, 5",
+        "1, 2, 4",
+        "3, 5, 6"
+      ],
+      "explanation": "The parity bits sit at the power-of-2 positions: 1, 2, 4. The data bits go to 3, 5, 6, 7. 5, 6, 7 puts the parity at the end by mistake, 1, 3, 5 are positions that p1 checks (part of its list), and 3, 5, 6 are part of the data positions."
+    },
+    "digital-w12-q9": {
+      "question": "A 4-bit ripple counter is to be made mod-6: as soon as the count reaches 6 it is cleared asynchronously. Which bits feed the NAND that drives the clear?",
+      "options": [
+        "Q2 and Q0 (at 0101)",
+        "Q2 and Q1 (at 0110)",
+        "Q2, Q1 and Q0 (at 0111)",
+        "Q3 and Q1 (at 1010)"
+      ],
+      "explanation": "6 = 0110. From 0 to 5, Q2 and Q1 are never 1 together (4 = 0100, 5 = 0101), so Q2·Q1 first becomes 1 at 6 and immediately forces 0000. Clearing at 0101 = 5 would make mod-5, at 0111 = 7 mod-7, and Q3·Q1 (1010) is the mod-10 clear."
+    },
+    "digital-w12-q10": {
+      "question": "A register-to-register path has tcq = 1.5 ns, combinational delay (max) = 6 ns, tsu = 0.5 ns, th = 0.5 ns. What is the maximum clock frequency?",
+      "options": [
+        "166.7 MHz",
+        "133.3 MHz",
+        "125 MHz",
+        "117.6 MHz"
+      ],
+      "explanation": "Tclk(min) = tcq + tcomb + tsu = 1.5 + 6 + 0.5 = 8 ns, so fmax = 1 / 8 ns = 125 MHz. 166.7 MHz uses only the combinational delay (6 ns), 133.3 MHz forgets the setup time (7.5 ns), and 117.6 MHz also adds the hold time (8.5 ns); hold is not part of this formula."
+    },
+    "digital-w12-q11": {
+      "question": "In Hamming(7,4) (positions 1 to 7, parity at 1, 2, 4, even parity), 0110111 is received. What are the syndrome s4 s2 s1 and the position of the wrong bit?",
+      "options": [
+        "110, position 6",
+        "011, position 3",
+        "101, position 5",
+        "000, no error"
+      ],
+      "explanation": "s1 (1, 3, 5, 7) = 0 ⊕ 1 ⊕ 1 ⊕ 1 = 1. s2 (2, 3, 6, 7) = 1 ⊕ 1 ⊕ 1 ⊕ 1 = 0. s4 (4, 5, 6, 7) = 0 ⊕ 1 ⊕ 1 ⊕ 1 = 1. s4 s2 s1 = 101 = 5, so flip position 5: 0110011. 110 and 011 come from using the wrong positions in some check, and 000 would need all three checks to be even."
+    },
+    "digital-w12-q12": {
+      "question": "Encode the data bits d3 d5 d6 d7 = 0, 1, 1, 0 in Hamming(7,4) (even parity, parity bits at positions 1, 2, 4). What is the codeword for positions 1 to 7?",
+      "options": [
+        "0001110",
+        "1100110",
+        "0110110",
+        "0110011"
+      ],
+      "explanation": "p1 = d3 ⊕ d5 ⊕ d7 = 0 ⊕ 1 ⊕ 0 = 1. p2 = d3 ⊕ d6 ⊕ d7 = 0 ⊕ 1 ⊕ 0 = 1. p4 = d5 ⊕ d6 ⊕ d7 = 1 ⊕ 1 ⊕ 0 = 0. Positions p1 p2 d3 p4 d5 d6 d7 = 1 1 0 0 1 1 0 → 1100110. 0001110 uses odd parity, 0110110 puts the data first and the parity after it, and 0110011 writes the correct codeword backwards from position 7 to 1."
+    },
+    "digital-w12-q13": {
+      "question": "A 40 ns combinational block is split into 4 pipeline stages with delays 8, 12, 10 and 10 ns. The register overhead (tcq + tsu) after each stage is 2 ns. What are the new clock period and the latency of one data item?",
+      "options": [
+        "12 ns, 48 ns",
+        "12 ns, 42 ns",
+        "10 ns, 40 ns",
+        "14 ns, 56 ns"
+      ],
+      "explanation": "The clock is set by the slowest stage: 12 + 2 = 14 ns. Latency = 4 stages × 14 ns = 56 ns, since every stage gets a full clock period, even a short one. '12 ns, 48 ns' forgets the overhead. '12 ns, 42 ns' takes average stage + overhead (10 + 2) as the period and the unpipelined 40 + 2 as the latency. '10 ns, 40 ns' uses the average stage and drops the overhead entirely."
+    },
+    "digital-w12-q14": {
+      "question": "A synchronous counter made of T flip-flops (Q2Q1Q0) must run 000 → 010 → 100 → 110 → 000 (the odd states are don't-cares). What are the minimal T2, T1, T0?",
+      "options": [
+        "T2 = Q1, T1 = 1, T0 = 0",
+        "T2 = Q1Q0, T1 = Q0, T0 = 1",
+        "T2 = Q1, T1 = Q2, T0 = 0",
+        "T2 = Q2 ⊕ Q1, T1 = 1, T0 = 0"
+      ],
+      "explanation": "T = Q ⊕ Q+. Q0 always stays 0 → T0 = 0. Q1 changes at every step (0 → 1, 1 → 0, 0 → 1, 1 → 0) → T1 = 1. Q2: 000 → 010 no change, 010 → 100 change, 100 → 110 no change, 110 → 000 change; so it toggles when Q1 = 1 → T2 = Q1. 'T2 = Q1Q0, T1 = Q0, T0 = 1' is the ordinary up counter. T1 = Q2 never lets Q1 toggle at 000 → 010, and T2 = Q2 ⊕ Q1 gives 0 at state 110, where Q2 must change."
+    },
+    "digital-w12-q15": {
+      "question": "In a 3-bit ripple up counter (every flip-flop has T = 1, and each next bit toggles when the previous bit goes 1 → 0), each flip-flop has tcq = 5 ns. The count is 011 and a clock edge arrives at t = 0. Which states does the output Q2Q1Q0 pass through?",
+      "options": [
+        "Straight to 100, at 5 ns",
+        "001 (5 ns), 000 (10 ns), then 100 (15 ns)",
+        "010 (5 ns), 110 (10 ns), then 100 (15 ns)",
+        "010 (5 ns), 000 (10 ns), then 100 (15 ns)"
+      ],
+      "explanation": "t = 5 ns: Q0 goes 1 → 0, state 010. Q0 falling clocks Q1: at t = 10 ns Q1 goes 1 → 0, state 000. Q1 falling clocks Q2: at t = 15 ns Q2 goes 0 → 1, state 100. 'Straight to 100' is how a synchronous counter behaves. 001 would need Q1 to change first, and 110 would need Q2 to change before Q1; in a ripple counter the order is always from LSB towards MSB."
     }
   }
 }
