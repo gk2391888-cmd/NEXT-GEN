@@ -61,6 +61,96 @@
       ],
       "explanation": "The 2 LOADs run. Loop round 1: ADD (R2 = 4), SUB (R1 = 2), JNZ jumps. Round 2: ADD (R2 = 6), SUB (R1 = 0), JNZ does not jump. Then HALT. Total 2 + 3 + 3 + 1 = 9 instructions, R2 = 6. Trap: 6, counting each line only once (forgetting that the loop repeats); 12, running the loop one extra time when R1 = 0."
     },
+    "cprog-w1-q7": {
+      "question": "In which correct order does the CPU run its cycle for every instruction?",
+      "options": [
+        "Decode → fetch → execute",
+        "Fetch → decode → execute",
+        "Execute → fetch → decode",
+        "Fetch → execute → decode"
+      ],
+      "explanation": "The CPU first brings the instruction from memory (**fetch**), then works out what to do (**decode**), and then does it (**execute**). Trap: \"fetch → execute → decode\", but without decoding the CPU does not know what to execute; and decode cannot come before fetch, because the instruction has not arrived yet."
+    },
+    "cprog-w1-q8": {
+      "question": "What is the output of this program?",
+      "options": [
+        "Hi there ! (one line)",
+        "Hi / there! (only two lines)",
+        "Hithere! (one line)",
+        "Hi / there / ! (three lines)"
+      ],
+      "explanation": "The first `printf` has two `\\n`: the line changes after \"Hi\" and again after \"there\". So the \"!\" from the second `printf` lands on the third line. Trap: joining \"there!\" together, forgetting that there is a `\\n` after \"there\" too; or ignoring `\\n` altogether."
+    },
+    "cprog-w1-q9": {
+      "question": "If the computer's power goes off suddenly, where is the stored data lost immediately?",
+      "options": [
+        "RAM (main memory)",
+        "Hard disk (HDD)",
+        "SSD (solid-state)",
+        "USB pen drive"
+      ],
+      "explanation": "RAM is **volatile**: data stays only while there is power. Hard disks, SSDs and pen drives are non-volatile storage; the data survives a power cut. Trap: treating an SSD like RAM because both are made of chips; but an SSD keeps data without power."
+    },
+    "cprog-w1-q10": {
+      "question": "A computer has 1 MB (1,048,576 bytes) of memory and every byte needs its own address. At least how many bits must an address have?",
+      "options": [
+        "16 bits",
+        "10 bits",
+        "20 bits",
+        "32 bits"
+      ],
+      "explanation": "n bits give 2ⁿ addresses. 2¹⁰ = 1024 (1 KB), so 2²⁰ = 1024 × 1024 = 1,048,576 (1 MB). So 20 bits are enough and 19 would be too few. Trap: 16 bits, which reaches only 64 KB; 10 bits give just 1 KB; 32 bits would work but is not the minimum."
+    },
+    "cprog-w1-q11": {
+      "question": "In this toy program, what value is in R2 once HALT is reached?",
+      "options": [
+        "8",
+        "12",
+        "2",
+        "10"
+      ],
+      "explanation": "The loop body (302–304) runs as long as R1 is not zero. R1 starts at 5 and drops by 1 each round, so the body runs 5 times (R1 = 4, 3, 2, 1, 0). Each time 2 is added to R2: 5 × 2 = 10. Trap: 8, not counting the round in which R1 becomes 0 (the ADD in that round has already happened before the SUB); 12, one round too many; 2, ignoring the jump."
+    },
+    "cprog-w1-q12": {
+      "question": "What is in R1 at HALT, and how many instructions in total run, counting HALT?",
+      "options": [
+        "R1 = 8, 12 instructions",
+        "R1 = 16, 15 instructions",
+        "R1 = 16, 6 instructions",
+        "R1 = 32, 18 instructions"
+      ],
+      "explanation": "`ADD R1, R1` doubles R1 every round. With R2 = 4 the loop runs 4 times: R1 = 2, 4, 8, 16. Instructions: 2 LOADs + 4 rounds × 3 (ADD, SUB, JNZ) + 1 HALT = 2 + 12 + 1 = 15. Trap: 6, counting each line only once; \"R1 = 8, 12\", running one round too few; \"R1 = 32, 18\", running one round too many."
+    },
+    "cprog-w1-q13": {
+      "question": "This toy program is like an if-else at machine level. Which addresses run, in what order, and what is R2 at HALT?",
+      "options": [
+        "500, 501, 502, 503, 505; R2 = 7",
+        "500, 501, 504, 505; R2 = 9",
+        "500, 501, 502, 503, 504, 505; R2 = 9",
+        "500, 501, 502, 505; R2 = 7"
+      ],
+      "explanation": "R1 = 0, so the JNZ at 501 does not jump and the PC moves normally to 502: R2 = 7. Then the JMP at 503 sends the PC to 505 unconditionally, so 504 is skipped. Order: 500, 501, 502, 503, 505 and R2 = 7. Trap: reading JNZ as \"jump if zero\" (the 504 path); forgetting the JMP and also running 504 (R2 would become 9); or failing to count 503."
+    },
+    "cprog-w1-q14": {
+      "question": "How does this program's output look on the screen?",
+      "options": [
+        "ab / cd / e / f (four lines)",
+        "ab / cde / f (three lines)",
+        "ab / (blank line) / cde",
+        "ab / cde (two lines)"
+      ],
+      "explanation": "After \"ab\" there are two `\\n` in a row: the first ends the line, the second makes an empty line. There is no newline after \"cd\", so the \"e\" from the next `printf` sticks to that line: \"cde\". Then `return 0;` ends `main`, so \"f\" is never printed. Trap: treating `\\n\\n` as a single newline (\"ab / cde\"); treating each `printf` as a new line; or running the code after the return as well."
+    },
+    "cprog-w1-q15": {
+      "question": "In a CPU every instruction takes 4 bytes, and the program is stored back to back from address 2000 (first instruction at 2000). There are no jumps. At which address is the 5th instruction, and what is the PC right after fetching it?",
+      "options": [
+        "At 2020; PC = 2024",
+        "At 2004; PC = 2005",
+        "At 2016; PC = 2017",
+        "At 2016; PC = 2020"
+      ],
+      "explanation": "The instructions are at 2000, 2004, 2008, 2012, 2016, so the 5th is at 2000 + 4 × 4 = 2016 (the first one is itself at 2000, so 4 steps, not 5). After the fetch the PC holds the next instruction's address: 2016 + 4 = 2020. Trap: 2020, adding 5 × 4; 2004/2005, taking each instruction as 1 byte; PC = 2017, bumping the PC by 1 although the instruction is 4 bytes."
+    },
     "cprog-w2-q1": {
       "question": "What is the decimal value of the hexadecimal number `0x3A`?",
       "options": [
@@ -120,6 +210,96 @@
         "opcode 60, register 2, immediate 15"
       ],
       "explanation": "Each hex digit is 4 bits: 3 | C | 2F. The top digit 3 is the opcode, the next C = 12 is the register, and the low two digits `0x2F` = 2·16 + 15 = 47 are the immediate. Trap: taking only the last digit F = 15 as the immediate; or swapping the field order; or treating whole bytes (`0x3C` = 60) as fields."
+    },
+    "cprog-w2-q7": {
+      "question": "How is the binary number 1011 0110 written in hex?",
+      "options": [
+        "0x6B",
+        "0xB5",
+        "0xB6",
+        "0xA6"
+      ],
+      "explanation": "Each 4 bits make one hex digit: 1011 = 11 = B, and 0110 = 6. So 1011 0110 = `0xB6`. Trap: 0x6B, swapping the order of the nibbles; 0xB5 or 0xA6, getting one nibble's value wrong (0110 = 6, and 1011 = B, not A)."
+    },
+    "cprog-w2-q8": {
+      "question": "What is the largest value of an 8-bit unsigned number?",
+      "options": [
+        "255",
+        "256",
+        "127",
+        "128"
+      ],
+      "explanation": "n bits unsigned: 0 to 2ⁿ − 1. 8 bits: 2⁸ − 1 = 255 (1111 1111). Trap: 256, that is the count of patterns, but 0 is one of the patterns; 127, that is the largest signed (two's complement) value."
+    },
+    "cprog-w2-q9": {
+      "question": "Assuming ASCII, what does this statement print?",
+      "options": [
+        "26",
+        "0",
+        "1",
+        "32"
+      ],
+      "explanation": "`'a'` = 97 and `'A'` = 65, so 97 − 65 = 32. That is why adding 32 to any capital letter gives its small letter. Trap: 26, mixing it up with the number of letters in the alphabet; 0, thinking both are \"the same letter\"."
+    },
+    "cprog-w2-q10": {
+      "question": "How is −37 written in 8-bit two's complement?",
+      "options": [
+        "1101 1010 (0xDA)",
+        "1101 1011 (0xDB)",
+        "1010 0101 (0xA5)",
+        "0010 0101 (0x25)"
+      ],
+      "explanation": "37 = 32 + 4 + 1 = 0010 0101. Invert all bits: 1101 1010. Then +1: 1101 1011 = `0xDB`. Trap: 0xDA, stopping after the invert (one's complement); 0xA5, sign-magnitude (MSB 1 and the rest 37); 0x25 is +37."
+    },
+    "cprog-w2-q11": {
+      "question": "On 8-bit two's complement hardware, 100 + 50 is computed. Reading the result's 8-bit pattern as a signed number, what is its value?",
+      "options": [
+        "−106",
+        "150",
+        "127",
+        "−50"
+      ],
+      "explanation": "100 + 50 = 150 = 1001 0110. The 8-bit signed range is only −128 to 127, and this pattern's MSB is 1, so it reads as negative: 150 − 256 = −106. Trap: 150, ignoring the overflow; 127, thinking the hardware clamps at the maximum (the bits simply wrap). (In C, signed overflow is UB; this is about the hardware bits.)"
+    },
+    "cprog-w2-q12": {
+      "question": "In a toy CPU's 16-bit instruction, the top 5 bits are the opcode, the next 3 bits the register number, and the low 8 bits a two's complement immediate. Decode the instruction `0x2BF6`.",
+      "options": [
+        "opcode 2, register 11, immediate 246",
+        "opcode 5, register 3, immediate 246",
+        "opcode 5, register 3, immediate −10",
+        "opcode 5, register 3, immediate −9"
+      ],
+      "explanation": "Binary: 0010 1011 1111 0110. The top 5 bits 00101 = 5 (opcode), the next 3 bits 011 = 3 (register), the low 8 bits 1111 0110 = 246 unsigned. The MSB is 1, so the signed value is 246 − 256 = −10 (or invert + 1: 0000 1001 + 1 = 10). Trap: opcode 2, register 11, i.e. cutting the fields at hex-digit boundaries; 246, reading the immediate as unsigned; −9, inverting but forgetting the +1."
+    },
+    "cprog-w2-q13": {
+      "question": "Assuming ASCII, what is the output of this code?",
+      "options": [
+        "D 3 68",
+        "C 3 67",
+        "D 4 100",
+        "D 4 68"
+      ],
+      "explanation": "`'d'` = 100 and `'a'` = 97, so `c - 'a'` = 3. First: 3 + 65 = 68, which is 'D' under `%c`. Second: 3 + 1 = 4 (d is the 4th letter). Third is the same 68, but `%d` shows the number. Trap: 3, forgetting the `+ 1`; 100, thinking `%d` shows c's original value; \"C 3 67\", taking d as the 3rd letter of the alphabet (counting from a starts at 1)."
+    },
+    "cprog-w2-q14": {
+      "question": "On 8-bit hardware, `0xF0 + 0x20` is computed. What is the 8-bit result, and if both inputs are read as signed (two's complement), which addition is this?",
+      "options": [
+        "0x110; that is 240 + 32 = 272",
+        "0x10; that is −16 + 32 = 16",
+        "0x10; that is −112 + 32 = −80",
+        "0x10; that is −15 + 32 = 17"
+      ],
+      "explanation": "0xF0 + 0x20 = 0x110, but only the low 8 bits survive in 8 bits: 0x10 = 16 (the carry falls off). As signed, 0xF0 = 1111 0000 = 240 − 256 = −16, and 0x20 = 32, so −16 + 32 = 16, which matches the result. Trap: keeping 0x110, which needs 9 bits, not 8; −112, reading 0xF0 as sign-magnitude; −15, forgetting the +1 after inverting (one's complement)."
+    },
+    "cprog-w2-q15": {
+      "question": "A 32-bit instruction format has a 6-bit opcode, two 5-bit register fields, and the remaining bits a two's complement immediate. How many distinct opcodes, how many registers can be named, and what is the immediate's range?",
+      "options": [
+        "64 opcodes, 32 registers, 0 to 65535",
+        "64 opcodes, 32 registers, −32768 to 32767",
+        "32 opcodes, 64 registers, −32768 to 32767",
+        "6 opcodes, 5 registers, −32768 to 32767"
+      ],
+      "explanation": "Opcode: 2⁶ = 64. Register field: 2⁵ = 32 registers. Immediate bits: 32 − 6 − 5 − 5 = 16, and the 16-bit two's complement range is −2¹⁵ to 2¹⁵ − 1 = −32768 to 32767. Trap: 0 to 65535, taking the immediate as unsigned; 6 and 5, mistaking the number of bits for the number of values; swapping 32 and 64."
     },
     "cprog-w3-q1": {
       "question": "What does this statement print?",
@@ -181,6 +361,96 @@
       ],
       "explanation": "`a / b * 2.0` goes left to right: first `a / b` = 2 (int division), then 2 * 2.0 = 4.0. `3.99 + 1` = 4.99, and storing it in an int drops the fraction: 4 (no rounding). `'0' + 5` = 48 + 5 = 53, which is the character '5', and `%c` shows it as '5'. Trap: 5.0, thinking 2.0 makes the whole expression double from the start; 5, rounding 4.99."
     },
+    "cprog-w3-q7": {
+      "question": "What does this statement print?",
+      "options": [
+        "-4 1",
+        "-3 1",
+        "-4 -1",
+        "-3 -1"
+      ],
+      "explanation": "Integer division truncates toward zero: −3.5 → −3. The remainder takes the sign of the first operand: −7 = 2 × (−3) + (−1), so `-7 % 2` = −1. Trap: −4, rounding down like floor; +1, assuming the remainder is always positive."
+    },
+    "cprog-w3-q8": {
+      "question": "What is the output of this code?",
+      "options": [
+        "10",
+        "9",
+        "9.7",
+        "A compile error"
+      ],
+      "explanation": "Storing a double in an int variable cuts off the fraction (no rounding), so k = 9. This is valid C, not a compile error (gcc may give a warning). Trap: 10, rounding; 9.7, thinking an int can hold a decimal."
+    },
+    "cprog-w3-q9": {
+      "question": "Which statement correctly reads a value from the keyboard into `double d;`?",
+      "options": [
+        "`scanf(\"%lf\", d);`",
+        "`scanf(\"%d\", &d);`",
+        "`scanf(\"%lf\", &d);`",
+        "`scanf(\"%c\", &d);`"
+      ],
+      "explanation": "`scanf` needs the variable's address (`&d`), and the specifier for reading a double is `%lf`. Trap: leaving out the `&`, so `scanf` writes to the wrong place and the program may crash; `%d` is for an int and `%c` for a single character."
+    },
+    "cprog-w3-q10": {
+      "question": "What is the output of this code?",
+      "options": [
+        "8 2.00",
+        "10 2.50",
+        "8 2.50",
+        "10 2.00"
+      ],
+      "explanation": "`a / b` = 2 (integer division), then 2 × 4 = 8, so `a / b * b` does not give back 10. In the second, the division inside the brackets has already happened in int (2), and the cast only then turns 2 into 2.0: \"2.00\". Trap: 10, thinking `/ b * b` cancels out; 2.50, thinking the cast was applied before the division."
+    },
+    "cprog-w3-q11": {
+      "question": "What is the output of this code?",
+      "options": [
+        "16 8 4",
+        "8 8 4",
+        "12 8 4",
+        "12 4 4"
+      ],
+      "explanation": "Assignment operators group right to left. `a = b = c = 4` gives all three 4. In `a += b *= 2`, `b *= 2` runs first: b = 8, and that expression's value is 8. Then `a += 8`: a = 12. c never changed. Trap: 16, thinking `a += b` happened first and was then doubled; 12 4 4, thinking b was doubled only inside a."
+    },
+    "cprog-w3-q12": {
+      "question": "What is the output of this code?",
+      "options": [
+        "9.25",
+        "7.50",
+        "8.75",
+        "8.00"
+      ],
+      "explanation": "First part, left to right: `x / y` = 3 (int division), then 3 × 2.5 = 7.5. Second: `x % y` = 1, the cast makes it 1.0, then 1.0 / 2 = 0.5. Total 7.5 + 0.5 = 8.00. Trap: 9.25, taking `x / y` as 3.5; 7.50, assuming the cast comes after the division so 1 / 2 = 0; 8.75, both mistakes together."
+    },
+    "cprog-w3-q13": {
+      "question": "What is the output of this code?",
+      "options": [
+        "4 4 12",
+        "6 4 10",
+        "7 4 11",
+        "6 5 10"
+      ],
+      "explanation": "`a++` gives the old value 3 (then a = 4), and `--b` decrements first and gives 4. c = 3 × 2 + 4 = 10. Then `c % 4` = 2, so a = 4 + 2 = 6. b = 4. Trap: 4 4 12, thinking `a++` gives the new value (4); 7 4 11, thinking `--b` gives the old value (5); 6 5 10, forgetting that b itself changed."
+    },
+    "cprog-w3-q14": {
+      "question": "Assuming ASCII, what is the output of this code?",
+      "options": [
+        "E 9 34.0",
+        "E 9 34.5",
+        "B 9 34.5",
+        "E 6 34.0"
+      ],
+      "explanation": "`'B'` = 66, so n = 69, which is 'E' under `%c`. `69 % 10` = 9. In `n / 2` both are int: 34, then 34.0 in the float. Trap: 34.5, thinking storing into a float variable makes the division decimal; 6, taking `66 % 10` (ch instead of n); 'B', forgetting that 3 was added into n."
+    },
+    "cprog-w3-q15": {
+      "question": "What is the output of this code?",
+      "options": [
+        "9.6 9 9",
+        "9.0 9 9",
+        "9.6 10 9",
+        "9.6 10 10"
+      ],
+      "explanation": "The cast first makes total 48.0, so avg = 9.6. `avg + 0.5` = 10.1, and storing it in an int cuts the fraction: 10 (this is the old rounding trick). In `total / n` both are int: 9. Trap: 9.0, thinking the cast came after the division; \"9.6 9 9\", thinking the + 0.5 has no effect; \"9.6 10 10\", thinking `cut` is rounded too."
+    },
     "cprog-w4-q1": {
       "question": "What does this code print?",
       "options": [
@@ -240,6 +510,96 @@
         "12"
       ],
       "explanation": "`break` only stops the inner loop. For i = 1 it breaks at j = 1: 0. For i = 2, j = 1 is counted and it breaks at j = 2: 1. For i = 3: 2, and for i = 4: 3. Total 0 + 1 + 2 + 3 = 6. Trap: 0, thinking break leaves both loops; 12, treating break like `continue` (skipping 4 of 16)."
+    },
+    "cprog-w4-q7": {
+      "question": "What does this statement print?",
+      "options": [
+        "1 0",
+        "true false",
+        "0 1",
+        "1 -1"
+      ],
+      "explanation": "In C a comparison gives 1 when true and 0 when false. `5 > 3` is true: 1. `2 == 3` is false: 0. Trap: \"true false\", C's `%d` does not print words; −1, a habit from some other languages."
+    },
+    "cprog-w4-q8": {
+      "question": "What is the output of this code?",
+      "options": [
+        "Nothing is printed",
+        "An infinite loop runs",
+        "10",
+        "10 11"
+      ],
+      "explanation": "A `do-while` runs the body first and checks the condition afterwards. 10 is printed the first time, n = 11, then `11 < 5` is false so the loop stops. Trap: \"nothing is printed\", which is how a `while` loop behaves, since it checks the condition first."
+    },
+    "cprog-w4-q9": {
+      "question": "What are i and count after the loop?",
+      "options": [
+        "9 2",
+        "27 3",
+        "27 2",
+        "81 4"
+      ],
+      "explanation": "i: 1 → 3 (count 1) → 9 (count 2) → 27 (count 3). Now `27 < 20` is false and the loop stops. Trap: \"9 2\", thinking i never goes above 20; but the condition is checked before the body, so at 9 the body runs and makes it 27."
+    },
+    "cprog-w4-q10": {
+      "question": "What is the output of this code?",
+      "options": [
+        "16",
+        "1",
+        "A crash (division by zero)",
+        "15"
+      ],
+      "explanation": "`a != 0` is false, so the right side of `&&` (`b / a`) never runs: no crash. In the `else if`, `a == 0` is true, so the right side of `||` (`b++`) is skipped. Only `b += 10` runs: 15. Trap: 16, running the `b++` as well; a crash, forgetting short-circuiting."
+    },
+    "cprog-w4-q11": {
+      "question": "What is the output of this code?",
+      "options": [
+        "2",
+        "21",
+        "021",
+        "0"
+      ],
+      "explanation": "`switch` jumps straight to the matching label `case 'C'`, even though `default` is written above it. \"2\" is printed, and with no `break` it falls through into `case 'D'`: \"1\". Output \"21\". Trap: \"021\", thinking the `default` above also runs; \"2\", forgetting fall-through."
+    },
+    "cprog-w4-q12": {
+      "question": "What is the output of this code?",
+      "options": [
+        "8",
+        "17",
+        "25",
+        "16"
+      ],
+      "explanation": "j always starts from i, so the pairs are (1,1), (1,2), (1,3), (2,2), (2,3), (3,3). Those with an even sum are skipped by `continue`. Only (1,2) and (2,3) have an odd sum: 1×2 + 2×3 = 2 + 6 = 8. Trap: 17, adding the even-sum pairs instead; 25, ignoring the `continue`; 16, starting j from 1 (then (2,1) and (3,2) would also count)."
+    },
+    "cprog-w4-q13": {
+      "question": "What is the output of this code?",
+      "options": [
+        "17 5",
+        "An infinite loop runs",
+        "17 4",
+        "12 3"
+      ],
+      "explanation": "Digits from the right: 3, 2, 7, 0, 5. In the 0 round, `continue` skips only the `sum` and `nz` updates; `n = n / 10` has already happened, so the loop moves on. sum = 3 + 2 + 7 + 5 = 17, nonzero digits 4. Trap: an infinite loop, thinking `continue` also skipped n's update; \"12 3\", treating `continue` as `break`; \"17 5\", counting the 0 too."
+    },
+    "cprog-w4-q14": {
+      "question": "What is the output of this code?",
+      "options": [
+        "7 8",
+        "-1 10",
+        "13 13",
+        "7 7"
+      ],
+      "explanation": "91 = 7 × 13. Nothing from i = 2 to 6 divides it. At i = 7, 7 × 7 = 49 ≤ 91 and `91 % 7 == 0`, so found = 7 and `break`. After a `break`, `i++` does not run, so i stays 7. Trap: \"7 8\", thinking the update still runs after a break; \"−1 10\", taking 91 as prime; 13, the larger factor (the loop stops at the smaller one)."
+    },
+    "cprog-w4-q15": {
+      "question": "What is the output of this code?",
+      "options": [
+        "Q0",
+        "P0",
+        "R0",
+        "P3"
+      ],
+      "explanation": "`a > 2` is true, so the inner `if` runs. `b = a - 3` is an assignment, not a comparison: b = 0, and the expression's value is 0, i.e. false. So the inner `else` runs: \"Q\". Then b is printed: 0. Output \"Q0\". Trap: \"P0\", reading `=` as `==` (`b == 0` would be true); \"R0\", thinking the outer `else` ran on the false condition."
     },
     "cprog-w5-q1": {
       "question": "What is the output of this program?",
@@ -301,6 +661,96 @@
       ],
       "explanation": "Each call prints n before its recursive call: 3, 2, 1 (going down). p(0) returns at once. Now the frames unwind in reverse order and each prints its n again after the recursive call: first 1, then 2, then 3. Output \"321123\". Trap: \"321321\", thinking the order is still 3, 2, 1 on the way back; the frame created last finishes first."
     },
+    "cprog-w5-q7": {
+      "question": "What is the output of this program?",
+      "options": [
+        "7",
+        "13",
+        "12",
+        "14"
+      ],
+      "explanation": "The inner call goes first: `twice(3)` = 6. Then `twice(6)` = 12, and + 1 gives 13. Trap: 7, doubling only once; 14, adding the + 1 inside the inner call (`twice(7)`); 12, forgetting the + 1."
+    },
+    "cprog-w5-q8": {
+      "question": "Whenever a function is called, what is created on the runtime stack?",
+      "options": [
+        "A new copy of the whole program and its code",
+        "A global variable for each local",
+        "Space for the return value only",
+        "A frame: parameters, locals, return address"
+      ],
+      "explanation": "Each call gets its own **frame** holding that call's parameters, local variables and return address. The frame goes away when the function returns. Trap: \"space for the return value only\", then where would the locals live? This is why each call in a recursion has its own separate locals."
+    },
+    "cprog-w5-q9": {
+      "question": "What is wrong with this function?",
+      "options": [
+        "There is no base case, so it recurses until stack overflow",
+        "A function cannot call itself, so there is a compile error",
+        "n − 1 can become negative, so there is a compile error",
+        "Nothing; sum(3) always returns 6"
+      ],
+      "explanation": "A recursion needs a **base case** to stop (like `if (n <= 0) return 0;`). Here every call makes another call, frames keep piling up and the stack overflows. Trap: \"sum(3) = 6\", 3 + 2 + 1 looks right, but the code does not stop at 0 and goes on to −1, −2 ... A function can call itself in C."
+    },
+    "cprog-w5-q10": {
+      "question": "What does `g(4096)` return?",
+      "options": [
+        "10",
+        "6",
+        "19",
+        "4"
+      ],
+      "explanation": "Each call takes the last digit (`n % 10`) and passes the rest (`n / 10`) on: 6 + g(409) = 6 + 9 + g(40) = 6 + 9 + 0 + g(4) = 6 + 9 + 0 + 4 + g(0) = 19. It is the sum of the digits. Trap: 10, dropping the 9 in the middle; 6 or 4, taking only the first or last digit."
+    },
+    "cprog-w5-q11": {
+      "question": "What is the output of this program?",
+      "options": [
+        "121",
+        "111",
+        "1",
+        "101"
+      ],
+      "explanation": "`f`'s parameter `g` shadows the global `g`, and it is only a copy, so `f` never changes the global. `h` has no local `g`, so it changes the global: 1 + 100 = 101. Trap: 121, thinking `f` adds 10 to the global both times; 1, thinking `h` changes nothing either."
+    },
+    "cprog-w5-q12": {
+      "question": "What is the output of this program?",
+      "options": [
+        "5 5",
+        "5 15",
+        "8 15",
+        "5 9"
+      ],
+      "explanation": "fib values: 0, 1, 1, 2, 3, 5, so fib(5) = 5. To count calls, C(n) = 1 + C(n−1) + C(n−2), with C(0) = C(1) = 1: C(2) = 3, C(3) = 5, C(4) = 9, C(5) = 15. Trap: \"5 5\", thinking there is one call per n (in fact the same n is recomputed again and again); 9, stopping at C(4); 8, which is fib(6)."
+    },
+    "cprog-w5-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "6 9",
+        "6 6",
+        "4 4",
+        "3 6"
+      ],
+      "explanation": "`depth` is static: one copy shared by all the calls and by both outer calls. First time: f(2), f(1), f(0) take depth to 1, 2, 3; f(0) = 3, f(1) = 3 + 1 = 4, f(2) = 4 + 2 = 6. The second time depth carries on to 4, 5, 6: f(0) = 6, f(1) = 7, f(2) = 9. Trap: \"6 6\", thinking the static resets to 0 on each new outer call; \"4 4\", treating the static as an ordinary local (then depth = 1 in every frame)."
+    },
+    "cprog-w5-q14": {
+      "question": "What is printed when `q(13)` is called?",
+      "options": [
+        "1011",
+        "110",
+        "1101",
+        "11010"
+      ],
+      "explanation": "Calls: q(13) → q(6) → q(3) → q(1) → q(0), which does nothing. The `printf` comes **after** the recursive call, so printing happens on the way back: q(1) \"1\", q(3) \"1\", q(6) \"0\", q(13) \"1\". Output 1101, which is 13 in binary. Trap: 1011, the reversed order you get if printing came before the call; 110, forgetting the outermost call's digit."
+    },
+    "cprog-w5-q15": {
+      "question": "What is the output of this program?",
+      "options": [
+        "7 9 25",
+        "2 2 9",
+        "2 4 6",
+        "2 4 11"
+      ],
+      "explanation": "The static `x` inside `bump` shadows the global `x` and remembers its value between calls: a = 2, b = 4. The global `x` is still 5, so in `main` x = 5 + 2 + 4 = 11. Trap: \"7 9 25\", thinking `bump` changes the global x; \"2 2 9\", treating the static as new on every call; 6, starting the global from 0."
+    },
     "cprog-w6-q1": {
       "question": "What does this code print?",
       "options": [
@@ -360,6 +810,96 @@
         "5 14"
       ],
       "explanation": "pp points to p, and p points to x. `**pp = 7` takes two steps: pp → p → x, so x = 7. `*pp = &y` changes p itself; now p points to y. `*p = *p + x` means y = 9 + 7 = 16. Output \"7 16\". Trap: \"14 9\", forgetting that `*pp = &y` changed p (giving x = 7 + 7); \"5 14\", not following `**pp` all the way to x."
+    },
+    "cprog-w6-q7": {
+      "question": "After the declaration `int *p, q;`, what are p and q?",
+      "options": [
+        "p and q are both pointers to int",
+        "p and q are both plain ints",
+        "p is a pointer to int, q is a plain int",
+        "q is a pointer to int, p is a plain int"
+      ],
+      "explanation": "The `*` applies only to the name it is written with. Here p is a pointer and q an ordinary int. For two pointers write `int *p, *q;`. Trap: taking `int *` as the type of the whole line."
+    },
+    "cprog-w6-q8": {
+      "question": "What is the output of this code?",
+      "options": [
+        "12",
+        "4",
+        "An address is printed",
+        "7"
+      ],
+      "explanation": "p holds a's address, not a copy of its value. After a becomes 12, `*p` reads from that same address and gets 12. Trap: 4, thinking p \"saved\" a's old value; an address, mixing up `*p` and `p`."
+    },
+    "cprog-w6-q9": {
+      "question": "Which keyword is put on a variable that reads a hardware status register, so the compiler does not optimise its reads away?",
+      "options": [
+        "`static`",
+        "`const`",
+        "`extern`",
+        "`volatile`"
+      ],
+      "explanation": "`volatile` tells the compiler that this variable's value can change from outside (such as from hardware), so every read and write must really go to memory. Trap: `static`, which changes lifetime and visibility; `const`, which only stops our own code from writing it."
+    },
+    "cprog-w6-q10": {
+      "question": "What is the output of this program?",
+      "options": [
+        "1 7",
+        "7 1",
+        "7.25 1",
+        "Garbage values, because x and y were never initialised"
+      ],
+      "explanation": "The function got the addresses of x and y, so writing to `*q` and `*r` writes straight into x and y: 29 / 4 = 7, 29 % 4 = 1. With pointers a function can \"return\" two results. Trap: garbage, thinking call by value keeps x, y unchanged (but here addresses were passed); 7.25, forgetting integer division."
+    },
+    "cprog-w6-q11": {
+      "question": "On typical 64-bit Linux gcc, what is the output of this code?",
+      "options": [
+        "8 8 8 1",
+        "8 8 1 1",
+        "4 8 4 1",
+        "8 2 8 1"
+      ],
+      "explanation": "Every pointer is 8 bytes, whether it points to a double or a char: `sizeof(p)` = `sizeof(pc)` = 8. `*p` is a double (8) and `*pc` a char (1). Trap: \"8 8 1 1\", thinking a char pointer is smaller; 4, the pointer size on a 32-bit machine."
+    },
+    "cprog-w6-q12": {
+      "question": "The 4-byte int `0x0A0B0C0D` is stored in memory starting at address 0x1000. On a little-endian machine, which byte is at address 0x1002, and what would be there on a big-endian machine?",
+      "options": [
+        "0x0C (0x0B on big-endian)",
+        "0x0D (0x0A on big-endian)",
+        "0x0B (0x0C on big-endian)",
+        "0x0B (0x0B on big-endian too)"
+      ],
+      "explanation": "Little-endian puts the least significant byte at the lowest address: 0x1000: 0D, 0x1001: 0C, 0x1002: 0B, 0x1003: 0A. Big-endian is the reverse: 0x1000: 0A, 0x1001: 0B, 0x1002: 0C. Trap: swapping the two orders; 0x0D/0x0A, which are the bytes at 0x1000, not 0x1002."
+    },
+    "cprog-w6-q13": {
+      "question": "What is the output of this program?",
+      "options": [
+        "9 4 9",
+        "4 9 0",
+        "9 4 18",
+        "9 4 0"
+      ],
+      "explanation": "First call: x = 4 + 9 = 13, y = 13 − 9 = 4, x = 13 − 4 = 9, i.e. a swap: \"9 4\". In the second call a and b both point to x: x = 9 + 9 = 18, then `*b = *a - *b` = 18 − 18 = 0 (that is x itself), then x = 0 − 0 = 0. Trap: 9, thinking a swap with itself changes nothing; forgetting that both pointers write to the same variable."
+    },
+    "cprog-w6-q14": {
+      "question": "What is the output of this code?",
+      "options": [
+        "2 4 4",
+        "1 4 8",
+        "1 2 8",
+        "1 4 4"
+      ],
+      "explanation": "`*q = *p + z`: y = 1 + 3 = 4. `q = &z`: q now points to z. `*q += *p`: z = 3 + 1 = 4. `p = q`: p is now on z too. `*p = *p * 2`: z = 8. x never changed. Trap: \"2 4 4\", forgetting that after `p = q`, p points to z, not x; \"1 2 8\", treating `*q = ...` as changing only the pointer."
+    },
+    "cprog-w6-q15": {
+      "question": "This code is compiled with `gcc -O2`. Which statement is correct?",
+      "options": [
+        "Optimisation can change the output to 12, because a was kept in a register",
+        "`3 * 4` can become 12 ahead of time, c's code can be removed, and the output stays 13",
+        "Removing c is not allowed, because every declared variable must stay in memory",
+        "b must be kept in a register only, because its address was taken"
+      ],
+      "explanation": "The compiler can compute a constant expression (`3 * 4` → 12) ahead of time and remove the code for a variable (c) whose result is never used, but it cannot change the program's output (13). A variable whose address is taken (b) generally has to stay in memory, not in a register. Trap: thinking optimisation changes the output; or reading \"address taken\" the wrong way round."
     },
     "cprog-w7-q1": {
       "question": "What does this code print?",
@@ -421,6 +961,96 @@
       ],
       "explanation": "In `main`, a really is an array: 10 · 4 = 40 bytes. The function parameter `int arr[]` is actually `int *arr`, so `sizeof(arr)` = 8 (the pointer size; gcc even warns about it). `sizeof(a) / sizeof(*a)` = 40 / 4 = 10. Output \"40 8 10\". Trap: \"40 40 10\", thinking an array carries its size into a function."
     },
+    "cprog-w7-q7": {
+      "question": "What is the output of this code?",
+      "options": [
+        "3",
+        "8",
+        "1",
+        "4"
+      ],
+      "explanation": "A string literal ends with a `'\\0'` too, so the array holds a, b, c and `'\\0'`: 4 bytes. Trap: 3, which is the `strlen` answer that does not count `'\\0'`; 8, thinking `s` is a pointer (but it is an array)."
+    },
+    "cprog-w7-q8": {
+      "question": "What is the output of this code?",
+      "options": [
+        "13 6",
+        "13 7",
+        "12 7",
+        "11 8"
+      ],
+      "explanation": "a[0] = 5 and a[3] = 8, so 13. `*(a + 2)` simply means `a[2]` = 7. Trap: 6, taking `a + 2` as \"the second element\" (indexing starts at 0); 12, taking a[3] as 7."
+    },
+    "cprog-w7-q9": {
+      "question": "What is the correct way to check whether two strings s1 and s2 have the same content?",
+      "options": [
+        "`s1 == s2`",
+        "`strlen(s1) == strlen(s2)`",
+        "`strcmp(s1, s2) == 0`",
+        "`*s1 == *s2`"
+      ],
+      "explanation": "`strcmp` compares character by character and gives 0 when they are the same. Trap: `s1 == s2`, which compares addresses, not content; `strlen` looks only at the length (\"cat\" and \"dog\" are both 3); `*s1 == *s2` looks only at the first character."
+    },
+    "cprog-w7-q10": {
+      "question": "What is the output of this code?",
+      "options": [
+        "5 3 1",
+        "1 3 5",
+        "5 4 3",
+        "5 3 5"
+      ],
+      "explanation": "`n / 2` = 2, so there are only two swaps: (0, 4) and (1, 3). The array becomes {5, 4, 3, 2, 1}; the middle a[2] stays in place. Trap: \"1 3 5\", running the loop up to `i < n`, which reverses the array twice and brings it back; \"5 3 5\", swapping without the temporary t (one value is lost)."
+    },
+    "cprog-w7-q11": {
+      "question": "What is the output of this code?",
+      "options": [
+        "bonona 2",
+        "banana 3",
+        "bonono 3",
+        "bonono 6"
+      ],
+      "explanation": "`char s[]` is its own copy, so it can be changed. \"banana\" has 'a' at index 1, 3 and 5; all three become 'o' and c = 3. The loop stops at `'\\0'`. Trap: \"banana 3\", thinking the string cannot be changed (that applies to a `char *s = \"...\"` literal); 6, counting every character."
+    },
+    "cprog-w7-q12": {
+      "question": "Taking int as 4 bytes, what is the output of this code?",
+      "options": [
+        "40 8 80",
+        "20 4 60",
+        "40 3 80",
+        "40 2 80"
+      ],
+      "explanation": "p = a + 1, then `p += 2` makes p = a + 3, so `*p` = 40. `q - p` = 5 − 3 = 2 **elements** (not bytes). `*(q - 3)` = a[2] = 30, and `p[1]` = a[4] = 50: 30 + 50 = 80. Trap: 8, counting the pointer difference in bytes; \"20 4 60\", forgetting the `p += 2`; 3, counting the elements from index 3 to 5 inclusively."
+    },
+    "cprog-w7-q13": {
+      "question": "What is the output of this code?",
+      "options": [
+        "Clab 4 5",
+        "Clab 4 10",
+        "C-lab 5 10",
+        "Clab 5 10"
+      ],
+      "explanation": "The loop copies every character except '-': \"Clab\". At the end `*d = '\\0'` terminates the string. `strlen` = 4. `sizeof(dst)` is the size of the whole array: 10, however much of it is filled. Trap: 5, taking `sizeof` as the size of the content plus `'\\0'`; taking 5 as the `strlen`, i.e. counting the `'\\0'` too."
+    },
+    "cprog-w7-q14": {
+      "question": "What is the output of this code? (string.h included, ASCII)",
+      "options": [
+        "pencil hen 0",
+        "pencil hen 1",
+        "hencil hencil 0",
+        "pencil pen 0"
+      ],
+      "explanation": "`strcpy` makes a separate copy of \"pen\" in b. Then a becomes \"pencil\", and changing b[0] makes only b = \"hen\". `strcmp(\"pencil\", \"hen\")`: the first character 'p' (112) > 'h' (104), so the result is positive and `< 0` is false: 0. Trap: \"hencil hencil\", thinking b and a are the same memory; 1, reading the direction of the comparison backwards."
+    },
+    "cprog-w7-q15": {
+      "question": "Which line in this code is undefined behaviour, and if that line is removed, what is s1 at the end?",
+      "options": [
+        "Line D; s1 = tango",
+        "Line A; s1 = mingo",
+        "Line B; s1 = tingo",
+        "Line C; s1 = tingo"
+      ],
+      "explanation": "s2 starts out pointing to a read-only string literal, so line B (`s2[0] = 't'`) is UB. s1 is its own copy; line A makes it \"tango\". After line C, s2 points to s1's array, so line D sets s1[1] to 'i': \"tingo\". Trap: line D, forgetting that line C changed s2; line C, mistaking a pointer assignment for an array assignment."
+    },
     "cprog-w8-q1": {
       "question": "What does this code print?",
       "options": [
@@ -480,6 +1110,96 @@
         "17 10"
       ],
       "explanation": "A: a at offset 0, d needs a multiple of 8 so 7 bytes of padding and d at offsets 8–15, b at offset 16; 17 bytes rounded up to a multiple of 8: 24. B: d at offsets 0–7, a at 8, b at 9; 10 bytes rounded up: 16. Same members, only the order changed, and 8 bytes are saved. Trap: \"24 24\", thinking order makes no difference; \"17 10\", forgetting the padding at the end."
+    },
+    "cprog-w8-q7": {
+      "question": "`ptr` is a pointer to a struct. What is the correct way to reach its member `x`?",
+      "options": [
+        "`ptr->x`",
+        "`ptr.x`",
+        "`*ptr.x`",
+        "`&ptr.x`"
+      ],
+      "explanation": "A member through a pointer needs `->`: `ptr->x`, which equals `(*ptr).x`. Trap: `*ptr.x`, where `.` binds tighter than `*`, so it becomes `*(ptr.x)`, which is wrong; `ptr.x` uses `.` on a pointer."
+    },
+    "cprog-w8-q8": {
+      "question": "What is the output of this code?",
+      "options": [
+        "1 3",
+        "4 4",
+        "4 11",
+        "2 11"
+      ],
+      "explanation": "Each enumerator without a value is the previous one + 1. LOW = 3, so MID = 4. HIGH = 10, so MAX = 11. Trap: \"1 3\", counting the position in the list (from 0); 2, thinking an enum always counts from 0."
+    },
+    "cprog-w8-q9": {
+      "question": "On typical 64-bit Linux gcc (int 4, double 8 bytes), what is `sizeof(union V)`?",
+      "options": [
+        "13",
+        "8",
+        "4",
+        "16"
+      ],
+      "explanation": "All members of a union share the same memory, so the size is that of the largest member: double = 8 (and 8 is already a multiple of the alignment). Trap: 13, adding the sizes as for a struct (1 + 4 + 8); 16, adding struct-like padding."
+    },
+    "cprog-w8-q10": {
+      "question": "On typical 64-bit Linux gcc (int 4, double 8 bytes, each aligned to its size), what does this print?",
+      "options": [
+        "14",
+        "24",
+        "12",
+        "16"
+      ],
+      "explanation": "a at offset 0, b at offset 1. c needs a multiple of 4: offsets 2–3 are padding, c at offset 4–7. d needs a multiple of 8: offset 8 works, d at 8–15. Total 16, which is a multiple of 8. Trap: 14, adding without padding (1 + 1 + 4 + 8); 24, giving every member 8 bytes."
+    },
+    "cprog-w8-q11": {
+      "question": "What is the output of this code?",
+      "options": [
+        "1 7",
+        "2 10",
+        "2 8",
+        "3 10"
+      ],
+      "explanation": "`p++` moves a struct pointer to the next **struct**: p = &list[1]. `p->qty += list[2].qty` means list[1].qty = 8 + 2 = 10. p->id = 2. Trap: \"1 7\", thinking p is still on list[0]; \"2 8\", thinking writing through p does not change list."
+    },
+    "cprog-w8-q12": {
+      "question": "What is the output of this code?",
+      "options": [
+        "80 210 0",
+        "50 210 0",
+        "80 240 0",
+        "50 210 210"
+      ],
+      "explanation": "`b = a` copies all members, the inner array too, so b has its own separate marks array. b.marks[1] = 50 changes only b. b.total = 70 + 50 + 90 = 210. a.marks[1] is still 80 and a.total 0. Trap: 50, thinking the array is shared in a struct copy; 240, adding with the old 80."
+    },
+    "cprog-w8-q13": {
+      "question": "On a little-endian machine (unsigned int 4 bytes), what is the output of this code?",
+      "options": [
+        "1000200",
+        "201",
+        "20001",
+        "3"
+      ],
+      "explanation": "n and b are the same 4 bytes. On little-endian, b[0] is the least significant byte and b[2] the third: n = 0x00 02 00 01 = 0x20001. `%X` does not show leading zeros. Trap: 1000200, reading it big-endian (b[0] on top); 201, taking b[2] as the second byte; 3, adding the bytes like numbers."
+    },
+    "cprog-w8-q14": {
+      "question": "On typical 64-bit Linux gcc (int 4 bytes, 4-byte aligned), what is the output of this code?",
+      "options": [
+        "8 8",
+        "12 12",
+        "9 8",
+        "12 8"
+      ],
+      "explanation": "P: tag at offset 0–2 (a char array has alignment 1), offset 3 padding, n at 4–7, flag at 8; the size 9 rounds up to a multiple of 4: 12. Q: n at 0–3, tag at 4–6, flag at 7, total 8, already a multiple of 4. Trap: 9, forgetting the final rounding; \"8 8\", forgetting the padding inside P; \"12 12\", thinking the order makes no difference."
+    },
+    "cprog-w8-q15": {
+      "question": "What is the output of this code?",
+      "options": [
+        "15 3",
+        "5 3",
+        "15 6",
+        "16 3"
+      ],
+      "explanation": "Values: IDLE = 0, RUN = 4, STOP = 5, ERR = 2, DONE = 3 (ERR + 1). s = STOP = 5, so it starts at `case STOP`: +5, there is no `break` so it falls through into `case DONE`: +10, then break. score = 15. Trap: \"5 3\", forgetting fall-through; 6, taking DONE as STOP + 1 (it actually comes after ERR); 16, also adding the IDLE +1."
     },
     "cprog-w9-q1": {
       "question": "Which is the correct way to get heap memory for 10 ints?",
@@ -541,6 +1261,96 @@
       ],
       "explanation": "In `make`, x is a local in the stack frame; the frame is gone after return, so `&x` is a dangling address and dereferencing it is undefined behaviour (gcc even warns). The memory in `make2` is on the heap and lives on after the function; the caller just has to `free` it. Trap: \"both are correct\", because make's bad pointer sometimes still shows 42, but that is pure luck."
     },
+    "cprog-w9-q7": {
+      "question": "Which header should be included for the declarations of `malloc`, `calloc`, `realloc` and `free`?",
+      "options": [
+        "`<stdio.h>`",
+        "`<stdlib.h>`",
+        "`<string.h>`",
+        "`<math.h>`"
+      ],
+      "explanation": "All the heap memory functions are declared in `<stdlib.h>`. Trap: `<stdio.h>`, which is for `printf`/`scanf` and files; `<string.h>` is for string functions like `strlen` and `strcpy`."
+    },
+    "cprog-w9-q8": {
+      "question": "If `malloc` cannot provide the requested memory, what does it return?",
+      "options": [
+        "A valid block of 0 bytes",
+        "−1",
+        "Nothing; the program stops at once",
+        "`NULL`"
+      ],
+      "explanation": "When memory is not available `malloc` returns `NULL`, which is why checking `if (p == NULL)` before using the result is essential. Trap: \"the program stops\", C does not stop anything by itself; without the NULL check, the later `*p` crashes."
+    },
+    "cprog-w9-q9": {
+      "question": "What is the output of this code?",
+      "options": [
+        "5",
+        "3",
+        "4",
+        "6"
+      ],
+      "explanation": "A 2-D array is row-major: in memory 1, 2, 3, 4, 5, 6 back to back. p[4] is index 4 (counting from 0): 5. This is m[1][1], since 1 × 3 + 1 = 4. Trap: 3, assuming column-major (1, 4, 2, 5, 3, 6); 4, counting from index 1."
+    },
+    "cprog-w9-q10": {
+      "question": "What is the output of this code? (Assume `malloc` succeeds.)",
+      "options": [
+        "8 7",
+        "9 18",
+        "8 16",
+        "16 8"
+      ],
+      "explanation": "a = {10, 9, 8, 7}. b = a + 2 points to a[2] in the same block, so b[0] = a[2] = 8 and b[1] = a[3]. `b[1] = 8 * 2` makes a[3] = 16. Trap: \"8 7\", thinking b is a separate copy; \"9 18\", taking b as a + 1."
+    },
+    "cprog-w9-q11": {
+      "question": "What is the output of this code?",
+      "options": [
+        "21 41",
+        "7 13",
+        "12 33",
+        "12 23"
+      ],
+      "explanation": "Index k = i × cols + j, so i = k / 5 and j = k % 5. g[7]: i = 1, j = 2 → 12. g[13]: i = 2, j = 3 → 23. Trap: \"21 41\", splitting by rows (3) instead of cols; \"7 13\", taking the index as the value."
+    },
+    "cprog-w9-q12": {
+      "question": "What is the state of the heap at the end of this code?",
+      "options": [
+        "Block 1 leaked, because p was changed and its address was lost",
+        "Blocks 1 and 2 are freed; block 3 is still allocated (in q)",
+        "Block 2 was freed twice, because p and q both pointed to it",
+        "All three blocks are freed, because each malloc was followed by a free"
+      ],
+      "explanation": "r = block 1 (p's old value was saved). p = q = block 2. Then q got block 3. `free(r)` frees block 1 and `free(p)` frees block 2. Block 3's pointer is in q, so it is not leaked, it just still needs `free(q)`. Trap: block 1 leaked, forgetting that r saved its address; block 2 double free, but q had already been given block 3."
+    },
+    "cprog-w9-q13": {
+      "question": "Which statement about the last `printf` in this code is correct?",
+      "options": [
+        "If the block moved, old is dangling; reading old[0] can be UB",
+        "5 is always printed, because realloc keeps the old data",
+        "0 is always printed, because realloc sets every byte of the new block to 0",
+        "If realloc fails old also becomes NULL, so the printf crashes"
+      ],
+      "explanation": "`realloc` keeps the data, but the block may move to a new address, and then the old block is freed. old still holds the old address, i.e. it is a dangling pointer; reading it is UB. The data is in the new block: a[0] = 5. Trap: \"always 5\", treating \"the data is kept\" as \"the address stays the same\"; on failure the old block (and old) stays valid, only t is NULL."
+    },
+    "cprog-w9-q14": {
+      "question": "Assume every `malloc` succeeds. What is the output, and how do you free all the memory correctly?",
+      "options": [
+        "6 3; a single free(m) is enough",
+        "6 3; free 4 times: m first, then each m[i]",
+        "6 3; free 4 times: each m[i] first, then m",
+        "6 3; free 3 times: only each m[i]"
+      ],
+      "explanation": "m[i][i] = 2i, so s = 0 + 2 + 4 = 6, and m[2][1] = 2 + 1 = 3. There were 4 `malloc` calls (one for m, three for the rows), so 4 `free` calls are needed. Free the rows first, because their addresses are stored inside m; if m is freed first, reading `m[i]` is UB. Trap: only `free(m)`, which leaks the three row blocks; freeing only the rows, which leaks m's block."
+    },
+    "cprog-w9-q15": {
+      "question": "What is the output of this code?",
+      "options": [
+        "Unpredictable (every value is garbage after realloc)",
+        "0 3 5",
+        "4 7 5",
+        "0 7 5"
+      ],
+      "explanation": "After `calloc`: {4, 0, 0}. `realloc` keeps the first 3 values; the new 3 are garbage, but the loop fills them: a[3] = a[0] + 3 = 7, a[4] = a[1] + 4 = 4, a[5] = a[2] + 5 = 5. Output \"0 7 5\". Trap: \"unpredictable\", thinking realloc wipes the old data; 3, taking a[0] as 0; 4, reading a[0] instead of a[1]."
+    },
     "cprog-w10-q1": {
       "question": "What does this statement print?",
       "options": [
@@ -600,6 +1410,96 @@
         "2 B4 5"
       ],
       "explanation": "For unsigned, `~x + 1` is −x, and `x & -x` keeps only the lowest 1-bit: in 1011 0110 the lowest set bit is bit 1, value 2. `x & (x - 1)`: 1011 0110 & 1011 0101 = 1011 0100 = `0xB4`. The loop removes one 1-bit per round, so count = the number of 1-bits = 5. Output \"2 B4 5\". Trap: \"1 B4 5\", mixing up the bit's position (1) with its value (2); \"2 B4 4\", miscounting the 1-bits."
+    },
+    "cprog-w10-q7": {
+      "question": "What does this statement print?",
+      "options": [
+        "5",
+        "4",
+        "16",
+        "8"
+      ],
+      "explanation": "`1u << 4` moves the 1 bit 4 places to the left: 1 0000 = 16, i.e. 2⁴. Trap: 5, treating the shift as an addition (1 + 4); 8, shifting one place too few (2³)."
+    },
+    "cprog-w10-q8": {
+      "question": "You want to add new data to the end of an existing file without erasing its old content. Which mode do you give `fopen`?",
+      "options": [
+        "`\"a\"`",
+        "`\"w\"`",
+        "`\"r\"`",
+        "`\"rb\"`"
+      ],
+      "explanation": "`\"a\"` (append) adds every write at the end of the file. Trap: `\"w\"`, which empties the file and writes from the start, so the old data is lost; `\"r\"` and `\"rb\"` are only for reading."
+    },
+    "cprog-w10-q9": {
+      "question": "What does this statement print?",
+      "options": [
+        "1 1",
+        "2 2",
+        "0 1",
+        "2 1"
+      ],
+      "explanation": "`&` works bit by bit: 110 & 011 = 010 = 2. `&&` is logical: both are non-zero, so 1. Trap: \"1 1\", treating `&` as logical too; \"2 2\", treating `&&` as bitwise."
+    },
+    "cprog-w10-q10": {
+      "question": "The file's first line is \"network\" (followed by a newline). fp is open correctly and string.h is included. What is the output of this code?",
+      "options": [
+        "networ|6",
+        "netwo|5",
+        "network|7",
+        "netw|4"
+      ],
+      "explanation": "`fgets(buf, 6, fp)` reads at most 6 − 1 = 5 characters and adds a `'\\0'` at the end, so it fits in buf's 6 bytes. So buf = \"netwo\", length 5. It never reaches the newline. Trap: 6 characters, forgetting room for `'\\0'`; the whole line, thinking `fgets` always reads up to the newline."
+    },
+    "cprog-w10-q11": {
+      "question": "What is the output of this code?",
+      "options": [
+        "1 0 C",
+        "1 0 2C",
+        "0 1 C",
+        "1 1 C"
+      ],
+      "explanation": "In 0010 1100, the bits from the right are: bit 0 = 0, bit 1 = 0, bit 2 = 1, bit 3 = 1, bit 4 = 0, bit 5 = 1. So a = 1, b = 0. `& ~(1u << 5)` clears bit 5: 0000 1100 = 0xC. Trap: counting bits from the left (then a = 0, b = 1 seems right); 2C, keeping the old value after the clear."
+    },
+    "cprog-w10-q12": {
+      "question": "The file \"nums.txt\" contains just this text: `4 7 x 9`. fp is open correctly for reading it. What is the output?",
+      "options": [
+        "20 3",
+        "An infinite loop runs",
+        "11 2",
+        "11 3"
+      ],
+      "explanation": "`fscanf` returns how many items matched. On 4 and 7 it gives 1. \"x\" does not match `%d`, so it returns 0 (not EOF) and `== 1` is false: the loop stops. sum = 11, n = 2. Trap: \"20 3\", thinking fscanf skips \"x\" and reads 9; an infinite loop, which would happen if the condition were `!= EOF`, since 0 would keep coming back."
+    },
+    "cprog-w10-q13": {
+      "question": "Take int as 4 bytes, and assume both `fopen` calls succeed. What is the output of this code?",
+      "options": [
+        "20 12 8 4",
+        "5 3 0 1",
+        "5 3 2 1",
+        "5 3 2 4"
+      ],
+      "explanation": "`fwrite` and `fread` count **items**, not bytes: w = 5. The first `fread` reads 3 ints (1, 2, 3): r1 = 3. Only 2 ints are left in the file, so the second `fread` gives 2 and writes 4, 5 into b[0], b[1]: b[0] = 4. Trap: 20/12/8, counting bytes; \"0\" and b[0] = 1, thinking the second fread reads nothing or does not change b."
+    },
+    "cprog-w10-q14": {
+      "question": "What is the output of this code?",
+      "options": [
+        "5 6 D7",
+        "5 6 7D",
+        "2 6 7D",
+        "5 13 7D"
+      ],
+      "explanation": "`x >> 2` = 0011 0101, and `& 0x7` keeps the low 3 bits: 101 = 5 (that is bits 2–4). `x >> 5` = 110 = 6. `x & 0xF` = 7, and `<< 4` gives 0x70; `x >> 4` = 0xD; ORing them gives 0x7D (the two nibbles swapped). Trap: D7, ignoring the swap; 2, shifting by 3 places; 13, taking `x >> 4` as top."
+    },
+    "cprog-w10-q15": {
+      "question": "What is the output of this code?",
+      "options": [
+        "3 8",
+        "2 8",
+        "1 8",
+        "2 16"
+      ],
+      "explanation": "`x & (x - 1)` removes the lowest 1-bit; the result is 0 only when exactly one bit is 1, i.e. a power of 2. 16 (10000) yes, 24 (11000) no, 1 yes; 0 is stopped first by `v[i] != 0`. c = 2. `x & (~x + 1)` keeps only the lowest 1-bit: 24 = 11000 → 01000 = 8. Trap: 3, counting 0 as well; 1, not taking 1 as a power of 2 (2⁰ = 1); 16, taking the highest bit."
     },
     "cprog-w11-q1": {
       "question": "What does this code print?",
@@ -661,6 +1561,96 @@
       ],
       "explanation": "`extern int count;` only says count is defined elsewhere; the linker connects it to the count in a.c. Two calls to `inc()` take count from 10 → 12. `hidden` is a file-level `static`, so its name is not visible outside a.c; if main.c uses it through extern, the linker finds no visible hidden: undefined reference. Trap: \"7\", treating static as an ordinary global; \"10\", treating extern as a copy."
     },
+    "cprog-w11-q7": {
+      "question": "What does `gcc -E prog.c` do?",
+      "options": [
+        "Only links and makes an executable",
+        "Makes assembly (`.s`) from C",
+        "Makes an object file (`.o`)",
+        "Only preprocessing (gives `.i` text)"
+      ],
+      "explanation": "`-E` stops the build after preprocessing: the includes are pasted in, macros are expanded, and the remaining text is shown (`.i`). Trap: `-S` gives assembly and `-c` an object file; linking is the last stage, which runs without these options."
+    },
+    "cprog-w11-q8": {
+      "question": "Where does `#include \"myfile.h\"` (the quoted form) look for the file first?",
+      "options": [
+        "Only in the system include directories",
+        "In the current project folder",
+        "It downloads it from the internet",
+        "Only in the compiler's install folder"
+      ],
+      "explanation": "The quoted include looks first in the current project folder (where the source file is), then in the system directories. The `<...>` form looks straight in the system directories. Trap: treating the two as the same; this is why we write quotes for our own headers and `<...>` for standard headers."
+    },
+    "cprog-w11-q9": {
+      "question": "What is the output of this code?",
+      "options": [
+        "24",
+        "25",
+        "21",
+        "A compile error"
+      ],
+      "explanation": "The preprocessor replaces text: `TOTAL + 1` → `N * 5 + 1` → `4 * 5 + 1`. `*` first: 20 + 1 = 21. Trap: 24, thinking TOTAL is a bracketed value, i.e. `4 * (5 + 1)`; 25, taking the macro as \"5\". Using one macro inside another is valid."
+    },
+    "cprog-w11-q10": {
+      "question": "What is the output of this code?",
+      "options": [
+        "13",
+        "8",
+        "5",
+        "16"
+      ],
+      "explanation": "Expansion: `10 + 6 / 2`. There are no brackets, so `/` goes first: 6 / 2 = 3, then 10 + 3 = 13. Trap: 8, assuming the macro works like a function, computing 16 first and halving it. The correct macro: `#define HALF(x) ((x) / 2)`."
+    },
+    "cprog-w11-q11": {
+      "question": "This program was compiled with `gcc -DLIMIT=8 prog.c` and run. What is the output?",
+      "options": [
+        "10",
+        "A compile error: LIMIT is defined twice",
+        "16",
+        "8"
+      ],
+      "explanation": "`-DLIMIT=8` defines LIMIT as 8 on the command line itself. So `#ifndef LIMIT` is false and the file's `#define LIMIT 5` never reaches the compiler. 8 × 2 = 16. Trap: 10, taking the file's default value; a compile error, forgetting that the `#ifndef` is there exactly for this."
+    },
+    "cprog-w11-q12": {
+      "question": "What is the output of this code?",
+      "options": [
+        "27",
+        "18",
+        "9",
+        "19"
+      ],
+      "explanation": "SQ is written correctly, but in CUBE the last x has no brackets. Expansion: `(((a + 1) * (a + 1)) * a + 1)`. First 3 × 3 = 9, then `9 * a` = 18 (since `*` comes before `+`), then + 1 = 19. Trap: 27, thinking the macro brackets (a + 1) in all three places; 18, forgetting the final + 1; 9, only the SQ part."
+    },
+    "cprog-w11-q13": {
+      "question": "What is the output of this code?",
+      "options": [
+        "4 5 5",
+        "5 6 6",
+        "4 6 6",
+        "5 5 6"
+      ],
+      "explanation": "First expansion: `((x++) < (y) ? (x++) : (y))`. In the condition x++ gives 4 (4 < 6 is true) and x = 5. In the true branch, `x++` again: m = 5, x = 6. Second: `((y) < (x) ? (y) : (x))`, 6 < 6 is false, so n = x = 6. Trap: \"4 5 5\", treating MIN as a function where x++ runs once; \"5 5 6\", using the old x (5) when working out n."
+    },
+    "cprog-w11-q14": {
+      "question": "`main.c` has the prototype `int helper(void);` and `main` calls it, but `helper` is not defined in any file. Build: first `gcc -c main.c a.c`, then `gcc main.o a.o -o app`. What happens?",
+      "options": [
+        "Compiling works; linking gives `undefined reference`",
+        "An error comes already at `gcc -c main.c`, because helper's body was not found",
+        "A preprocessor error, because helper's header was not found",
+        "The program is built and crashes at run time when helper is called"
+      ],
+      "explanation": "The compiler needs only the declaration (prototype) to check the call, so `gcc -c` makes `.o` files for both. While joining all the `.o` files the linker looks for helper's definition, does not find it, and gives an \"undefined reference\" linker error. No executable is made, so a run-time crash is out of the question. Trap: thinking the compiler needs every function's body in the same file."
+    },
+    "cprog-w11-q15": {
+      "question": "`config.h` has an include guard, and inside the guard it says `int limit = 10;`. Both `a.c` and `main.c` include `config.h`. What happens when building with `gcc a.c main.c -o app`?",
+      "options": [
+        "Compile error: limit defined twice in main.c",
+        "It works, because the include guard removes the duplicate",
+        "Linker error: multiple definition of limit",
+        "It works, each file gets its own separate limit"
+      ],
+      "explanation": "An include guard only prevents a second include within one `.c` file (translation unit). a.c and main.c are compiled separately, so each `.o` gets its own definition of `limit`. The linker gives \"multiple definition\" when it joins them. Fix: `extern int limit;` in the header and the definition in only one `.c`. Trap: thinking the guard works across the whole project; \"separate limit\", which happens only with `static`."
+    },
     "cprog-w12-q1": {
       "question": "What does this code print?",
       "options": [
@@ -720,6 +1710,96 @@
         "C 50 5"
       ],
       "explanation": "After the loop: items[0] = (\"A\", 10), items[1] = (\"B\", 20), items[2] = (\"C\", 30). p = items + 1, so `p->val += items[2].val` makes items[1].val = 20 + 30 = 50. `p++` moves one whole Item ahead, to items[2], so `p->tag` = \"C\". `sizeof(Item)` = 4 (char array) + 4 (int) = 8, with no padding. Output \"C 50 8\". Trap: \"B 50 8\", forgetting the `p++`; \"C 20 8\", thinking a change through p does not change items[1]; \"C 50 5\", taking the tag to be 1 byte."
+    },
+    "cprog-w12-q7": {
+      "question": "Which tool is used to catch out-of-bounds reads/writes and memory leaks at run time?",
+      "options": [
+        "`-fsanitize=address` or valgrind",
+        "Preprocessed output via `gcc -E`",
+        "Adding `#define DEBUG` to the code",
+        "The `-O2` optimisation flag"
+      ],
+      "explanation": "AddressSanitizer (building with `-fsanitize=address`) and valgrind catch out-of-bounds access, use-after-free and leaks while the program runs. Trap: `-O2` is just optimisation (it can even hide bugs); `gcc -E` only shows the preprocessing."
+    },
+    "cprog-w12-q8": {
+      "question": "What is the output of this code?",
+      "options": [
+        "0.75",
+        "1.00",
+        "0.00",
+        "0.70"
+      ],
+      "explanation": "In `done / total` both are int: 3 / 4 = 0 (the fraction is cut off). Then 0 becomes 0.0 as a double: \"0.00\". This is a common bug; write `(double)done / total` to get 0.75. Trap: 0.75, thinking that storing into a double variable makes the division double; 1.00, rounding."
+    },
+    "cprog-w12-q9": {
+      "question": "Which of these statements is undefined behaviour?",
+      "options": [
+        "`i = i + 1;`",
+        "`i = i++;`",
+        "`i += 1;`",
+        "`++i;`"
+      ],
+      "explanation": "`i = i++;` changes i twice in one expression (the assignment and the `++`), which is UB; the compiler can give any result. The other three change i only once and all add 1. Trap: thinking `++i;` is risky too; on its own as a statement it is perfectly safe."
+    },
+    "cprog-w12-q10": {
+      "question": "How many times does the loop run, that is, what is printed?",
+      "options": [
+        "5",
+        "11",
+        "7",
+        "6"
+      ],
+      "explanation": "The values of i: 10, 8, 6, 4, 2, 0, all `>= 0`, so 6 rounds. The loop stops at the next i = −2. Trap: 5, forgetting the 0 round (`>=` includes 0); 11, reading `i -= 2` as `i--`."
+    },
+    "cprog-w12-q11": {
+      "question": "What is the bug in this function?",
+      "options": [
+        "Because of `i <= n` the loop runs one round too many",
+        "s is not initialised, so the result is garbage (UB)",
+        "The function's return type should have been void",
+        "No bug; sum_to(4) always returns 10"
+      ],
+      "explanation": "The local variable `s` has no starting value; it holds garbage, and `s += i` adds into that garbage. Reading an uninitialised value is UB. Fix: `int s = 0;`. Trap: \"always 10\", sometimes a 0 happens to be on the stack and the right answer appears, but that is not guaranteed; `i <= n` is correct here, since we add from 1 to n."
+    },
+    "cprog-w12-q12": {
+      "question": "Build a trace table: what is the output of this code?",
+      "options": [
+        "8 13",
+        "5 8",
+        "13 21",
+        "13 13"
+      ],
+      "explanation": "Each round (t, a, b): i=0: (2, 1, 2), i=1: (3, 2, 3), i=2: (5, 3, 5), i=3: (8, 5, 8), i=4: (13, 8, 13). The loop goes from 0 to 4, i.e. 5 times. Output \"8 13\". Trap: \"5 8\", counting only 4 rounds; \"13 21\", 6 rounds; \"13 13\", swapping the order of `a = b` and `b = t`."
+    },
+    "cprog-w12-q13": {
+      "question": "What happens when this function is compiled?",
+      "options": [
+        "It compiles, but always returns 0",
+        "It compiles, but checks a[n] (outside the array): UB",
+        "Compile error: `i` is undeclared in the block below",
+        "It works correctly; the `;` has no effect"
+      ],
+      "explanation": "The `;` after `for (...)` is the loop's whole (empty) body. The scope of `i` declared in the `for` lasts only to the end of that loop statement, so `i` does not exist in the `{ }` block below: a compile error. Trap: the a[n] option, which is what would happen if `i` were declared outside the loop (as in C89 style); \"no effect\", ignoring the stray semicolon."
+    },
+    "cprog-w12-q14": {
+      "question": "Taking int as 4 bytes, what is the output of this code?",
+      "options": [
+        "9 0 8",
+        "3 9 8",
+        "12 0 8",
+        "3 0 8"
+      ],
+      "explanation": "The loop moves best to the largest element: 9, at index 3. `best - data` = 3 (elements). `*best = 0` sets data[3] in the actual array to 0. data[1] = 8 as before. Trap: 9, the value instead of the index; \"3 9 8\", thinking writing through a pointer does not change the array; 12, counting the difference in bytes."
+    },
+    "cprog-w12-q15": {
+      "question": "What is the output of this code?",
+      "options": [
+        "1 0",
+        "211 3",
+        "222 5",
+        "211 2"
+      ],
+      "explanation": "A `break` inside the switch leaves only the switch, not the loop. i = 0: s = 1. i = 1: case 1 adds 10, and with no break it goes into default and adds 100: s = 111. i = 2: default adds 100: s = 211 > 200, now the loop's `break` runs, at i = 2. Trap: \"1 0\", thinking the switch's break also ends the loop; \"211 3\", running i++ after the break; \"222 5\", forgetting the fall-through from case 1."
     }
   }
 }
