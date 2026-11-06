@@ -406,6 +406,16 @@ export async function demoFetch(path: string, init: RequestInit = {}): Promise<R
       price: { amountInr, fullPriceInr: PRICING.proMonthlyInr, offer, offerUsed: false },
     });
   }
+  // Quiz War: the real route, with the demo persona in a dev-only header (wars live in the dev server's memory).
+  if (path.startsWith('/api/war')) {
+    const who = read<Persona>(PERSONA_KEY, 'trial');
+    const headers = new Headers(init.headers);
+    headers.set('Content-Type', 'application/json');
+    if (who !== 'guest') headers.set('x-demo-war-user', `${userId(who)}|${encodeURIComponent(NAMES[who])}|${who === 'pro' || who === 'admin' || who === 'trial' ? 1 : 0}`);
+    return fetch(path, { ...init, headers });
+  }
+  // Question of the Day works without an account: the real route answers (nothing is recorded in demo mode).
+  if (path.startsWith('/api/daily')) return fetch(path, { ...init, headers: { 'Content-Type': 'application/json' } });
   // Reminders look switched on in demo mode (so their cards show), but nothing can be subscribed.
   if (path === '/api/reminders' && (init.method ?? 'GET') === 'GET') return reply({ publicKey: 'demo' });
   if (path.startsWith('/api/reminders')) return reply({ error: 'Reminders can’t be turned on in demo mode.' }, 503);

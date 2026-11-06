@@ -25,6 +25,8 @@ const NAV: { href: string; label: string; icon: string; tag?: string; tool?: Too
   { href: '/library', label: 'Study Library', icon: '▣' },
   { href: '/practice', label: 'Practice Quiz', icon: '▤' },
   { href: '/mistakes', label: 'My Mistakes', icon: '↻' },
+  { href: '/flashcards', label: 'Flashcards', icon: '⧉', tag: 'NEW' },
+  { href: '/war', label: 'Quiz War', icon: '⚔', tag: 'NEW' },
   { href: '/tests', label: 'Mock Tests', icon: '◷', tool: 'tests' },
   { href: '/lab', label: 'Coding Lab', icon: '⌘', tag: 'NEW', tool: 'lab' },
   { href: '/doubts', label: 'AI Doubt Solver', icon: '✦', tag: 'NEW' },

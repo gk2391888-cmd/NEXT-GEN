@@ -53,6 +53,7 @@ export default async function WeekPage({ params }: { params: Promise<Params> }) 
               <h1>{week.title}</h1>
               <p>{week.summary}</p>
               <p className="muted mt-sm">{subject.name} · <SubjectCode subject={subject} /></p>
+              <Link className="link no-print" href={`/flashcards/${subject.id}/${week.week}`}>⧉ Revise with flashcards →</Link>
             </div>
             <WeekActions subjectId={subject.id} week={week.week} variant="top" />
           </div>

@@ -15,6 +15,7 @@ import { useAuth } from '@/components/auth/auth-provider';
 import { computeMistakes, isDue } from '@/lib/progress/mistakes';
 import { useFestival } from '@/lib/festival';
 import { InviteCard } from '@/components/referral';
+import { DailyQuestion } from '@/components/daily-question';
 
 export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
@@ -117,6 +118,8 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
           <QuickAction href={mockHref} icon="◷" title={choice.qualifier ? 'Take a qualifier mock' : 'Take a mock test'} text="Timed, with a full result and explanations" />
         </section>
       </div>
+
+      <DailyQuestion />
 
       <InviteCard />
 

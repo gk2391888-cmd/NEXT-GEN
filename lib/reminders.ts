@@ -62,10 +62,14 @@ export function pickReminder(
   if (prefs.daily) {
     const practisedToday = data.answers.some((a) => indiaClock(Date.parse(a.at)).day === today);
     if (practisedToday) return null;
+    // The Question of the Day is on the Overview; answering it counts as practice.
     const streak = studyStreak(data.answers, new Date(now));
-    return streak > 0
-      ? { title: `Keep your ${streak}-day streak 🔥`, body: '5 quick questions take about 3 minutes.', url: '/practice', tag: 'daily' }
-      : { title: 'Time for a quick practice', body: '5 questions take about 3 minutes. Pick up where you left off.', url: '/', tag: 'daily' };
+    return {
+      title: 'Today’s question is waiting 🔥',
+      body: streak > 0 ? `One minute keeps your ${streak}-day streak going.` : 'One question, about a minute. Start a streak today.',
+      url: '/',
+      tag: 'daily',
+    };
   }
   return null;
 }

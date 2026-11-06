@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily, flashcards, quiz war</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f7fb;--ink:#14213a;--muted:#617089;--border:#e4eaf2;--teal:#20c8ba;--teal-ink:#06302c;--indigo:#5364ef;--indigo-soft:#eef0ff;--violet:#7c3aed;--red:#e5484d;--red-soft:#fdecee;--green:#139a74;--green-soft:#e3f7ef;--gold:#f6b84b;--wa:#0e7a3f;--night:#0b1222;--night2:#141d33}
+*{box-sizing:border-box}
+body{margin:0;background:#e9edf4;color:var(--ink);font:14px/1.55 'DM Sans',sans-serif;padding:32px 16px}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif;margin:0;line-height:1.25}
+p{margin:0;color:#596982}
+.label{max-width:1100px;margin:0 auto 10px;font-size:12px;font-weight:700;letter-spacing:1.5px;color:var(--muted)}
+.label b{color:var(--indigo)}
+.note{max-width:1100px;margin:0 auto 44px;font-size:13.5px;color:#4a5872;background:#fff;border-left:4px solid var(--indigo);border-radius:8px;padding:12px 16px}
+.note b{color:var(--ink)}
+.note ul{margin:6px 0 0;padding-left:18px}
+.frame{max-width:1100px;margin:0 auto 14px;background:var(--bg);border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+.top{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--border);background:#fff}
+.crumb{font-size:11px;letter-spacing:1.4px;color:var(--muted);font-weight:700}
+.main{padding:28px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px}
+.chip{display:inline-block;font-size:11px;font-weight:800;border-radius:7px;padding:3px 8px;letter-spacing:.4px}
+.c-teal{background:#dff7f2;color:#127a6c}.c-ind{background:var(--indigo-soft);color:#3a48c9}.c-gold{background:#fff3df;color:#8a5a10}.c-grey{background:#eef1f6;color:#617089}.c-red{background:var(--red-soft);color:#b4232b}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:11px 16px;font-weight:800;font-size:13.5px;border:0;white-space:nowrap}
+.b-p{background:var(--teal);color:var(--teal-ink)}.b-s{background:#fff;border:1px solid var(--border);color:var(--ink)}.b-wa{background:var(--wa);color:#fff}.b-dark{background:#14213a;color:#fff}
+.small{font-size:12.5px}.muted{color:var(--muted)}
+.opt{display:flex;gap:10px;align-items:center;border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:8px;background:#fff;font-size:13.5px}
+.opt b{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#eef1f6;font-size:12px;flex:none}
+.opt.right{border-color:#9adfc8;background:var(--green-soft)}.opt.right b{background:var(--green);color:#fff}
+.opt.wrong{border-color:#f5b7bb;background:var(--red-soft)}.opt.wrong b{background:var(--red);color:#fff}
+.explain{margin-top:12px;background:#f2f6fb;border-radius:10px;padding:12px;font-size:13px;color:#3c4a63}
+.streak{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+/* phone */
+.phone{width:300px;border-radius:34px;background:#0b1222;padding:12px;box-shadow:0 18px 40px rgba(10,20,40,.25);flex:none}
+.screen{border-radius:24px;overflow:hidden;background:var(--bg);height:600px;position:relative;display:flex;flex-direction:column}
+.screen.dark{background:var(--night);color:#e8eeff}
+.screen.dark p{color:#a9b6d3}
+.lock{background:linear-gradient(160deg,#1e2b5c,#43217a);height:100%;padding:56px 14px 14px;color:#fff}
+.lock .time{text-align:center;font:700 54px 'Plus Jakarta Sans';letter-spacing:-1px}
+.lock .date{text-align:center;opacity:.8;margin-bottom:26px}
+.notif{background:rgba(255,255,255,.88);color:var(--ink);border-radius:16px;padding:11px 12px;margin-bottom:9px;display:flex;gap:10px}
+.notif .ic{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#3fd5e6,#7c3aed);flex:none;display:grid;place-items:center;color:#fff;font:800 13px 'Plus Jakarta Sans'}
+.notif b{font-size:12.5px}.notif p{font-size:12.5px;color:#3c4a63;line-height:1.35}
+.notif small{float:right;font-size:11px;color:#7b879c}
+/* flashcards */
+.fc-wrap{display:flex;gap:28px;flex-wrap:wrap;align-items:center;justify-content:center}
+.fc{width:340px;height:230px;border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:center;text-align:center;box-shadow:0 14px 30px rgba(20,30,80,.12)}
+.fc.front{background:linear-gradient(135deg,#5364ef,#7c3aed);color:#fff}
+.fc.front p{color:#dfe3ff}
+.fc.back{background:#fff;border:1px solid var(--border)}
+.fc .term{font:800 26px 'Plus Jakarta Sans';margin:10px 0}
+.fc-actions{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.progress{height:6px;border-radius:6px;background:#e6eaf2;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--teal)}
+.deck{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--border)}
+/* war */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.mode{border:1px solid var(--border);border-radius:14px;padding:18px;background:#fff}
+.mode.hot{border:2px solid var(--indigo);background:linear-gradient(160deg,#fff,#f3f1ff)}
+.mode .ic{font-size:26px}
+.mode h4{font-size:15px;margin:8px 0 4px}
+.picker{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.sel{border:1px solid var(--border);border-radius:10px;padding:9px 12px;background:#fff;font-weight:700;font-size:13px}
+.h2h{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--border);font-size:13.5px}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;background:#e8ecff;color:#3a48c9;flex:none}
+.av.me{background:#dff7f2;color:#127a6c}
+.code{font:800 30px 'Plus Jakarta Sans';letter-spacing:3px;color:#3a48c9;text-align:center;background:var(--indigo-soft);border-radius:12px;padding:12px;margin:12px 0}
+.player{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border)}
+.scorebar{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:14px 12px;background:var(--night2)}
+.scorebar .who{display:flex;align-items:center;gap:6px;font-weight:800;font-size:12px}
+.scorebar .pts{font:800 16px 'Plus Jakarta Sans'}
+.scorebar .small{white-space:nowrap}
+.timer{width:58px;height:58px;border-radius:50%;margin:14px auto 6px;background:conic-gradient(#3fe0c5 0 60%,#2a3554 0);display:grid;place-items:center}
+.timer div{width:46px;height:46px;border-radius:50%;background:var(--night);display:grid;place-items:center;font:800 17px 'Plus Jakarta Sans';color:#fff}
+.qbox{padding:6px 16px 16px;flex:1}
+.qbox h4{font-size:15px;color:#fff;margin:8px 0 4px}
+.dopt{border:1px solid #2a3554;border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;color:#dbe3f7;display:flex;gap:8px}
+.dopt b{color:#8fa0c6}
+.dopt.pick{border-color:#3fe0c5;background:rgba(63,224,197,.12)}
+.toast{margin:10px 16px 16px;background:#1d2945;border-radius:10px;padding:10px 12px;font-size:12.5px;color:#cfd9f2}
+.winner{text-align:center;padding:26px 18px 10px}
+.winner .cup{font-size:46px}
+.board{margin:12px 16px;background:var(--night2);border-radius:12px;padding:6px 14px}
+.board .r{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid #26314d;font-size:13.5px;color:#e8eeff}
+.board .r:first-child{border-top:0}
+.searching{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:20px}
+.pulse{width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,#5364ef 0 30%,rgba(83,100,239,.25) 31% 60%,rgba(83,100,239,.08) 61%);display:grid;place-items:center;font-size:34px;margin-bottom:18px}
+@media(max-width:760px){.modes{grid-template-columns:1fr}.main{padding:18px}}
+</style>
+</head>
+<body>
+
+<!-- ============ 1 · QUESTION OF THE DAY ============ -->
+<div class="label">1 · <b>QUESTION OF THE DAY</b> · Overview, under "Continue where you left off"</div>
+<div class="frame">
+  <div class="top"><span class="crumb">STUDENT WORKSPACE / <b style="color:var(--ink)">OVERVIEW</b></span><span class="chip c-teal">Pro</span></div>
+  <div class="main">
+    <div class="row">
+      <div class="card" style="flex:1;min-width:300px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="chip c-gold">🔥 QUESTION OF THE DAY</span>
+          <span class="chip c-ind">Statistics I · Week 5</span>
+        </div>
+        <h3 style="font-size:16px;margin:12px 0 4px">Ek team me 5 boys aur 4 girls hain. 3 logon ki committee me kam se kam 1 girl ho, aisi kitni committees ban sakti hain?</h3>
+        <div class="opt"><b>A</b>84</div>
+        <div class="opt"><b>B</b>74</div>
+        <div class="opt"><b>C</b>64</div>
+        <div class="opt"><b>D</b>10</div>
+        <p class="small muted" style="margin-top:12px">Same question for everyone in your programme today. Takes about a minute.</p>
+      </div>
+      <div class="card" style="flex:1;min-width:300px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="chip c-gold">🔥 QUESTION OF THE DAY</span>
+          <span class="chip c-teal">Correct ✓</span>
+        </div>
+        <h3 style="font-size:16px;margin:12px 0 4px">Ek team me 5 boys aur 4 girls hain. 3 logon ki committee me kam se kam 1 girl ho…</h3>
+        <div class="opt"><b>A</b>84</div>
+        <div class="opt right"><b>B</b>74 &nbsp;<span class="small muted">· your answer</span></div>
+        <div class="explain"><b>Total − none:</b> 9C3 = 84, sirf boys = 5C3 = 10, to 84 − 10 = 74. Option A "at least" bhool jaane ka trap hai.</div>
+        <div class="streak"><span class="chip c-gold">🔥 6-day streak</span><span class="chip c-ind">❄️ 1 streak freeze</span><span class="small muted">68% of students got it right</span></div>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap"><a class="btn b-s">Practise week 5 →</a><a class="btn b-s">⚔️ Challenge a friend on this</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  <b>Kaise kaam karega:</b>
+  <ul>
+    <li>Roz raat 12 baje (India time) naya question. Ek programme ke sab students ko <b>same question</b> milega, taaki dost aapas mein compare kar sakein.</li>
+    <li>Question student ke subjects mein se aayega, aur sirf un weeks se jo uske plan mein khule hain (free students ko week 1, Pro ko saare weeks).</li>
+    <li>Jawab dete hi explanation, aur "kitne % students ne sahi kiya" dikhega.</li>
+    <li>Answer karne se streak badhti hai. Har 7 din ki streak pe ek <b>❄️ streak freeze</b> milega (max 2). Ek din miss hua to freeze apne aap lag jayega aur streak nahi tootegi.</li>
+    <li>8 PM wala reminder ab yahi bolega: "Aaj ka question baaki hai 🔥".</li>
+  </ul>
+</div>
+
+<div class="label">2 · <b>QUESTION OF THE DAY</b> · the reminder</div>
+<div class="frame">
+  <div class="main">
+    <div class="row" style="justify-content:center">
+      <div class="phone"><div class="screen"><div class="lock">
+        <div class="time">8:00</div><div class="date">Friday, 6 November</div>
+        <div class="notif"><span class="ic">N</span><span><small>now</small><b>Today’s question is waiting 🔥</b><p>Statistics I · Week 5. One minute keeps your 6-day streak.</p></span></div>
+        <div class="notif"><span class="ic">N</span><span><small>Yesterday</small><b>❄️ Streak freeze used</b><p>You missed Thursday, so a freeze saved your 5-day streak.</p></span></div>
+      </div></div></div>
+    </div>
+  </div>
+</div>
+<div class="note">Din mein phir bhi max <b>ek</b> notification. Agar aaj ka question ho gaya hai to daily reminder nahi aayega.</div>
+
+<!-- ============ 3 · FLASHCARDS ============ -->
+<div class="label">3 · <b>FLASHCARDS</b> · new page "Flashcards" in the sidebar, and a button on every week’s notes</div>
+<div class="frame">
+  <div class="top"><span class="crumb">STUDENT WORKSPACE / <b style="color:var(--ink)">FLASHCARDS</b></span></div>
+  <div class="main">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <div><span class="chip c-ind">STATISTICS I · WEEK 5</span><h3 style="font-size:18px;margin-top:8px">Permutations and combinations</h3></div>
+      <div style="min-width:220px"><div class="small muted" style="margin-bottom:5px">Card 4 of 11 · 3 known</div><div class="progress"><i style="width:36%"></i></div></div>
+    </div>
+    <div class="fc-wrap">
+      <div>
+        <div class="fc front"><p class="small">CONCEPT · tap to flip</p><div class="term">Combination</div><p>What is it, and its formula?</p></div>
+        <p class="small muted" style="text-align:center;margin-top:8px">Front</p>
+      </div>
+      <div style="font-size:26px;color:var(--muted)">→</div>
+      <div>
+        <div class="fc back"><p class="small" style="color:var(--indigo);font-weight:800">COMBINATION</p><p style="color:var(--ink);font-size:15px;margin-top:10px">Order matter nahi karta: nCr = n! / (r! (n − r)!). Jaise team ya committee choose karna. Hamesha nPr = nCr × r!.</p></div>
+        <div class="fc-actions"><a class="btn b-s">↻ Show again</a><a class="btn b-p">✓ I knew it</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  <b>Cards kahan se aayenge:</b> har week ke notes ke "Key concepts" (8 tak cards) aur "Common mistakes" (trap cards, jaise "⚠️ Permutation vs combination me confuse"). Naya content nahi likhna, sab notes mein pehle se hai.
+  <ul>
+    <li>"Show again" wale cards usi round mein end mein dobara aayenge. "I knew it" wale agli baar 3 din baad aayenge, bilkul My Mistakes jaisa.</li>
+    <li>Phone pe swipe: right = knew it, left = show again. Keyboard pe Space = flip, ← / → buttons.</li>
+    <li>Free students: week 1 ke cards; Pro: saare weeks (notes jaisa hi).</li>
+  </ul>
+</div>
+
+<div class="label">4 · <b>FLASHCARDS</b> · choosing a deck</div>
+<div class="frame">
+  <div class="main">
+    <div class="card" style="max-width:620px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="font-size:16px">Statistics for Data Science I</h3><span class="sel">Subject ▾</span></div>
+      <div class="deck"><span><b>🔥 Due for review</b><br><span class="small muted">14 cards from weeks 1–4</span></span><a class="btn b-p">Review</a></div>
+      <div class="deck"><span><b>Week 5 · Permutations and combinations</b><br><span class="small muted">11 cards · 3 known</span></span><a class="btn b-s">Study</a></div>
+      <div class="deck"><span><b>Week 6 · Probability basics</b><br><span class="small muted">10 cards · new</span></span><a class="btn b-s">Study</a></div>
+      <div class="deck"><span><b>Week 7 · Conditional probability</b> <span class="chip c-gold">PRO</span><br><span class="small muted">9 cards</span></span><a class="btn b-s">🔒 Unlock</a></div>
+    </div>
+  </div>
+</div>
+<div class="note">Week ke notes page ke upar ek button bhi: <b>"Revise with flashcards →"</b>, jo seedha us week ka deck kholta hai.</div>
+
+<!-- ============ 5 · QUIZ WAR ============ -->
+<div class="label">5 · <b>QUIZ WAR ⚔️</b> · new page in the sidebar (More on phones)</div>
+<div class="frame">
+  <div class="top"><span class="crumb">STUDENT WORKSPACE / <b style="color:var(--ink)">QUIZ WAR</b></span></div>
+  <div class="main">
+    <h2 style="font-size:22px">Quiz War ⚔️</h2>
+    <p style="margin-top:4px">PYQ-style questions, head-to-head with friends. Same questions, same timer, fastest correct answer wins more points.</p>
+    <div class="picker"><span class="sel">Statistics I ▾</span><span class="sel">Quiz 2 · weeks 5–8 ▾</span><span class="sel">10 questions ▾</span></div>
+    <div class="modes">
+      <div class="mode hot"><span class="ic">⚔️</span><h4>1v1 with a friend</h4><p class="small">Live. Share a code, play together right now. Up to 6 players for a group war.</p><a class="btn b-p" style="margin-top:12px;width:100%">Create war</a></div>
+      <div class="mode"><span class="ic">📩</span><h4>Challenge a friend</h4><p class="small">Play now, send the link. They play the same 10 questions whenever they’re free.</p><a class="btn b-s" style="margin-top:12px;width:100%">Play and send</a></div>
+      <div class="mode"><span class="ic">🎲</span><h4>Random 1v1</h4><p class="small">Get matched with another student online in the same subject.</p><a class="btn b-s" style="margin-top:12px;width:100%">Find a match</a></div>
+    </div>
+    <div class="row" style="margin-top:18px">
+      <div class="card" style="flex:1;min-width:280px">
+        <h4 style="font-size:14px;margin-bottom:6px">Join a war</h4>
+        <div style="display:flex;gap:8px"><span class="sel" style="flex:1;color:var(--muted)">Enter code, e.g. QW-4821</span><a class="btn b-dark">Join</a></div>
+      </div>
+      <div class="card" style="flex:1;min-width:280px">
+        <h4 style="font-size:14px;margin-bottom:2px">Your rivals</h4>
+        <div class="h2h"><span style="display:flex;gap:10px;align-items:center"><span class="av">RS</span><b>Rahul S.</b></span><span><b style="color:var(--green)">5</b> – 3 <span class="small muted">· you lead</span></span></div>
+        <div class="h2h"><span style="display:flex;gap:10px;align-items:center"><span class="av">PK</span><b>Priya K.</b></span><span>2 – <b style="color:var(--red)">4</b> <span class="small muted">· rematch?</span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="label">6 · <b>QUIZ WAR</b> · lobby, live game, result, random match (phone)</div>
+<div class="frame">
+  <div class="main">
+    <div class="row" style="justify-content:center;gap:22px">
+      <!-- lobby -->
+      <div class="phone"><div class="screen">
+        <div style="padding:20px;flex:1">
+          <span class="chip c-ind">STATISTICS I · WEEKS 5–8</span>
+          <h3 style="font-size:19px;margin:10px 0 2px">Waiting for your friend</h3>
+          <p class="small">Send this code or link. The war starts when you tap Start.</p>
+          <div class="code">QW-4821</div>
+          <a class="btn b-wa" style="width:100%">Send on WhatsApp</a>
+          <a class="btn b-s" style="width:100%;margin-top:8px">Copy link</a>
+          <h4 style="font-size:13px;margin:18px 0 4px">Players (2/6)</h4>
+          <div class="player"><span class="av me">AM</span><b style="flex:1">Arjun (you)</b><span class="chip c-teal">Host</span></div>
+          <div class="player"><span class="av">RS</span><b style="flex:1">Rahul S.</b><span class="chip c-teal">Ready</span></div>
+        </div>
+        <div style="padding:16px"><a class="btn b-p" style="width:100%">Start war ⚔️</a></div>
+      </div></div>
+      <!-- live -->
+      <div class="phone"><div class="screen dark">
+        <div class="scorebar"><span class="who"><span class="av me">AM</span>You<span class="pts">640</span></span><span class="small" style="color:#8fa0c6">Q 6/10</span><span class="who"><span class="pts">590</span>Rahul<span class="av">RS</span></span></div>
+        <div class="timer"><div>18</div></div>
+        <div class="qbox">
+          <p class="small" style="text-align:center">Week 6 · Probability</p>
+          <h4>Do fair dice phenke gaye. Sum 7 aane ki probability kya hai?</h4>
+          <div class="dopt"><b>A</b>1/12</div>
+          <div class="dopt pick"><b>B</b>1/6</div>
+          <div class="dopt"><b>C</b>7/36</div>
+          <div class="dopt"><b>D</b>5/36</div>
+        </div>
+        <div class="toast">⚡ Rahul answered in 6 s · waiting for you</div>
+      </div></div>
+      <!-- result -->
+      <div class="phone"><div class="screen dark">
+        <div class="winner"><div class="cup">🏆</div><h3 style="font-size:22px;color:#fff;margin-top:6px">You won!</h3><p class="small">8 correct · 1,120 points</p></div>
+        <div class="board">
+          <div class="r"><span>🥇 Arjun (you)</span><b>1,120</b></div>
+          <div class="r"><span>🥈 Rahul S.</span><b>980</b></div>
+        </div>
+        <p class="small" style="text-align:center">Head to head: <b style="color:#fff">You 6 – 3 Rahul</b></p>
+        <div style="padding:16px;margin-top:auto;display:flex;flex-direction:column;gap:8px">
+          <a class="btn b-p">Rematch</a>
+          <a class="btn b-s" style="background:transparent;color:#e8eeff;border-color:#2a3554">Review answers</a>
+          <a class="btn b-wa">Share result</a>
+        </div>
+      </div></div>
+      <!-- random -->
+      <div class="phone"><div class="screen">
+        <div class="searching">
+          <div class="pulse">🎲</div>
+          <h3 style="font-size:18px">Finding an opponent…</h3>
+          <p class="small" style="margin-top:6px">Statistics I · weeks 5–8 · 12 students online in this subject</p>
+          <p class="small muted" style="margin-top:18px">No one free in 30 seconds? We’ll turn it into a challenge: play now and the next student who comes takes on your score.</p>
+          <a class="btn b-s" style="margin-top:16px">Cancel</a>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+<div class="note">
+  <b>Rules:</b>
+  <ul>
+    <li><b>Points:</b> sahi jawab = 100 + speed bonus (jitna jaldi, utna zyada, max +50). Galat ya time khatam = 0. Har question 30 second.</li>
+    <li><b>Fair play:</b> answers server pe check honge (phone pe answer key nahi jayegi), to koi cheat nahi kar sakta.</li>
+    <li><b>Questions:</b> hamare apne PYQ-style questions (har subject mein 180), war mein random 10. IITM ke asli papers copy nahi kiye jayenge.</li>
+    <li><b>Kaun khel sakta hai:</b> login zaroori (naam ke liye). Free plan: din mein 3 war; Pro: unlimited. Har war ke baad invite link wala share card.</li>
+    <li><b>Dost ka net gaya:</b> uska wahi score ruk jayega, baaki log khelte rahenge; wapas aaye to join ho sakta hai.</li>
+    <li>Head-to-head record har dost ke saath save hoga ("Rahul vs aap: 5–3").</li>
+  </ul>
+</div>
+
+</body>
+</html>

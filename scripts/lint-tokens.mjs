@@ -20,6 +20,8 @@ const EXTERNAL_VARS = new Set([
   // Per-element inputs set inline by a component (e.g. ProgressRing's percentage and colour token).
   'ring-value',
   'ring-color',
+  // How far a flashcard is being swiped (components/flashcards.tsx).
+  'drag',
 ]);
 const breakpoints = new Set([...tokens.values()].filter((t) => t.path[0] === 'breakpoint').map((t) => `${t.value.value}px`));
 

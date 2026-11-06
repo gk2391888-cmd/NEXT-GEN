@@ -19,6 +19,8 @@ const OPEN_PAGES = new Set([
   '/grades', // a calculator, not study material
   '/library', // the list of subjects and weeks
   '/practice', // the week picker
+  '/flashcards', // the deck list (locked weeks show Unlock)
+  '/war', // Quiz War asks for a login itself; questions come from /api/war
 ]);
 
 export function isOpenPath(pathname: string): boolean {
@@ -27,6 +29,8 @@ export function isOpenPath(pathname: string): boolean {
   if (pathname === '/qualifier' || pathname.startsWith('/qualifier/')) return true;
   // /library/<subject> only redirects to week 1.
   if (/^\/library\/[^/]+$/.test(pathname)) return true;
-  const week = /^\/(?:library|practice)\/[^/]+\/(\d+)$/.exec(pathname);
+  // A Quiz War room, opened from a friend's link.
+  if (/^\/war\/[^/]+$/.test(pathname)) return true;
+  const week = /^\/(?:library|practice|flashcards)\/[^/]+\/(\d+)$/.exec(pathname);
   return week ? Number(week[1]) === PREVIEW_WEEK : false;
 }

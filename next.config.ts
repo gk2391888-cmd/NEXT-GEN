@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/pro/**': ['./content/subjects.json', './content/weeks/*.json', './content/weeks-en/*.json', './content/qualifier/**/*.json'],
     '/api/ai/**': ['./content/weeks/*.json', './content/weeks-en/*.json', './content/qualifier/**/*.json'],
+    // Question of the Day and Quiz War pick their questions on the server.
+    '/api/daily': ['./content/subjects.json', './content/weeks/*.json', './content/weeks-en/*.json'],
+    '/api/war/**': ['./content/subjects.json', './content/weeks/*.json', './content/weeks-en/*.json'],
   },
 };
 

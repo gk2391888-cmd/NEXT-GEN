@@ -27,17 +27,56 @@ export function weakWeeks(answers: AnswerRecord[], { minAttempts = 3, below = 60
     .sort((a, b) => a.accuracy - b.accuracy);
 }
 
-/** Consecutive days (ending today or yesterday, India time) with at least one answer. */
-export function studyStreak(answers: AnswerRecord[], today = new Date()): number {
+/** Practice days in a row earn a streak freeze; a student can hold this many. */
+export const FREEZE_EVERY_DAYS = 7;
+export const MAX_FREEZES = 2;
+
+export type StreakInfo = {
+  /** Days in a row with at least one answer (India time), ending today or yesterday; frozen days keep it going. */
+  streak: number;
+  /** Streak freezes in hand. */
+  freezes: number;
+  /** The most recent day a freeze covered, if any (YYYY-MM-DD). */
+  lastFrozen: string | null;
+};
+
+/**
+ * The streak with freezes, worked out from the answer history alone (no stored state): every
+ * FREEZE_EVERY_DAYS practice days in a row earn a freeze (at most MAX_FREEZES), and a missed
+ * day uses one instead of breaking the streak. Today never breaks it: the day isn't over.
+ */
+export function streakInfo(answers: AnswerRecord[], today = new Date()): StreakInfo {
   const days = new Set(answers.map((a) => istDay(Date.parse(a.at))));
-  let cursor = today.getTime();
-  if (!days.has(istDay(cursor))) cursor -= DAY_MS;
+  if (!days.size) return { streak: 0, freezes: 0, lastFrozen: null };
+  const todayKey = istDay(today.getTime());
+  const first = [...days].sort()[0];
   let streak = 0;
-  while (days.has(istDay(cursor))) {
-    streak++;
-    cursor -= DAY_MS;
+  let run = 0;
+  let freezes = 0;
+  let lastFrozen: string | null = null;
+  for (let t = Date.parse(`${first}T12:00:00Z`); istDay(t) <= todayKey; t += DAY_MS) {
+    const key = istDay(t);
+    if (days.has(key)) {
+      streak++;
+      run++;
+      if (run % FREEZE_EVERY_DAYS === 0 && freezes < MAX_FREEZES) freezes++;
+    } else if (key === todayKey) {
+      break;
+    } else if (streak > 0 && freezes > 0) {
+      freezes--;
+      lastFrozen = key;
+      run = 0;
+    } else {
+      streak = 0;
+      run = 0;
+    }
   }
-  return streak;
+  return { streak, freezes, lastFrozen };
+}
+
+/** Consecutive practice days (with streak freezes), ending today or yesterday, India time. */
+export function studyStreak(answers: AnswerRecord[], today = new Date()): number {
+  return streakInfo(answers, today).streak;
 }
 
 const DAY_MS = 86_400_000;
