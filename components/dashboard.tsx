@@ -8,13 +8,15 @@ import { orderSubjects } from '@/lib/subjects';
 import { useChoice, useChoiceCatalog, useChoiceSubjects, useInChoice } from '@/lib/programme-choice';
 import { QUALIFIER_PATH, termSubjects } from '@/lib/programmes';
 import type { Subject, WeekRef } from '@/lib/types';
-import { ProgressBar, SubjectIcon, subjectColor, weekCount } from '@/components/ui';
+import { ProgressBar, ProgressRing, subjectColor, weekCount } from '@/components/ui';
 import { AnnouncementBar } from '@/components/announcement-bar';
 import { LevelComingSoon, useLevelComingSoon } from '@/components/coming-soon';
+import { useAuth } from '@/components/auth/auth-provider';
 import { computeMistakes, isDue } from '@/lib/progress/mistakes';
 
 export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjects: Subject[]; catalog: Record<string, WeekRef[]> }) {
   const state = useProgress();
+  const { user } = useAuth();
   const choice = useChoice();
   const catalog = useChoiceCatalog(allWeeks);
   const inChoice = useInChoice();
@@ -26,7 +28,8 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
   const programmeWeeks = subjects.map((s) => catalog[s.id] ?? []);
   const totalWeeks = programmeWeeks.reduce((n, w) => n + w.length, 0);
   const totalQuestions = programmeWeeks.reduce((n, weeks) => n + weeks.reduce((m, w) => m + w.questionCount, 0), 0);
-  const weeksDone = subjects.reduce((n, s) => n + (catalog[s.id] ?? []).filter((w) => state.weeks[weekKey(s.id, w.week)]?.done).length, 0);
+  const doneIn = (s: Subject) => (catalog[s.id] ?? []).filter((w) => state.weeks[weekKey(s.id, w.week)]?.done).length;
+  const weeksDone = subjects.reduce((n, s) => n + doneIn(s), 0);
   const streak = studyStreak(answers);
   const weak = weakWeeks(answers).slice(0, 3);
   const dueMistakes = computeMistakes(answers).filter((m) => isDue(m)).length;
@@ -36,6 +39,10 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
   // "Continue" only offers a week that's part of the choice.
   const last = state.lastVisited && inChoice(state.lastVisited.subjectId, state.lastVisited.week) ? state.lastVisited : undefined;
   const lastSubject = last && subjectById.get(last.subjectId);
+  const lastWeeks = lastSubject ? (catalog[lastSubject.id] ?? []).length : 0;
+
+  const firstName = (state.profile?.fullName || user?.user_metadata?.full_name || user?.user_metadata?.name || '').trim().split(/\s+/)[0];
+  const mockHref = choice.qualifier ? `${QUALIFIER_PATH}/${choice.qualifier}` : '/tests';
 
   return (
     <>
@@ -46,83 +53,46 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
           <Link className="btn btn-primary" href={`${QUALIFIER_PATH}/${choice.qualifier}`}>Qualifier prep →</Link>
         </div>
       )}
-      <div className="kicker">Your learning dashboard</div>
-      <section className="hero">
-        <div>
-          <span className="hero-label">✦ WELCOME TO NEXT GEN</span>
-          <h1>Smarter learning starts here.</h1>
-          <p>Study week-by-week notes, practise MCQs, take timed mock tests and strengthen every concept with clear explanations.</p>
-          <div className="hero-actions">
-            {last && lastSubject ? (
-              <Link className="btn btn-primary" href={`/library/${last.subjectId}/${last.week}`}>Continue {lastSubject.short} week {last.week} →</Link>
-            ) : (
-              <Link className="btn btn-primary" href="/library">Start learning →</Link>
-            )}
-            {choice.qualifier ? (
-              <Link className="btn btn-secondary" href={`${QUALIFIER_PATH}/${choice.qualifier}`}>Take a qualifier mock</Link>
-            ) : (
-              <Link className="btn btn-secondary" href="/tests">Take a mock test</Link>
-            )}
-          </div>
-        </div>
-        <div className="hero-art" aria-hidden="true"><span className="logo">N</span></div>
-      </section>
+
+      <header className="greeting">
+        <h1>{firstName ? `Welcome back, ${firstName} 👋` : 'Welcome to NEXT GEN 👋'}</h1>
+        <p>
+          {streak > 0
+            ? `You’re on a ${streak}-day practice streak. Keep it going today.`
+            : 'Study week-by-week notes, practise MCQs, take timed mock tests and strengthen every concept with clear explanations.'}
+        </p>
+      </header>
 
       {comingSoon && <div className="mt-lg"><LevelComingSoon action="study" /></div>}
 
-      <section className="grid grid-4 mt-lg" aria-label="Your progress">
-        <Metric icon="▣" tone={1} value={`${weeksDone}/${totalWeeks}`} label="Weeks completed" />
-        <Metric icon="▤" tone={2} value={String(totals.attempted)} label="Questions attempted" />
-        <Metric icon="◉" tone={3} value={`${totals.accuracy}%`} label="Overall accuracy" />
-        <Metric icon="✦" tone={4} value={`${streak} day${streak === 1 ? '' : 's'}`} label="Practice streak" />
-      </section>
+      <div className="dash-top">
+        {last && lastSubject ? (
+          <Link className="continue-card" href={`/library/${last.subjectId}/${last.week}`}>
+            <div className="continue-text">
+              <span className="continue-kicker">Continue where you left off</span>
+              <strong>{lastSubject.short} · Week {last.week}</strong>
+              <span>{titleOf(last.subjectId, last.week)}</span>
+              {lastWeeks > 0 && <ProgressBar value={percent(doneIn(lastSubject), lastWeeks)} />}
+            </div>
+            <span className="continue-btn">Continue →</span>
+          </Link>
+        ) : (
+          <Link className="continue-card" href="/library">
+            <div className="continue-text">
+              <span className="continue-kicker">Start here</span>
+              <strong>Smarter learning starts here.</strong>
+              <span>Pick a subject in the Study Library and begin with week 1.</span>
+            </div>
+            <span className="continue-btn">Start learning →</span>
+          </Link>
+        )}
 
-      <div className="section-title">
-        <h2>Explore your subjects</h2>
-        <Link className="link" href="/library">Browse study library →</Link>
-      </div>
-      <div className="grid grid-4">
-        {subjects.map((s) => {
-          const weeks = catalog[s.id] ?? [];
-          const done = weeks.filter((w) => state.weeks[weekKey(s.id, w.week)]?.done).length;
-          return (
-            <Link key={s.id} href={`/library/${s.id}`} className="subject-card">
-              <SubjectIcon subject={s} />
-              <div>
-                <strong>{s.name}</strong>
-                <div className="muted">{s.code} · {weeks.length ? weekCount(s, weeks.length) : 'Coming soon'}</div>
-              </div>
-              {weeks.length > 0 && <ProgressBar value={percent(done, weeks.length)} color={subjectColor(s.id)} />}
-            </Link>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-2 mt-xl">
-        <section className="card">
-          <h3 className="card-title">Topics to revisit</h3>
-          {weak.length === 0 ? (
-            <p className="muted my-md">
-              {totals.attempted ? 'No weak weeks found. Keep practising!' : 'Answer some practice questions and your weak weeks will appear here.'}
-            </p>
-          ) : (
-            weak.map((w) => (
-              <div key={`${w.subjectId}:${w.week}`} className="weak-row">
-                <div>
-                  <strong>{subjectById.get(w.subjectId)?.short} · Week {w.week}</strong>
-                  <div className="muted">{titleOf(w.subjectId, w.week)} · {w.accuracy}% accuracy</div>
-                </div>
-                <Link className="btn btn-secondary" href={`/library/${w.subjectId}/${w.week}`}>Revise</Link>
-              </div>
-            ))
-          )}
-        </section>
-
-        <section className="card">
-          <h3 className="card-title">Quick actions</h3>
+        <section className="card" aria-labelledby="today-title">
+          <h3 id="today-title" className="card-title">Today</h3>
           <QuickAction
             href="/mistakes"
             icon="↻"
+            tone="danger"
             title={dueMistakes ? `Revise ${dueMistakes} mistake${dueMistakes === 1 ? '' : 's'}` : 'My Mistakes'}
             text={dueMistakes ? 'Due today for revision' : 'Wrong answers come back here for revision'}
           />
@@ -136,28 +106,82 @@ export function Dashboard({ subjects: allSubjects, catalog: allWeeks }: { subjec
               text={state.exam ? 'See today’s study plan' : 'Get a day-by-day plan to your exam date'}
             />
           )}
-          <QuickAction href="/doubts" icon="✦" title="Ask a doubt" text="Step-by-step answers from the AI doubt solver" />
-          <QuickAction href="/practice" icon="▤" title="Practice a week" text={`${totalQuestions} original MCQs with Hinglish explanations`} />
+          <QuickAction href={mockHref} icon="◷" title={choice.qualifier ? 'Take a qualifier mock' : 'Take a mock test'} text="Timed, with a full result and explanations" />
         </section>
+      </div>
+
+      <section className="grid grid-4 mt-lg" aria-label="Your progress">
+        <Metric value={`${weeksDone}/${totalWeeks}`} label="Weeks completed" />
+        <Metric value={String(totals.attempted)} label="Questions attempted" />
+        <Metric value={`${totals.accuracy}%`} label="Overall accuracy" />
+        <Metric value={`${streak} day${streak === 1 ? '' : 's'}`} label="Practice streak" />
+      </section>
+
+      <div className="dash-bottom">
+        <section className="card" aria-labelledby="subjects-title">
+          <div className="flex-between mb-sm">
+            <h3 id="subjects-title" className="card-title mb-0">Your subjects</h3>
+            <Link className="link" href="/library">Study library →</Link>
+          </div>
+          {subjects.map((s) => {
+            const weeks = catalog[s.id] ?? [];
+            const done = doneIn(s);
+            return (
+              <Link key={s.id} href={`/library/${s.id}`} className="subject-line">
+                <ProgressRing value={weeks.length ? percent(done, weeks.length) : 0} color={subjectColor(s.id)} label={`${s.short} weeks done`} />
+                <span className="min-w-0">
+                  <strong>{s.name}</strong>
+                  <small>{s.code} · {weeks.length ? `${done} of ${weekCount(s, weeks.length)}` : 'Coming soon'}</small>
+                </span>
+              </Link>
+            );
+          })}
+        </section>
+
+        <div className="stack">
+          <section className="card" aria-labelledby="revisit-title">
+            <h3 id="revisit-title" className="card-title">Topics to revisit</h3>
+            {weak.length === 0 ? (
+              <p className="muted my-md">
+                {totals.attempted ? 'No weak weeks found. Keep practising!' : 'Answer some practice questions and your weak weeks will appear here.'}
+              </p>
+            ) : (
+              weak.map((w) => (
+                <Link key={`${w.subjectId}:${w.week}`} href={`/library/${w.subjectId}/${w.week}`} className="weak-line">
+                  <span className="min-w-0">
+                    <strong>{subjectById.get(w.subjectId)?.short} · Week {w.week}</strong>
+                    <small>{titleOf(w.subjectId, w.week)}</small>
+                  </span>
+                  <span className="weak-score">{w.accuracy}%</span>
+                </Link>
+              ))
+            )}
+          </section>
+
+          <section className="card" aria-labelledby="quick-title">
+            <h3 id="quick-title" className="card-title">Quick actions</h3>
+            <QuickAction href="/doubts" icon="✦" title="Ask a doubt" text="Step-by-step answers from the AI doubt solver" />
+            <QuickAction href="/practice" icon="▤" title="Practice a week" text={`${totalQuestions} original MCQs with Hinglish explanations`} />
+          </section>
+        </div>
       </div>
     </>
   );
 }
 
-function Metric({ icon, tone, value, label }: { icon: string; tone: 1 | 2 | 3 | 4; value: string; label: string }) {
+function Metric({ value, label }: { value: string; label: string }) {
   return (
     <div className="metric">
-      <div className={`metric-icon tone-${tone}`} aria-hidden="true">{icon}</div>
       <strong>{value}</strong>
       <small>{label}</small>
     </div>
   );
 }
 
-function QuickAction({ href, icon, title, text }: { href: string; icon: string; title: string; text: string }) {
+function QuickAction({ href, icon, title, text, tone }: { href: string; icon: string; title: string; text: string; tone?: 'danger' }) {
   return (
     <Link href={href} className="action-row">
-      <span className="action-icon" aria-hidden="true">{icon}</span>
+      <span className={`action-icon${tone ? ` ${tone}` : ''}`} aria-hidden="true">{icon}</span>
       <span className="flex-1"><strong>{title}</strong><small>{text}</small></span>
       <span aria-hidden="true">→</span>
     </Link>

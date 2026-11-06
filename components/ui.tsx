@@ -45,6 +45,16 @@ export function PageHead({ kicker, title, description, action }: { kicker: React
 }
 
 /** `color` is a token, e.g. subjectColor(id) or accuracyColor(n). */
+/** A small circular progress meter with the percentage inside. `color` is a token, e.g. subjectColor(id). */
+export function ProgressRing({ value, color, label }: { value: number; color?: string; label: string }) {
+  const pct = Math.max(0, Math.min(100, Math.round(value)));
+  return (
+    <span className="ring" role="img" aria-label={`${label}: ${pct}%`} style={{ '--ring-value': `${pct}%`, '--ring-color': color } as React.CSSProperties}>
+      <span aria-hidden="true">{pct}%</span>
+    </span>
+  );
+}
+
 export function ProgressBar({ value, color }: { value: number; color?: string }) {
   return (
     <div className="bar" role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>

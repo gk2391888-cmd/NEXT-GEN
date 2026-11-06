@@ -12,6 +12,7 @@ import { ProgrammeSwitch } from './programme-switch';
 import { ProgrammePrompt } from './programme-prompt';
 import { ChoiceNotice } from './choice-notice';
 import { AccessGate } from './access-gate';
+import { TabBar } from './tab-bar';
 import { useChoice, useChosen } from '@/lib/programme-choice';
 import { choiceHas, QUALIFIER_PATH, type Tool } from '@/lib/programmes';
 
@@ -146,6 +147,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <span>Made for learning by <strong>GAURAV GUPTA</strong></span>
         </footer>
       </div>
+      <TabBar onMore={() => setOpen(true)} moreOpen={open} />
     </div>
   );
 }

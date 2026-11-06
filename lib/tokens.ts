@@ -43,6 +43,8 @@ export type Token =
   | 'color-danger-fg'
   | 'color-danger-fg-strong'
   | 'color-danger-divider'
+  | 'color-danger-emphasis'
+  | 'color-danger-emphasis-hover'
   | 'color-warning-solid'
   | 'color-warning-bg'
   | 'color-warning-border'
@@ -59,11 +61,16 @@ export type Token =
   | 'color-nav-border-strong'
   | 'color-nav-text'
   | 'color-nav-text-strong'
+  | 'color-nav-text-active'
   | 'color-nav-text-soft'
   | 'color-nav-text-muted'
   | 'color-nav-text-faint'
   | 'color-nav-indicator'
   | 'color-nav-status'
+  | 'color-selected-bg'
+  | 'color-selected-fg'
+  | 'color-feature-start'
+  | 'color-feature-end'
   | 'color-brand-gradient-start'
   | 'color-brand-gradient-end'
   | 'color-brand-hero-start'
@@ -356,6 +363,8 @@ export const RAW = {
   'color-danger-fg': '#a3203a',
   'color-danger-fg-strong': '#7a2235',
   'color-danger-divider': '#7a223526',
+  'color-danger-emphasis': '#a3203a',
+  'color-danger-emphasis-hover': '#7a2235',
   'color-warning-solid': '#f6b84b',
   'color-warning-bg': '#fff3df',
   'color-warning-border': '#f6d39a',
@@ -364,19 +373,24 @@ export const RAW = {
   'color-info-bg': '#eef0fe',
   'color-info-fg': '#33409c',
   'color-info-fg-strong': '#26307e',
-  'color-nav-bg': '#0d1a33',
-  'color-nav-bg-hover': '#1c3150',
-  'color-nav-bg-active': '#283957',
-  'color-nav-bg-raised': '#162641',
-  'color-nav-border': '#2c3b59',
-  'color-nav-border-strong': '#36506f',
-  'color-nav-text': '#a6b4d2',
-  'color-nav-text-strong': '#ffffff',
-  'color-nav-text-soft': '#d9e2f5',
-  'color-nav-text-muted': '#8ba0c1',
-  'color-nav-text-faint': '#6f82a3',
-  'color-nav-indicator': '#36d6c5',
-  'color-nav-status': '#36d6c5',
+  'color-nav-bg': '#ffffff',
+  'color-nav-bg-hover': '#f5f7fb',
+  'color-nav-bg-active': '#eef0fe',
+  'color-nav-bg-raised': '#f3f6fb',
+  'color-nav-border': '#e4eaf2',
+  'color-nav-border-strong': '#c9d3e2',
+  'color-nav-text': '#596982',
+  'color-nav-text-strong': '#14213a',
+  'color-nav-text-active': '#3d4bc4',
+  'color-nav-text-soft': '#3c4a63',
+  'color-nav-text-muted': '#617089',
+  'color-nav-text-faint': '#617089',
+  'color-nav-indicator': '#5364ef',
+  'color-nav-status': '#20c8ba',
+  'color-selected-bg': '#14213a',
+  'color-selected-fg': '#ffffff',
+  'color-feature-start': '#5364ef',
+  'color-feature-end': '#6254ef',
   'color-brand-gradient-start': '#60d6ee',
   'color-brand-gradient-end': '#6254ef',
   'color-brand-hero-start': '#13234a',
@@ -474,3 +488,81 @@ export const RAW = {
   'color-subject-dlgenai-solid': '#7f5bc4',
   'color-subject-dlgenai-soft': '#f2eefe',
 } as const;
+
+/** Resolved hex values of the colours the dark theme changes (tokens/theme/dark.json). */
+export const RAW_DARK: Partial<Record<keyof typeof RAW, string>> = {
+  'color-bg-canvas': '#0b1222',
+  'color-bg-surface': '#121a2e',
+  'color-bg-subtle': '#172138',
+  'color-bg-sunken': '#0e1628',
+  'color-bg-hover': '#172138',
+  'color-bg-topbar': '#0b1222e0',
+  'color-bg-scrim': '#00000099',
+  'color-text-primary': '#e8eeff',
+  'color-text-body': '#c3cde6',
+  'color-text-secondary': '#a3b0cc',
+  'color-text-muted': '#8b99b8',
+  'color-text-disabled': '#5d6a86',
+  'color-text-link': '#8a91ff',
+  'color-border-default': '#1f2a44',
+  'color-border-strong': '#2c3a5a',
+  'color-border-focus': '#8a91ff80',
+  'color-accent-solid': '#5364ef',
+  'color-accent-strong': '#c3cbf8',
+  'color-accent-soft': '#1d2350',
+  'color-accent-softer': '#171c40',
+  'color-accent-border': '#3a3f86',
+  'color-accent-on-soft': '#c3cbf8',
+  'color-action-primary-bg': '#36d6c5',
+  'color-action-primary-bg-hover': '#20c8ba',
+  'color-success-solid': '#36d6c5',
+  'color-success-bg': '#0f2a2a',
+  'color-success-soft': '#12312f',
+  'color-success-border': '#1f5a54',
+  'color-success-fg': '#6ff0e1',
+  'color-success-fg-strong': '#9fe3d7',
+  'color-success-text': '#4fd39a',
+  'color-danger-solid': '#ff6b86',
+  'color-danger-bg': '#2a1420',
+  'color-danger-soft': '#33182a',
+  'color-danger-border': '#6b2a40',
+  'color-danger-fg': '#ff8aa0',
+  'color-danger-fg-strong': '#ffb3c2',
+  'color-danger-divider': '#ff8aa026',
+  'color-warning-bg': '#2b2112',
+  'color-warning-border': '#6b5220',
+  'color-warning-fg': '#f6c66b',
+  'color-warning-fg-strong': '#ffd98f',
+  'color-info-bg': '#1d2350',
+  'color-info-fg': '#c3cbf8',
+  'color-info-fg-strong': '#d8ddfb',
+  'color-nav-bg': '#0e1628',
+  'color-nav-bg-hover': '#172138',
+  'color-nav-bg-active': '#1d2350',
+  'color-nav-bg-raised': '#121a2e',
+  'color-nav-border': '#1f2a44',
+  'color-nav-border-strong': '#2c3a5a',
+  'color-nav-text': '#a3b0cc',
+  'color-nav-text-strong': '#e8eeff',
+  'color-nav-text-active': '#d8ddfb',
+  'color-nav-text-soft': '#c3cde6',
+  'color-nav-text-muted': '#8b99b8',
+  'color-nav-text-faint': '#8b99b8',
+  'color-nav-indicator': '#36d6c5',
+  'color-nav-status': '#36d6c5',
+  'color-selected-bg': '#e8eeff',
+  'color-selected-fg': '#0b1222',
+  'color-feature-start': '#2b2475',
+  'color-feature-end': '#2b4a94',
+  'color-explain-divider': '#6ff0e133',
+  'color-category-1-bg': '#1d2350',
+  'color-category-1-fg': '#c3cbf8',
+  'color-category-2-bg': '#0f2a2a',
+  'color-category-2-fg': '#6ff0e1',
+  'color-category-3-bg': '#2b2112',
+  'color-category-3-fg': '#f6c66b',
+  'color-category-4-bg': '#241d4d',
+  'color-category-4-fg': '#b3abff',
+  'color-shadow-raised': '#00000066',
+  'color-shadow-overlay': '#00000099',
+};
