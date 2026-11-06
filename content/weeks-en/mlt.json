@@ -61,6 +61,96 @@
       ],
       "explanation": "C = (1/n) Σ (xᵢ − x̄)(xᵢ − x̄)ᵀ is a sum of 50 rank-1 matrices, but the centred vectors sum to zero (Σ (xᵢ − x̄) = 0), so they are linearly dependent and span at most a 49-dimensional subspace. Rank ≤ n − 1 = 49, so option A. Option B (50) forgets the one extra dependency created by centring. Option C assumes a d × d matrix is always full rank, which is impossible when d > n."
     },
+    "mlt-w1-q7": {
+      "question": "In PCA, how are the first and second principal directions (the top two eigenvectors of the covariance matrix C) related to each other?",
+      "options": [
+        "Orthogonal: C is symmetric, and each next direction is perpendicular to the previous one",
+        "Parallel: both lie on the same line, only their eigenvalues differ",
+        "The second direction always points towards the mean vector of the data, not the spread",
+        "The second direction is the negative of the first one, that is, equal to −w₁"
+      ],
+      "explanation": "C is symmetric, so eigenvectors with different eigenvalues are orthogonal, and PCA chooses each next direction perpendicular to all previous ones. The parallel option is wrong: a parallel direction captures no new variance. −w₁ is the same line (only the sign flipped), so it is not a new component. Pointing towards the mean is a symptom of forgetting to centre, not a property of PCA."
+    },
+    "mlt-w1-q8": {
+      "question": "The covariance matrix of a 3-feature dataset is C = [[3, 1, 0], [1, 2, 0], [0, 0, 5]]. What is the total variance of the data?",
+      "options": [
+        "12",
+        "5",
+        "10",
+        "25"
+      ],
+      "explanation": "Total variance = trace(C) = 3 + 2 + 5 = 10, which is also the sum of all eigenvalues. 12 comes from adding all entries (including the off-diagonal 1, 1); off-diagonal entries are covariances, not variances. 5 is only the largest diagonal entry, and 25 is the determinant (the product of the eigenvalues, not their sum)."
+    },
+    "mlt-w1-q9": {
+      "question": "A centred point is x = (2, −1) and the unit principal direction is w = (3, 4)/5. What is the PCA score xᵀw of this point?",
+      "options": [
+        "2",
+        "−0.4",
+        "1.2",
+        "0.4"
+      ],
+      "explanation": "Score = xᵀw = (2·3 + (−1)·4)/5 = 2/5 = 0.4. 2 comes from using w = (3, 4) without normalising it (‖(3, 4)‖ = 5). −0.4 is a sign error, and 1.2 comes from the first coordinate alone (6/5)."
+    },
+    "mlt-w1-q10": {
+      "question": "For n = 4 centred points, the covariance eigenvalues under the 1/n convention are 8 and 2. If the 1/(n − 1) convention is used instead, what are the eigenvalues and the variance-explained fraction of PC1?",
+      "options": [
+        "8 and 2; fraction 80%",
+        "10.67 and 2.67; fraction 80%",
+        "10.67 and 2.67; fraction 85%",
+        "6 and 1.5; fraction 80%"
+      ],
+      "explanation": "The 1/(n − 1) matrix = (n/(n − 1)) × (the 1/n matrix), so every eigenvalue is multiplied by 4/3: 8 × 4/3 ≈ 10.67 and 2 × 4/3 ≈ 2.67. The eigenvectors stay the same and the fraction stays 10.67/13.33 = 80%. 6 and 1.5 apply the scale the wrong way round (3/4); keeping 8 and 2 forgets that the scale of the eigenvalues changes; 85% is wrong because a common factor cancels in the ratio."
+    },
+    "mlt-w1-q11": {
+      "question": "A 3-feature centred dataset (1/n convention) has covariance eigenvalues 5, 2 and 0.5. Every point is reconstructed keeping only PC1. What is the average squared reconstruction error (1/n) Σ ‖xᵢ − x̂ᵢ‖²?",
+      "options": [
+        "5",
+        "0.5",
+        "7.5",
+        "2.5"
+      ],
+      "explanation": "‖x − x̂‖² = ‖x‖² − (xᵀw)². Averaging, (1/n) Σ ‖xᵢ‖² = total variance = 7.5 and (1/n) Σ (xᵢᵀw)² = λ₁ = 5, so the error = 7.5 − 5 = 2.5, that is, the sum of the dropped eigenvalues (2 + 0.5). 5 is the captured variance, not the error; 7.5 is the total variance; 0.5 is only the last eigenvalue, while PC2 was dropped too."
+    },
+    "mlt-w1-q12": {
+      "question": "A fictional sensor dataset has 4 points: (5, 4), (−1, −2), (3, 0), (1, 2). Using PCA (1/n convention), what are the first principal direction and its variance-explained fraction?",
+      "options": [
+        "(1, 1)/√2 and 90%",
+        "(1, −1)/√2 and 90%",
+        "≈ (0.79, 0.62) and ≈ 91%",
+        "(1, 1)/√2 and 50%"
+      ],
+      "explanation": "Mean (2, 1); centred points (3, 3), (−3, −3), (1, −1), (−1, 1). C₁₁ = C₂₂ = (9 + 9 + 1 + 1)/4 = 5, C₁₂ = (9 + 9 − 1 − 1)/4 = 4, so C = [[5, 4], [4, 5]] has eigenvalues 9 and 1, PC1 = (1, 1)/√2, fraction 9/10 = 90%. (1, −1)/√2 is the direction of the small eigenvalue (1). ≈ (0.79, 0.62) comes from forgetting to centre: the top eigenvector of the uncentred (1/n) Σ xxᵀ = [[9, 6], [6, 6]] leans towards the mean. 50% comes from taking the diagonal entries 5 and 5 as the eigenvalues."
+    },
+    "mlt-w1-q13": {
+      "question": "In PCA the data mean is x̄ = (1, 2) and the first unit principal direction is w = (0.6, 0.8). The point x = (5, 3) is reconstructed from PC1 alone (x̂ = x̄ + score · w). What is the squared reconstruction error ‖x − x̂‖²?",
+      "options": [
+        "4.84",
+        "10.24",
+        "6.76",
+        "17"
+      ],
+      "explanation": "Centred x − x̄ = (4, 1), score = 4·0.6 + 1·0.8 = 3.2, reconstruction = x̄ + 3.2w = (2.92, 4.56). Error = ‖(4, 1)‖² − 3.2² = 17 − 10.24 = 6.76. 4.84 comes from skipping the centring and projecting x directly (score 5.4, x̂ = (3.24, 4.32)). 10.24 is the square of the score, the captured part, and 17 is the full squared norm of the centred point."
+    },
+    "mlt-w1-q14": {
+      "question": "n = 3 points (each with d = 5 features) are centred and the 1/n covariance C is formed. trace(C) = 12 and the largest eigenvalue is λ₁ = 9. What is λ₂, and how many components are needed at minimum to capture 100% of the variance?",
+      "options": [
+        "λ₂ = 3, and 5 components are needed",
+        "λ₂ = 3, and 2 components are enough",
+        "λ₂ = 0.75, and 3 components are needed",
+        "λ₂ cannot be determined, 3 components"
+      ],
+      "explanation": "3 centred points span at most an n − 1 = 2 dimensional subspace, so C has at most 2 nonzero eigenvalues. trace = sum of all eigenvalues ⇒ λ₂ = 12 − 9 = 3 and λ₃ = λ₄ = λ₅ = 0. So 2 components capture 100%. '5 components' forgets the rank limit; 'cannot be determined' is wrong because the remaining eigenvalues being zero fixes λ₂; 0.75 = 3/4 is like dividing the eigenvalue by n + 1."
+    },
+    "mlt-w1-q15": {
+      "question": "A fictional image dataset has n = 10 centred points, each with d = 500 pixels. X is a 500 × 10 matrix whose columns are the points, and C = (1/n)XXᵀ. The 10 × 10 matrix XᵀX has largest eigenvalue 40 with unit eigenvector u. What are the variance of PC1 and its unit direction w₁?",
+      "options": [
+        "Variance 40, w₁ = u",
+        "Variance 4, w₁ = Xu/40",
+        "Variance 400, w₁ = Xu",
+        "Variance 4, w₁ = Xu/√40"
+      ],
+      "explanation": "XᵀXu = 40u ⇒ XXᵀ(Xu) = 40(Xu), so Xu is an eigenvector of XXᵀ with eigenvalue 40, and the eigenvalue of C = (1/n)XXᵀ is 40/10 = 4. ‖Xu‖² = uᵀXᵀXu = 40, so the unit direction is w₁ = Xu/√40. 'w₁ = u' is wrong because u is 10-dimensional while pixel space is 500-dimensional. Xu/40 divides by 40 instead of √40 for the norm, and 400 multiplies by n instead of dividing."
+    },
     "mlt-w2-q1": {
       "question": "In the RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)), what is k(x, x) for any point x?",
       "options": [
@@ -120,6 +210,96 @@
         "0.707"
       ],
       "explanation": "For ‖w‖² = αᵀK̃α = 1 we need α = β/√μ = β/2. Score of x₁ = Σⱼ αⱼ K̃₁ⱼ = (K̃α)₁ = μα₁ = √μ β₁ = 2 · (1/√2) = √2 ≈ 1.414, so option C. Option A (0.354) is just α₁ without multiplying by K̃. Option B (2.828) is μβ₁, i.e. β used without normalising. Option D (0.707) is β₁ itself."
+    },
+    "mlt-w2-q7": {
+      "question": "When can the kernel trick be applied to an algorithm?",
+      "options": [
+        "When the data is already linearly separable and has no noise",
+        "When the algorithm uses the data only through dot products xᵢᵀxⱼ",
+        "When the number of features d is smaller than the number of points n, so d < n",
+        "When every feature has first been standardised to unit variance"
+      ],
+      "explanation": "The core of the kernel trick: if an algorithm uses only xᵢᵀxⱼ, replace every dot product with k(xᵢ, xⱼ) = φ(xᵢ)ᵀφ(xⱼ), without building φ. Linear separability or standardisation is not a condition. d < n is not needed either; in fact, when d ≫ n the n × n kernel matrix is the cheaper route."
+    },
+    "mlt-w2-q8": {
+      "question": "For the homogeneous polynomial kernel k(x, y) = (xᵀy)², what is k(x, y) for x = (1, 3) and y = (2, −1)?",
+      "options": [
+        "−1",
+        "0",
+        "9",
+        "1"
+      ],
+      "explanation": "xᵀy = 1·2 + 3·(−1) = −1, and the homogeneous kernel gives (xᵀy)² = (−1)² = 1. −1 forgets the square, 0 comes from wrongly adding +1 and computing (xᵀy + 1)², and 9 comes from the product of the second coordinates alone, (3·(−1))²."
+    },
+    "mlt-w2-q9": {
+      "question": "For d = 4 features, the polynomial kernel (xᵀy + c)², c > 0, is a dot product in a feature space of what dimension (all monomials of degree ≤ 2, including the constant)?",
+      "options": [
+        "15",
+        "10",
+        "14",
+        "16"
+      ],
+      "explanation": "The number of monomials of degree ≤ p (with the constant) is C(d + p, p) = C(6, 2) = 15: 1 constant, 4 linear, 4 squares and C(4, 2) = 6 cross terms. 14 forgets the constant term, 10 counts only the degree-2 terms (4 squares + 6 cross), and 16 = 4 × 4 ordered pairs, which counts x₁x₂ and x₂x₁ separately."
+    },
+    "mlt-w2-q10": {
+      "question": "For two points, which of these matrices cannot be the Gram matrix of any valid (Mercer) kernel?",
+      "options": [
+        "[[2, 1], [1, 2]]",
+        "[[1, 0], [0, 1]]",
+        "[[1, 2], [2, 1]]",
+        "[[4, 2], [2, 1]]"
+      ],
+      "explanation": "The Gram matrix of a valid kernel must be symmetric and PSD. [[1, 2], [2, 1]] has determinant 1 − 4 = −3 < 0, so its eigenvalues are 3 and −1 and it is not PSD. [[4, 2], [2, 1]] has determinant 0, but a 0 eigenvalue is allowed in PSD (for example the linear kernel of two parallel vectors), so it is the trap. The identity and [[2, 1], [1, 2]] (eigenvalues 3, 1) are both positive definite."
+    },
+    "mlt-w2-q11": {
+      "question": "An RBF kernel k(x, y) = exp(−‖x − y‖²/(2σ²)) uses σ = 2. For x = (0, 0) and y = (2, 2), what is k(x, y) approximately?",
+      "options": [
+        "0.368",
+        "0.135",
+        "0.607",
+        "0.018"
+      ],
+      "explanation": "‖x − y‖² = 4 + 4 = 8 and 2σ² = 8, so k = exp(−1) ≈ 0.368. 0.135 = exp(−2) comes from dividing by σ² = 4 instead of 2σ². 0.607 = exp(−0.5) comes from dividing by (2σ)² = 16, and 0.018 = exp(−4) comes from assuming σ = 1."
+    },
+    "mlt-w2-q12": {
+      "question": "The linear kernel matrix K (Kᵢⱼ = xᵢxⱼ) is built for the 1-D points 1, 2, 4. What is the (1, 2) entry of the centred kernel K̃ = (I − 1ₙ)K(I − 1ₙ)?",
+      "options": [
+        "2",
+        "−5",
+        "−0.444",
+        "0.444"
+      ],
+      "explanation": "K = [[1, 2, 4], [2, 4, 8], [4, 8, 16]]. K₁₂ = 2, the mean of row 1 is 7/3, the mean of column 2 is 14/3, and the mean of the whole K is 49/9. K̃₁₂ = 2 − 7/3 − 14/3 + 49/9 = 4/9 ≈ 0.444. Check: subtracting the mean 7/3 gives the points −4/3, −1/3, 5/3, and their product (−4/3)(−1/3) = 4/9. 2 is the uncentred value, −5 forgets to add back the overall mean, and −0.444 is a sign error."
+    },
+    "mlt-w2-q13": {
+      "question": "Kernel PCA with a linear kernel is run on the 1-D points −2, 0, 2 (already centred). What are the largest eigenvalue μ of K̃ and the magnitude of the score of the point x₁ = −2 on the first component (with the α = β/√μ normalisation)?",
+      "options": [
+        "μ = 8, |score| = 5.657",
+        "μ = 8, |score| = 2",
+        "μ = 4, |score| = 2",
+        "μ = 8, |score| = 0.707"
+      ],
+      "explanation": "K̃ = K = [[4, 0, −4], [0, 0, 0], [−4, 0, 4]], top eigenvalue μ = 8, β = (1, 0, −1)/√2. The score of a training point = √μ · β₁ = √8 · (1/√2) = 2 (in magnitude), which is exactly the ordinary PCA score: the projection of the point −2 on the unit direction ±1. 5.657 = μβ₁ comes from using β directly without scaling it to α = β/√μ. 0.707 is just β₁, and μ = 4 takes a diagonal entry as the eigenvalue."
+    },
+    "mlt-w2-q14": {
+      "question": "For the 1-D points 0 and 1, the 2 × 2 matrix of the function k(x, y) = (xy + c)² is formed. For which values of c ∈ {−1, −0.25, 0, 1} is this matrix PSD?",
+      "options": [
+        "Only for c = 1",
+        "Only for c = 0 and c = 1",
+        "For c = −0.25, 0 and 1",
+        "For all four values"
+      ],
+      "explanation": "K = [[c², c²], [c², (1 + c)²]], det = c²(1 + c)² − c⁴ = c²(2c + 1). The diagonal is always ≥ 0, so it is PSD when det ≥ 0, that is, c ≥ −0.5. At c = −1, K = [[1, 1], [1, 0]] with det = −1 (the example from the mistakes list). At c = −0.25, det = 0.0625 × 0.5 > 0, and at c = 0, K = [[0, 0], [0, 1]] (det 0, still PSD). Rejecting every negative c misses −0.25, and a zero eigenvalue is allowed in PSD."
+    },
+    "mlt-w2-q15": {
+      "question": "Kernel PCA with an RBF kernel (σ = 1) is run on two 1-D points 0 and 2. What is the largest eigenvalue of the centred kernel K̃ approximately?",
+      "options": [
+        "1.135",
+        "0.432",
+        "2",
+        "0.865"
+      ],
+      "explanation": "a = k(0, 2) = exp(−4/2) ≈ 0.135, K = [[1, a], [a, 1]]. For n = 2 the row, column and overall means are all (1 + a)/2, so K̃ = ((1 − a)/2)[[1, −1], [−1, 1]], whose nonzero eigenvalue is 1 − a ≈ 0.865. 1.135 = 1 + a is the top eigenvalue of the uncentred K (centring forgotten). 0.432 = (1 − a)/2 is a single entry, not an eigenvalue, and 2 is the trace of the uncentred K."
     },
     "mlt-w3-q1": {
       "question": "Which statement about Lloyd's algorithm (k-means) is correct?",
@@ -181,6 +361,96 @@
       ],
       "explanation": "Iteration 1: only 1 is closer to centroid 1; 2, 3, 8, 9, 20 go to centroid 2 ⇒ update to 1 and (2 + 3 + 8 + 9 + 20)/5 = 8.4. Iteration 2: 1, 2, 3 go to centroid 1 (for 3: 4 vs 29.16) and 8, 9, 20 to centroid 8.4 ⇒ update to 2 and 37/3 ≈ 12.33. Iteration 3: assignments unchanged ⇒ converged, so option C. Option A stops after one iteration. Option B is a different local minimum (reached from initial centroids 1 and 20, J = 53.2 vs 90.67 here), which shows the result depends on initialisation, but this run does not get there. Option D ignores the outlier 20."
     },
+    "mlt-w3-q7": {
+      "question": "In the assignment step of k-means, the centroids for the point (4, 1) are μ₁ = (1, 1), μ₂ = (5, 3) and μ₃ = (2, 4). Which cluster is the point assigned to?",
+      "options": [
+        "μ₁ (squared distance 9)",
+        "μ₃ (squared distance 13)",
+        "μ₂ (squared distance 5)",
+        "A tie between μ₁ and μ₂"
+      ],
+      "explanation": "Squared distances: to μ₁ 3² + 0² = 9, to μ₂ 1² + 2² = 5, to μ₃ 2² + 3² = 13. The smallest is 5, so μ₂. μ₁ looks close only because the y-coordinate matches, but there is a gap of 3 in x. There is no tie."
+    },
+    "mlt-w3-q8": {
+      "question": "Why is k in k-means not chosen simply as the k with the lowest objective J?",
+      "options": [
+        "J always decreases with k (J = 0 at k = n), so it would pick the largest k",
+        "J always increases with k, so this criterion would always pick k = 1",
+        "J is defined only for k = 2; for larger k the objective cannot be written",
+        "k has no effect on J, so every k gives the same J"
+      ],
+      "explanation": "With more centroids each point's nearest centroid gets closer, so the best J decreases with k, and at k = n every point is its own centroid, J = 0. That is why a criterion like the elbow or the silhouette is needed. 'Always increases' is backwards, and J is defined for any k."
+    },
+    "mlt-w3-q9": {
+      "question": "Which of these datasets is the hardest for standard k-means?",
+      "options": [
+        "Three far-apart, round, compact blobs of equal size",
+        "Two concentric circles (one ring inside another)",
+        "Two compact blobs with a very clear gap between them",
+        "Four separate blobs sitting at the corners of a square"
+      ],
+      "explanation": "k-means builds Voronoi (linear) boundaries and represents each cluster by a mean. Concentric rings are non-convex: both have their mean near the centre, so k-means cuts them in halves. The other three options have compact, separate blobs, which is the ideal case for k-means. Kernel k-means works better for such data."
+    },
+    "mlt-w3-q10": {
+      "question": "k-means with k = 2 on the 1-D points 2, 4, 5, 10, 11, with initial centroids 4 and 11. What are the new centroids after the first assignment + update step?",
+      "options": [
+        "4 and 11 (no change)",
+        "3 and 8.667",
+        "3.667 and 11",
+        "3.667 and 10.5"
+      ],
+      "explanation": "Assignment: 2, 4, 5 are closer to centroid 4 (the distance of 5 is 1 vs 6), and 10, 11 are closer to centroid 11. Update: (2 + 4 + 5)/3 ≈ 3.667 and (10 + 11)/2 = 10.5. '3 and 8.667' comes from wrongly putting 5 in the second cluster, although it is only 1 away from 4. '3.667 and 11' forgets to update the second centroid, and 'no change' is wrong because each centroid moves to the mean of its cluster."
+    },
+    "mlt-w3-q11": {
+      "question": "k-means++ is running on the 1-D points 0, 2, 5, 9. The first two centres 0 and 9 have already been chosen. What is the probability that point 5 is chosen as the third centre?",
+      "options": [
+        "0.2",
+        "0.8",
+        "0.667",
+        "0.5"
+      ],
+      "explanation": "D(x) = distance to the nearest chosen centre: for point 2 it is min(2, 7) = 2, for point 5 it is min(5, 4) = 4; chosen points have D = 0. Probability ∝ D²: 16/(4 + 16) = 0.8. 0.667 = 4/(2 + 4) comes from using D instead of D², 0.2 is the probability of point 2, and 0.5 assumes a uniform choice."
+    },
+    "mlt-w3-q12": {
+      "question": "Fictional warehouse locations: A(0, 0), B(1, 0), C(0, 1), D(4, 4), E(5, 4), F(9, 9). Lloyd's algorithm with k = 2 is run to convergence from the initial centroids A and B. What are the final clusters and the objective J?",
+      "options": [
+        "{A, C} and {B, D, E, F}, J = 203",
+        "{A, B, C, D} and {E, F}, J = 42",
+        "{A, B, C} and {D, E, F}, J = 32",
+        "{A, B, C, D, E} and {F}, J = 38.8"
+      ],
+      "explanation": "Iteration 1: for C, A (d² 1) vs B (d² 2) ⇒ A; D, E, F are closer to B. Clusters {A, C}, {B, D, E, F}; update μ₁ = (0, 0.5), μ₂ = (4.75, 4.25). Iteration 2: for B, d² 1.25 (μ₁) vs 32.125 (μ₂) ⇒ B moves to μ₁. Update μ₁ = (1/3, 1/3), μ₂ = (6, 17/3). Iteration 3 changes nothing. J = 4/3 + 92/3 = 32. 203 is the J of the first assignment with the old centroids (stopping there is wrong). The other two clusterings have higher J (42 and 38.8), and Lloyd does not reach them."
+    },
+    "mlt-w3-q13": {
+      "question": "Lloyd's algorithm with k = 3 is run on the 1-D points 0, 1, 10, 11, 20, 21 from the initial centroids 0, 1 and 15. What is J at convergence, and what kind of result is it?",
+      "options": [
+        "J = 101; a local minimum, the best 3-clustering has J = 1.5",
+        "J = 1.5; the algorithm found the global minimum",
+        "J = 101; it is the global minimum because the algorithm stopped",
+        "J = 102; further iterations will bring it down to 1.5"
+      ],
+      "explanation": "Assignment: 0 → 0, 1 → 1, and 10, 11, 20, 21 all go to 15 (for 10: 5 vs 9). Update: centroids 0, 1, 15.5; in the next iteration, for 10 it is 9 vs 5.5, so nothing changes ⇒ converged. J = 0 + 0 + (5.5² + 4.5² + 4.5² + 5.5²) = 101. The clusters {0, 1}, {10, 11}, {20, 21} have J = 6 × 0.25 = 1.5, so this is only a local minimum. 'It stopped, so it is global' is exactly the misconception; 102 is the J with the old centroid 15, and Lloyd does not escape a stuck assignment by itself."
+    },
+    "mlt-w3-q14": {
+      "question": "Kernel k-means uses the 1-D linear kernel k(x, y) = xy. For the cluster C = {1, 2} and the point x = 3, what is ‖φ(x) − μ_C‖²?",
+      "options": [
+        "9",
+        "1.25",
+        "6.75",
+        "2.25"
+      ],
+      "explanation": "k(x, x) = 9, (2/|C|) Σ k(x, xⱼ) = (2/2)(3 + 6) = 9, (1/|C|²) Σ k(xᵢ, xⱼ) = (1 + 2 + 2 + 4)/4 = 2.25. Total 9 − 9 + 2.25 = 2.25 = (3 − 1.5)², so with a linear kernel it is just the plain squared distance. 6.75 comes from forgetting the factor 2 in the middle term (9 − 4.5 + 2.25), 1.25 from dropping the cross terms k(1, 2) in the last double sum, and 9 is just k(x, x)."
+    },
+    "mlt-w3-q15": {
+      "question": "After the assignment step a cluster contains the 1-D points 1, 3, 8, but its centroid is still at the old value 5. By how much does this cluster's contribution to J drop after the update step?",
+      "options": [
+        "1",
+        "29",
+        "3",
+        "26"
+      ],
+      "explanation": "With the old centroid 5: 16 + 4 + 9 = 29. The new centroid is the mean = 4, giving 9 + 1 + 16 = 26. The drop = 3 = n · (5 − 4)² = 3 × 1, because Σ (x − c)² = Σ (x − μ)² + n(μ − c)². 1 is just (5 − 4)² without multiplying by n; 29 and 26 are values of J, not the drop."
+    },
     "mlt-w4-q1": {
       "question": "Treating the data 2, 4, 6 as Gaussian, what is the maximum likelihood estimate of the variance σ²?",
       "options": [
@@ -240,6 +510,96 @@
         "0.182"
       ],
       "explanation": "N(2; 0, 1) = e^(−2)/√(2π) ≈ 0.1353/√(2π) and N(2; 0, 2) = e^(−0.5)/(2√(2π)) ≈ 0.3033/√(2π). r₁ = 0.1353/(0.1353 + 0.3033) ≈ 0.309, so option B. The wider component wins in the tails. The trap in option A is to see equal means and say 0.5. Option D (0.182) forgets the Gaussian's 1/σ normalising factor, which does not cancel when σ differs. Option C (2/3) would be right at x = 0, not at x = 2."
+    },
+    "mlt-w4-q7": {
+      "question": "In an A/B test of a fictional app, 13 out of 20 users clicked a button (Bernoulli model). What is the MLE of the click probability θ?",
+      "options": [
+        "0.5",
+        "0.35",
+        "13",
+        "0.65"
+      ],
+      "explanation": "The Bernoulli MLE is θ̂ = successes/n = 13/20 = 0.65. 0.35 is the non-click fraction, 13 is the raw count (not divided by n), and 0.5 is a guess that ignores the data."
+    },
+    "mlt-w4-q8": {
+      "question": "The posterior of a parameter θ is Beta(4, 6). What is the posterior mean?",
+      "options": [
+        "0.375",
+        "0.4",
+        "0.667",
+        "0.6"
+      ],
+      "explanation": "The mean of Beta(α, β) is α/(α + β) = 4/10 = 0.4. 0.375 = (4 − 1)/(4 + 6 − 2) = 3/8 is the mode (MAP), not the mean. 0.667 = 4/6 is the ratio α/β, and 0.6 = β/(α + β) uses the other parameter."
+    },
+    "mlt-w4-q9": {
+      "question": "What is a basic difference between clustering with a Gaussian mixture model (GMM) and with k-means?",
+      "options": [
+        "A GMM does not need the number of clusters k in advance, while k-means does",
+        "k-means gives soft assignments and a GMM gives every point exactly one cluster",
+        "A GMM gives each point a probability for every cluster; k-means gives one cluster",
+        "Both always give exactly the same clusters and centres on every dataset"
+      ],
+      "explanation": "A GMM is soft clustering: the responsibility rᵢₖ says how much point i belongs to cluster k, and clusters can be elliptical or of different sizes. k-means makes hard assignments. Both need k chosen in advance, and swapping soft/hard is the trap. The same result appears only in a special limit like σ → 0."
+    },
+    "mlt-w4-q10": {
+      "question": "Modelling the data 1, 3, 4, 8 as Gaussian, what are the maximum likelihood estimates of the mean and variance?",
+      "options": [
+        "μ̂ = 4, σ̂² = 6.5",
+        "μ̂ = 4, σ̂² = 8.667",
+        "μ̂ = 4, σ̂² = 2.55",
+        "μ̂ = 4, σ̂² = 26"
+      ],
+      "explanation": "μ̂ = 16/4 = 4. The squared deviations are 9, 1, 0, 16 with sum 26, and the MLE σ̂² = 26/4 = 6.5 (divide by n). 8.667 = 26/3 is the unbiased (n − 1) estimate, not the MLE. 2.55 ≈ √6.5 is the standard deviation, and 26 forgets to divide."
+    },
+    "mlt-w4-q11": {
+      "question": "With a uniform prior Beta(1, 1), a coin is tossed 3 times and lands heads all three times. What are the MLE, the MAP and the posterior mean of θ (the probability of heads)?",
+      "options": [
+        "MLE = 0.8, MAP = 1, posterior mean = 1",
+        "MLE = 1, MAP = 0.8, posterior mean = 0.8",
+        "MLE = 1, MAP = 1, posterior mean = 0.8",
+        "MLE = 0.75, MAP = 1, posterior mean = 0.8"
+      ],
+      "explanation": "MLE = 3/3 = 1. Posterior Beta(1 + 3, 1 + 0) = Beta(4, 1); with a uniform prior MAP = MLE = 1 (the density 4θ³ peaks at θ = 1). Posterior mean = 4/5 = 0.8, which avoids the extreme answer 1 on little data. Calling the MAP 0.8 mixes up the mean and the mode; 0.75 = 3/4 is a miscount."
+    },
+    "mlt-w4-q12": {
+      "question": "A 1-D GMM has π₁ = 0.6, μ₁ = 0 and π₂ = 0.4, μ₂ = 4, with σ = 2 for both components. What is the responsibility r₁ of component 1 for the point x = 3, approximately?",
+      "options": [
+        "0.6",
+        "0.356",
+        "0.269",
+        "0.5"
+      ],
+      "explanation": "With equal σ the normalising constants cancel: r₁ = 0.6·exp(−9/8) / (0.6·exp(−9/8) + 0.4·exp(−1/8)). exp(−1.125) ≈ 0.325, exp(−0.125) ≈ 0.882, so 0.195/(0.195 + 0.353) ≈ 0.356. 0.269 comes from forgetting the prior π (the likelihood ratio alone), 0.6 is just the prior, and 0.5 assumes equal weights."
+    },
+    "mlt-w4-q13": {
+      "question": "For the 1-D data 1, 2, 6, 7, the E-step gives component 1 the responsibilities (0.9, 0.8, 0.2, 0.1). What are μ₁ and σ₁² in the M-step?",
+      "options": [
+        "μ₁ = 1.1, σ₁² = 1.63",
+        "μ₁ = 2.2, σ₁² = 1.63",
+        "μ₁ = 4, σ₁² = 6.5",
+        "μ₁ = 2.2, σ₁² = 3.26"
+      ],
+      "explanation": "N₁ = 0.9 + 0.8 + 0.2 + 0.1 = 2, μ₁ = (0.9 + 1.6 + 1.2 + 0.7)/2 = 4.4/2 = 2.2. σ₁² = Σ rᵢ(xᵢ − 2.2)²/N₁ = (0.9·1.44 + 0.8·0.04 + 0.2·14.44 + 0.1·23.04)/2 = 6.52/2 = 3.26. 1.1 and 1.63 divide by n = 4 instead of N₁ (the error from the mistakes list); 4 and 6.5 are the plain mean and variance that ignore the responsibilities."
+    },
+    "mlt-w4-q14": {
+      "question": "A 1-D GMM has π₁ = π₂ = 0.5, μ₁ = 0, μ₂ = 2, and the same σ for both components. What is r₁ for the point x = 0.9 when σ = 1, and when σ = 0.1?",
+      "options": [
+        "≈ 0.55 at σ = 1, ≈ 1.00 at σ = 0.1",
+        "≈ 0.55 at σ = 1, ≈ 0.55 at σ = 0.1",
+        "≈ 0.45 at σ = 1, ≈ 0.00 at σ = 0.1",
+        "0.5 at σ = 1, 0.5 at σ = 0.1"
+      ],
+      "explanation": "r₁ = 1/(1 + exp(−[(x − 2)² − x²]/(2σ²))). (1.1)² − (0.9)² = 0.4. At σ = 1 the exponent is 0.2 ⇒ r₁ ≈ 0.55; at σ = 0.1 it is 0.4/0.02 = 20 ⇒ r₁ ≈ 1. With a small σ the responsibilities become 0/1, so EM makes hard assignments like k-means (0.9 is closer to centre 0). 'Same for both σ' ignores the effect of σ, 0.45/0.00 takes the other component, and 0.5 would happen only at x = 1 (the exact midpoint)."
+    },
+    "mlt-w4-q15": {
+      "question": "The success probability θ of a fictional sensor has prior Beta(2, 3). In 5 trials there are 4 successes and 1 failure. What are the MLE, the MAP and the posterior mean?",
+      "options": [
+        "MLE 0.8, MAP 0.6, posterior mean 0.625",
+        "MLE 0.8, MAP 0.625, posterior mean 0.6",
+        "MLE 0.6, MAP 0.625, posterior mean 0.8",
+        "MLE 0.8, MAP 0.667, posterior mean 0.6"
+      ],
+      "explanation": "MLE = 4/5 = 0.8. Posterior Beta(2 + 4, 3 + 1) = Beta(6, 4). MAP = (6 − 1)/(6 + 4 − 2) = 5/8 = 0.625, posterior mean = 6/10 = 0.6. The prior mean was 0.4, so both Bayesian estimates are pulled below the MLE. Swapping the MAP and mean values is the common trap; 0.667 = 6/9 uses a wrong denominator."
     },
     "mlt-w5-q1": {
       "question": "For the least squares fit ŵ, which statement about the residual vector r = y − Xŵ is always true?",
@@ -301,6 +661,96 @@
       ],
       "explanation": "With x₂ = 2x₁ the columns of X are linearly dependent, rank < 3, so XᵀX is singular. The normal equations have infinitely many solutions (w₁ and w₂ can change while w₁ + 2w₂ stays fixed), but ŷ is the projection of y onto the column space, which is unique; so option D. Option B is wrong because a convex quadratic always attains its minimum, just not uniquely. Option C is backwards: w is non-unique, ŷ is unique."
     },
+    "mlt-w5-q7": {
+      "question": "How is the intercept (bias) term included in the linear model ŷ = wᵀx?",
+      "options": [
+        "Add a constant feature 1 to every x; its weight becomes the intercept",
+        "Divide every feature by its standard deviation to change the scale",
+        "Divide every row of the design matrix X by its norm ‖xᵢ‖",
+        "Train a separate model for the intercept and add its output later"
+      ],
+      "explanation": "The standard trick: x = (1, x₁, …, x_d), so w₀ · 1 becomes the intercept and everything fits into a single wᵀx. Standardising or normalising rows only changes the scale and does not give an intercept. No separate model is needed; the normal equations solve for the intercept together with the other weights."
+    },
+    "mlt-w5-q8": {
+      "question": "A fitted model is ŷ = 2 + 0.5x₁ − 1·x₂. What is the prediction for the input x = (4, 3)?",
+      "options": [
+        "−0.5",
+        "−1",
+        "7",
+        "1"
+      ],
+      "explanation": "ŷ = 2 + 0.5·4 − 1·3 = 2 + 2 − 3 = 1. −1 forgets the intercept 2, 7 treats the minus sign as a plus, and −0.5 comes from swapping x₁ and x₂ (2 + 0.5·3 − 4)."
+    },
+    "mlt-w5-q9": {
+      "question": "In linear regression, when is gradient descent more practical than the closed form (XᵀX)⁻¹Xᵀy?",
+      "options": [
+        "When n is very small (say 5 points) and d is only 1 or 2",
+        "When d is very large, since the d × d system costs about d³",
+        "When XᵀX is easily invertible and there are only d = 2 features",
+        "Only when the model has no intercept, otherwise the gradient is undefined"
+      ],
+      "explanation": "The closed form costs O(nd² + d³), which is very expensive when d runs into the lakhs; each gradient descent step costs O(nd). For small n and d the closed form is cheap and exact. Having an intercept or not makes no difference to the gradient."
+    },
+    "mlt-w5-q10": {
+      "question": "Fit a least squares line with an intercept to the fictional data x = 0, 1, 2, 3 and y = 1, 2, 2, 5. What is the fitted line?",
+      "options": [
+        "ŷ = 1.5x",
+        "ŷ = 1 + 1.2x",
+        "ŷ = 0.7 + 1.2x",
+        "ŷ = 0.7 + 1.5x"
+      ],
+      "explanation": "x̄ = 1.5, ȳ = 2.5. Σ(x − x̄)(y − ȳ) = 2.25 + 0.25 − 0.25 + 3.75 = 6, Σ(x − x̄)² = 5, slope = 1.2, intercept = 2.5 − 1.2·1.5 = 0.7 (the normal equations XᵀX = [[4, 6], [6, 14]], Xᵀy = (10, 21) give the same). ŷ = 1.5x comes from forgetting the intercept column (21/14). 1 + 1.2x takes the first y as the intercept, and 0.7 + 1.5x mixes two different fits."
+    },
+    "mlt-w5-q11": {
+      "question": "A least squares model fitted with an intercept has 4 training points; three of the residuals are 0.4, −1.1 and 0.3. What is the fourth residual?",
+      "options": [
+        "0",
+        "−0.4",
+        "1.8",
+        "0.4"
+      ],
+      "explanation": "The residual vector is orthogonal to the intercept column (all 1s), so Σ rᵢ = 0. 0.4 − 1.1 + 0.3 = −0.4, so the fourth residual is +0.4. −0.4 has the sign flipped. 0 would hold only for a perfect fit, which this is not. 1.8 comes from adding the absolute values (0.4 + 1.1 + 0.3)."
+    },
+    "mlt-w5-q12": {
+      "question": "Fictional data: x = 0, 2, 4 and y = 1, 2, 6. After fitting a least squares line with an intercept, what is the prediction at x = 5?",
+      "options": [
+        "6.75",
+        "7",
+        "6.25",
+        "9.25"
+      ],
+      "explanation": "XᵀX = [[3, 6], [6, 20]], Xᵀy = (9, 28). det = 60 − 36 = 24, ŵ = (1/24)(20·9 − 6·28, −6·9 + 3·28) = (1/24)(12, 30) = (0.5, 1.25). ŷ(5) = 0.5 + 6.25 = 6.75. 7 is the no-intercept fit (Σxy/Σx² = 28/20 = 1.4, then 1.4 × 5). 6.25 is only slope × 5 (the intercept was not added), and 9.25 takes ȳ = 3 as the intercept, while it should be ȳ − slope·x̄ = 3 − 2.5 = 0.5."
+    },
+    "mlt-w5-q13": {
+      "question": "The design matrix rows are (1, 1) and (1, 2), the targets are y = (2, 3). Starting from w = (0, 0), run two steps of the update w ← w + η Xᵀ(y − Xw) with η = 0.1. What is w after two steps?",
+      "options": [
+        "(0.5, 0.8)",
+        "(1, 1.6)",
+        "(0.66, 1.05)",
+        "(0.34, 0.55)"
+      ],
+      "explanation": "Step 1: residual y − Xw = (2, 3), Xᵀr = (5, 8), w = (0.5, 0.8). Step 2: Xw = (1.3, 2.1), residual (0.7, 0.9), Xᵀr = (1.6, 2.5), w = (0.5 + 0.16, 0.8 + 0.25) = (0.66, 1.05). (0.5, 0.8) is only one step. (1, 1.6) reuses the first step's gradient (the residual was not updated), and (0.34, 0.55) flips the sign in the second step."
+    },
+    "mlt-w5-q14": {
+      "question": "There are two features without an intercept, x₁ and x₂ = 2x₁. Data: x₁ = 1, 2 and y = 2, 4. Among all least squares solutions, what is the minimum-norm (pseudo-inverse) solution w?",
+      "options": [
+        "(2, 0)",
+        "(0.4, 0.8)",
+        "(0.5, 0.75)",
+        "(0, 1)"
+      ],
+      "explanation": "The prediction is w₁x₁ + w₂(2x₁) = (w₁ + 2w₂)x₁ and y = 2x₁ exactly, so every w with w₁ + 2w₂ = 2 gives zero error (infinitely many). The minimum ‖w‖ solution lies along the direction (1, 2): w = (2/5)(1, 2) = (0.4, 0.8), ‖w‖² = 0.8. (2, 0) and (0, 1) also give zero error but have ‖w‖² = 4 and 1. (0.5, 0.75) is also valid (0.5 + 1.5 = 2), but ‖w‖² = 0.8125 is slightly larger, which makes it the trap."
+    },
+    "mlt-w5-q15": {
+      "question": "A model ŷ = 3 + 2x was fitted with x in metres. If the same data is refitted by least squares with an intercept but with x′ in centimetres (x′ = 100x), what is the new model and the prediction for an input of 1.5 m?",
+      "options": [
+        "ŷ = 3 + 0.02x′, prediction 6",
+        "ŷ = 3 + 200x′, prediction 30003",
+        "ŷ = 0.03 + 0.02x′, prediction 3.03",
+        "ŷ = 300 + 2x′, prediction 600"
+      ],
+      "explanation": "x′ is just a multiple of x, so the column space (1 and x′) is the same and the fitted values ŷ stay the same. Hence the slope is 2/100 = 0.02 and the intercept stays 3. 1.5 m = 150 cm: 3 + 0.02·150 = 6 = 3 + 2·1.5. Multiplying the slope by 100 is backwards; scaling the intercept is wrong because the unit of the constant feature did not change."
+    },
     "mlt-w6-q1": {
       "question": "In ridge regression, what typically happens as the regularisation strength λ is increased?",
       "options": [
@@ -360,6 +810,96 @@
         "(2.5, −0.9, 0.5)"
       ],
       "explanation": "With XᵀX = I the objective separates by coordinate: wⱼ² − 2zⱼwⱼ + λ|wⱼ| (dropping a constant), whose minimiser is ŵⱼ = sign(zⱼ) max(|zⱼ| − λ/2, 0). Threshold 0.5: 3 → 2.5, −0.4 → 0 (|−0.4| < 0.5), 1 → 0.5. So option A. Option B is ridge's zⱼ/(1 + λ). Option C uses threshold λ = 1 instead of λ/2 (the formula for the version of the objective with ½ in front). Option D does not clip and turns −0.4 into −0.4 − 0.5 = −0.9."
+    },
+    "mlt-w6-q7": {
+      "question": "What is one important benefit of taking λ > 0 in ridge regression?",
+      "options": [
+        "The training error always becomes exactly zero, whatever the data",
+        "XᵀX + λI is always invertible, so ŵ is unique even on collinear data",
+        "Many coefficients become exactly zero, giving feature selection",
+        "The model becomes non-linear by itself and can fit curves"
+      ],
+      "explanation": "XᵀX is PSD; adding λI makes every eigenvalue at least λ > 0, so the matrix is invertible and the solution is unique even with collinear features or d > n. Ridge raises the training error (bias), it does not lower it. Exact zeros are LASSO's job, and the model stays linear."
+    },
+    "mlt-w6-q8": {
+      "question": "In the Bayesian view of ridge, the noise variance is σ² = 4 and the prior w ~ N(0, γ²I) has γ² = 2. The MAP estimate equals ridge with which λ?",
+      "options": [
+        "8",
+        "0.5",
+        "2",
+        "6"
+      ],
+      "explanation": "λ = σ²/γ² = 4/2 = 2. 0.5 is the inverted ratio (γ²/σ²), 8 is the product, and 6 is the sum. A strong prior (small γ²) ⇒ large λ ⇒ more shrinkage."
+    },
+    "mlt-w6-q9": {
+      "question": "Why is it recommended to standardise the features before applying a ridge or LASSO penalty?",
+      "options": [
+        "A weight's size depends on the feature's unit, so the penalty becomes unfair",
+        "Standardising makes XᵀX exactly the identity matrix on every dataset",
+        "Without standardising, the closed-form ridge solution does not exist at all",
+        "After standardising, no cross-validation is needed to choose λ"
+      ],
+      "explanation": "If a feature is changed from km to metres its weight becomes 1000 times smaller, and the same λ‖w‖² now penalises that feature far less. Standardisation brings all features to a comparable scale. XᵀX is the identity only for an orthonormal design, the closed form (XᵀX + λI)⁻¹Xᵀy always exists, and λ still has to be chosen by CV."
+    },
+    "mlt-w6-q10": {
+      "question": "For an orthonormal design (XᵀX = I), z = Xᵀy = (4, −2, 1). What is the ridge solution ŵ with λ = 1?",
+      "options": [
+        "(3.5, −1.5, 0.5)",
+        "(4, −2, 1)",
+        "(3, −1, 0)",
+        "(2, −1, 0.5)"
+      ],
+      "explanation": "For an orthonormal design, ridge gives ŵⱼ = zⱼ/(1 + λ) = z/2 = (2, −1, 0.5): every coefficient shrinks by the same factor. (3.5, −1.5, 0.5) is LASSO's soft-thresholding (subtract λ/2 = 0.5), (3, −1, 0) uses the threshold λ = 1, and (4, −2, 1) is OLS (λ = 0)."
+    },
+    "mlt-w6-q11": {
+      "question": "In a fictional prediction task the irreducible noise variance is 0.5. Model A: bias² = 0.2, variance = 3.0. Model B (more regularised): bias² = 1.0, variance = 0.8. Which is better in terms of expected test error?",
+      "options": [
+        "Model B: expected error 2.3 vs 3.7 for A",
+        "Model B: expected error 1.8 vs 3.2 for A",
+        "Model A, because its bias is lower",
+        "Both are equal, because the noise is the same for both"
+      ],
+      "explanation": "Expected error = bias² + variance + noise: A = 0.2 + 3.0 + 0.5 = 3.7, B = 1.0 + 0.8 + 0.5 = 2.3, so B. 'B: 1.8 vs 3.2' forgets to add the noise 0.5: right conclusion, wrong numbers. Choosing A for its lower bias ignores the variance, and equal noise does not cancel the difference in bias and variance."
+    },
+    "mlt-w6-q12": {
+      "question": "1-D ridge without an intercept: minimise Σ (yᵢ − wxᵢ)² + λw², with data x = 1, 2, 2 and y = 1, 3, 2. For which λ does the ridge ŵ become exactly half of the OLS ŵ?",
+      "options": [
+        "4.5",
+        "9",
+        "1",
+        "18"
+      ],
+      "explanation": "1-D ridge: ŵ = Σxy/(Σx² + λ), OLS = Σxy/Σx². Σx² = 1 + 4 + 4 = 9, Σxy = 1 + 6 + 4 = 11. It halves when Σx² + λ = 2Σx², so λ = Σx² = 9 (ŵ = 11/18 ≈ 0.611 vs OLS 1.222). 4.5 = Σx²/2 and 18 = 2Σx² apply the factor wrongly; λ = 1 assumes the orthonormal formula z/(1 + λ), which does not apply because Σx² ≠ 1."
+    },
+    "mlt-w6-q13": {
+      "question": "For an orthonormal design, z = Xᵀy = (2, −1.2, 0.5, −4). The objective is ‖y − Xw‖² + λ·penalty with λ = 3. How many coefficients are exactly zero in the LASSO (L1) and the ridge (L2) solutions?",
+      "options": [
+        "LASSO: 3 zero, ridge: 0 zero",
+        "LASSO: 2 zero, ridge: 2 zero",
+        "LASSO: 1 zero, ridge: 0 zero",
+        "LASSO: 2 zero, ridge: 0 zero"
+      ],
+      "explanation": "LASSO: threshold λ/2 = 1.5; |−1.2| and |0.5| ≤ 1.5 ⇒ zero, the rest shrink ⇒ ŵ = (0.5, 0, 0, −2.5), so 2 zeros. Ridge: ŵ = z/(1 + 3) = (0.5, −0.3, 0.125, −1), no zeros. '3 zero' comes from using the threshold λ = 3 (then |2| would also be zeroed); zeros in ridge are the misconception that L2 does feature selection."
+    },
+    "mlt-w6-q14": {
+      "question": "XᵀX = [[4, 0], [0, 1]] and Xᵀy = (8, 2). What is the ridge solution with λ = 4, and compared with OLS, which coefficient shrinks relatively more?",
+      "options": [
+        "(2, 2); ridge stays the same as OLS here",
+        "(0.4, 0.4); both shrink by the same factor",
+        "(1, 0.4); the second coefficient shrinks more",
+        "(1, 0.4); the first coefficient shrinks more"
+      ],
+      "explanation": "OLS = (8/4, 2/1) = (2, 2). Ridge = (8/(4 + 4), 2/(1 + 4)) = (1, 0.4). The first coefficient keeps 50%, the second only 20%: in the direction where the XᵀX entry (the signal in the data) is small, λ has a larger effect. (0.4, 0.4) = OLS/(1 + λ) applies the orthonormal formula where it does not belong; (2, 2) ignores λ."
+    },
+    "mlt-w6-q15": {
+      "question": "For an orthonormal design, z = Xᵀy = (3, −0.4, 1) and the LASSO objective is ‖y − Xw‖² + λ‖w‖₁. What is the smallest λ at which all coefficients become exactly zero?",
+      "options": [
+        "3",
+        "6",
+        "1.5",
+        "0.8"
+      ],
+      "explanation": "Soft-thresholding: ŵⱼ = 0 when |zⱼ| ≤ λ/2. For all zeros we need λ/2 ≥ max |zⱼ| = 3, so λ ≥ 6. 3 comes from taking the threshold as λ (not λ/2). 0.8 = 2 × 0.4 zeroes only the smallest coefficient, and at 1.5 too only −0.4 is zero, not 3 and 1."
     },
     "mlt-w7-q1": {
       "question": "A decision-tree node has 6 positive and 2 negative examples. What is its entropy (base 2)?",
@@ -421,6 +961,96 @@
       ],
       "explanation": "Raw: d²(P1) = 1² + 7000² ≈ 4.9 × 10⁷, d²(P2) = 19² + 5000² ≈ 2.5 × 10⁷, so P2 (Reject) is nearest. Scaled: age /40, income /80,000. P1: (1/40)² + (7000/80000)² ≈ 0.0083; P2: (19/40)² + (5000/80000)² ≈ 0.2295, so P1 (Approve) is nearest. So option B. The trap in option D is assuming scaling cannot change the ranking; in raw distance the 19-year age gap is invisible next to rupees."
     },
+    "mlt-w7-q7": {
+      "question": "A decision-tree node has 3 positive and 1 negative example. What is the Gini impurity of this node?",
+      "options": [
+        "0.811",
+        "0.25",
+        "0.375",
+        "0.625"
+      ],
+      "explanation": "Gini = 1 − (3/4)² − (1/4)² = 1 − 0.5625 − 0.0625 = 0.375. 0.811 is the entropy (in bits) of the same node, 0.625 = Σ pₖ² (forgot to subtract from 1), and 0.25 is just the fraction of the minority class."
+    },
+    "mlt-w7-q8": {
+      "question": "In k-NN, what happens if k = n (the total number of training points)?",
+      "options": [
+        "Every query gets the overall majority class of the training data",
+        "The training error always becomes 0, as with k = 1",
+        "The decision boundary becomes as jagged and noisy as possible",
+        "Every query gets the label of only its single nearest point"
+      ],
+      "explanation": "With k = n all points vote, so every query gets the same answer: the majority class. This is extreme high bias. Zero training error and a jagged boundary are properties of k = 1, and the label of the single nearest point is also k = 1."
+    },
+    "mlt-w7-q9": {
+      "question": "When building a decision tree, why is a feature like customer ID (a unique value per row) a trap for information gain?",
+      "options": [
+        "The information gain of an ID is always 0, so the tree ignores it",
+        "An ID is a numeric feature, so the tree cannot split on it at all",
+        "Features like an ID make the entropy of the child nodes negative",
+        "Each ID becomes its own pure leaf, so the IG comes out artificially high"
+      ],
+      "explanation": "Splitting on the ID puts one row in each child, all pure, so the child entropy is 0 and IG = parent entropy, the maximum possible. But this split generalises nothing to new customers. The gain ratio corrects for this. An IG of 0 is backwards; entropy is never negative."
+    },
+    "mlt-w7-q10": {
+      "question": "A parent node has 5 positive and 5 negative examples. A split gives a left child (4 positive, 1 negative) and a right child (1 positive, 4 negative). By how much does the Gini impurity decrease?",
+      "options": [
+        "0.32",
+        "0.18",
+        "0.5",
+        "0.14"
+      ],
+      "explanation": "Parent Gini = 1 − 0.25 − 0.25 = 0.5. Each child: 1 − 0.8² − 0.2² = 0.32, and the weighted value (5/10 and 5/10) is also 0.32. Decrease = 0.5 − 0.32 = 0.18. 0.32 is the children's impurity, not the decrease; 0.5 is the parent's impurity; 0.14 comes from forgetting the 0.2² term in the child Gini (1 − 0.64 = 0.36)."
+    },
+    "mlt-w7-q11": {
+      "question": "1-D k-NN: query x = 5. Training points: 4 (A), 7 (B), 8 (B), 5.5 (A), 12 (B). With k = 4, what do the simple majority vote and the distance-weighted vote (weight 1/d) say?",
+      "options": [
+        "B, because B has more points in the whole training data (3 vs 2)",
+        "Simple vote is a 2–2 tie; with 1/d weights A wins (3 vs ≈ 0.83)",
+        "The simple vote already gives A, since 3 of the 4 neighbours are A",
+        "The weighted vote gives B, because the B neighbours are farther away"
+      ],
+      "explanation": "Distances: 5.5 → 0.5 (A), 4 → 1 (A), 7 → 2 (B), 8 → 3 (B); 12 → 7 (B) stays out. The 4 neighbours are 2 A and 2 B ⇒ a tie. Weighted: A = 1/0.5 + 1/1 = 3, B = 1/2 + 1/3 ≈ 0.83 ⇒ A. '3 are A' is a miscount, the majority of the whole data is not the k-NN vote, and weighting gives farther points less weight, not more."
+    },
+    "mlt-w7-q12": {
+      "question": "Root node: 12 examples (6 yes, 6 no). Feature A gives the children (4 yes, 0 no) and (2 yes, 6 no). Feature B gives (5 yes, 2 no) and (1 yes, 4 no). Using information gain (base 2), which feature do you pick, and what is its IG?",
+      "options": [
+        "B, IG ≈ 0.196",
+        "A, IG ≈ 0.594",
+        "B, IG ≈ 0.459",
+        "A, IG ≈ 0.459"
+      ],
+      "explanation": "Parent H = 1. A: children H = 0 and H(2/8, 6/8) ≈ 0.811, weighted = (4/12)·0 + (8/12)·0.811 ≈ 0.541, IG ≈ 0.459. B: H(5/7, 2/7) ≈ 0.863 and H(1/5, 4/5) ≈ 0.722, weighted = (7/12)·0.863 + (5/12)·0.722 ≈ 0.804, IG ≈ 0.196. So A. 0.594 comes from the plain average of the children (0 + 0.811)/2 (size weighting forgotten); 'B, 0.459' mixes up the values."
+    },
+    "mlt-w7-q13": {
+      "question": "A 3-class node has class counts (4, 2, 2). A split gives the children (4, 0, 0) and (0, 2, 2). What are the parent entropy (base 2) and the information gain?",
+      "options": [
+        "H = 1.5 bits, IG = 1 bit",
+        "H = 1 bit, IG = 0.5 bit",
+        "H = 1.5 bits, IG = 0.5 bit",
+        "H = 1.58 bits, IG = 1.08 bits"
+      ],
+      "explanation": "H(parent) = −0.5 log₂ 0.5 − 2 × 0.25 log₂ 0.25 = 0.5 + 1 = 1.5 bits. Children: (4, 0, 0) is pure ⇒ 0; (0, 2, 2) has two equal classes ⇒ 1 bit. Weighted = 0.5·0 + 0.5·1 = 0.5, IG = 1.5 − 0.5 = 1 bit. 'H = 1 bit' treats the parent as binary; 'IG = 0.5' reports the weighted child entropy as the IG; 1.58 = log₂ 3 would hold only if all three classes were equal."
+    },
+    "mlt-w7-q14": {
+      "question": "1-D data: 1 (A), 2 (A), 4 (B), 5 (A), 7 (B), 8 (B). What are the training error and the leave-one-out cross-validation (LOOCV) error of a 1-NN classifier?",
+      "options": [
+        "Training error 0, LOOCV error 0",
+        "Training error 1/3, LOOCV error 1/3",
+        "Training error 0, LOOCV error 1/3",
+        "Training error 0, LOOCV error 1/2"
+      ],
+      "explanation": "The training error is 0, because every point's nearest neighbour is itself. LOOCV: remove the point and look for the nearest among the rest. 1 → 2 (A) right, 2 → 1 (A) right, 4 → 5 (A) wrong, 5 → 4 (B) wrong, 7 → 8 (B) right, 8 → 7 (B) right. Error 2/6 = 1/3. 'LOOCV 0' treats the training error as validation; a training error of 1/3 is wrong because each point is its own neighbour; 1/2 is a miscount."
+    },
+    "mlt-w7-q15": {
+      "question": "A root split must be chosen for 8 training rows (3 churn, 5 no churn). The feature region has an IG of 0.30. If customer ID (unique per row) is also a candidate, what will a greedy tree using plain information gain do?",
+      "options": [
+        "Pick region, because the IG of an ID is 0",
+        "Pick ID (IG ≈ 0.954), and it will work well on new customers too",
+        "Pick region, because the IG of ID is below 0.30",
+        "Pick ID (IG ≈ 0.954), but it is useless on new customers"
+      ],
+      "explanation": "Splitting on ID gives 8 pure leaves, child entropy 0, so IG = H(3/8, 5/8) ≈ 0.954, which is above region's 0.30, so the greedy tree picks ID. But a new customer's ID is not in the training data, so the split generalises nothing: classic overfitting, which the gain ratio penalises. 'The IG of an ID is 0' is backwards; 'will work well' mistakes a high IG for generalisation."
+    },
     "mlt-w8-q1": {
       "question": "What exactly is the 'naive' assumption of the naive Bayes classifier?",
       "options": [
@@ -480,6 +1110,96 @@
         "x ≈ 4.693"
       ],
       "explanation": "Choose class 1 when 0.2 N(x; 6, 4) > 0.8 N(x; 2, 4). Taking logs: [(x − 2)² − (x − 6)²]/8 > ln 4 ⇒ (8x − 32)/8 > ln 4 ⇒ x > 4 + ln 4 ≈ 5.386, option A. General form: (μ₀ + μ₁)/2 + σ² ln(π₀/π₁)/(μ₁ − μ₀). Option B is the equal-prior midpoint, which ignores the priors. Option C moves the shift the wrong way (towards the frequent class). Option D uses σ = 2 instead of σ² = 4."
+    },
+    "mlt-w8-q7": {
+      "question": "What does a generative classifier learn during training?",
+      "options": [
+        "The decision boundary wᵀx = 0 directly, without any probability model",
+        "Only P(y | x) directly, as logistic regression does",
+        "It stores all training points and returns the nearest neighbour's label",
+        "P(y) and P(x | y); then it gets P(y | x) by Bayes rule"
+      ],
+      "explanation": "A generative model models how the data is generated: first the class y ~ P(y), then x ~ P(x | y), and predictions come from Bayes rule. Learning P(y | x) or the boundary directly is the discriminative approach (logistic regression, perceptron), and storing the points is k-NN."
+    },
+    "mlt-w8-q8": {
+      "question": "A categorical feature device has 3 possible values (mobile, tablet, laptop). In the 7 training examples of class c, tablet never appears. With Laplace smoothing (count + 1)/(n_c + K), what is P(tablet | c)?",
+      "options": [
+        "0",
+        "0.125",
+        "0.1",
+        "0.111"
+      ],
+      "explanation": "K = 3 values: (0 + 1)/(7 + 3) = 0.1. 0.125 = 1/8 adds only +1 to the denominator, 0.111 = 1/9 uses the binary +2 denominator, and 0 is the unsmoothed MLE that would zero out the whole product."
+    },
+    "mlt-w8-q9": {
+      "question": "When implementing naive Bayes, why is log P(y) + Σ log P(xⱼ | y) computed instead of the plain product?",
+      "options": [
+        "Taking logs makes the naive Bayes independence assumption true by itself",
+        "A product of many small probabilities underflows; a log-sum is stable",
+        "In log space the class priors P(y) are not needed at all",
+        "Taking logs applies Laplace smoothing automatically, no separate step"
+      ],
+      "explanation": "Multiply probabilities like 0.01 over thousands of features and the number falls below the floating-point range (underflow, 0). The log turns the product into a sum, and the argmax stays the same because log is increasing. The log has no effect on the assumption, the priors or the smoothing."
+    },
+    "mlt-w8-q10": {
+      "question": "Bernoulli naive Bayes with two classes and priors 0.5 and 0.5. Class S: P(w₁ = 1) = 0.8, P(w₂ = 1) = 0.3. Class H: P(w₁ = 1) = 0.2, P(w₂ = 1) = 0.4. A document contains w₁ but not w₂. What is P(S | document)?",
+      "options": [
+        "0.824",
+        "0.8",
+        "0.28",
+        "0.5"
+      ],
+      "explanation": "S score = 0.5 × 0.8 × (1 − 0.3) = 0.28, H score = 0.5 × 0.2 × (1 − 0.4) = 0.06. P(S | doc) = 0.28/0.34 ≈ 0.824. 0.8 comes from ignoring the absent word w₂ (the error from the mistakes list), 0.28 is the unnormalised score, and 0.5 is just the prior."
+    },
+    "mlt-w8-q11": {
+      "question": "1-D Gaussian naive Bayes: class 0 ~ N(1, 4), class 1 ~ N(7, 4) (variance 4), equal priors. What is P(class 1 | x) at x = 5, approximately?",
+      "options": [
+        "0.5",
+        "0.182",
+        "0.818",
+        "0.953"
+      ],
+      "explanation": "Log-odds = [(x − 1)² − (x − 7)²]/(2 × 4) = (16 − 4)/8 = 1.5, so P = σ(1.5) ≈ 0.818. 0.182 is the probability of class 0. 0.953 = σ(3) comes from forgetting the factor 2 and dividing only by σ² = 4, and 0.5 would hold only if x were at the midpoint 4."
+    },
+    "mlt-w8-q12": {
+      "question": "Fictional reviews: 6 positive, 4 negative. great appears in 5 positive and 1 negative review; boring in 0 positive and 3 negative; plot in 3 positive and 2 negative. A new review contains great and plot but not boring. With Bernoulli naive Bayes, Laplace smoothing (count + 1)/(n_c + 2) on the likelihoods and unsmoothed priors, what is P(positive | review) approximately?",
+      "options": [
+        "0.899",
+        "0.952",
+        "0.197",
+        "0.6"
+      ],
+      "explanation": "Positive: P(great) = 6/8 = 0.75, P(boring) = 1/8 ⇒ absent 7/8, P(plot) = 4/8. Score = 0.6 × 0.75 × 0.875 × 0.5 ≈ 0.1969. Negative: P(great) = 2/6, P(boring) = 4/6 ⇒ absent 2/6, P(plot) = 3/6. Score = 0.4 × (1/3) × (1/3) × 0.5 ≈ 0.0222. Posterior = 0.1969/(0.1969 + 0.0222) ≈ 0.899. 0.952 is the unsmoothed answer, 0.197 is the unnormalised score, and 0.6 is just the prior."
+    },
+    "mlt-w8-q13": {
+      "question": "A 3-class naive Bayes model has log scores (log P(y) + Σ log P(xⱼ | y)) of −20, −21 and −23. What is the posterior probability of class 1 (score −20), approximately?",
+      "options": [
+        "0.333",
+        "0.705",
+        "0.731",
+        "0.259"
+      ],
+      "explanation": "Posterior = e^−20 / (e^−20 + e^−21 + e^−23). Subtract the largest score (the log-sum-exp trick): 1/(1 + e^−1 + e^−3) = 1/(1 + 0.368 + 0.050) ≈ 0.705. 0.731 comes from forgetting the third class, 0.259 is the probability of class 2, and 0.333 ignores the scores and assumes uniform."
+    },
+    "mlt-w8-q14": {
+      "question": "2-feature Gaussian naive Bayes with equal priors. Class A: means (0, 0), variance 1 for both features. Class B: means (2, 2), variance 1. For the point x = (1.5, 1), what is P(B | x) approximately?",
+      "options": [
+        "0.5",
+        "0.269",
+        "0.881",
+        "0.731"
+      ],
+      "explanation": "Independent features: log P(x | c) = −½ Σ (xⱼ − μⱼ)² + const. The squared distance is 1.5² + 1² = 3.25 for A and 0.5² + 1² = 1.25 for B. Log-odds (B vs A) = (3.25 − 1.25)/2 = 1, so P(B | x) = σ(1) ≈ 0.731. 0.881 = σ(2) comes from forgetting the ½ factor, 0.269 is the probability of class A, and 0.5 would hold only if both distances were equal (as at x = (1.5, 0.5))."
+    },
+    "mlt-w8-q15": {
+      "question": "In the 8 emails of the spam class, the word refund appears in 2. With Laplace smoothing (count + 1)/(n_c + 2), what is P(refund | spam), and which Bayesian estimate does it equal?",
+      "options": [
+        "0.3: the Beta(1, 1) posterior mean, and the MAP under Beta(2, 2)",
+        "0.3: only the MAP under a Beta(1, 1) prior, nothing else",
+        "0.25: the posterior mean under a Beta(2, 2) prior, not the MAP",
+        "0.25: the Beta(1, 1) posterior mean, which equals the MLE"
+      ],
+      "explanation": "(2 + 1)/(8 + 2) = 0.3. A Beta(1, 1) prior + 2 successes, 6 failures ⇒ posterior Beta(3, 7), mean 3/10 = 0.3. A Beta(2, 2) prior ⇒ Beta(4, 8), MAP = (4 − 1)/(12 − 2) = 0.3. The Beta(1, 1) MAP = MLE = 2/8 = 0.25, not the smoothed value; the Beta(2, 2) posterior mean is 4/12 ≈ 0.333, not 0.25."
     },
     "mlt-w9-q1": {
       "question": "A logistic regression model has w = (2, −1) and bias b = 1. For the point x = (1, 3), what is P(y = 1 | x)?",
@@ -541,6 +1261,96 @@
       ],
       "explanation": "(1, 1, 1): wᵀx = 0 ⇒ mistake, w = (1, 1, 1). (2, 0, 1): wᵀx = 3 > 0, fine. (0, 0, 1): wᵀx = 1 with y = −1 ⇒ mistake, w = (1, 1, 0). (−1, 1, 1): wᵀx = 0 ⇒ mistake, w = (1, 1, 0) − (−1, 1, 1) = (2, 0, −1). Total 3 mistakes, option C (this w classifies all four points correctly). Option B results from treating wᵀx = 0 as a +1 prediction and not counting it as a mistake. Option A forgets the last point's update. Option D updates on every point, not only on mistakes."
     },
+    "mlt-w9-q7": {
+      "question": "What does the decision boundary (where P = 0.5) of logistic regression P(y = 1 | x) = σ(wᵀx) look like?",
+      "options": [
+        "The hyperplane wᵀx = 0, because σ(0) = 0.5",
+        "A curve or a circle, because σ itself is non-linear",
+        "The hyperplane wᵀx = 0.5, because the threshold is 0.5",
+        "There is no fixed boundary; it differs at every point"
+      ],
+      "explanation": "σ(z) = 0.5 only at z = 0, so the boundary is wᵀx = 0, a hyperplane (the log-odds are linear). σ is non-linear but monotonic, so the boundary does not become a curve. wᵀx = 0.5 wrongly applies the probability threshold to the score."
+    },
+    "mlt-w9-q8": {
+      "question": "A perceptron (no bias) has current w = (2, −1). The point x = (1, 3) with label y = +1 arrives. Is it a mistake, and what is w after the update?",
+      "options": [
+        "No mistake; w stays (2, −1)",
+        "Mistake; new w = (3, 2)",
+        "Mistake; new w = (1, −4)",
+        "No mistake; still w becomes (3, 2)"
+      ],
+      "explanation": "wᵀx = 2 − 3 = −1, so y · wᵀx = −1 ≤ 0 ⇒ mistake. Update w + yx = (2 + 1, −1 + 3) = (3, 2). (1, −4) = w − x, the wrong sign. Without a mistake w does not change at all, so 'no mistake but w changed' is contradictory."
+    },
+    "mlt-w9-q9": {
+      "question": "If σ(2) ≈ 0.881, what is the sigmoid σ(−2)?",
+      "options": [
+        "−0.881",
+        "0.881",
+        "0.5",
+        "0.119"
+      ],
+      "explanation": "σ(−z) = 1 − σ(z), so σ(−2) ≈ 1 − 0.881 = 0.119. σ always lies between 0 and 1, so −0.881 is impossible. 0.881 forgets the symmetry, and 0.5 happens only at z = 0."
+    },
+    "mlt-w9-q10": {
+      "question": "A logistic model on two examples: example 1 has y = 1 and p = 0.8; example 2 has y = 0 and p = 0.3 (p = P(y = 1 | x)). What is the total log-loss (natural log)?",
+      "options": [
+        "0.223",
+        "1.427",
+        "0.580",
+        "0.357"
+      ],
+      "explanation": "Example 1: −ln 0.8 ≈ 0.223. Example 2 (y = 0): −ln(1 − 0.3) = −ln 0.7 ≈ 0.357. Total ≈ 0.580. 1.427 comes from wrongly using −ln p = −ln 0.3 ≈ 1.204 for y = 0. 0.223 and 0.357 are the losses of one example each."
+    },
+    "mlt-w9-q11": {
+      "question": "In a linearly separable dataset every ‖xᵢ‖ ≤ 5 and the margin is γ = 0.5 (with a unit w*). By the perceptron convergence theorem, what is the maximum number of mistakes?",
+      "options": [
+        "10",
+        "100",
+        "25",
+        "20"
+      ],
+      "explanation": "The bound is R²/γ² = 25/0.25 = 100. 10 = R/γ (squares forgotten), 20 = R/γ², and 25 is just R². The bound does not depend on n."
+    },
+    "mlt-w9-q12": {
+      "question": "A perceptron starts at w = (0, 0, 0) (the third feature is the bias 1), with the mistake rule y · wᵀx ≤ 0. The points are processed in this order repeatedly (epochs) until a full epoch has zero mistakes: (0, 0, 1) → −1, (1, 2, 1) → +1, (2, 0, 1) → −1, (1, 1, 1) → +1. What are the final w and the total number of mistakes?",
+      "options": [
+        "w = (0, 3, 0), 4 mistakes",
+        "w = (−1, 2, −1), 3 mistakes",
+        "w = (0, 3, −2), 6 mistakes",
+        "w = (0, 3, −1), 5 mistakes"
+      ],
+      "explanation": "Epoch 1: at (0, 0, 1) wᵀx = 0 ⇒ w = (0, 0, −1); at (1, 2, 1) −1 ⇒ w = (1, 2, 0); at (2, 0, 1) y · wᵀx = −2 ⇒ w = (−1, 2, −1); at (1, 1, 1) 0 ⇒ w = (0, 3, 0). 4 mistakes. Epoch 2: at (0, 0, 1) 0 ⇒ w = (0, 3, −1); the other three are correct (y · wᵀx = 5, 1, 2). Epoch 3 is all correct. Total 5 mistakes, w = (0, 3, −1). (0, 3, 0) stops after epoch 1; (−1, 2, −1) misses the last update, although wᵀx = 0 also counts as a mistake."
+    },
+    "mlt-w9-q13": {
+      "question": "Logistic regression (no bias) with current w = (1, −1). Two examples: x₁ = (1, 1), y₁ = 1 and x₂ = (2, 0), y₂ = 0. After one full-batch gradient descent step (log-loss) with learning rate η = 1, what is the new w approximately?",
+      "options": [
+        "(2.262, −1.5)",
+        "(1.5, −0.5)",
+        "(−0.262, −0.5)",
+        "(−0.762, −1)"
+      ],
+      "explanation": "p₁ = σ(1 − 1) = σ(0) = 0.5, p₂ = σ(2) ≈ 0.881. Gradient Σ (pᵢ − yᵢ)xᵢ = (−0.5)(1, 1) + 0.881(2, 0) = (1.262, −0.5). w − η∇ = (1 − 1.262, −1 + 0.5) = (−0.262, −0.5). (2.262, −1.5) moves along the gradient (wrong sign). (1.5, −0.5) uses only example 1 and (−0.762, −1) only example 2."
+    },
+    "mlt-w9-q14": {
+      "question": "In logistic regression a feature x₃ has weight 0.7. For a customer, currently P(y = 1) = 0.5. Keeping everything else the same and increasing x₃ by 1, what happens to the odds and the new probability?",
+      "options": [
+        "Odds multiply by ≈ 2.01 (e^0.7); p ≈ 0.668",
+        "Odds multiply by 0.7; p ≈ 0.412",
+        "p simply grows by 0.7 to 1.2",
+        "Odds multiply by ≈ 2.01 (e^0.7); p also by 2.01 ≈ 1.0"
+      ],
+      "explanation": "The log-odds wᵀx are linear, so x₃ + 1 raises the log-odds by 0.7 and the odds multiply by e^0.7 ≈ 2.01. At p = 0.5 the odds were 1, now ≈ 2.01, so p = 2.01/3.01 ≈ 0.668. The probability does not grow directly (1.2 is impossible), and applying the odds factor to the probability is also wrong. 'Odds multiply by 0.7' treats the weight as a multiplier without the exponent."
+    },
+    "mlt-w9-q15": {
+      "question": "Data: (2, 1) → +1, (1, 3) → +1, (−1, −2) → −1. With the unit vector w* = (0.6, 0.8), take the margin γ = minᵢ yᵢ w*ᵀxᵢ and R = maxᵢ ‖xᵢ‖. What is the perceptron mistake bound R²/γ²?",
+      "options": [
+        "γ = 2, R² = 10, bound 10",
+        "γ = 2, R² = 10, bound 1.58",
+        "γ = 2, R² = 10, bound 2.5",
+        "γ = 2.2, R² = 10, bound 2.07"
+      ],
+      "explanation": "yᵢ w*ᵀxᵢ: (2, 1) → 1.2 + 0.8 = 2.0, (1, 3) → 0.6 + 2.4 = 3.0, (−1, −2) → −(−0.6 − 1.6) = 2.2. γ = minimum = 2. ‖xᵢ‖² = 5, 10, 5, so R² = 10. Bound = 10/4 = 2.5, so at most 2 mistakes. γ = 2.2 takes the wrong point as the minimum; 1.58 = R/γ without the squares; 10 is just R²."
+    },
     "mlt-w10-q1": {
       "question": "A hard-margin SVM has solution w = (3, 4) (canonical scaling, yf = 1 on the support vectors). What is the distance between the two margin hyperplanes (the margin width)?",
       "options": [
@@ -600,6 +1410,96 @@
         "w = (0.5, 0.5), b = 2"
       ],
       "explanation": "For two points the boundary is their perpendicular bisector: w ∝ (3, 3) − (1, 1) = (2, 2), midpoint (2, 2). Both need yf = 1: take w = (a, a), then 6a + b = 1 and −(2a + b) = 1 ⇒ 4a = 2 ⇒ a = 0.5, b = −2. So option B; margin 2/‖w‖ = 2.83 = distance between the points. Options A and C give the same boundary but yf = 2 and 4 (not canonical; ‖w‖ not minimal), the 'any scaling will do' trap. Option D has the wrong sign of b: f = 5 at (3, 3) and f = 3 at (1, 1), both positive."
+    },
+    "mlt-w10-q7": {
+      "question": "For the hyperplane wᵀx + b = 0 with w = (3, 4) and b = −5, what is the distance of the point x = (2, 1) from the hyperplane?",
+      "options": [
+        "5",
+        "1",
+        "0.2",
+        "2"
+      ],
+      "explanation": "Distance = |wᵀx + b|/‖w‖ = |6 + 4 − 5|/5 = 5/5 = 1. 5 is just |wᵀx + b| (not divided by ‖w‖). 0.2 = 1/5, and 2 comes from forgetting the bias (10/5)."
+    },
+    "mlt-w10-q8": {
+      "question": "A point that is not a support vector (its α = 0) is removed from the training set of a hard-margin SVM. What is the effect on the solution?",
+      "options": [
+        "The margin will always become wider than before",
+        "All the other α values become zero again",
+        "The hyperplane moves towards that point",
+        "No effect; w and b stay the same"
+      ],
+      "explanation": "A point with α = 0 contributes nothing to w = Σ αᵢyᵢxᵢ, and its constraint was already satisfied with slack. So after removing it the same (w, b) is still optimal. Only support vectors determine the margin; removing a non-SV changes neither the margin nor the hyperplane."
+    },
+    "mlt-w10-q9": {
+      "question": "An SVM gives a point the score f(x) = 0.4, but the true label is y = −1. What is the hinge loss max(0, 1 − yf(x))?",
+      "options": [
+        "0",
+        "0.6",
+        "1.4",
+        "0.4"
+      ],
+      "explanation": "yf = −0.4 (wrong side), loss = 1 − (−0.4) = 1.4. 0.6 = 1 − 0.4 comes from ignoring the sign of the label; 0 would need yf ≥ 1; 0.4 is just |f|."
+    },
+    "mlt-w10-q10": {
+      "question": "The canonical solution of a 3-feature hard-margin SVM is w = (1, 2, 2). What is the margin width (the distance between the two margin hyperplanes)?",
+      "options": [
+        "2/3 ≈ 0.667",
+        "1/3 ≈ 0.333",
+        "6",
+        "2/9 ≈ 0.222"
+      ],
+      "explanation": "‖w‖ = √(1 + 4 + 4) = 3, width = 2/‖w‖ = 2/3 ≈ 0.667. 1/3 = 1/‖w‖ is the distance on one side only. 2/9 = 2/‖w‖² wrongly squares the norm, and 6 = 2‖w‖ is upside down."
+    },
+    "mlt-w10-q11": {
+      "question": "A kernel SVM has three support vectors: α = (0.5, 1, 1), labels y = (+1, −1, +1), and kernel values with a new point x of k(xᵢ, x) = (0.8, 0.3, 0.2). The bias is b = −0.2. What is the score f(x) = Σ αᵢyᵢk(xᵢ, x) + b?",
+      "options": [
+        "0.3",
+        "0.7",
+        "0.5",
+        "0.1"
+      ],
+      "explanation": "f = 0.5·0.8 − 1·0.3 + 1·0.2 − 0.2 = 0.4 − 0.3 + 0.2 − 0.2 = 0.1 > 0, so the prediction is +1. 0.3 comes from forgetting the bias b, 0.7 from ignoring the labels yᵢ (all plus), and 0.5 from ignoring α (taking every α = 1)."
+    },
+    "mlt-w10-q12": {
+      "question": "Two training points: (4, 2) → +1 and (0, 0) → −1. What are the canonical hard-margin SVM solution and the margin width?",
+      "options": [
+        "w = (4, 2), b = −10; margin ≈ 0.447",
+        "w = (0.4, 0.2), b = −1; margin ≈ 4.472",
+        "w = (0.4, 0.2), b = −1; margin ≈ 2.236",
+        "w = (0.2, 0.1), b = −0.5; margin ≈ 8.944"
+      ],
+      "explanation": "The boundary is the perpendicular bisector of the two points: w ∝ (4, 2). Take w = c(4, 2): at (0, 0) f = b = −1, at (4, 2) 20c − 1 = 1 ⇒ c = 0.1, w = (0.4, 0.2). ‖w‖ = √0.2 ≈ 0.447, width = 2/‖w‖ ≈ 4.472, which is exactly the distance √20 between the points. 2.236 = 1/‖w‖ is only half the width. (4, 2) with b = −10 gets the sign right but breaks the canonical scaling (yf = 1 on the SVs); (0.2, 0.1) gives yf = 0.5 < 1, so the constraint fails."
+    },
+    "mlt-w10-q13": {
+      "question": "Two training points: x₁ = (1, 2), y₁ = +1 and x₂ = (−1, 0), y₂ = −1. What are the dual variables α₁, α₂ and the bias b of the hard-margin SVM?",
+      "options": [
+        "α₁ = α₂ = 0.25, b = −0.5",
+        "α₁ = α₂ = 0.5, b = −0.5",
+        "α₁ = α₂ = 0.25, b = 0",
+        "α₁ = 0.25, α₂ = 0, b = −0.5"
+      ],
+      "explanation": "Σ αᵢyᵢ = 0 ⇒ α₁ = α₂ = α, and w = α(x₁ − x₂) = α(2, 2). The margin width equals the distance ‖x₁ − x₂‖ = √8, so 2/‖w‖ = √8 ⇒ ‖w‖ = 1/√2 ⇒ w = (0.5, 0.5), α = 0.25. b: f(x₁) = 0.5 + 1 + b = 1 ⇒ b = −0.5 (check f(x₂) = −0.5 − 0.5 = −1). α = 0.5 gives w = (1, 1), which is not canonical; b = 0 breaks f = 0 at the midpoint (0, 1); α₂ = 0 breaks Σ αᵢyᵢ = 0."
+    },
+    "mlt-w10-q14": {
+      "question": "Soft-margin SVM: w = (1, 0), b = 0, C = 2. Points: (2, 1) → +1, (0.5, 3) → +1, (−0.2, 1) → +1, (−3, 0) → −1. What is the value of the objective ½‖w‖² + C Σ ξᵢ (ξᵢ = max(0, 1 − yᵢf(xᵢ)))?",
+      "options": [
+        "2.2",
+        "1.7",
+        "3.9",
+        "4.4"
+      ],
+      "explanation": "yf values: 2, 0.5, −0.2, 3. Slacks: 0, 0.5, 1.2, 0, so Σξ = 1.7. Objective = ½ · 1 + 2 · 1.7 = 0.5 + 3.4 = 3.9. 2.2 forgets to multiply by C, 1.7 is only the sum of slacks, and 4.4 drops the ½ factor (‖w‖² + 3.4). The point (0.5, 3) is on the right side but inside the margin, so its slack is positive too."
+    },
+    "mlt-w10-q15": {
+      "question": "For the 6 training points of an SVM, the yᵢf(xᵢ) values are 2.3, 1.0, 0.6, −0.4, 1.7 and −1.2. What is the total hinge loss, and how many points are misclassified?",
+      "options": [
+        "Total 4.0; 3 misclassified",
+        "Total 1.6; 2 misclassified",
+        "Total 5.0; 2 misclassified",
+        "Total 4.0; 2 misclassified"
+      ],
+      "explanation": "Hinge max(0, 1 − yf): 0, 0, 0.4, 1.4, 0, 2.2 ⇒ total 4.0. Misclassified points are those with yf < 0: −0.4 and −1.2, so 2. The 0.6 point is on the right side (just inside the margin), so '3 misclassified' is wrong. 1.6 = Σ max(0, −yf) is a perceptron-type loss. 5.0 takes the loss of the yf = 1.0 point as 1, although it sits exactly on the margin with loss 0."
     },
     "mlt-w11-q1": {
       "question": "Which statement best describes the difference between bagging and boosting?",
@@ -661,6 +1561,96 @@
       ],
       "explanation": "α₁ = ½ ln(0.6/0.4) ≈ 0.203, α₂ = ½ ln(0.9/0.1) ≈ 1.099, α₃ = ½ ln(0.7/0.3) ≈ 0.424. Score = 0.203 − 1.099 + 0.424 ≈ −0.472 < 0, so H(x) = −1, option D. The trap in option A is to take a simple majority vote; the most accurate learner (ε = 0.1) outweighs the other two combined. Option B gets the sign wrong. Option C looks only at h₂'s αh and forgets the other votes."
     },
+    "mlt-w11-q7": {
+      "question": "How does a random forest differ from plain bagging (with decision trees)?",
+      "options": [
+        "Trees are trained sequentially, each focusing on the previous mistakes",
+        "There is no bootstrap; every tree gets the full training data",
+        "Each split looks only at a random feature subset, so trees are less correlated",
+        "A random forest uses only depth-1 stumps, not deep trees"
+      ],
+      "explanation": "Random forest = bagging + a random feature subset at each split (for example √d). This keeps one strong feature from sitting at the root of every tree, makes the trees' errors less correlated, and lets averaging cut more variance. Sequential training is boosting; a random forest also uses the bootstrap and usually deep trees, not stumps."
+    },
+    "mlt-w11-q8": {
+      "question": "A classification random forest has d = 100 features. Under the common default √d rule, how many features are considered at each split?",
+      "options": [
+        "10",
+        "50",
+        "100",
+        "7"
+      ],
+      "explanation": "√100 = 10. 100 means all features (that is, plain bagging), 50 is a d/2 rule, and 7 ≈ log₂ 100 is a different heuristic, not √d."
+    },
+    "mlt-w11-q9": {
+      "question": "A bootstrap sample (with replacement) of size 1000 is drawn from n = 1000 points. About how many unique (distinct) points will it contain?",
+      "options": [
+        "1000",
+        "632",
+        "368",
+        "500"
+      ],
+      "explanation": "The probability that a given point is never chosen is (1 − 1/1000)¹⁰⁰⁰ ≈ 1/e ≈ 0.368, so the unique count ≈ 1000 × 0.632 ≈ 632. 368 is the number of out-of-bag points. 1000 would happen with sampling without replacement, and 500 is just a guess of half."
+    },
+    "mlt-w11-q10": {
+      "question": "In one AdaBoost round the weighted error is ε = 0.25. What is the learner weight α = ½ ln((1 − ε)/ε)?",
+      "options": [
+        "0.25",
+        "1.099",
+        "0.75",
+        "0.549"
+      ],
+      "explanation": "(1 − 0.25)/0.25 = 3, so α = ½ ln 3 ≈ 0.549. 1.099 = ln 3, without the ½ factor. 0.75 is the accuracy and 0.25 the error, not the learner weight."
+    },
+    "mlt-w11-q11": {
+      "question": "There are 5 independent classifiers, each with accuracy 0.6. What is the accuracy of their majority vote (at least 3 correct), approximately?",
+      "options": [
+        "0.683",
+        "0.6",
+        "0.317",
+        "0.784"
+      ],
+      "explanation": "P(≥ 3 correct) = C(5, 3)(0.6)³(0.4)² + C(5, 4)(0.6)⁴(0.4) + (0.6)⁵ = 0.3456 + 0.2592 + 0.0778 ≈ 0.683. 0.6 is a single classifier; 0.317 is the probability that the majority is wrong; 0.784 is the different case of three classifiers at 0.7 each."
+    },
+    "mlt-w11-q12": {
+      "question": "AdaBoost: 8 training points, all with initial weight 1/8. The first stump misclassifies 2 points. After the update and normalisation, what is the weight of each misclassified and each correctly classified point?",
+      "options": [
+        "Wrong: 0.125 each, right: 0.125 each",
+        "Wrong: 0.5 each, right: 0.0833 each",
+        "Wrong: 0.25 each, right: 0.0833 each",
+        "Wrong: 0.216 each, right: 0.072 each"
+      ],
+      "explanation": "ε = 2/8 = 0.25, α = ½ ln 3 ≈ 0.549. Unnormalised: wrong 0.125 × e^0.549 ≈ 0.2165, right 0.125 × e^−0.549 ≈ 0.0722. Z = 2(0.2165) + 6(0.0722) ≈ 0.866. Normalised: wrong 0.25, right 0.0833 (= 1/12). Check: the wrong points total 0.5, the right ones 0.5 too. 0.216/0.072 forgets to normalise; 'wrong 0.5 each' turns the total into a per-point weight; and unchanged weights skip the update altogether."
+    },
+    "mlt-w11-q13": {
+      "question": "Before AdaBoost round 2, the weights of 8 points are: two points at 0.25 each and the other six at 1/12 each. The round-2 stump misclassifies one of the 0.25 points and two of the 1/12 points. What are ε₂ and α₂?",
+      "options": [
+        "ε₂ = 0.375, α₂ ≈ 0.255",
+        "ε₂ = 0.25, α₂ ≈ 0.549",
+        "ε₂ ≈ 0.417, α₂ ≈ 0.337",
+        "ε₂ ≈ 0.417, α₂ ≈ 0.168"
+      ],
+      "explanation": "ε₂ = sum of the weights of the wrong points = 0.25 + 2 × (1/12) ≈ 0.417. α₂ = ½ ln((1 − 0.417)/0.417) = ½ ln 1.4 ≈ 0.168. 0.375 = 3/8 counts with the old uniform weights, not the updated ones. 0.337 = ln 1.4, without the ½. ε = 0.25 and α ≈ 0.549 are round-1 style values."
+    },
+    "mlt-w11-q14": {
+      "question": "A bootstrap sample of size 10 is drawn from a dataset of n = 10 points. What is the expected number of unique points in the sample?",
+      "options": [
+        "6.32",
+        "6.51",
+        "3.49",
+        "10"
+      ],
+      "explanation": "The probability that a point never appears is (1 − 1/10)¹⁰ = 0.9¹⁰ ≈ 0.349. By linearity of expectation, expected unique = 10 × (1 − 0.349) ≈ 6.51. 6.32 applies the large-n approximation 1 − 1/e ≈ 0.632 directly, which is not exact for n = 10. 3.49 is the expected number of out-of-bag points, and 10 forgets the replacement."
+    },
+    "mlt-w11-q15": {
+      "question": "After boosting, the ensemble scores of 3 training points are f(x) = (1.2, −0.4, 0.8) with labels y = (+1, +1, −1). What are the exponential loss Σ exp(−yᵢf(xᵢ)) and the training error of sign(f)?",
+      "options": [
+        "Exp loss ≈ 2.24, training error 1/3",
+        "Exp loss ≈ 4.02, training error 2/3",
+        "Exp loss ≈ 4.02, training error 1/3",
+        "Exp loss ≈ 0.30, training error 2/3"
+      ],
+      "explanation": "yf = (1.2, −0.4, −0.8). Loss = e^−1.2 + e^0.4 + e^0.8 ≈ 0.301 + 1.492 + 2.226 ≈ 4.02. The wrong points (yf < 0) are the second and third, so the error is 2/3. 2.24 ignores the labels and takes just e^−f, and 0.30 is the loss of the correct point alone. The exponential loss penalises wrong points very heavily, which is why boosting is sensitive to label noise."
+    },
     "mlt-w12-q1": {
       "question": "A fully connected network has architecture 4 → 8 → 3 (4 inputs, 8 hidden units, 3 outputs), with a bias in every layer. How many trainable parameters are there in total?",
       "options": [
@@ -720,6 +1710,96 @@
         "24"
       ],
       "explanation": "Forward: z = 1, h = 1, ŷ = 3. ∂L/∂ŷ = ŷ − y = 2. Chain rule: ∂L/∂w₁ = (ŷ − y) · w₂ · ReLU′(z) · x = 2 · 3 · 1 · 2 = 12, so option B (a finite-difference check also gives 12). Option A (2) is ∂L/∂w₂ = (ŷ − y)h, the wrong weight. Option C (6) forgets to multiply by the input x. Option D (24) ignores the ½ in the loss and takes ∂L/∂ŷ = 2(ŷ − y) = 4."
+    },
+    "mlt-w12-q7": {
+      "question": "Why is a non-linear activation (such as ReLU) needed in the hidden layers of a neural network?",
+      "options": [
+        "So that training is always faster and needs fewer epochs",
+        "So that the total number of weights goes down",
+        "So that every layer's output stays between 0 and 1",
+        "Without it, all the layers collapse into one linear map"
+      ],
+      "explanation": "Without g, W₂(W₁x + b₁) + b₂ = (W₂W₁)x + const, a single linear layer; depth brings no benefit and patterns like XOR cannot be learnt. The activation does not change the weight count, and ReLU does not keep outputs in 0–1 either; that is the job of a sigmoid output."
+    },
+    "mlt-w12-q8": {
+      "question": "The ReLU activation g(z) = max(0, z) is applied element-wise to the vector z = (−2, 0.5, 3). What is the output?",
+      "options": [
+        "(2, 0.5, 3)",
+        "(0, 0.5, 3)",
+        "(0, 0, 3)",
+        "(−2, 0.5, 3)"
+      ],
+      "explanation": "max(0, −2) = 0, max(0, 0.5) = 0.5, max(0, 3) = 3. (2, 0.5, 3) is the absolute value, not ReLU. (0, 0, 3) wrongly zeroes 0.5 as well (the ReLU threshold is 0, not 1), and (−2, 0.5, 3) is the same vector with no activation."
+    },
+    "mlt-w12-q9": {
+      "question": "A 6-class problem is to be solved with binary classifiers using the one-vs-rest (OvR) strategy. How many classifiers are needed, and how many with one-vs-one (OvO)?",
+      "options": [
+        "6 (15 with OvO)",
+        "15 (6 with OvO)",
+        "30 (15 with OvO)",
+        "36 (30 with OvO)"
+      ],
+      "explanation": "OvR needs one classifier per class (class k vs the rest), so 6. OvO needs one per pair: 6 × 5/2 = 15. Swapping them (15 for OvR) is the common confusion; 30 = 6 × 5 ordered pairs, which counts each pair twice."
+    },
+    "mlt-w12-q10": {
+      "question": "The logits of a 3-class model were z = (2, 1, 0), then 10 was added to every logit: z′ = (12, 11, 10). What is the softmax probability of class 1 in both cases?",
+      "options": [
+        "0.665 and ≈ 1.0, because larger logits are more confident",
+        "0.667 in both, because 2/(2 + 1 + 0) = 2/3",
+        "0.665 in both; adding a constant does not change softmax",
+        "0.5 and 0.5, because softmax averages the logits"
+      ],
+      "explanation": "pₖ = e^zₖ / Σ e^zⱼ; adding c to all logits multiplies both numerator and denominator by e^c, which cancels. p₁ = e²/(e² + e + 1) = 7.389/11.107 ≈ 0.665, in both. '≈ 1.0' assumes larger logits mean more confidence, but only the differences matter. 2/3 is the error of dividing the logits by their sum (from the mistakes list)."
+    },
+    "mlt-w12-q11": {
+      "question": "A fully connected network 10 → 16 → 16 → 4 (two hidden layers) has a bias in every layer. How many trainable parameters are there in total?",
+      "options": [
+        "480",
+        "512",
+        "516",
+        "36"
+      ],
+      "explanation": "10·16 + 16 = 176, 16·16 + 16 = 272, 16·4 + 4 = 68, total 516. 480 is only the weights (biases forgotten), 512 forgets the 4 biases of the output layer, and 36 is only the biases."
+    },
+    "mlt-w12-q12": {
+      "question": "Input x = (1, −1). Hidden layer: W₁ = [[2, 1], [−1, 3]], b₁ = (0, 1), ReLU. Output: w₂ = (1.5, 2), b₂ = −1, sigmoid. True label y = 0, log-loss. What are the output ŷ and the loss?",
+      "options": [
+        "ŷ ≈ 0.622, loss ≈ 0.974",
+        "ŷ ≈ 0.622, loss ≈ 0.474",
+        "ŷ ≈ 0.004, loss ≈ 0.004",
+        "ŷ ≈ 0.818, loss ≈ 1.701"
+      ],
+      "explanation": "z₁ = (2 − 1 + 0, −1 − 3 + 1) = (1, −3), h = ReLU(z₁) = (1, 0). z₂ = 1.5·1 + 2·0 − 1 = 0.5, ŷ = σ(0.5) ≈ 0.622. For y = 0 the loss = −ln(1 − 0.622) ≈ 0.974. 0.474 = −ln 0.622 is the y = 1 term. Forgetting b₂ gives z₂ = 1.5, ŷ ≈ 0.818. Skipping ReLU gives h = (1, −3), z₂ = −5.5, ŷ ≈ 0.004."
+    },
+    "mlt-w12-q13": {
+      "question": "A small network: h = σ(w₁x), ŷ = w₂h, loss L = ½(ŷ − y)². Values: x = 1, w₁ = 0, w₂ = 2, y = 0. What is ∂L/∂w₁ by backpropagation?",
+      "options": [
+        "2",
+        "0.5",
+        "0.25",
+        "1"
+      ],
+      "explanation": "h = σ(0) = 0.5, ŷ = 1. ∂L/∂ŷ = ŷ − y = 1, ∂L/∂h = 1 · w₂ = 2, ∂L/∂(w₁x) = 2 · σ(1 − σ) = 2 · 0.25 = 0.5, and ∂L/∂w₁ = 0.5 · x = 0.5. 2 forgets the sigmoid derivative, 0.25 drops the factor w₂, and 1 is only ∂L/∂ŷ."
+    },
+    "mlt-w12-q14": {
+      "question": "A 3-class softmax classifier has logits z = (2, 0, −1) and the true class is 1. What are the cross-entropy loss (natural log) and the gradient ∂L/∂z₁ for the true-class logit?",
+      "options": [
+        "Loss ≈ 0.170, ∂L/∂z₁ ≈ 0.844",
+        "Loss ≈ 2, ∂L/∂z₁ ≈ −1",
+        "Loss ≈ 0.844, ∂L/∂z₁ ≈ −0.156",
+        "Loss ≈ 0.170, ∂L/∂z₁ ≈ −0.156"
+      ],
+      "explanation": "e² ≈ 7.389, e⁰ = 1, e⁻¹ ≈ 0.368; sum ≈ 8.757, so p₁ ≈ 0.844. Loss = −ln 0.844 ≈ 0.170. Gradient = p − y, and for the true class p₁ − 1 ≈ −0.156. +0.844 forgets to subtract the one-hot y; calling the loss p₁ forgets the −ln; 2 and −1 take the raw logit and label as the loss/gradient."
+    },
+    "mlt-w12-q15": {
+      "question": "Network: h₁ = ReLU(x₁ + x₂), h₂ = ReLU(x₁ + x₂ − 1), output o = h₁ − 2h₂. What are the outputs for the inputs (0, 0), (0, 1), (1, 0), (1, 1) (in this order)?",
+      "options": [
+        "0, 1, 1, 2",
+        "2, 1, 1, 0",
+        "0, 1, 1, 0",
+        "0, 1, 1, 1"
+      ],
+      "explanation": "(0, 0): h = (0, ReLU(−1)) = (0, 0), o = 0. (0, 1) and (1, 0): h = (1, 0), o = 1. (1, 1): h = (2, 1), o = 2 − 2 = 0. The output 0, 1, 1, 0 is XOR, which a single linear unit cannot learn. '2, 1, 1, 0' comes from removing the ReLU: at (0, 0) h₂ = −1, o = 2, and the whole network becomes the linear 2 − (x₁ + x₂). '0, 1, 1, 2' ignores h₂, and '0, 1, 1, 1' subtracts only h₂ instead of 2h₂."
     }
   }
 }
