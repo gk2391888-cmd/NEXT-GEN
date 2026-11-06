@@ -115,6 +115,125 @@
           "answer": 0,
           "explanation": "`lut` const hai → `.rodata` → sirf Flash: 256 × 2 = 512 bytes. `rx` bina initialiser → `.bss` → sirf SRAM: 1024 bytes. `gain` initialised → `.data` → Flash me 4 bytes (initial value) aur SRAM me 4 bytes. Flash = 9000 + 512 + 4 = 9516, SRAM = 1024 + 4 = 1028. Traps: const table ko SRAM me bhi gin lena (1540), ya `.bss` array ko Flash me jod dena (10540).",
           "difficulty": "hard"
+        },
+        {
+          "id": "embc-w1-q7",
+          "question": "Program ka code aur `const` lookup tables MCU ki kis memory me rakhe jaate hain, taaki power off hone par bhi bache rahein?",
+          "options": [
+            "SRAM",
+            "Stack area",
+            "Heap area",
+            "Flash"
+          ],
+          "answer": 3,
+          "explanation": "Flash non-volatile hai, isliye code (`.text`) aur const data (`.rodata`) wahin rehte hain. SRAM volatile hai: power jaate hi uska data chala jaata hai, aur stack aur heap bhi SRAM ke hi hisse hain. Trap: 'SRAM fast hai to code bhi wahin hoga' soch kar SRAM chun lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w1-q8",
+          "question": "Inme se kaunsa device sabse saaf taur par ek embedded system ka example hai?",
+          "options": [
+            "Microwave oven ka control board jo sirf timer aur heating sambhalta hai",
+            "Ek general-purpose laptop jis par aap koi bhi app install kar sakte ho",
+            "Data centre ka web server jo hazaaron websites chalata hai",
+            "Ek gaming desktop PC jisme naya graphics card lagaya ja sakta hai"
+          ],
+          "answer": 0,
+          "explanation": "Embedded system ek bade product ke andar ek fixed kaam ke liye laga chhota computer hai, jaise microwave ka controller: kam memory, fixed firmware, aksar bina OS. Laptop, server aur gaming PC general-purpose computers hain jinpar user koi bhi software chala sakta hai. Trap: 'har computer embedded hai' maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w1-q9",
+          "question": "Cross-compilation toolchain me C source se final image tak steps ka sahi order kya hai?",
+          "options": [
+            "Compile → preprocess → link → assemble",
+            "Preprocess → compile → assemble → link",
+            "Link → compile → assemble → preprocess",
+            "Assemble → preprocess → compile → link"
+          ],
+          "answer": 1,
+          "explanation": "Pehle preprocessor `#include` aur `#define` expand karta hai, phir compiler C ko assembly banata hai, assembler use object code me badalta hai, aur aakhir me linker sab objects jod kar linker script ke addresses ke saath `.elf` banata hai. Trap: link ko beech me rakhna; addresses tabhi fix ho sakte hain jab saare objects ban chuke hon.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w1-q10",
+          "question": "Global array `uint8_t rx_buf[512];` (bina initialiser) ke baare me kya sahi hai?",
+          "options": [
+            "Ye `.data` me jaata hai: 512 bytes Flash me aur 512 bytes SRAM me",
+            "Ye `.rodata` me jaata hai, isliye sirf Flash leta hai aur likha nahi ja sakta",
+            "Ye `.bss` me jaata hai: sirf SRAM leta hai aur startup par zero ho jaata hai",
+            "Iski values garbage hongi, kyunki bina initialiser wala global zero nahi hota"
+          ],
+          "answer": 2,
+          "explanation": "Bina initialiser ke global `.bss` me jaata hai. Uski initial value sirf zero hai, isliye Flash me kuch store nahi hota; startup code SRAM ka wo hissa zero kar deta hai. `.data` sirf un globals ke liye hai jinki non-zero initial value Flash se copy karni ho, aur `.rodata` `const` data ke liye. Trap: local variables ki tarah globals ko bhi garbage maan lena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w1-q11",
+          "question": "SRAM 0x20000000 se shuru hoti hai aur uska size 96 KB hai. SRAM ka aakhri byte kis address par hoga?",
+          "options": [
+            "0x20018000",
+            "0x200176FF",
+            "0x2000BFFF",
+            "0x20017FFF"
+          ],
+          "answer": 3,
+          "explanation": "96 KB = 96 × 1024 = 98304 bytes = 0x18000. Last address = start + size − 1 = 0x20000000 + 0x18000 − 1 = 0x20017FFF. Traps: −1 bhool jaana (0x20018000, jo SRAM ke just bahar ka pehla address hai), 1 KB = 1000 lena (96000 = 0x17700, to 0x200176FF), ya size aadha le lena (0x2000BFFF).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w1-q12",
+          "question": "Ek program ka `.text` 12000 bytes ka hai. Globals neeche diye hain (typical GCC build, alignment padding aur stack/heap ignore karo). Flash aur SRAM usage kitna hoga?",
+          "code": "const uint32_t crc_tab[64] = { /* values */ };\nuint16_t samples[300];\nint16_t  offset = -20;\nuint32_t boot_count = 0;",
+          "options": [
+            "Flash 12258 bytes, SRAM 606 bytes",
+            "Flash 12262 bytes, SRAM 606 bytes",
+            "Flash 12258 bytes, SRAM 862 bytes",
+            "Flash 12862 bytes, SRAM 606 bytes"
+          ],
+          "answer": 0,
+          "explanation": "Sections: `crc_tab` = 64 × 4 = 256 bytes `.rodata` (Flash); `samples` = 300 × 2 = 600 bytes `.bss`; `offset` = 2 bytes `.data`; `boot_count = 0` zero-initialised hai, isliye `.bss` (4 bytes). Flash = text + rodata + data = 12000 + 256 + 2 = 12258. SRAM = data + bss = 2 + 600 + 4 = 606. Traps: `= 0` wale global ko `.data` me ginna (Flash 12262), `const` table ko SRAM me ginna (862), ya `.bss` ko Flash me jodna (12862).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w1-q13",
+          "question": "Ek MCU me 64 KB Flash aur 20 KB SRAM hai. Build ke baad sizes: `.text` = 48000, `.rodata` = 9500, `.data` = 4200, `.bss` = 14800 bytes, aur linker stack ke liye 2048 bytes SRAM reserve karta hai. Sahi conclusion kya hai?",
+          "options": [
+            "Flash 61700 bytes (fit); SRAM 16848 bytes, aaram se fit",
+            "Flash 61700 bytes (fit); SRAM 21048 bytes, 20 KB se 568 bytes zyada",
+            "Flash 76500 bytes, 64 KB se zyada; Flash aur SRAM dono overflow",
+            "Flash 57500 bytes (fit); SRAM 21048 bytes, isliye SRAM overflow"
+          ],
+          "answer": 1,
+          "explanation": "Flash = text + rodata + data = 48000 + 9500 + 4200 = 61700, jo 65536 (64 KB) se kam hai. SRAM = data + bss + stack = 4200 + 14800 + 2048 = 21048, jabki 20 KB = 20480; 21048 − 20480 = 568 bytes overflow. Traps: `.data` ko SRAM me na ginna (16848), `.bss` ko Flash me jodna (76500), ya `.data` ki initial values ko Flash me na ginna (57500).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w1-q14",
+          "question": "Map file ke hisaab se Flash me `.text` 0x08000000–0x08004FFF, `.rodata` 0x08005000–0x080057FF aur `.data` ki initial values 0x08005800–0x080058FF par hain. Chip me 32 KB Flash hai. Kitne bytes Flash khaali bache?",
+          "options": [
+            "9987",
+            "9984",
+            "9216",
+            "10240"
+          ],
+          "answer": 1,
+          "explanation": "Har range ka size = last − first + 1: `.text` 0x5000 = 20480, `.rodata` 0x800 = 2048, `.data` 0x100 = 256. Total 22784 bytes. 32 KB = 32768, to free = 32768 − 22784 = 9984. Traps: teeno ranges me +1 bhool jaana (9987), 32 KB = 32000 lena (9216), ya `.data` ki initial values ko Flash me na ginna (10240).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w1-q15",
+          "question": "Neeche diye globals ke liye (alignment padding ignore karo) `.data` ki initial values Flash me kitne bytes leti hain, aur `.bss` SRAM me kitne bytes leta hai?",
+          "code": "uint32_t a = 10;\nuint32_t b;\nuint16_t c[50] = { 1 };\nuint8_t  d[200];\nconst uint16_t e[10] = { 5, 6, 7 };\nstatic uint8_t f = 0;",
+          "options": [
+            "`.data` 6 bytes, `.bss` 303 bytes",
+            "`.data` 124 bytes, `.bss` 205 bytes",
+            "`.data` 104 bytes, `.bss` 205 bytes",
+            "`.data` 105 bytes, `.bss` 204 bytes"
+          ],
+          "answer": 2,
+          "explanation": "`.data`: `a` (4) aur poora `c` array (50 × 2 = 100), kyunki initialiser wala array ek hi object hai aur baaki elements ke zero bhi uski initial value ka hissa hain: 104 bytes. `.bss`: `b` (4) + `d` (200) + `f` (1, `= 0` zero-initialised hai) = 205. `e` `const` hai, isliye `.rodata`. Traps: `c` ka sirf pehla element `.data` me ginna (6 aur 303), `const` array ko `.data` me ginna (124), ya `f = 0` ko `.data` maanna (105 aur 204).",
+          "difficulty": "hard"
         }
       ]
     },
@@ -240,6 +359,128 @@
           "answer": 1,
           "explanation": "C me `==` ki precedence `&` se zyada hai, isliye condition `status & (0x08 == 0x08)` ban jaati hai. `0x08 == 0x08` ka value 1 hai, aur 0x08 & 1 = 0, isliye `else` chalta hai aur BUSY print hota hai. Ye valid C hai (compiler sirf warning de sakta hai). Fix: `if ((status & 0x08) == 0x08)`. Trap: maths ki tarah left se padh kar READY bolna.",
           "difficulty": "hard"
+        },
+        {
+          "id": "embc-w2-q7",
+          "question": "32-bit register `reg` me sirf bit 3 ko 0 karna hai, baaki bits jaisi hain waisi rehni chahiye. Sahi statement kaunsa hai?",
+          "options": [
+            "`reg &= ~(1U << 3);`",
+            "`reg &= (1U << 3);`",
+            "`reg |= ~(1U << 3);`",
+            "`reg ^= (1U << 3);`"
+          ],
+          "answer": 0,
+          "explanation": "`~(1U << 3)` me bit 3 zero aur baaki saare bits 1 hain; AND karne par sirf bit 3 zero hota hai. Traps: `~` bhool jaana (`&= (1U << 3)` baaki saare bits mita deta hai), `|= ~(...)` (bit 3 ke alawa sab 1 ho jaate hain), aur XOR (bit 3 palat jaata hai; agar pehle se 0 tha to 1 ban jaayega).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w2-q8",
+          "question": "`uint8_t` type ke variable me kaunsi values aa sakti hain?",
+          "options": [
+            "-128 se 127 tak",
+            "0 se 255 tak",
+            "0 se 256 tak",
+            "0 se 65535 tak"
+          ],
+          "answer": 1,
+          "explanation": "`uint8_t` unsigned 8-bit hai: 2⁸ = 256 values, yaani 0 se 255. 255 + 1 karne par wrap hokar 0 ho jaata hai. -128 se 127 `int8_t` ki range hai, 0 se 65535 `uint16_t` ki. Trap: 256 values ko range ka maximum samajh lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w2-q9",
+          "question": "Hardware register ya protocol frame ke liye `int` ki jagah `uint32_t` jaisa fixed-width type kyun use karte hain?",
+          "options": [
+            "`int` ka size compiler aur CPU par depend karta hai; `uint32_t` hamesha exactly 32 bits hai",
+            "`uint32_t` har CPU par `int` se fast chalta hai, isliye performance ke liye yahi lete hain",
+            "`int` me negative numbers store nahi ho sakte, isliye register values ke liye bekaar hai",
+            "`uint32_t` variables apne aap `volatile` ban jaate hain aur register me cache nahi hote"
+          ],
+          "answer": 0,
+          "explanation": "`int` 8-bit AVR par 16-bit aur Cortex-M par 32-bit hota hai, jabki register aur frame ki width fixed hai. `<stdint.h>` ke types har platform par exact width dete hain. `int` signed hai, to negative values rakh sakta hai; speed ka koi guarantee nahi; aur `volatile` alag se likhna padta hai. Trap: fixed-width ko speed ya `volatile` se jod dena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w2-q10",
+          "question": "Is code ke baad `r` ki value kya hogi?",
+          "code": "uint8_t r = 0x5A;\nr ^= 0xF0;",
+          "options": [
+            "0xFA",
+            "0xAA",
+            "0x50",
+            "0xA5"
+          ],
+          "answer": 1,
+          "explanation": "0x5A = 0101 1010. XOR 1111 0000 upper nibble ke bits palat deta hai: 1010 1010 = 0xAA; lower nibble (1010) waisa hi rehta hai. Traps: OR lagana (0xFA), AND lagana (0x50), ya saare 8 bits palat dena (0xA5, jo `^= 0xFF` hota).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w2-q11",
+          "question": "Ek status register ko `const volatile uint32_t` ke through access kiya jaata hai. Iska sabse sahi matlab kya hai?",
+          "options": [
+            "Value kabhi nahi badalti, isliye compiler ise ek hi baar padh kar register me cache kar sakta hai",
+            "Ye declaration galat hai, kyunki `const` aur `volatile` ek saath likhna C me allowed nahi hai",
+            "Program ise likh nahi sakta, par hardware iski value badal sakta hai, isliye har read memory se hota hai",
+            "Program ise likh sakta hai, par sirf interrupt ke andar se; main code me ye read-only hai"
+          ],
+          "answer": 2,
+          "explanation": "`const` program ki taraf se likhne par rok lagata hai, aur `volatile` batata hai ki value bahar se (hardware) badal sakti hai, isliye har access par fresh read hota hai. Dono ek saath bilkul valid hain, read-only status register ka yahi pattern hai. Trap: `const` ko 'value kabhi nahi badalti' samajh lena; `const` sirf program ke likhne ki baat karta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w2-q12",
+          "question": "Is code ke baad `r` ki value kya hogi?",
+          "code": "uint8_t r = 0x3C;\nr |= (1U << 0);\nr &= ~(3U << 2);\nr ^= 0x81;",
+          "options": [
+            "0xB1",
+            "0x8D",
+            "0xB0",
+            "0xB4"
+          ],
+          "answer": 2,
+          "explanation": "0x3C = 0011 1100. Step 1: bit 0 set → 0011 1101 (0x3D). Step 2: `3U << 2` = 0000 1100, uska `~` bits 2 aur 3 clear karta hai → 0011 0001 (0x31). Step 3: XOR 1000 0001 bit 7 aur bit 0 palat deta hai → 1011 0000 = 0xB0. Traps: XOR ko OR jaisa lena (bit 0 1 hi rahega: 0xB1), `~` bhool jaana (0x3D & 0x0C = 0x0C, phir 0x8D), ya `3U << 2` ko sirf bit 3 samajhna (0xB4).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w2-q13",
+          "question": "Register ke bits [7:4] aur [15:12] me naye values likhne hain. Code me ek field sahi tareeke se aur doosri sirf OR se update hui hai. Final `reg` kya hoga?",
+          "code": "uint16_t reg = 0xABCD;\nreg = (reg & ~(0xFU << 4)) | (0x3U << 4);   /* bits [7:4] = 0x3 */\nreg |= (0x5U << 12);                        /* bits [15:12] = 0x5 ? */",
+          "options": [
+            "0x5B3D",
+            "0xAB3D",
+            "0xFBFD",
+            "0xFB3D"
+          ],
+          "answer": 3,
+          "explanation": "Line 2: bits [7:4] (digit C) clear karke 3 daala → 0xAB3D. Line 3 sirf OR hai: top digit A (1010) OR 5 (0101) = F (1111), to result 0xFB3D, jabki intended 0x5B3D tha. Isiliye multi-bit field me pehle clear, phir OR. Traps: maan lena ki OR purani value replace kar deta hai (0x5B3D), line 3 ko ignore karna (0xAB3D), ya line 2 ko bhi OR-only samajhna (C | 3 = F, to 0xFBFD).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w2-q14",
+          "question": "Is code ka output kya hoga?",
+          "code": "uint8_t a = 200, b = 100;\nuint8_t  s = a + b;\nuint16_t t = a + b;\nprintf(\"%u %u\\n\", s, t);",
+          "options": [
+            "44 44",
+            "300 300",
+            "44 300",
+            "255 300"
+          ],
+          "answer": 2,
+          "explanation": "C me `a + b` ka addition `int` me hota hai (chhote types pehle `int` ban jaate hain), to sum 300 hai. `uint8_t s` me store karte waqt value mod 256 wrap hoti hai: 300 − 256 = 44. `uint16_t t` 300 aaram se rakh leta hai. Traps: maan lena ki addition hi 8-bit me wrap hota hai (44 44), destination ki width bhool jaana (300 300), ya wrap ki jagah 255 par ruk jaana (saturation C me nahi hota).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w2-q15",
+          "question": "`RDY` bit 1 aur `ERR` bit 2 hai. Teen status values ke liye loop chalta hai. Output kya hoga?",
+          "code": "#define RDY (1U << 1)\n#define ERR (1U << 2)\nuint32_t st[3] = { 0x0A, 0x0E, 0x08 };\n\nfor (int i = 0; i < 3; i++) {\n    if ((st[i] & (RDY | ERR)) == RDY)\n        putchar('O');\n    else if (st[i] & ERR)\n        putchar('F');\n    else\n        putchar('W');\n}",
+          "options": [
+            "OOW",
+            "WFW",
+            "OFO",
+            "OFW"
+          ],
+          "answer": 3,
+          "explanation": "Mask `RDY | ERR` = 0x06. 0x0A = 1010: 0x0A & 0x06 = 0x02 = RDY → 'O' (bit 3 mask ke bahar hai, farak nahi padta). 0x0E = 1110: & 0x06 = 0x06 ≠ RDY; ERR set hai → 'F'. 0x08 = 1000: & 0x06 = 0, ERR bhi nahi → 'W'. Output OFW. Traps: 'RDY set hai to O' maan lena, jo 0x0E par bhi O deta (OOW); bit 3 ko comparison me ginna (WFW); ya 0x08 me RDY dekh lena (OFO).",
+          "difficulty": "hard"
         }
       ]
     },
@@ -360,6 +601,124 @@
           "answer": 0,
           "explanation": "0x00000F00 me bits 8–11 set hain, yaani pin 4 (bits 8, 9) aur pin 5 (bits 10, 11) dono analog (11). `3U << 10` = 0xC00; clear karne par 0x300 bachta hai (pin 4 abhi bhi analog). Phir `1U << 10` = 0x400 OR karke 0x700, yaani pin 5 output (01). Traps: poora register clear maan lena (0x400), clear step ka asar na samajhna (0xF00), ya shift 2n ki jagah n lena (0xF20).",
           "difficulty": "hard"
+        },
+        {
+          "id": "embc-w3-q7",
+          "question": "Inme se kaunsa clock source sabse accurate frequency deta hai, jaise UART baud ko stable rakhne ke liye?",
+          "options": [
+            "Internal RC oscillator (HSI)",
+            "APB1 prescaler ka output",
+            "External crystal oscillator (HSE)",
+            "SysTick timer ka interrupt"
+          ],
+          "answer": 2,
+          "explanation": "External crystal (HSE) ki frequency bahut accurate aur stable hoti hai. Internal RC (HSI) turant ready hota hai par kam accurate hai. APB prescaler sirf kisi source ko divide karta hai, khud source nahi, aur SysTick ek timer hai jo core clock se hi chalta hai. Trap: prescaler ya timer ko clock source samajh lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w3-q8",
+          "question": "STM32-style mode register me har pin ke 2 bits hain. Pin ko UART ke liye alternate function mode me daalne ke liye kaunsi value likhni hogi?",
+          "options": [
+            "00",
+            "10",
+            "01",
+            "11"
+          ],
+          "answer": 1,
+          "explanation": "Encoding: 00 input, 01 output, 10 alternate function, 11 analog. UART, SPI aur timer outputs alternate function se pin tak pahunchte hain, isliye 10. Trap: UART ko 'output' samajh kar 01 likhna; tab pin sirf output register ki value dikhata hai, UART ka signal nahi.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w3-q9",
+          "question": "Ek developer ne UART ke saare registers configure kiye, par koi data nahi nikalta aur registers padhne par zero milte hain. Sabse sambhav wajah kya hai?",
+          "options": [
+            "Baud rate 115200 se zyada rakh diya gaya",
+            "`main()` ke end me infinite loop likha hai",
+            "TX pin par internal pull-up enable kar diya gaya",
+            "RCC me UART ka clock enable bit set nahi kiya gaya"
+          ],
+          "answer": 3,
+          "explanation": "Peripheral ka clock enable na ho to uske registers par likhne ka koi asar nahi hota, aur read-back zero aata hai; code compile ho jaata hai par kuch nahi chalta. Galat baud par garbage characters aate, zero registers nahi. Embedded `main()` me infinite loop normal hai, aur pull-up se registers zero nahi hote. Trap: pehla step (clock enable) bhool kar baaki config me galti dhoondhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w3-q10",
+          "question": "HSE 12 MHz hai. PLL: M = 12, N = 360, P = 2. AHB prescaler 1 aur APB2 prescaler 2 hai. SYSCLK aur APB2 clock kya honge?",
+          "options": [
+            "SYSCLK 360 MHz, APB2 180 MHz",
+            "SYSCLK 180 MHz, APB2 360 MHz",
+            "SYSCLK 180 MHz, APB2 90 MHz",
+            "SYSCLK 90 MHz, APB2 45 MHz"
+          ],
+          "answer": 2,
+          "explanation": "12 MHz ÷ 12 = 1 MHz, × 360 = 360 MHz, ÷ 2 = 180 MHz SYSCLK. AHB 1 hai to HCLK bhi 180 MHz, aur APB2 = 180 ÷ 2 = 90 MHz. Traps: P se divide karna bhool jaana (360 aur 180), prescaler ko multiply samajhna (APB2 360), ya P ko do baar lagana (90 aur 45).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w3-q11",
+          "question": "Mode register me har pin ke 2 bits hain. Pin 9 ka field kin bits par hoga, aur use clear karne ka sahi mask kya hai?",
+          "options": [
+            "Bits 9–10; mask `~(3U << 9)`",
+            "Bits 18–19; mask `~(3U << 18)`",
+            "Bits 16–17; mask `~(3U << 16)`",
+            "Bits 18–19; mask `~(1U << 18)`"
+          ],
+          "answer": 1,
+          "explanation": "Pin n ke bits 2n aur 2n + 1 hain: pin 9 → bits 18 aur 19. Do bits clear karne ke liye `3U` (binary 11) ko 18 se shift karke invert karo. Traps: shift n lena (bits 9–10), pin 8 ke bits lena (16–17), ya sirf `1U` shift karna jo bit 19 ko chhod deta hai.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w3-q12",
+          "question": "Mode register me 2 bits per pin hain (00 input, 01 output, 10 alternate, 11 analog). Shuru me register 0x0000FF00 hai (pins 4–7 analog). Is code ke baad register ki value aur pin 7 ka mode kya hoga?",
+          "code": "MODER &= ~(3U << 12);  MODER |= (1U << 12);   /* pin 6: output */\nMODER &= ~(3U << 8);   MODER |= (2U << 8);    /* pin 4: alternate */\nMODER |= (0U << 14);                          /* pin 7: input ? */",
+          "options": [
+            "0x0000DE00; pin 7 abhi bhi analog (11) hai",
+            "0x00001E00; pin 7 input (00) ban gaya",
+            "0x0000DE00; pin 7 input (00) ban gaya",
+            "0x0000FE00; pin 7 abhi bhi analog (11) hai"
+          ],
+          "answer": 0,
+          "explanation": "Pin 6 (bits 12–13): clear → 0xCF00, phir 01 → 0xDF00. Pin 4 (bits 8–9): clear → 0xDC00, phir 10 → 0xDE00. Pin 7: `0U << 14` zero hai, aur 0 OR karne se kuch nahi badalta, to bits 14–15 abhi bhi 11 (analog). Input ke liye clear karna padta: `&= ~(3U << 14)`. Traps: OR 0 ko clear samajhna (0x1E00, ya 0xDE00 ke saath 'input' bolna, jabki 0xDE00 me bits 14–15 = 11 hain), ya pin 6 ka clear step chhod dena (0xFE00).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w3-q13",
+          "question": "Ek MCU ki SRAM 0x20000000 se shuru hoti hai aur 20 KB ki hai. Stack SRAM ke end se neeche ki taraf badhta hai, aur initial SP SRAM ke aakhri byte ke just baad wala address hai. Vector table ki pehli word (offset 0) me kya value hogi?",
+          "options": [
+            "0x20004FFF",
+            "0x20005000",
+            "0x20004E20",
+            "0x08000004"
+          ],
+          "answer": 1,
+          "explanation": "Reset par core offset 0 wali word ko initial SP me load karta hai. 20 KB = 20 × 1024 = 20480 = 0x5000. Aakhri byte 0x20004FFF hai, aur uske just baad 0x20005000, yahi initial SP. Traps: aakhri byte ka address hi le lena (0x20004FFF), 20 KB = 20000 = 0x4E20 lena, ya Reset_Handler wali entry (offset 4) se confuse hona.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w3-q14",
+          "question": "HSE 8 MHz hai aur SYSCLK exactly 100 MHz chahiye. Rules: M ke baad PLL input 1–2 MHz ho, N ke baad (VCO) 100–432 MHz ho, aur P sirf 2, 4, 6 ya 8 ho sakta hai. Kaunsi setting saare rules follow karke 100 MHz deti hai?",
+          "options": [
+            "M = 8, N = 432, P = 4",
+            "M = 2, N = 50, P = 2",
+            "M = 16, N = 400, P = 2",
+            "M = 8, N = 200, P = 2"
+          ],
+          "answer": 3,
+          "explanation": "M = 8, N = 200, P = 2: input 1 MHz (ok), VCO 200 MHz (ok), output 100 MHz. M = 8, N = 432, P = 4: rules theek par output 108 MHz. M = 2, N = 50, P = 2: output 100 MHz par input 4 MHz, jo 1–2 MHz rule todta hai. M = 16, N = 400, P = 2: output 100 MHz par input 0.5 MHz, wo bhi rule ke bahar. Trap: sirf final frequency check karke beech ke limits bhool jaana.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w3-q15",
+          "question": "Do MCUs ke GPIO pins ek hi shared line se jude hain, aur line par ek pull-up resistor hai. Dono pins open-drain mode me hain: MCU1 output register me '1' likhta hai aur MCU2 '0'. Line ka level kya hoga, aur agar dono pins push-pull hote to kya hota?",
+          "options": [
+            "Line 0 rahegi; push-pull me ek pin high aur doosra low drive karta, jo short-circuit jaisa conflict hai",
+            "Line 1 rahegi kyunki pull-up jeetta hai; push-pull me bhi line 1 hi hoti, koi conflict nahi",
+            "Line floating rahegi; push-pull me line 0 hoti aur dono pins bina kisi problem ke chalte",
+            "Line 0 rahegi; push-pull me bhi line safely 0 hi rehti, kyunki low hamesha jeetta hai"
+          ],
+          "answer": 0,
+          "explanation": "Open-drain me '1' likhne par MCU1 line chhod deta hai, jabki MCU2 use low kheenchta hai; pull-up ka current MCU2 ke through ground jaata hai, to line 0 (wired-AND). Push-pull me MCU1 line ko actively VDD aur MCU2 GND ki taraf drive karte, yaani do outputs ke beech seedha current: conflict, garam pins, galat level. Traps: pull-up ko low driver se strong samajhna, open-drain ko floating maanna (pull-up hai), aur push-pull me bhi 'low jeetega' maanna.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -477,6 +836,123 @@
           ],
           "answer": 3,
           "explanation": "PSC = 8399 se counter clock = 84 MHz ÷ 8400 = 10 kHz. ARR = 4999 matlab 5000 ticks = 5000 ÷ 10,000 = 0.5 s. ARR = 5000 se 5001 ticks = 0.5001 s (+1 wala trap). PSC = 839 se counter 100 kHz ho jaata hai aur period sirf 0.05 s. PSC = 0 ke saath ARR 41,999,999 chahiye jo 16-bit register me fit hi nahi hota.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w4-q7",
+          "question": "Cortex-M par chaar interrupts ki priorities 0, 2, 7 aur 15 hain. Sabse zyada priority kiski hai?",
+          "options": [
+            "Priority 0 wala",
+            "Priority 15 wala",
+            "Priority 7 wala",
+            "Sab barabar hain"
+          ],
+          "answer": 0,
+          "explanation": "Cortex-M NVIC me kam number = zyada priority, isliye 0 sabse urgent hai aur 15 sabse kam. Trap: rozmarra ki ginti ki tarah 'bada number = bada priority' maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w4-q8",
+          "question": "Ek ISR peripheral ka interrupt flag clear kiye bina return kar deta hai. Kya hoga?",
+          "options": [
+            "Wahi interrupt turant phir pending milega aur CPU baar-baar ISR me hi jaata rahega",
+            "Hardware return par flag apne aap clear kar dega, isliye koi asar nahi padega",
+            "Ye interrupt hamesha ke liye disable ho jaayega aur dobara kabhi nahi aayega",
+            "CPU turant reset ho jaayega aur program shuru se chalne lagega"
+          ],
+          "answer": 0,
+          "explanation": "Peripheral ka flag set rehta hai to ISR return hote hi interrupt phir se pending dikhta hai, aur program ISR me hi ghoomta rehta hai; main loop ko kabhi time nahi milta. Bahut se peripherals flag khud clear nahi karte, interrupt disable nahi hota, aur ye akele reset nahi karta. Trap: maan lena ki ISR khatam hona hi 'interrupt handled' hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w4-q9",
+          "question": "Up-counting mode me timer ka update event (aur update interrupt) kab aata hai?",
+          "options": [
+            "Jab counter PSC register ki value tak pahunch jaata hai",
+            "Har ek counter tick par, yaani lagataar",
+            "Jab counter ARR tak pahunch kar 0 par wapas aata hai",
+            "Sirf tab jab software counter me 0 likh de"
+          ],
+          "answer": 2,
+          "explanation": "Counter 0 se ARR tak ginta hai aur ARR se 0 par wapas aate waqt update event deta hai, isliye ek cycle (ARR + 1) ticks ki hai. PSC sirf counter clock ko divide karta hai; uski value tak ginti nahi hoti. Har tick par interrupt hota to CPU ke paas kuch aur karne ka time hi na hota. Trap: PSC aur ARR ka role ulta samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w4-q10",
+          "question": "Timer clock 72 MHz hai, PSC = 7199 aur ARR = 4999 (up-counting). Update interrupt ki frequency kya hogi?",
+          "options": [
+            "0.5 Hz",
+            "20 Hz",
+            "2 kHz",
+            "2 Hz"
+          ],
+          "answer": 3,
+          "explanation": "Counter clock = 72,000,000 ÷ (7199 + 1) = 10,000 Hz. Ek cycle = 4999 + 1 = 5000 ticks = 0.5 s, to frequency = 10,000 ÷ 5000 = 2 Hz. Traps: period (0.5 s) ko frequency likh dena (0.5 Hz), ya factor 10 ya 1000 ki galti (20 Hz, 2 kHz).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w4-q11",
+          "question": "Ek button har press par 3–8 ms tak bounce karta hai. Debouncing ka sabse sahi tareeka kaunsa hai?",
+          "options": [
+            "EXTI ISR ke andar `delay_ms(20)` daal kar uske baad pin ki value padh lo",
+            "Har edge interrupt ko ek alag button press maan kar counter badhao",
+            "Pull-up hata kar pin ko floating chhod do taaki bounce apne aap kam ho jaaye",
+            "Har 5 ms par pin sample karo aur state tab badlo jab kuch lagataar readings same aayein"
+          ],
+          "answer": 3,
+          "explanation": "Timer-based sampling me ek press ke bounce ki saari edges ek hi stable state ban jaati hain, aur ISR chhota rehta hai. ISR me `delay_ms(20)` baaki interrupts block karta hai. Har edge ko press ginoge to ek press kai press dikhega. Floating pin noise se random values deta hai, bounce kam nahi karta. Trap: delay wala 'easy fix'.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w4-q12",
+          "question": "Ek 16-bit timer (PSC aur ARR max 65535) ka clock 42 MHz hai. Exactly 250 ms ka update period chahiye. Kaunsi setting sahi hai?",
+          "options": [
+            "PSC = 4199, ARR = 2500",
+            "PSC = 0, ARR = 10499999",
+            "PSC = 4199, ARR = 2499",
+            "PSC = 419, ARR = 2499"
+          ],
+          "answer": 2,
+          "explanation": "PSC = 4199 se counter clock 42,000,000 ÷ 4200 = 10 kHz (100 µs per tick). 250 ms ke liye 2500 ticks, yaani ARR = 2499. Check: 42 MHz ÷ (4200 × 2500) = 4 Hz = 250 ms. Traps: ARR me −1 bhool jaana (2501 ticks = 250.1 ms), PSC = 0 rakhna (10,500,000 ticks chahiye, jo 65535 me fit nahi), aur PSC 419 (100 kHz) ke saath 2500 ticks sirf 25 ms dete hain.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w4-q13",
+          "question": "Main code chal raha hai. t = 0 par IRQ X (priority 4) aata hai, jiska ISR 10 µs leta hai. t = 3 µs par IRQ Y (priority 2) aata hai, ISR 4 µs. t = 5 µs par IRQ Z (priority 4) aata hai, ISR 2 µs. Entry/exit overhead ignore karo. X ka ISR kab poora hoga?",
+          "options": [
+            "t = 10 µs",
+            "t = 14 µs",
+            "t = 16 µs",
+            "t = 7 µs"
+          ],
+          "answer": 1,
+          "explanation": "X 0–3 µs chalta hai (3 µs kaam hua). Y ki priority 2 zyada hai (chhota number), to Y X ko preempt karke 3–7 µs chalta hai. Phir X resume hokar baaki 7 µs, yaani 7–14 µs. Z ki priority X ke barabar hai, isliye wo preempt nahi karta, pending rehta hai aur 14–16 µs chalta hai. Traps: preemption ignore karna (10 µs), Z ko bhi X ko rokne dena (16 µs), ya Y ke khatam hone ka time (7 µs) le lena.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w4-q14",
+          "question": "Cortex-M (32-bit) par timer ISR ek `volatile uint64_t ticks` ko badhata hai. Main ise do 32-bit reads me padhta hai: pehle low word, phir high word. Abhi `ticks = 0x00000000FFFFFFFF` hai, aur ISR theek dono reads ke beech chal jaata hai. Main ko kaunsi value milegi?",
+          "options": [
+            "0x0000000100000000",
+            "0x00000000FFFFFFFF",
+            "0x0000000000000000",
+            "0x00000001FFFFFFFF"
+          ],
+          "answer": 3,
+          "explanation": "Low read purani value deta hai: 0xFFFFFFFF. Phir ISR ticks ko 0x0000000100000000 kar deta hai. High read ab nayi value ka high word 1 deta hai. Dono jod kar 0x00000001FFFFFFFF, jo na purani hai na nayi: lagbhag 4.29 billion ticks aage. `volatile` is torn read ko nahi rokta; fix hai critical section ya high word dobara padh kar compare karna. Traps: maan lena ki read atomic hai (purani ya nayi value), ya 0 (wo tab aata jab high word pehle padha jaata).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w4-q15",
+          "question": "Button t = 0 par dabaya gaya aur uske contacts 12 ms tak bounce karte hain (us dauraan reading kuch bhi ho sakti hai), phir stable 'pressed'. Timer har 5 ms par pin sample karta hai (t = 5, 10, 15, ... ms), aur press tab maana jaata hai jab 4 lagataar samples 'pressed' aayein. Worst case me press kab accept hoga?",
+          "options": [
+            "t = 20 ms",
+            "t = 30 ms",
+            "t = 32 ms",
+            "t = 12 ms"
+          ],
+          "answer": 1,
+          "explanation": "Worst case me bounce wale samples (t = 5 aur 10) 'released' padhte hain aur count reset hota hai. 12 ms ke baad pehla sample t = 15 hai; stable samples 15, 20, 25, 30, to chautha sample t = 30 ms par. Traps: maan lena ki bounce ke samples bhi gine jaayenge (20 ms, wo best case hai), 12 + 4 × 5 = 32 ms lena (samples sirf 5 ms ke multiples par hote hain), ya bounce khatam hote hi accept maanna (12 ms).",
           "difficulty": "hard"
         }
       ]
@@ -596,6 +1072,123 @@
           "answer": 2,
           "explanation": "Idle HIGH matlab CPOL = 1. Leading edge par sample matlab CPHA = 0. CPOL = 1, CPHA = 0 = Mode 2. Clock high se shuru hota hai, to pehla edge high→low yaani falling hai. Trap: Mode 3 chunna; usme bhi idle high hai par sampling trailing (rising) edge par hoti hai. Mode 0 aur Mode 1 me clock idle LOW hota hai.",
           "difficulty": "hard"
+        },
+        {
+          "id": "embc-w5-q7",
+          "question": "Do boards (A aur B) ke beech UART link banana hai. Sahi wiring kaunsi hai?",
+          "options": [
+            "A ka TX → B ka TX, A ka RX → B ka RX; GND jodna zaroori nahi",
+            "Sirf A ka TX → B ka RX; GND alag rakho taaki noise na aaye",
+            "Dono boards ke TX aur RX chaaron ek hi wire par jod do",
+            "A ka TX → B ka RX, A ka RX → B ka TX, aur dono ka GND common"
+          ],
+          "answer": 3,
+          "explanation": "Jo ek board bhejta hai (TX) wo doosre ko sunna (RX) chahiye, isliye cross wiring. Voltage levels ka reference same hona chahiye, to GND common zaroori hai. TX ko TX se jodne par dono ek hi wire drive karte hain aur koi sun nahi paata; ek hi wire par chaaron jodne se bhi wahi conflict. Trap: GND ko optional samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w5-q8",
+          "question": "SPI me chip-select (CS) line usually active-low hoti hai. Iska kya matlab hai?",
+          "options": [
+            "CS = 1 hone par wo slave selected hota hai aur bus par respond karta hai",
+            "CS = 0 hone par wo slave selected hota hai aur bus par respond karta hai",
+            "CS line par master clock pulses bhejta hai, data nahi",
+            "CS hamesha 0 rehti hai, isliye use MCU se jodna zaroori nahi"
+          ],
+          "answer": 1,
+          "explanation": "Active-low ka matlab hai signal 0 (low) hone par 'active'. Master jis slave se baat karna chahta hai uski CS low karta hai; baaki slaves ki CS high rehti hai aur wo MISO chhod dete hain. Clock SCLK par jaata hai, CS par nahi. Trap: 'active' ko 1 samajh lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w5-q9",
+          "question": "I2C ka standard mode clock speed kitna hota hai?",
+          "options": [
+            "400 kHz",
+            "9600 Hz",
+            "10 MHz",
+            "100 kHz"
+          ],
+          "answer": 3,
+          "explanation": "I2C standard mode 100 kHz hai aur fast mode 400 kHz. 9600 ek common UART baud rate hai, aur kai MHz SPI ki range hai. Trap: fast mode (400 kHz) ko standard samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w5-q10",
+          "question": "UART 8E1 format (8 data bits, even parity, 1 stop bit) me 19200 baud par maximum kitne bytes per second bheje ja sakte hain?",
+          "options": [
+            "2400 bytes/s",
+            "1920 bytes/s",
+            "≈ 1745 bytes/s",
+            "1600 bytes/s"
+          ],
+          "answer": 2,
+          "explanation": "Ek frame = 1 start + 8 data + 1 parity + 1 stop = 11 bits. Throughput = 19200 ÷ 11 ≈ 1745 bytes/s. Traps: sirf data bits ginna (19200 ÷ 8 = 2400), 8N1 wala 10 bits lena aur parity bhool jaana (1920), ya 2 stop bits maan lena (12 bits, 1600).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w5-q11",
+          "question": "Logic analyser me I2C START ke baad pehla byte 0xA1 dikha. Device ka 7-bit address aur transfer direction kya hai?",
+          "options": [
+            "Address 0xA1, read",
+            "Address 0x50, write",
+            "Address 0x50, read",
+            "Address 0xA0, write"
+          ],
+          "answer": 2,
+          "explanation": "Address byte = (7-bit address << 1) | R/W. 0xA1 = 1010 0001: LSB 1 matlab read, aur upar ke 7 bits 1010 000 = 0xA1 >> 1 = 0x50. Traps: poore byte ko address maan lena (0xA1), R/W bit ka matlab ulta lena (1 = read hai, write nahi), ya sirf R/W bit hata kar shift bhool jaana (0xA0).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w5-q12",
+          "question": "UART 8N1 line par idle (high) ke baad ye 10 bits time order me aaye (pehla bit sabse pehle): `0 1 1 0 0 1 0 1 0 1`. Kaunsa data byte bheja gaya?",
+          "options": [
+            "0x53",
+            "0xCA",
+            "0xA6",
+            "0x35"
+          ],
+          "answer": 0,
+          "explanation": "Pehla 0 start bit hai aur aakhri 1 stop bit. Beech ke 8 data bits 1 1 0 0 1 0 1 0 hain, aur UART LSB pehle bhejta hai: bit0 = 1, bit1 = 1, bit2 = 0, bit3 = 0, bit4 = 1, bit5 = 0, bit6 = 1, bit7 = 0. Byte = 0101 0011 = 0x53. Traps: bits ko MSB-first padhna (1100 1010 = 0xCA), start bit ko data me gin lena (pehle 8 bits LSB-first = 0xA6), ya nibbles ulat dena (0x35).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w5-q13",
+          "question": "SPI master (4 MHz SCLK) ek flash chip ko 3 bytes bhejta hai: 0x9F, 0x00, 0x00. Chip pehle byte ke dauraan kuch meaningful nahi bhejti, aur agle do bytes me apna ID 0xEF, 0x40 bhejti hai. Bytes ke beech koi gap nahi. Transfer kitna time lega aur master ko kitne bytes receive honge?",
+          "options": [
+            "7.5 µs; sirf 2 bytes (0xEF, 0x40) receive honge",
+            "6 µs; 3 bytes receive honge, jinme pehla bekaar (dummy) hai",
+            "6 µs; sirf 2 bytes, kyunki pehle byte me master sirf bhejta hai",
+            "2 µs; 3 bytes receive honge, jinme pehla bekaar (dummy) hai"
+          ],
+          "answer": 1,
+          "explanation": "SPI full-duplex hai: har clock par ek bit jaata hai aur ek aata hai, to 3 bytes bhejne par 3 bytes receive bhi hote hain; pehla received byte dummy hai, baaki do me ID. Time = 3 × 8 = 24 clocks ÷ 4 MHz = 6 µs (SPI me start/stop bits nahi). Traps: UART ki tarah 10 bits per byte lena (7.5 µs), maan lena ki bhejte waqt kuch receive nahi hota, ya sirf ek byte ka time lena (2 µs).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w5-q14",
+          "question": "I2C bus 100 kHz par hai. Master ek sensor ke register me 2 data bytes likhta hai: address byte (write), register address byte, phir 2 data bytes. Har byte ke baad receiver ka ACK aata hai. START/STOP ka time ignore karo. Transfer me kitna time lagega?",
+          "options": [
+            "320 µs",
+            "270 µs",
+            "360 µs",
+            "400 µs"
+          ],
+          "answer": 2,
+          "explanation": "Bytes: address + register + 2 data = 4. Har byte = 8 data clocks + 1 ACK clock = 9 clocks, to 36 clocks. 100 kHz par ek clock 10 µs, to 36 × 10 = 360 µs. Traps: ACK bhool jaana (32 clocks = 320 µs), address byte na ginna (3 bytes = 270 µs), ya UART ki tarah 10 bits per byte lena (400 µs).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w5-q15",
+          "question": "Ek board par 6 sensors jodne hain; sab I2C aur SPI dono support karte hain aur sabke I2C addresses alag hain. MCU ke paas sirf 5 free GPIO pins hain, aur total data rate sirf 20 kbit/s chahiye. Sabse sahi choice kya hai?",
+          "options": [
+            "I2C: sirf 2 pins (SDA, SCL), addresses se 6 devices, aur 100 kHz kaafi hai",
+            "SPI: 5 pins kaafi hain, kyunki saare slaves ek hi CS line share kar sakte hain",
+            "UART: ek hi TX/RX pair par saare 6 sensors parallel me jod do",
+            "SPI: 3 shared lines + 6 CS = 9 pins lagenge, phir bhi speed ke liye yahi best"
+          ],
+          "answer": 0,
+          "explanation": "SPI me har slave ki alag CS chahiye: 3 + 6 = 9 pins, jo 5 se zyada hai; CS share karoge to saare slaves ek saath MISO drive karenge. UART point-to-point hai, ek pair par 6 devices nahi chalte. I2C 2 pins par address se kai devices sambhalta hai, aur 100 kHz (overhead ke baad bhi) 20 kbit/s se kaafi zyada hai. Trap: 'SPI fastest hai' soch kar pin budget aur zaroorat bhool jaana.",
+          "difficulty": "hard"
         }
       ]
     },
@@ -713,6 +1306,123 @@
           ],
           "answer": 0,
           "explanation": "1 MHz par ek tick = 1 µs. 50 Hz ka period 20 ms = 20,000 ticks, to ARR + 1 = 20000 → ARR = 19999. 1.5 ms = 1500 µs = 1500 ticks, to CCR = 1500 (CNT 0 se 1499 tak high). Traps: ARR = 20000 se period 20.001 ms ho jaata hai; CCR = 150 sirf 0.15 ms ka pulse deta; ARR = 1999 se frequency 500 Hz ho jaati.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w6-q7",
+          "question": "VDD = 3.3 V hai aur PWM duty cycle 40% hai. Pin ka average voltage lagbhag kitna hoga?",
+          "options": [
+            "1.98 V",
+            "0.40 V",
+            "1.32 V",
+            "3.30 V"
+          ],
+          "answer": 2,
+          "explanation": "Average ≈ duty × VDD = 0.40 × 3.3 = 1.32 V. Traps: off-time ka fraction lena (0.60 × 3.3 = 1.98 V), duty ko hi voltage likh dena (0.40 V), ya high level ko average samajhna (3.30 V; pin high hone par 3.3 V hi hota hai, par average kam hai).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w6-q8",
+          "question": "LED ki brightness badalni hai par PWM frequency same rakhni hai. Timer ka kaunsa register badloge?",
+          "options": [
+            "ARR (auto-reload)",
+            "PSC (prescaler)",
+            "Timer ka clock enable bit",
+            "CCR (compare value)"
+          ],
+          "answer": 3,
+          "explanation": "Duty = CCR ÷ (ARR + 1), aur frequency PSC aur ARR se tay hoti hai. Isliye sirf CCR badalne se on-time badalta hai, frequency nahi. ARR ya PSC badloge to frequency badal jaayegi, aur clock enable bit timer ko on/off karta hai. Trap: ARR ko 'duty ka knob' samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w6-q9",
+          "question": "DMA ka sabse bada fayda kya hai?",
+          "options": [
+            "ADC ka resolution 12-bit se badh kar apne aap 16-bit ho jaata hai",
+            "CPU ke bina data copy hota hai, aur CPU doosre kaam kar sakta hai",
+            "Program me interrupts ki zaroorat bilkul khatam ho jaati hai",
+            "Flash memory ka size double ho jaata hai aur zyada code aata hai"
+          ],
+          "answer": 1,
+          "explanation": "DMA controller source se destination tak data khud copy karta hai; CPU sirf setup karta hai aur complete hone par ek interrupt leta hai. Resolution ADC hardware par depend karta hai, interrupts (half/full complete) ab bhi use hote hain, aur memory size nahi badalta. Trap: DMA ko 'interrupts ka replacement' samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w6-q10",
+          "question": "12-bit DAC ka reference 3.3 V hai. Output par lagbhag 2.0 V chahiye. DAC me kaunsa code likhoge?",
+          "options": [
+            "2048",
+            "1241",
+            "2000",
+            "2482"
+          ],
+          "answer": 3,
+          "explanation": "Vout ≈ code × Vref ÷ 4096, to code = 2.0 × 4096 ÷ 3.3 ≈ 2482. Traps: half-scale code (2048) lena, jo 1.65 V deta hai; 1.0 V wala code (1241) lena; ya voltage ko mV me seedha code bana dena (2000 ≈ 1.61 V).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w6-q11",
+          "question": "12-bit ADC ka Vref 3.0 V hai. Input pin par 3.2 V aa raha hai (pin ki maximum rating ke andar). ADC kya code dega?",
+          "options": [
+            "4095, full-scale par clip",
+            "≈ 4369",
+            "4096",
+            "0, overflow ke baad wrap"
+          ],
+          "answer": 0,
+          "explanation": "Vref se upar ka input full-scale code par clip ho jaata hai, aur 12-bit ka sabse bada code 4095 hai. 3.2 × 4096 ÷ 3.0 ≈ 4369 sirf formula hai; 12 bits me itna bada number aa hi nahi sakta. 4096 bhi 12 bits me nahi aata, aur ADC wrap nahi karta. Trap: formula ko range check kiye bina lagana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w6-q12",
+          "question": "Servo ke liye counter clock 1 MHz aur ARR = 19999 (50 Hz) hai, output high jab CNT < CCR. 0° ke liye 1.0 ms aur 180° ke liye 2.0 ms pulse chahiye, beech me linear. 135° ke liye CCR kya hoga?",
+          "options": [
+            "1750",
+            "1350",
+            "1500",
+            "175"
+          ],
+          "answer": 0,
+          "explanation": "Pulse = 1.0 ms + (135 ÷ 180) × 1.0 ms = 1.75 ms. 1 MHz par 1 tick = 1 µs, to CCR = 1750. Traps: angle ko seedha ticks me badalna (1350), centre position (90°) ka 1500 lena, ya ms ko 100 µs ticks me ginna (175).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w6-q13",
+          "question": "12-bit ADC (Vref 3.3 V) ek temperature sensor padhta hai jiska output 0 °C par 0.5 V hai aur 10 mV/°C badhta hai. ADC code 1241 aaya. Temperature lagbhag kitna hai?",
+          "options": [
+            "≈ 100 °C",
+            "≈ 124 °C",
+            "≈ 50 °C",
+            "≈ 25 °C"
+          ],
+          "answer": 2,
+          "explanation": "Step 1: V = 1241 × 3.3 ÷ 4096 ≈ 1.000 V. Step 2: T = (V − 0.5) ÷ 0.010 = 0.5 ÷ 0.010 ≈ 50 °C. Traps: 0.5 V offset bhool jaana (1.0 ÷ 0.010 = 100 °C), code ko seedha 10 se divide karna (124), ya offset ke baad phir se aadha kar dena (25).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w6-q14",
+          "question": "ADC 50,000 samples/s par DMA se 256-sample circular buffer bharta hai, aur half-transfer aur transfer-complete dono interrupts on hain. Do lagataar DMA interrupts ke beech kitna time hai, aur 1 s me kitne DMA interrupts aate hain?",
+          "options": [
+            "5.12 ms; ≈ 195",
+            "2.56 ms; ≈ 391",
+            "20 µs; 50,000",
+            "2.56 ms; ≈ 195"
+          ],
+          "answer": 1,
+          "explanation": "Half aur full dono interrupts ka matlab har 128 samples par ek interrupt. 128 ÷ 50,000 = 2.56 ms, aur 50,000 ÷ 128 ≈ 391 interrupts/s. Traps: sirf full-complete ginna (256 samples: 5.12 ms, ≈ 195), per-sample interrupt jaisa sochna (20 µs, 50,000), ya time sahi lekar count me full buffer ka hisaab lagana (≈ 195).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w6-q15",
+          "question": "Timer clock 84 MHz, PSC = 83, ARR = 999, CCR = 250 (edge-aligned, high jab CNT < CCR). Ek developer frequency badhane ke liye sirf ARR ko 499 kar deta hai; CCR 250 hi rehta hai. Nayi PWM frequency aur duty kya hogi?",
+          "options": [
+            "1 kHz, 50%",
+            "2 kHz, 50%",
+            "2 kHz, 25%",
+            "500 Hz, 25%"
+          ],
+          "answer": 1,
+          "explanation": "Counter clock = 84 MHz ÷ 84 = 1 MHz. Pehle 1000 ticks (1 kHz, duty 250 ÷ 1000 = 25%). ARR = 499 ke baad period 500 ticks: frequency 1 MHz ÷ 500 = 2 kHz, aur duty = 250 ÷ 500 = 50%. Traps: maan lena ki duty same rahegi (25%), frequency badalna bhool jaana (1 kHz), ya ARR chhota karne se frequency ghatna (500 Hz).",
           "difficulty": "hard"
         }
       ]
@@ -833,6 +1543,125 @@
           ],
           "answer": 3,
           "explanation": "Counter 64000 se 65535 tak gaya (1536 ticks), wrap hua, phir 0 se 1464 tak (1464 ticks): total 3000 ticks. `uint16_t` cast yahi deta hai: (1464 − 64000) mod 65536 = 3000. Period = 3000 µs, frequency = 1,000,000 ÷ 3000 ≈ 333 Hz. Traps: 64000 − 1464 = 62536 lena (≈ 16.0 Hz), sirf t2 lena (≈ 683 Hz), ya poora 65536 ka cycle lena (≈ 15.3 Hz).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w7-q7",
+          "question": "5 lagataar bits (bit 0 se bit 4 tak) ka mask kya hoga?",
+          "options": [
+            "0x05",
+            "0x0F",
+            "0x20",
+            "0x1F"
+          ],
+          "answer": 3,
+          "explanation": "k bits ka mask (1 << k) − 1 = (1 << 5) − 1 = 32 − 1 = 31 = 0x1F (binary 1 1111). Traps: bit count ko hi mask likhna (0x05), 4 bits ka mask lena (0x0F), ya −1 bhool jaana (0x20, jo sirf bit 5 hai).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w7-q8",
+          "question": "Register field [14:9] kitne bits chauda hai?",
+          "options": [
+            "5 bits",
+            "7 bits",
+            "6 bits",
+            "23 bits"
+          ],
+          "answer": 2,
+          "explanation": "Width = hi − lo + 1 = 14 − 9 + 1 = 6 (bits 9, 10, 11, 12, 13, 14). Traps: +1 bhool jaana (5), ek extra jod dena (7), ya dono numbers jod dena (23).",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w7-q9",
+          "question": "Timer ka counter clock 10 kHz hai. 250 ticks kitne time ke barabar hain?",
+          "options": [
+            "25 ms",
+            "2.5 ms",
+            "250 ms",
+            "25 µs"
+          ],
+          "answer": 0,
+          "explanation": "10 kHz par ek tick = 1 ÷ 10,000 s = 100 µs. 250 × 100 µs = 25,000 µs = 25 ms. Traps: 1 kHz wala 1 ms per tick lena (250 ms), ya factor 10 / 1000 ki galti (2.5 ms, 25 µs). Answer ke baad unit dobara check karo.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w7-q10",
+          "question": "UART 57600 baud, 8N1 par 1024 bytes lagataar bhejne me lagbhag kitna time lagega?",
+          "options": [
+            "≈ 142.2 ms",
+            "≈ 177.8 ms",
+            "≈ 17.8 ms",
+            "≈ 1.78 s"
+          ],
+          "answer": 1,
+          "explanation": "8N1 me har byte 10 bits: 1024 × 10 = 10,240 bits. Time = 10,240 ÷ 57,600 ≈ 0.1778 s = 177.8 ms. Traps: 8 bits per byte lena (8192 ÷ 57,600 ≈ 142.2 ms), ya factor 10 ki galti (17.8 ms, 1.78 s).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w7-q11",
+          "question": "Status register ke bits [10:7] me ek 4-bit field hai. Is code ke baad `f` ki value kya hogi?",
+          "code": "uint32_t st = 0x00002E70;\nuint32_t f = (st >> 7) & 0xFU;",
+          "options": [
+            "0xC",
+            "0x5C",
+            "0xB",
+            "0xE"
+          ],
+          "answer": 0,
+          "explanation": "0x2E70 = 0010 1110 0111 0000. 7 se right shift: 0x5C (0101 1100). Mask 0xF lagao: 1100 = 0xC. Traps: mask bhool jaana (0x5C), hi bit (10) se shift karna (0xB), ya field ko hex digit ke boundary par maan kar bits [11:8] padh lena (0xE). Field 4-bit boundary par nahi hai, isliye binary me socho.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w7-q12",
+          "question": "UART clock 84 MHz hai, 16× oversampling, aur divisor sirf integer ho sakta hai. 115200 baud ke liye nearest divisor lene par actual baud aur error kya hoga?",
+          "options": [
+            "Divisor 46, ≈ 114130 baud, error ≈ −0.93%",
+            "Divisor 45, ≈ 116667 baud, error ≈ +1.27%",
+            "Divisor 46, 115200 baud, error 0%",
+            "Divisor 46, ≈ 114130 baud, error ≈ +0.93%"
+          ],
+          "answer": 0,
+          "explanation": "Ideal divisor = 84,000,000 ÷ (16 × 115,200) = 84,000,000 ÷ 1,843,200 ≈ 45.57, nearest integer 46. Actual = 84,000,000 ÷ (16 × 46) = 84,000,000 ÷ 736 ≈ 114,130 baud. Error = (114,130 − 115,200) ÷ 115,200 ≈ −0.93%, jo chal jaayega. Traps: round ki jagah truncate karna (45 → +1.27%, thoda zyada error), divisor round karke baud wahi maan lena (0%), ya sign ulta likhna (actual desired se kam hai, isliye minus).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w7-q13",
+          "question": "16-bit millisecond counter wrap ke paas hai. `start = 65000` par 1000 ms ka timeout shuru hua, aur ab `now = 500` hai. Dono checks kya denge?",
+          "code": "uint16_t start = 65000, now = 500, delay = 1000;\n\nint ok_check  = ((uint16_t)(now - start) >= delay);\nint bad_check = (now >= start + delay);",
+          "options": [
+            "Dono 0, kyunki 500 abhi bhi 65000 se chhota hai",
+            "`ok_check` = 1 (1036 ms beet chuke), `bad_check` = 0",
+            "Dono 1, kyunki counter wrap ho chuka hai",
+            "`ok_check` = 0 (sirf 464 ms beete), `bad_check` = 1"
+          ],
+          "answer": 1,
+          "explanation": "`now - start` = 500 − 65000 = −64500, jo `uint16_t` me cast hokar −64500 + 65536 = 1036 banta hai: 536 ms wrap se pehle + 500 baad. 1036 ≥ 1000, to `ok_check` = 1. `start + delay` `int` me 66000 hai, aur 500 ≥ 66000 false, to `bad_check` = 0 aur timeout kabhi detect nahi hoga (kyunki `now` kabhi 66000 tak nahi pahunch sakta). Traps: wrap ko ignore karna (dono 0), maan lena ki wrap sab theek kar deta hai (dono 1), ya deadline ko 16 bits me wrap karke (66000 − 65536 = 464) us 464 ko beeta hua time samajhna.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w7-q14",
+          "question": "1 MHz timer par input capture se ye values mili: rising edge 1200, falling edge 1950, agla rising edge 3700 (beech me koi wrap nahi). Signal ki frequency aur duty cycle kya hai?",
+          "options": [
+            "400 Hz, 70%",
+            "2.5 kHz, 30%",
+            "≈ 571 Hz, 43%",
+            "400 Hz, 30%"
+          ],
+          "answer": 3,
+          "explanation": "Period = rising se rising = 3700 − 1200 = 2500 ticks = 2500 µs, to frequency = 1,000,000 ÷ 2500 = 400 Hz. High time = falling − rising = 1950 − 1200 = 750 µs, duty = 750 ÷ 2500 = 30%. Traps: low time ko duty lena (1750 ÷ 2500 = 70%), µs ko ms jaisa padh kar 2.5 kHz bolna, ya falling se rising (1750) ko period maanna (≈ 571 Hz, 43%).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w7-q15",
+          "question": "Har 2 ms ke cycle me firmware do kaam karta hai: I2C (400 kHz) se ek sensor read jisme address byte + 6 data bytes hain (har byte 9 clocks, START/STOP ignore), aur UART (115200 baud, 8N1) par 20 bytes ka log. Total bus time kitna hai, aur kya ye 2 ms me fit hota hai?",
+          "options": [
+            "≈ 1.53 ms; fit hota hai",
+            "≈ 2.37 ms; fit nahi hota",
+            "≈ 1.89 ms; fit hota hai",
+            "≈ 1.74 ms; fit hota hai"
+          ],
+          "answer": 2,
+          "explanation": "I2C: 7 bytes × 9 = 63 clocks ÷ 400,000 = 157.5 µs. UART: 20 × 10 = 200 bits ÷ 115,200 ≈ 1736 µs. Total ≈ 1894 µs ≈ 1.89 ms < 2 ms, margin sirf ~0.1 ms. Traps: dono me 8 bits per byte lena (140 + 1389 µs ≈ 1.53 ms), I2C ko 100 kHz par ginna (630 + 1736 ≈ 2.37 ms), ya I2C ka time chhod dena (≈ 1.74 ms).",
           "difficulty": "hard"
         }
       ]
@@ -957,6 +1786,127 @@
           "answer": 0,
           "explanation": "SIZE − 1 = 5 = 101 (binary). idx = 0: (1) & 101 = 1. idx = 1: (2 = 010) & 101 = 0. Phir wahi cycle: 1, 0, 1. Index sirf 0 aur 1 ke beech ghoomta hai, baaki slots kabhi use nahi hote. `& (SIZE - 1)` tabhi `% SIZE` ke barabar hai jab SIZE 2 ki power ho. Trap: maan lena ki ye `% 6` jaisa kaam karega (1 2 3 4 5).",
           "difficulty": "hard"
+        },
+        {
+          "id": "embc-w8-q7",
+          "question": "Ek module ki `.c` file me helper function `static int crc_step(int x)` likha hai. Is `static` ka kya matlab hai?",
+          "options": [
+            "Ye function har call ke baad apni saari values bhool jaata hai",
+            "Ye function kabhi bhi interrupt ke andar se call nahi ho sakta",
+            "Ye function sirf usi `.c` file ke andar se call ho sakta hai",
+            "Ye function poore program me sirf ek hi baar chal sakta hai"
+          ],
+          "answer": 2,
+          "explanation": "File-level `static` function ya global ko private bana deta hai: wo sirf apni `.c` file me dikhta hai, doosri files use seedha call nahi kar sakti. Isse module ka interface chhota aur saaf rehta hai. Iska interrupts ya 'ek baar chalne' se koi lena-dena nahi. Trap: function-level `static` ko local `static` variable ke matlab (value yaad rakhna) se mix karna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w8-q8",
+          "question": "Ring buffer (`head` = agla write index, `tail` = agla read index) kab khaali maana jaata hai?",
+          "options": [
+            "Jab `head == 0`",
+            "Jab `head == tail`",
+            "Jab `(head + 1) % SIZE == tail`",
+            "Jab `tail > head`"
+          ],
+          "answer": 1,
+          "explanation": "Jab write aur read index barabar hon, to padhne ke liye kuch bacha nahi: empty. `(head + 1) % SIZE == tail` full ki condition hai (ek slot khaali rakhne wale design me). `head == 0` sirf position hai, aur `tail > head` wrap ke baad bhi ho sakta hai jab buffer me items hon. Trap: full aur empty conditions ulat dena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w8-q9",
+          "question": "C me finite state machine likhne ka sabse common aur saaf tareeka kya hai?",
+          "options": [
+            "Har state ke liye ek alag `while (1)` loop likhna",
+            "States ko random numbers se represent karna",
+            "Har event par `delay_ms()` daal kar state badalna",
+            "States ke liye `enum` aur logic ke liye `switch (state)`"
+          ],
+          "answer": 3,
+          "explanation": "`enum` se states ke naam saaf rehte hain, aur `switch` me har `case` ek state ka logic hota hai jo sirf usi state ke events handle karta hai. Har state ka alag infinite loop baaki tasks ko rok deta hai, random numbers padhne me mushkil hain, aur delays FSM ko blocking bana dete hain. Trap: FSM ko blocking loops ka set samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w8-q10",
+          "question": "SIZE = 32 ke ring buffer me `head = 7` aur `tail = 20` hai. Buffer me kitne items hain?",
+          "options": [
+            "19",
+            "13",
+            "-13",
+            "12"
+          ],
+          "answer": 0,
+          "explanation": "Count = (head − tail + SIZE) % SIZE = (7 − 20 + 32) % 32 = 19. Items index 20 se 31 (12) aur 0 se 6 (7) tak hain: 12 + 7 = 19. Traps: tail − head = 13 lena, `+ SIZE` bhool jaana (-13), ya wrap ke baad wala hissa (0–6) na ginna (12).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w8-q11",
+          "question": "Super-loop me ye code har iteration chalta hai, aur `ms` har millisecond badhne wala tick counter hai. LED ki blink frequency (ek on + ek off = ek blink) kya hogi?",
+          "code": "if ((ms - last) >= 250) {\n    last = ms;\n    led_toggle();\n}",
+          "options": [
+            "4 Hz",
+            "1 Hz",
+            "2 Hz",
+            "250 Hz"
+          ],
+          "answer": 2,
+          "explanation": "LED har 250 ms par toggle hota hai: 250 ms on, 250 ms off, to ek poora blink 500 ms ka, yaani 1 ÷ 0.5 s = 2 Hz. Traps: toggle rate ko blink rate maan lena (1 ÷ 0.25 s = 4 Hz), period ko 1 s lena (1 Hz), ya 250 ko seedha Hz likh dena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w8-q12",
+          "question": "Is code ka output kya hoga?",
+          "code": "#define SIZE 4\nchar buf[SIZE];\nuint8_t head = 0, tail = 0;\n\nint push(char c) {\n    uint8_t next = (head + 1) & (SIZE - 1);\n    if (next == tail) return 0;          /* full */\n    buf[head] = c;\n    head = next;\n    return 1;\n}\nchar pop(void) {\n    char c = buf[tail];\n    tail = (tail + 1) & (SIZE - 1);\n    return c;\n}\n\n/* main */\npush('a'); push('b'); push('c'); push('d');\nputchar(pop());\npush('e');\nputchar(pop()); putchar(pop()); putchar(pop());",
+          "options": [
+            "abcd",
+            "abce",
+            "bcde",
+            "acbe"
+          ],
+          "answer": 1,
+          "explanation": "Ek slot khaali rakhne wale design me SIZE 4 me maximum 3 items. 'a', 'b', 'c' slots 0–2 me (head = 3). 'd' ke liye next = 0 = tail, to full: 'd' drop. Pop → 'a' (tail = 1). Push 'e': next = 0 ≠ 1, to buf[3] = 'e', head = 0. Teen pops: 'b', 'c', 'e'. Output abce. Traps: maan lena ki 4 items fit honge (abcd), drop pehle item ka hota hai (bcde), ya pop LIFO jaisa hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w8-q13",
+          "question": "Door-lock state machine shuru me LOCKED hai aur `wrong = 0`. Events is order me aate hain: 'W', 'W', 'C', 'L', 'W', 'W', 'W', 'C'. Saare events ke baad state aur `wrong` kya honge?",
+          "code": "typedef enum { LOCKED, UNLOCKED, ALARM } lock_t;\nlock_t s = LOCKED;\nint wrong = 0;\n\nvoid on_event(char e) {\n    switch (s) {\n    case LOCKED:\n        if (e == 'C') { s = UNLOCKED; wrong = 0; }\n        else if (e == 'W' && ++wrong >= 3) s = ALARM;\n        break;\n    case UNLOCKED:\n        if (e == 'L') s = LOCKED;\n        break;\n    case ALARM:\n        if (e == 'R') { s = LOCKED; wrong = 0; }\n        break;\n    }\n}",
+          "options": [
+            "ALARM, `wrong` = 3",
+            "UNLOCKED, `wrong` = 0",
+            "LOCKED, `wrong` = 3",
+            "ALARM, `wrong` = 5"
+          ],
+          "answer": 0,
+          "explanation": "Trace: W → wrong 1, W → 2 (dono LOCKED). C → UNLOCKED, wrong 0. L → LOCKED. W → 1, W → 2, W → 3, aur 3 ≥ 3 to ALARM. Aakhri C ALARM me ignore hota hai (sirf 'R' nikaalta hai). Final: ALARM, wrong = 3. Traps: maan lena ki sahi code ALARM se bhi unlock kar dega (UNLOCKED), ALARM ki transition miss karna (LOCKED), ya saare W gin lena, chahe C ne count reset kiya ho (5).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w8-q14",
+          "question": "Super-loop me teen tasks har iteration chalte hain: `task_a()` 2 ms, `task_b()` 5 ms, `task_c()` 3 ms. ISR sirf ek flag set karta hai, jise `task_a()` apni shuruaat me check karta hai. Galti se `task_b()` me `delay_ms(20);` (busy-wait) bhi hai. Flag set hone se handle hone tak worst-case latency kitni hai?",
+          "options": [
+            "10 ms",
+            "25 ms",
+            "20 ms",
+            "30 ms"
+          ],
+          "answer": 3,
+          "explanation": "Worst case: flag theek us waqt set hota hai jab task A use check kar chuka ho. Ab baaki A (2 ms), B (5 + 20 = 25 ms) aur C (3 ms) chalne ke baad hi A dobara check karega: 2 + 25 + 3 = 30 ms. Traps: delay ko ignore karna (10 ms), sirf B ka time lena (25 ms), ya sirf delay ginna (20 ms). Busy-wait poore loop ka response time badha deta hai.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w8-q15",
+          "question": "Do ring buffers ke items power-of-two trick se gine ja rahe hain, ek SIZE 16 ka aur ek galti se SIZE 12 ka. 32-bit `unsigned` par is code ka output kya hoga?",
+          "code": "uint32_t h1 = 2, t1 = 13;   /* SIZE 16 */\nuint32_t h2 = 2, t2 = 9;    /* SIZE 12 */\n\nprintf(\"%u %u\\n\", (h1 - t1) & 15U, (h2 - t2) & 11U);",
+          "options": [
+            "5 5",
+            "-11 -7",
+            "5 9",
+            "11 7"
+          ],
+          "answer": 2,
+          "explanation": "Unsigned me 2 − 13 wrap hokar 0xFFFFFFF5 banta hai; & 15 = 0x5 = 5, jo (2 − 13 + 16) % 16 = 5 se match karta hai. 2 − 9 = 0xFFFFFFF9; & 11 (binary 1011) = 1001 = 9, jabki sahi count (2 − 9 + 12) % 12 = 5 hai. Power-of-two na ho to mask galat answer deta hai. Traps: dono ko sahi maan lena (5 5), unsigned me negative print hona (-11 -7), ya tail − head ginna (11 7).",
+          "difficulty": "hard"
         }
       ]
     },
@@ -1075,6 +2025,123 @@
           ],
           "answer": 3,
           "explanation": "U = 2/10 + 4/20 + 10/40 = 0.20 + 0.20 + 0.25 = 0.65. Ye 0.78 se kam hai, isliye Liu–Layland test pass: RM ke saath saari deadlines guaranteed. Traps: saare C jod kar saare T se divide karna (16/70 ≈ 0.23, ye galat formula hai); 10/40 ko 0.4 padh lena (0.80); ya 0.65 aur 0.78 ki comparison ulti kar dena.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w9-q7",
+          "question": "Ek task semaphore ka 100 ms timeout ke saath wait kar raha hai, aur abhi tak kisi ne semaphore give nahi kiya. Task kis state me hai?",
+          "options": [
+            "Running",
+            "Blocked",
+            "Ready",
+            "Suspended"
+          ],
+          "answer": 1,
+          "explanation": "Jo task kisi event (semaphore, queue, delay) ka wait kar raha ho wo Blocked hai: use CPU nahi milta jab tak event na aaye ya timeout na ho. Ready ka matlab hai 'chal sakta hai, bas CPU ka intezaar', aur Suspended tab hota hai jab task ko explicitly rok diya jaaye. Trap: wait karne wale task ko Ready samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w9-q8",
+          "question": "RTOS me `vTaskDelay(100)` jaisa delay call karne par kya hota hai?",
+          "options": [
+            "Task 100 ticks tak busy-wait loop me CPU ghumata rehta hai",
+            "Poora scheduler aur saare tasks 100 ticks ke liye ruk jaate hain",
+            "Saare interrupts 100 ticks ke liye band ho jaate hain",
+            "Task 100 ticks Blocked rehta hai aur CPU doosre tasks ko milta hai"
+          ],
+          "answer": 3,
+          "explanation": "RTOS delay task ko Blocked state me daal deta hai aur scheduler doosre Ready tasks chalata hai; tick interrupt time ginta rehta hai, aur time poora hone par task phir Ready hota hai. Busy-wait wahi galti hai jo low-priority tasks ko CPU se mehroom karti hai. Scheduler aur interrupts chalte rehte hain. Trap: RTOS delay ko super-loop wale busy-wait jaisa samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w9-q9",
+          "question": "Inme se hard real-time system ka sabse sahi example kaunsa hai?",
+          "options": [
+            "Music player, jahan kabhi-kabhi halki glitch chal jaati hai",
+            "Weather app, jo har ghante data refresh karta hai",
+            "Photo gallery, jo scroll karte waqt thumbnails load karti hai",
+            "Car ka airbag controller, jahan deadline miss hona failure hai"
+          ],
+          "answer": 3,
+          "explanation": "Hard real-time me deadline miss = system failure: airbag thodi der se khula to bekaar hai. Music player soft real-time hai (miss se quality girti hai, failure nahi), aur weather app ya gallery me time ki koi strict deadline hi nahi. Trap: 'fast' ko 'hard real-time' samajhna; asli baat deadline ki guarantee hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w9-q10",
+          "question": "RTOS ka tick rate 250 Hz hai. Ek task `delay(50)` call karta hai, jahan argument ticks me hai. Task lagbhag kitni der Blocked rahega?",
+          "options": [
+            "50 ms",
+            "200 ms",
+            "20 ms",
+            "12.5 s"
+          ],
+          "answer": 1,
+          "explanation": "250 Hz par ek tick = 1 ÷ 250 s = 4 ms. 50 ticks × 4 ms = 200 ms (yaani 50 ÷ 250 = 0.2 s). Traps: ticks ko ms maan lena (50 ms, jo 1 kHz tick par sahi hota), 1000 ÷ 50 = 20 ms jaisa ulta divide, ya ticks ko tick rate se multiply karna (50 × 250 ms = 12.5 s).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w9-q11",
+          "question": "Teen identical DMA channels share karne ke liye ek counting semaphore ka initial count 3 rakha gaya. Paanch tasks lagbhag ek saath `take` karte hain aur abhi koi `give` nahi karta. Kya hoga?",
+          "options": [
+            "Saare 5 tasks ko channel mil jaayega, kyunki semaphore sirf signal hai",
+            "Sirf 1 task ko channel milega, baaki 4 Blocked rahenge",
+            "3 tasks ko channel milega, baaki 2 Blocked rahenge jab tak koi give na kare",
+            "Count -2 ho jaayega aur saare 5 tasks bina ruke chalte rahenge"
+          ],
+          "answer": 2,
+          "explanation": "Counting semaphore N resources ginta hai: har take count 1 ghatata hai, aur count 0 hone par agla take block hota hai. 3 → 2 → 1 → 0, to teen tasks aage badhte hain aur chautha-paanchwa Blocked rehte hain. 'Sirf 1' binary semaphore/mutex ka behaviour hai, aur count negative hokar sabko nahi chalne deta. Trap: counting aur binary semaphore ko ek samajhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w9-q12",
+          "question": "Preemptive priority scheduler me teen tasks t = 0 par Ready hain: H (priority 3) har 5 ms par 1 ms chalta hai, M (priority 2) har 10 ms par 3 ms chalta hai, aur L (priority 1) background me hamesha Ready hai. Context switch time ignore karo. Pehle 10 ms me M kab khatam hota hai aur L ko kitna CPU milta hai?",
+          "options": [
+            "M t = 3 ms par khatam; L ko 6 ms milte hain",
+            "M t = 4 ms par khatam; L ko 5 ms milte hain",
+            "M t = 4 ms par khatam; L ko 4 ms milte hain",
+            "M t = 5 ms par khatam; L ko 5 ms milte hain"
+          ],
+          "answer": 1,
+          "explanation": "Timeline: 0–1 H, 1–4 M (M t = 4 par khatam), 4–5 L, 5–6 H (doosri release), 6–10 L. L ko 1 + 4 = 5 ms milte hain; check: 10 − (2 × 1) − 3 = 5. Traps: maan lena ki M pehle chalega (t = 3, L 6 ms), H ki doosri release (t = 5) bhool jaana ya do baar ginna (4 ms), ya M ko H ke doosre run ke baad khatam maanna (t = 5).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w9-q13",
+          "question": "Teen periodic tasks rate-monotonic priorities ke saath: T1 (C = 2 ms, T = 5 ms), T2 (C = 3 ms, T = 10 ms), T3 (C = 2 ms, T = 20 ms). 3 tasks ka RM bound ≈ 0.78 hai. Sahi conclusion kya hai?",
+          "options": [
+            "U = 0.80; bound se upar, to guarantee nahi, par miss pakka nahi",
+            "U = 0.80; bound se zyada, isliye deadlines pakka miss hongi",
+            "U = 0.70; bound se kam, isliye RM saari deadlines guarantee karta hai",
+            "U = 1.25; 1 se zyada, isliye system pakka overload hai"
+          ],
+          "answer": 0,
+          "explanation": "U = 2/5 + 3/10 + 2/20 = 0.4 + 0.3 + 0.1 = 0.80. Ye 0.78 se zyada hai, to RM test guarantee nahi deta, par bound sirf sufficient condition hai; U ≤ 1 hai, to tasks phir bhi schedule ho sakte hain (yahan timeline banao to sab deadlines milti hain). Traps: bound se upar ko pakka failure maanna, galat jod (0.70), ya C/T ki jagah T/C ulta lena aur 1.25 jaisa number nikaalna.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w9-q14",
+          "question": "Queue ki length 3 hai aur shuru me khaali hai. High-priority producer timeout 0 ke saath items 1, 2, 3, 4, 5 bhejta hai (beech me consumer nahi chalta). Phir consumer 2 items receive karta hai. Phir producer 6 aur 7 bhejta hai. Ab queue me kaunse items (aage se peeche) hain?",
+          "options": [
+            "5, 6, 7",
+            "3, 4, 5",
+            "3, 6, 7",
+            "6, 7"
+          ],
+          "answer": 2,
+          "explanation": "1, 2, 3 queue me jaate hain; 4 aur 5 queue full hone par timeout 0 ki wajah se turant fail hote hain (overwrite nahi). Consumer FIFO order me 1 aur 2 nikaalta hai, to sirf 3 bachta hai. Phir 6 aur 7 jagah milne par jud jaate hain: 3, 6, 7. Traps: full queue ko 'oldest overwrite' samajhna (5, 6, 7), failed sends ko baad me queue me maan lena (3, 4, 5), ya 3 ko bhi receive hua maanna (6, 7).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w9-q15",
+          "question": "Task L (priority 1) t = 0 par mutex leta hai; uske critical section me 3 ms CPU lagta hai. t = 1 ms par H (priority 3) Ready hota hai aur turant usi mutex par block ho jaata hai. t = 1.5 ms par M (priority 2, mutex nahi chahiye) Ready hota hai aur 5 ms CPU leta hai. Context switch ignore karo. H ko mutex kab milega?",
+          "options": [
+            "Inheritance ke saath t = 3 ms; bina inheritance t = 8 ms",
+            "Inheritance ke saath t = 3 ms; bina inheritance t = 6.5 ms",
+            "Inheritance ke saath t = 1 ms; bina inheritance t = 3 ms",
+            "Inheritance ke saath t = 8 ms; bina inheritance t = 3 ms"
+          ],
+          "answer": 0,
+          "explanation": "Inheritance ke saath: t = 1 par H block hota hai aur L priority 3 le leta hai, to t = 1.5 par M use preempt nahi kar sakta. L ko 2 ms aur chahiye, to t = 3 par mutex chhodta hai. Bina inheritance: L 0–1.5 tak 1.5 ms kar paata hai, phir M 1.5–6.5 chalta hai, phir L baaki 1.5 ms (6.5–8) karta hai: t = 8. Traps: L ke bache 1.5 ms bhool jaana (6.5), H ko L ko preempt karke mutex le lene dena (1 ms; mutex owner hi chhod sakta hai), ya dono cases ulat dena.",
           "difficulty": "hard"
         }
       ]
@@ -1199,6 +2266,129 @@
           "answer": 2,
           "explanation": "`id` offset 0 par (1 byte), phir `value` ko 4-byte boundary chahiye, isliye 3 bytes padding aur `value` offset 4–7 par. `crc` offset 8–9 par. Struct ka size uske sabse bade alignment (4) ka multiple hona chahiye, isliye end me 2 bytes padding: total 12. Trap: sirf members ke size jodna (1 + 4 + 2 = 7). 8 tab aata jab members `value, crc, id` order me hote.",
           "difficulty": "hard"
+        },
+        {
+          "id": "embc-w10-q7",
+          "question": "`typedef void (*cb_t)(uint8_t);` ke baad `cb_t` kya hai?",
+          "options": [
+            "Aise function ke pointer ka type jo `uint8_t` leta hai aur kuch return nahi karta",
+            "Ek function jo `uint8_t` return karta hai aur koi bhi argument nahi leta",
+            "`uint8_t` ka hi ek naya naam, bilkul `typedef uint8_t byte;` jaisa",
+            "Ek array ka type jisme `uint8_t` values ke pointers rakhe jaate hain"
+          ],
+          "answer": 0,
+          "explanation": "`(*cb_t)` batata hai ki ye pointer hai, bahar ka `void ... (uint8_t)` batata hai ki pointed function `uint8_t` leta hai aur `void` return karta hai. `typedef` ise ek type naam bana deta hai, taaki `cb_t on_rx;` likh sako. Trap: return type aur parameter ko ulat padhna, ya `typedef` ko sirf `uint8_t` ka alias samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w10-q8",
+          "question": "Driver callback call karne se pehle `if (cb != NULL)` check kyun karta hai?",
+          "options": [
+            "Is check se callback function zyada fast chalta hai aur kam stack leta hai",
+            "Agar application ne callback set nahi kiya, to NULL address par jump karke crash hoga",
+            "C me function pointer ko bina check kiye call karna compile error deta hai",
+            "Ye check callback ko apne aap interrupt-safe aur re-entrant bana deta hai"
+          ],
+          "answer": 1,
+          "explanation": "Callback optional ho sakta hai; set na ho to pointer NULL rehta hai, aur NULL ko call karna kisi invalid address par jump hai, jo fault ya crash deta hai. Check speed nahi badhata, compiler bina check ke bhi code compile karta hai, aur interrupt-safety alag cheez hai. Trap: maan lena ki compiler aisi galti pakad lega.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w10-q9",
+          "question": "`static inline` function ke baare me kya sahi hai?",
+          "options": [
+            "Compiler ko har call hamesha inline karni hi padti hai, chahe function bada ho",
+            "Ye function sirf interrupt handlers ke andar se hi call ho sakta hai",
+            "Iska matlab hai ki function ka result pehli call ke baad cache ho jaata hai",
+            "Ye compiler ko call overhead ke bina code expand karne ka hint hai, order nahi"
+          ],
+          "answer": 3,
+          "explanation": "`inline` ek suggestion hai; compiler optimisation level aur function size dekh kar decide karta hai ki expand kare ya normal call. `static` use file-private rakhta hai, jo header me chhote helpers (jaise `led_on()`) ke liye common hai. Iska interrupts ya result caching se koi sambandh nahi. Trap: `inline` ko guarantee samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w10-q10",
+          "question": "Typical 32-bit ARM compiler (natural alignment, koi packing nahi) par `sizeof(struct s)` kya hoga?",
+          "code": "struct s {\n    uint32_t b;\n    uint16_t c;\n    uint8_t  a;\n};",
+          "options": [
+            "8",
+            "7",
+            "12",
+            "6"
+          ],
+          "answer": 0,
+          "explanation": "`b` offset 0 (4 bytes), `c` offset 4 (2 bytes), `a` offset 6 (1 byte): 7 bytes data. Struct ka alignment uske sabse bade member (`uint32_t`, 4) jitna hai, isliye end me 1 byte padding: 8. Traps: tail padding bhool jaana (7), har member ko 4 bytes dena (12), ya `uint32_t` ko 3 bytes ginna (6).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w10-q11",
+          "question": "Is register map me `TIM->DR` kis address par hoga?",
+          "code": "typedef struct {\n    volatile uint32_t CR;\n    volatile uint32_t SR;\n    uint32_t RESERVED[2];\n    volatile uint32_t DR;\n} TIM_Regs;\n\n#define TIM ((TIM_Regs *)0x40013000)   /* address illustrative */",
+          "options": [
+            "0x40013008",
+            "0x4001300C",
+            "0x40013010",
+            "0x40013014"
+          ],
+          "answer": 2,
+          "explanation": "Offsets: CR 0x00, SR 0x04, RESERVED[0] 0x08, RESERVED[1] 0x0C, DR 0x10. Address = 0x40013000 + 0x10 = 0x40013010. Reserved array hardware ke gap ko bharta hai taaki DR sahi offset par aaye. Traps: reserved words ko na ginna (0x08), reserved array ko ek hi word ginna (0x0C), ya ek extra word jod dena (0x14).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w10-q12",
+          "question": "Is code ka output kya hoga?",
+          "code": "static int total = 1;\n\nvoid inc(int v) { total += v; }\nvoid dbl(int v) { (void)v; total *= 2; }\nvoid clr(int v) { (void)v; total = 0; }\n\nvoid (*table[])(int) = { inc, dbl, clr };\n\nint main(void) {\n    int cmd[] = { 0, 1, 5, 1, 0 };\n    int val[] = { 3, 0, 7, 0, 4 };\n    for (int i = 0; i < 5; i++)\n        if (cmd[i] >= 0 && cmd[i] < 3)\n            table[cmd[i]](val[i]);\n    printf(\"%d\\n\", total);\n    return 0;\n}",
+          "options": [
+            "4",
+            "20",
+            "16",
+            "34"
+          ],
+          "answer": 1,
+          "explanation": "Trace (total = 1): cmd 0 → `inc(3)` → 4. cmd 1 → `dbl` → 8. cmd 5 range check fail karta hai, skip. cmd 1 → 16. cmd 0 → `inc(4)` → 20. Traps: 5 ko kisi tarah `clr` maan lena (0, phir 0 × 2 + 4 = 4), aakhri `inc` bhool jaana (16), ya 5 ko wrap karke `inc(7)` chalana (15 → 30 → 34). Range check ki wajah se galat index par jump nahi hota.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w10-q13",
+          "question": "Typical 32-bit ARM compiler (natural alignment) par is struct ka size kya hai, aur members ko bade se chhote order me rakhne par `struct rec log[10];` me kitne bytes bachenge?",
+          "code": "struct rec {\n    uint8_t  a;\n    uint16_t b;\n    uint8_t  c;\n    uint32_t d;\n};",
+          "options": [
+            "8 bytes; kuch nahi bachega",
+            "16 bytes; 80 bytes bachenge",
+            "12 bytes; 30 bytes bachenge",
+            "12 bytes; 40 bytes bachenge"
+          ],
+          "answer": 3,
+          "explanation": "Abhi: `a` 0, padding 1, `b` 2–3, `c` 4, padding 5–7, `d` 8–11 → 12 bytes. Order `d`, `b`, `a`, `c`: offsets 0, 4, 6, 7 → 8 bytes, bina padding. Har element 4 bytes bachata hai, to 10 elements me 40 bytes. Traps: padding ignore karke sirf data (8) ginna, har member ko 4 bytes dena (16), ya bachat 3 bytes per element lena (30).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w10-q14",
+          "question": "Dono functions main code se chalte hain, aur `buf`/`head` ko ek UART ISR bhi badalta hai. Is code me kya galat hai?",
+          "code": "void log_push(uint8_t b) {\n    __disable_irq();\n    buf[head] = b;\n    head = (head + 1) & 15;\n    __enable_irq();\n}\n\nvoid send_two(uint8_t x, uint8_t y) {\n    __disable_irq();\n    log_push(x);\n    log_push(y);    /* yahan tak interrupts band hone chahiye the */\n    __enable_irq();\n}",
+          "options": [
+            "Koi bug nahi: `__disable_irq()` do baar call karne se interrupts do levels tak band rehte hain aur sahi jagah khulte hain",
+            "Asli bug ye hai ki `head` `volatile` nahi hai; critical section ka is problem se koi lena-dena nahi hai",
+            "`log_push()` ka `__enable_irq()` interrupts ko `send_two()` ke beech hi on kar deta hai; pehle wali state save karke restore karni chahiye",
+            "Interrupts band karke kisi function ko call karna C me allowed nahi, isliye ye code compile hi nahi hoga"
+          ],
+          "answer": 2,
+          "explanation": "`__disable_irq()` / `__enable_irq()` koi count nahi rakhte. Pehle `log_push(x)` ke end me `__enable_irq()` interrupts on kar deta hai, to `x` aur `y` ke beech ISR aa kar `head` badal sakta hai, jabki `send_two()` maanta hai ki dono ek atomic block me gaye. Fix: andar wale function me pehle ki interrupt state (PRIMASK) save karo aur end me wahi restore karo. Traps: nesting ko apne aap handled maan lena, `volatile` ko atomicity ka fix samajhna, ya isse compile error sochna.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w10-q15",
+          "question": "Is register map me `&ADC1->CH[2]` aur `&ADC1->IRQ` ke addresses kya honge?",
+          "code": "typedef struct {\n    volatile uint32_t CTRL;\n    volatile uint32_t STAT;\n    volatile uint32_t CH[4];\n    volatile uint32_t IRQ;\n} ADC_Regs;\n\n#define ADC1 ((ADC_Regs *)0x40012000)   /* address illustrative */",
+          "options": [
+            "CH[2] 0x4001200A, IRQ 0x4001200C",
+            "CH[2] 0x40012010, IRQ 0x40012014",
+            "CH[2] 0x4001200C, IRQ 0x40012018",
+            "CH[2] 0x40012010, IRQ 0x40012018"
+          ],
+          "answer": 3,
+          "explanation": "CTRL 0x00, STAT 0x04, CH[0] 0x08. Har element 4 bytes, to CH[2] = 0x08 + 2 × 4 = 0x10. CH[4] poora 16 bytes leta hai (0x08–0x17), isliye IRQ 0x18 par. Addresses: 0x40012010 aur 0x40012018. Traps: array index ko bytes me ginna (0x0A aur 0x0C), IRQ ko CH[3] ki jagah rakh dena (0x14), ya CH[2] ko struct ka teesra word samajhna (0x0C).",
+          "difficulty": "hard"
         }
       ]
     },
@@ -1316,6 +2506,123 @@
           ],
           "answer": 1,
           "explanation": "Flash = text + rodata + data = 0x3A20 + 0x0400 + 0x0120 = 0x3F40 = 16192 bytes, jo 16384 me fit hai (sirf 192 bytes bache). RAM = data + bss + stack = 0x0120 + 0x0860 + 0x0400 = 0xD80 = 3456 bytes, jo 4096 me fit hai. Traps: `.data` ki initial values ko Flash me na ginna (15904), `.bss` ko Flash me jodna (18336), ya `.rodata` ko RAM me bhi gin lena (4480).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w11-q7",
+          "question": "Code me ek semicolon chhoot gaya hai. Ye error build ke kis stage par pakda jaayega?",
+          "options": [
+            "Compiler",
+            "Linker",
+            "Debugger",
+            "Flash programmer"
+          ],
+          "answer": 0,
+          "explanation": "Syntax errors compiler pakadta hai jab wo `.c` file ko parse karta hai; isse `.o` file banti hi nahi. Linker sirf objects jodta hai aur missing definitions ('undefined reference') pakadta hai. Debugger aur programmer build ke baad aate hain. Trap: har build error ko linker ka maan lena.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w11-q8",
+          "question": "Ek global variable kahin se galat value se overwrite ho raha hai, par pata nahi kaunsa code ye kar raha hai. Sabse direct debugging tool kaunsa hai?",
+          "options": [
+            "Har function ke andar `printf` daal dena",
+            "Watchdog ka timeout thoda badha dena",
+            "Oscilloscope se power supply ki ripple dekhna",
+            "Us variable ke address par write watchpoint"
+          ],
+          "answer": 3,
+          "explanation": "Watchpoint us address par write hote hi CPU rok deta hai, aur debugger wahi instruction dikhata hai jo likh rahi hai. `printf` har jagah daalna slow hai aur timing badal kar bug chhupa sakta hai. Watchdog aur oscilloscope is sawaal ka jawab nahi dete. Trap: hardware tool ko memory-corruption bug par lagana.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w11-q9",
+          "question": "Ek SPI bus ki chaaron lines (SCLK, MOSI, MISO, CS) ek saath record karke bytes decode karne hain. Kaunsa instrument sabse sahi hai?",
+          "options": [
+            "Oscilloscope ka sirf 1 channel",
+            "Digital multimeter",
+            "Logic analyser",
+            "Watchdog timer"
+          ],
+          "answer": 2,
+          "explanation": "Logic analyser kai digital lines ek saath 0/1 me record karta hai aur SPI/I2C/UART decode kar deta hai. Ek channel ka scope ek hi line dikhata hai, multimeter average voltage deta hai, aur watchdog debugging instrument hi nahi. Trap: scope ko har signal problem ka jawab samajhna; scope analog detail (noise, ringing) ke liye best hai.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w11-q10",
+          "question": "Watchdog ka clock 32 kHz hai, prescaler 32, aur reload value 4095 counts hai. Timeout lagbhag kitna hoga?",
+          "options": [
+            "≈ 4.1 s",
+            "≈ 0.13 s",
+            "≈ 131 s",
+            "≈ 0.41 s"
+          ],
+          "answer": 0,
+          "explanation": "Counter clock = 32,000 ÷ 32 = 1000 Hz, yaani ek count = 1 ms. Timeout = 4095 × 1 ms ≈ 4.1 s. Traps: prescaler bhool jaana (4095 ÷ 32,000 ≈ 0.13 s), prescaler se divide ki jagah multiply karke ms me ginna (≈ 131 s), ya factor 10 ki galti (0.41 s).",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w11-q11",
+          "question": "Logic analyser se 4 MHz SPI clock record karna hai. 'Kam se kam 4 guna' rule ke hisaab se minimum sampling rate kya honi chahiye?",
+          "options": [
+            "4 MHz",
+            "8 MHz",
+            "1 MHz",
+            "16 MHz"
+          ],
+          "answer": 3,
+          "explanation": "Sampling rate ≥ 4 × 4 MHz = 16 MHz, taaki har clock high aur low ke dauraan kam se kam do samples aayein aur edges saaf dikhein. 4 MHz par har period ka ek hi sample hoga aur clock dikhega hi nahi; 8 MHz Nyquist jaisi bare minimum hai jo timing me galtiyaan deti hai; 1 MHz signal se bhi dheema hai. Trap: sampling rate ko signal frequency ke barabar rakhna.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w11-q12",
+          "question": "Watchdog clock 40 kHz hai, prescaler 4, 8, 16, 32 ya 64 ho sakta hai, aur reload value 12-bit (max 4095) hai. Main loop ka worst-case 2.5 s hai aur timeout lagbhag 3 s chahiye. Kaunsi setting sahi hai?",
+          "options": [
+            "Prescaler 16, reload 7500",
+            "Prescaler 64, reload 3750",
+            "Prescaler 32, reload 3750",
+            "Prescaler 32, reload 3000"
+          ],
+          "answer": 2,
+          "explanation": "Prescaler 32: count = 32 ÷ 40,000 = 0.8 ms, to 3 s ke liye 3000 ÷ 0.8 = 3750 counts, jo 4095 me fit hai. Prescaler 16 (0.4 ms) ke liye 7500 chahiye, jo 12-bit se bada hai. Prescaler 64 ke saath 3750 counts = 6 s, zarurat se double. Prescaler 32 ke saath reload 3000 = 2.4 s, jo 2.5 s ke worst-case loop se kam hai, to normal chalne par bhi reset aa sakta hai. Trap: counts aur time ko mix karna.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w11-q13",
+          "question": "Ek global table `uint16_t sine[1024] = { ... };` hai. Developer use `const uint16_t sine[1024] = { ... };` bana deta hai (code me koi aur badlaav nahi). Flash aur RAM usage par kya asar padega?",
+          "options": [
+            "Flash 2048 bytes kam hoga, RAM same rahegi",
+            "Flash same rahega, RAM 2048 bytes kam ho jaayegi",
+            "Flash aur RAM dono 2048 bytes kam honge",
+            "Flash 2048 bytes badhega, RAM 2048 bytes kam hogi"
+          ],
+          "answer": 1,
+          "explanation": "Pehle table `.data` me thi: 1024 × 2 = 2048 bytes initial values Flash me aur 2048 bytes runtime copy RAM me. `const` ke baad wo `.rodata` me hai: sirf Flash me 2048 bytes, RAM me kuch nahi. To Flash ka total wahi, RAM 2048 bytes kam. Traps: maan lena ki `.data` Flash nahi leta (Flash ghatega), dono ko ghata dena, ya `.rodata` ko extra Flash samajhna.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w11-q14",
+          "question": "1 ms ke periodic loop me `filter()` ke pehle ek GPIO high aur baad me low kiya gaya. Scope par high pulse 340 µs ka dikhta hai. Ab koi har iteration me 40 characters ka blocking `printf` (UART 115200 baud, 8N1) jodna chahta hai. Sahi analysis kya hai?",
+          "options": [
+            "`filter()` 340 µs leta hai (34% load); printf ≈ 0.35 ms lega, to aaram se fit ho jaayega",
+            "`filter()` 660 µs leta hai (66% load); printf ≈ 2.78 ms lega, to fit nahi hoga",
+            "`filter()` 340 µs leta hai (34% load); printf ≈ 3.47 ms lega, jo 1 ms period me fit nahi",
+            "`filter()` 340 µs leta hai (3.4% load); printf ≈ 3.47 ms lega, phir bhi fit ho jaayega"
+          ],
+          "answer": 2,
+          "explanation": "High pulse ki width hi `filter()` ka time hai: 340 µs, yaani 1 ms period ka 34%. Printf: 40 × 10 bits = 400 bits ÷ 115,200 ≈ 3.47 ms, jo poore 1 ms period se bhi zyada hai, to loop deadline miss karega. Traps: low time ko function time lena (660 µs), har character ko 1 ya 8 bits ginna (0.35 ya 2.78 ms), ya percentage me factor 10 ki galti (3.4%).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w11-q15",
+          "question": "`main.c` `adc.h` include karta hai aur `adc_read()` call karta hai; `adc.h` me `uint16_t adc_read(void);` declared hai. `adc.c` (jo `adc.h` include nahi karta) me function `static uint16_t adc_read(void) { ... }` define hai. Build karne par kya hoga?",
+          "options": [
+            "`main.c` compile hi nahi hogi, kyunki compiler ko pata chal jaata hai ki `adc.c` me function `static` hai",
+            "Dono files compile hongi, par linker 'undefined reference' dega: `static` function file ke bahar nahi dikhta",
+            "Build pass ho jaayega, par runtime par `adc_read()` hamesha garbage ya 0 return karega",
+            "Preprocessor error aayega, kyunki `adc.h` ke declaration me `static` nahi likha aur dono mismatch hain"
+          ],
+          "answer": 1,
+          "explanation": "Har `.c` alag compile hota hai: `main.c` ko header se declaration mil jaata hai, to wo theek compile hoti hai aur `adc_read` ke liye external reference chhodti hai. `adc.c` bhi compile hoti hai, par `static` function ko private (internal) bana deta hai. Link ke waqt koi external `adc_read` nahi milta: 'undefined reference to adc_read'. Traps: compiler ko doosri file ka andar ka haal pata hona maan lena, build pass maanna, ya ise preprocessor ka masla samajhna.",
           "difficulty": "hard"
         }
       ]
@@ -1437,6 +2744,128 @@
           ],
           "answer": 2,
           "explanation": "`int` aur `unsigned int` compare karne par C ke usual arithmetic conversions `temp` ko unsigned me badal dete hain: -5 ban jaata hai 2³² − 5 = 4294967291, jo 10 se bada hai. Isliye condition false aur TOO HIGH print hota hai. Ye conversion well-defined hai (undefined nahi), aur compiler sirf sign-compare warning deta hai. Trap: maths ki tarah -5 < 10 maan kar OK bolna. Fix: dono ko same signed type me compare karo.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w12-q7",
+          "question": "Release se ek din pehle aapko pata chalta hai ki ek rare case me infusion pump ka sensor fault detect nahi hota. Professional tareeka kya hai?",
+          "options": [
+            "Issue document karo, team aur manager ko turant batao, aur fix-testing plan banao",
+            "Chup raho, kyunki case rare hai aur release ki deadline is waqt zyada important hai",
+            "Release notes se us feature ka zikr hata do par code waisa hi rehne do",
+            "Bug ko agle version tak chhupa kar rakho taaki launch bina ruke ho jaaye"
+          ],
+          "answer": 0,
+          "explanation": "Medical device me fault detect na hona kisi ki jaan ke liye khatra hai. Safety problem ko chhupana ya deadline ke pressure me skip karna unethical hai; sahi raasta hai issue document karna, turant escalate karna aur fix verify karna. 'Rare' hone se risk khatam nahi hota. Trap: schedule ko safety se upar rakhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w12-q8",
+          "question": "Compiler warnings (jaise `-Wall -Wextra` se) ke saath safety-critical code me sabse achhi practice kya hai?",
+          "options": [
+            "Warnings band kar do taaki build output saaf dikhe",
+            "Warnings on rakho aur unhe errors jaisa treat karke fix karo",
+            "Sirf woh warnings dekho jo linker deta hai, compiler ki nahi",
+            "Warnings ignore karo jab tak program sahi chalta dikhe"
+          ],
+          "answer": 1,
+          "explanation": "Warnings aksar asli bugs dikhate hain: signed/unsigned compare, uninitialised variables, unused results. Unhe errors jaisa treat karne se ye bugs hardware tak nahi pahunchte. Band karna ya 'chal to raha hai' soch kar ignore karna problem chhupata hai. Trap: warning ko cosmetic samajhna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w12-q9",
+          "question": "Testing me jaan-boojh kar sensor ka cable nikaal diya jaata hai ya corrupt message bheja jaata hai, ye dekhne ke liye ki system safe state me jaata hai ya nahi. Is testing ko kya kehte hain?",
+          "options": [
+            "Boundary value testing",
+            "Fault injection",
+            "Code review",
+            "Performance benchmarking"
+          ],
+          "answer": 1,
+          "explanation": "Fault injection me jaan-boojh kar faults (disconnect, corrupt data, power glitch) daal kar dekhte hain ki system unhe pehchaan kar safe state me jaata hai. Boundary testing input ki limits check karti hai, code review insaan code padhte hain, aur benchmarking speed naapti hai. Trap: har 'unusual input' test ko boundary testing kehna.",
+          "difficulty": "easy"
+        },
+        {
+          "id": "embc-w12-q10",
+          "question": "Is loop ke baare me kya sahi hai?",
+          "code": "uint8_t i;\nfor (i = 10; i >= 0; i--) {\n    beep();\n}",
+          "options": [
+            "Loop kabhi khatam nahi hoga: `uint8_t` hamesha >= 0 hai, 0 ke baad 255 banta hai",
+            "Loop 11 baar chalega, i = 10 se i = 0 tak, aur phir normally ruk jaayega",
+            "Loop sirf 10 baar chalega, kyunki i = 0 hote hi condition false ho jaati hai",
+            "Compile error aayega, kyunki `uint8_t` variable ko ghataya nahi ja sakta"
+          ],
+          "answer": 0,
+          "explanation": "Unsigned value kabhi negative nahi hoti, isliye `i >= 0` hamesha true hai. i = 0 par `i--` wrap karke 255 bana deta hai aur loop phir se chalta rehta hai. Signed `int` hota to loop 11 baar chal kar rukta. Compiler aksar is par warning bhi deta hai ('comparison is always true'). Trap: signed loop ka hisaab unsigned par lagana.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w12-q11",
+          "question": "Is function me sabse bada defensive-coding issue kya hai?",
+          "code": "int average(const int *a, int n)\n{\n    int s = 0;\n    for (int i = 0; i < n; i++)\n        s += a[i];\n    return s / n;\n}",
+          "options": [
+            "Loop `i <= n` tak chalna chahiye, warna array ka aakhri element chhoot jaayega",
+            "`const` lagane se array padha nahi ja sakta, isliye use hata dena chahiye",
+            "Function `int` return karta hai, isliye isme koi problem ho hi nahi sakti",
+            "`n == 0` par zero se divide hoga aur `a` NULL ho sakta hai; pehle dono check karo"
+          ],
+          "answer": 3,
+          "explanation": "Khaali array (n = 0) aane par `s / n` zero se divide hai, jo MCU par fault de sakta hai; aur NULL pointer se padhna bhi crash hai. Defensive version pehle `a == NULL || n <= 0` check karke error return karta hai. `i < n` bilkul sahi hai (`<=` ek element bahar padhega), aur `const` sirf likhne se rokta hai, padhne se nahi. Trap: off-by-one ko 'fix' karke asli bug bana dena.",
+          "difficulty": "medium"
+        },
+        {
+          "id": "embc-w12-q12",
+          "question": "32-bit `int` wale target par is code ka output kya hoga?",
+          "code": "int t[3] = { -3, 5, 12 };\nunsigned int lim = 10;\nint count = 0;\n\nfor (int i = 0; i < 3; i++)\n    if (t[i] > lim)\n        count++;\n\nprintf(\"%d\\n\", count);",
+          "options": [
+            "1",
+            "3",
+            "2",
+            "0"
+          ],
+          "answer": 2,
+          "explanation": "`int` aur `unsigned int` compare karne par `int` unsigned me convert hota hai. -3 ban jaata hai 4294967293, jo 10 se bada hai, to count hota hai. 5 > 10 false, 12 > 10 true. Count = 2. Traps: normal maths ki tarah sochna (sirf 12, to 1), sab ko bada maan lena (3), ya maan lena ki negative value comparison ko hi tod deti hai (0). Fix: `lim` ko `int` rakho ya pehle negative check karo.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w12-q13",
+          "question": "Har call me READY bit pehli 3 reads par 0 aur 4th read par 1 milta hai. `wait_ready(3)` aur `wait_ready(5)` kya return karenge?",
+          "code": "int wait_ready(uint32_t max_loops)\n{\n    uint32_t n = 0;\n    while (!(STATUS & READY)) {\n        if (++n >= max_loops)\n            return -1;          /* timeout */\n    }\n    return (int)n;\n}",
+          "options": [
+            "3 aur 3",
+            "-1 aur 4",
+            "-1 aur 3",
+            "-1 aur -1"
+          ],
+          "answer": 2,
+          "explanation": "`wait_ready(3)`: read 1 (0) → n = 1, read 2 (0) → n = 2, read 3 (0) → n = 3, aur 3 ≥ 3 to -1 (timeout). `wait_ready(5)`: teen reads 0 dete hain (n = 1, 2, 3, koi bhi 5 tak nahi), 4th read par READY 1 hai, loop rukta hai aur n = 3 return hota hai. Traps: maan lena ki check increment se pehle hota hai (jaise `n++ >= max_loops`), jisse `wait_ready(3)` bhi 4th read tak pahunch kar 3 deta (3 aur 3); n ko reads ki ginti samajhna (4); ya maan lena ki pehli 3 zero reads dono calls ko timeout kara dengi (-1 aur -1).",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w12-q14",
+          "question": "Heater ke do temperature sensors A aur B hain. Rule: agar koi reading 0–150 °C ke bahar ho, ya |A − B| > 5 °C ho, to fault maan kar heater band karo. Chaar cases: (1) A = 72, B = 75; (2) A = 80, B = 88; (3) A = 151, B = 149; (4) A = 40, B = 44. Kin cases me heater band hoga?",
+          "options": [
+            "Sirf case 2",
+            "Sirf case 2 aur 3",
+            "Case 2, 3 aur 4",
+            "Sirf case 3"
+          ],
+          "answer": 1,
+          "explanation": "Case 1: dono range me, fark 3 ≤ 5: OK. Case 2: fark 8 > 5: fault (sensors aapas me nahi milte). Case 3: fark sirf 2, par A = 151 range ke bahar: fault. Case 4: fark 4 ≤ 5: OK. To heater 2 aur 3 me band. Traps: sirf difference check karna (case 3 miss), sirf range check karna (case 2 miss), ya 4 ke fark ko bhi fault ginna.",
+          "difficulty": "hard"
+        },
+        {
+          "id": "embc-w12-q15",
+          "question": "Memory me ek bit-flip se `m` ki value 7 ho jaati hai. `duty_for(1)` aur `duty_for(7)` kya return karenge, aur safety ke hisaab se sahi fix kya hai?",
+          "code": "typedef enum { HEAT_OFF = 0, HEAT_LOW = 1, HEAT_HIGH = 2 } heat_mode_t;\n\nint duty_for(int m)\n{\n    int d = 100;\n    switch (m) {\n    case HEAT_OFF:  d = 0;  break;\n    case HEAT_LOW:  d = 30; break;\n    case HEAT_HIGH: d = 80; break;\n    }\n    return d;\n}",
+          "options": [
+            "30 aur 0; `switch` kisi bhi invalid value par apne aap 0 return kar deta hai",
+            "30 aur 80; invalid value hamesha aakhri `case` me chali jaati hai",
+            "100 aur 100; `switch` `int` argument par kaam nahi karta, isliye d badalta hi nahi",
+            "30 aur 100; corrupt value par heater full power par chalega, `default:` me safe value 0 do"
+          ],
+          "answer": 3,
+          "explanation": "`duty_for(1)` HEAT_LOW case me jaata hai: 30. 7 kisi case se match nahi karta aur koi `default` nahi, to d apni shuruaati value 100 par rehta hai: heater full power, jo sabse unsafe output hai. Defensive fix: `default: d = 0;` (aur fault report), aur initial value bhi safe rakho. Traps: maan lena ki `switch` khud 0 deta hai, invalid value aakhri case me girti hai, ya `int` par `switch` nahi chalta.",
           "difficulty": "hard"
         }
       ]
