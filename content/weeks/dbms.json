@@ -120,6 +120,124 @@
           "explanation": "Index aur file organisation dono sirf ye batate hain ki data disk par kaise rakha aur dhoondha jaata hai, isliye (i) aur (ii) physical changes hain. Column add karna (iii) aur table todna (iv) relations ka design badalte hain, yaani logical schema. Option C ka trap: 'naya column purani queries ko nahi todta' isliye use physical maan lena; queries na tootna logical data independence hai, change phir bhi logical hai. Option A index ko hi physical maanta hai aur file organisation bhool jaata hai.",
           "difficulty": "hard",
           "id": "dbms-w1-q6"
+        },
+        {
+          "question": "Inmein se kaunsa statement DDL (Data Definition Language) ka hai?",
+          "options": [
+            "`SELECT name FROM student;`",
+            "`UPDATE student SET cgpa = 9;`",
+            "`ALTER TABLE student ADD phone VARCHAR(15);`",
+            "`DELETE FROM student WHERE roll = 7;`"
+          ],
+          "answer": 2,
+          "explanation": "DDL schema define ya badalti hai: `CREATE`, `ALTER`, `DROP`. `ALTER TABLE ... ADD` naya column jod kar table ka structure badalta hai, isliye ye DDL hai. `SELECT`, `UPDATE` aur `DELETE` teeno DML hain: ye data padhte ya badalte hain, structure nahi. Option D ka trap: `DELETE` mein 'hatana' sun kar use `DROP` jaisa maan lena; `DELETE` sirf rows hatata hai, table wahi rehti hai.",
+          "difficulty": "easy",
+          "id": "dbms-w1-q7"
+        },
+        {
+          "question": "Ek fictional startup kehta hai: 'Hamara saara customer data PostgreSQL mein hai.' Is sentence mein PostgreSQL kya hai?",
+          "options": [
+            "Database, yaani stored data ka collection",
+            "DBMS, yaani woh software jo data store, query aur protect karta hai",
+            "Data model, yaani data describe karne ke concepts",
+            "Schema, yaani tables aur columns ka design"
+          ],
+          "answer": 1,
+          "explanation": "PostgreSQL ek **DBMS** hai: woh software jo data ko store karta hai, queries chalata hai, transactions aur recovery sambhalta hai. Startup ka customer data khud database hai, jo is DBMS ke andar rehta hai. Option A ka trap database aur DBMS ko ek hi cheez bolna hai. Option C galat hai kyunki PostgreSQL relational data model ko implement karta hai, khud model nahi hai; aur schema (option D) startup ki apni tables ka design hai.",
+          "difficulty": "easy",
+          "id": "dbms-w1-q8"
+        },
+        {
+          "question": "Ek fictional shopping app ke product catalog mein har product ke fields alag hain: phone ke paas `battery` aur `ram`, shirt ke paas `size` aur `fabric`. Data ko JSON documents mein rakhna hai. Kaunsa data model sabse fit hai?",
+          "options": [
+            "Semi-structured model",
+            "Network model",
+            "Hierarchical model",
+            "Physical storage model"
+          ],
+          "answer": 0,
+          "explanation": "Jab har record ke fields alag ho sakte hain aur data JSON/XML jaisa hai, to ye **semi-structured** data model hai. Network aur hierarchical models purane (historical) models hain jo records ko fixed links/tree mein baandhte hain, alag-alag fields ke liye nahi bane. Option D ka trap: 'physical' sun kar use data model maan lena; physical level batata hai data disk par kaise rakha hai, ye data describe karne wala model nahi hai.",
+          "difficulty": "easy",
+          "id": "dbms-w1-q9"
+        },
+        {
+          "question": "Ek fictional college mein apps `student_info` view par queries chalate hain. DBA `student(roll, name, phone, city)` table ko `student_core(roll, name)` aur `student_contact(roll, phone, city)` mein tod deta hai, aur view ko dobara define karta hai taaki woh dono tables ka join ho. Apps ki ek bhi query nahi badli. Ye kiska example hai?",
+          "options": [
+            "Physical data independence",
+            "Data isolation",
+            "Atomicity",
+            "Logical data independence"
+          ],
+          "answer": 3,
+          "explanation": "Table todna logical (conceptual) schema ka change hai. Apps view (external) level par the, aur sirf view→logical mapping (view ki definition) badli, isliye apps nahi tootin: ye **logical data independence** hai, aur views isme madad karte hain. Option A ka trap: 'apps nahi badle' dekh kar physical data independence bol dena; physical tab hota jab sirf storage ya index badalta. Data isolation (option B) file-processing ki problem hai, koi guarantee nahi.",
+          "difficulty": "medium",
+          "id": "dbms-w1-q10"
+        },
+        {
+          "question": "Ek fictional bank mein rule hai 'balance kabhi negative nahi hoga'. Ye check teen alag Python programs (ATM, net banking, branch) ke andar likha hai, aur data CSV files mein hai. Naya UPI program banaya gaya jisme ye check likhna bhool gaye, aur kuch balances negative ho gaye. File-processing system ki kaunsi dikkat yahan dikh rahi hai?",
+          "options": [
+            "Concurrent-access anomaly",
+            "Atomicity ki kami",
+            "Data isolation",
+            "Integrity problem: rule har program ke code mein daba hai"
+          ],
+          "answer": 3,
+          "explanation": "Integrity rule (balance ≥ 0) data ke saath ek jagah nahi, balki har program mein alag-alag likha hai; naya program use bhool gaya to rule toot gaya. Ye **integrity problem** hai. DBMS mein `CHECK (balance >= 0)` schema mein likha jaata hai aur har program par apne aap lagta hai. Option A ka trap: yahan do users ek saath update nahi kar rahe, sirf ek program mein check missing hai. Option B galat hai kyunki koi adhoora kaam ya crash nahi hua.",
+          "difficulty": "medium",
+          "id": "dbms-w1-q11"
+        },
+        {
+          "question": "Chaar statements ek ke baad ek chalte hain. Inmein se kaunse **data dictionary** (system catalog) mein stored metadata badalte hain?",
+          "code": "(i)   CREATE INDEX idx_city ON customer(city);\n(ii)  INSERT INTO customer VALUES (41, 'Tara', 'Pune');\n(iii) ALTER TABLE customer ADD COLUMN email VARCHAR(60);\n(iv)  UPDATE customer SET city = 'Agra' WHERE id = 41;",
+          "options": [
+            "Sirf (iii)",
+            "(i) aur (iii)",
+            "(ii) aur (iv)",
+            "(i), (ii), (iii) aur (iv)"
+          ],
+          "answer": 1,
+          "explanation": "Data dictionary schema ka metadata rakhti hai: kaunsi tables, columns, types, constraints aur indexes hain. (i) naya index banata hai, jiski entry catalog mein jaati hai; (iii) table mein naya column jodta hai. Dono DDL hain. (ii) aur (iv) DML hain: ye sirf instance (rows) badalte hain, metadata nahi. Option A ka trap: index ko 'sirf physical cheez' maan kar catalog se bahar samajhna; physical structures ka metadata bhi catalog mein hi rehta hai. Option D rows badalne ko schema change samajh leta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w1-q12"
+        },
+        {
+          "question": "Fictional HR app sirf view `hr_view` par queries chalata hai, jo `SELECT name, salary FROM employee` hai. Ab DBA logical schema mein `employee` ka column `salary` rename karke `monthly_pay` kar deta hai. HR app ki queries ko bina badle chalane ke liye kam se kam kya badalna padega?",
+          "options": [
+            "Sirf view ki definition, yaani view→logical mapping",
+            "HR app ki saari queries jo `salary` use karti hain",
+            "Logical→physical mapping aur disk par stored files",
+            "Kuch nahi; physical data independence ise khud sambhal leti hai"
+          ],
+          "answer": 0,
+          "explanation": "App view (external) level par hai aur view ka column `salary` hi rehna chahiye. Isliye view ko `SELECT name, monthly_pay AS salary FROM employee` ki tarah dobara define karo: sirf view→logical mapping badli, app wahi rahi. Ye logical data independence hai. Option B ka trap ye maanna hai ki logical change hamesha app tod deta hai; views isi jhatke ko absorb karte hain. Option C galat hai kyunki rename se disk ka data nahi badalta, aur option D ka trap physical aur logical data independence ko mila dena hai: change logical level par hua hai.",
+          "difficulty": "hard",
+          "id": "dbms-w1-q13"
+        },
+        {
+          "question": "Ek query ke dauraan teen kaam hote hain: (i) user Neel ko `salary` column padhne ki permission nahi hai, isliye query reject hoti hai; (ii) ek doosre user ke transfer ke beech crash hua, restart par uska adhoora kaam undo hota hai; (iii) plan ko jo block chahiye woh memory mein nahi hai, use disk se laaya jaata hai. Ye kaam kramashah storage manager ke kaunse hisse karte hain?",
+          "options": [
+            "Query optimizer, file manager, DDL interpreter",
+            "Authorization aur integrity manager, buffer manager, transaction manager",
+            "Authorization aur integrity manager, transaction manager, buffer manager",
+            "DML compiler, transaction manager, buffer manager"
+          ],
+          "answer": 2,
+          "explanation": "(i) kaun kya padh sakta hai, ye **authorization aur integrity manager** check karta hai. (ii) crash ke baad adhoore transaction ko undo karna atomicity hai, jo **transaction manager** (recovery ke saath) sambhalta hai. (iii) disk se block memory mein laana **buffer manager** ka kaam hai. Option B mein (ii) aur (iii) ulte hain: buffer manager undo nahi karta. Option D ka trap: DML compiler query ko plan mein badalta hai, permission check nahi karta. Option A ke components query processor ke hisse ya galat kaam wale hain.",
+          "difficulty": "hard",
+          "id": "dbms-w1-q14"
+        },
+        {
+          "question": "Fictional wallet app (DBMS ke saath) mein shuru mein Riya ₹2000, Kabir ₹1000 aur Meera ₹500 hain. Transaction T1: Riya → Kabir ₹300, COMMIT ho gaya. Phir T2: Kabir → Meera ₹400; Kabir wala UPDATE chal gaya par Meera wale UPDATE aur COMMIT se pehle server crash ho gaya. Recovery ke baad balances kya honge?",
+          "options": [
+            "Riya 1700, Kabir 900, Meera 500",
+            "Riya 2000, Kabir 1000, Meera 500",
+            "Riya 1700, Kabir 900, Meera 900",
+            "Riya 1700, Kabir 1300, Meera 500"
+          ],
+          "answer": 3,
+          "explanation": "T1 commit ho chuka tha, isliye **durability** se uske changes rehte hain: Riya 1700, Kabir 1300. T2 commit nahi hua, isliye **atomicity** se uska aadha kaam (Kabir −400) undo hota hai: Kabir wapas 1300, Meera 500. Total 3500, shuru jaisa. Option A crash ke waqt ki adhoori state hai (₹400 gayab): yahi file-system wali galti hai. Option B committed T1 ko bhi undo kar deta hai, jo durability todta hai. Option C maan leta hai ki T2 poora ho gaya.",
+          "difficulty": "hard",
+          "id": "dbms-w1-q15"
         }
       ]
     },
@@ -246,6 +364,127 @@
           "explanation": "A wale superkeys: A ke saath B, C, D mein se koi bhi subset, 2³ = 8. {B, C} wale superkeys: B, C ke saath A, D mein se koi bhi subset, 2² = 4. Dono mein common sets (jinme A, B, C teeno hain) {A,B,C} aur {A,B,C,D} = 2. Inclusion–exclusion: 8 + 4 − 2 = 10. Option B ka trap common sets ko do baar ginna hai; option A sirf A wale superkeys ginta hai, aur option D candidate keys ko superkeys samajh leta hai.",
           "difficulty": "hard",
           "id": "dbms-w2-q6"
+        },
+        {
+          "question": "SQL mein kisi column par `PRIMARY KEY` lagane ka kya matlab hai?",
+          "options": [
+            "Values unique honi chahiye aur NULL allowed nahi hai",
+            "Values unique honi chahiye, par ek row mein NULL chal jaata hai",
+            "Sirf NULL allowed nahi; duplicate values chal jaati hain",
+            "Column ko doosri table ka foreign key bana diya gaya hai"
+          ],
+          "answer": 0,
+          "explanation": "Primary key designer ki chuni hui candidate key hai, aur SQL use `UNIQUE` + `NOT NULL` ki tarah enforce karta hai: har row alag pehchaani jaaye, aur pehchaan kabhi 'pata nahi' na ho. Option B ka trap `UNIQUE` aur `PRIMARY KEY` ko mila dena hai; akela `UNIQUE` NULL allow karta hai, primary key nahi. Option D foreign key (`REFERENCES`) ki baat hai, jo bilkul alag constraint hai.",
+          "difficulty": "easy",
+          "id": "dbms-w2-q7"
+        },
+        {
+          "question": "Condition `WHERE name LIKE '%an'` inmein se kis naam ko match karegi? (Saare naam case-sensitive comparison mein jaise likhe hain waise hi compare hote hain.)",
+          "options": [
+            "Ananya",
+            "Sanya",
+            "Anand",
+            "Karan"
+          ],
+          "answer": 3,
+          "explanation": "`'%an'` ka matlab: shuru mein kuch bhi (zero ya zyada characters), aur aakhri do characters theek `an`. Karan `an` par khatam hota hai, isliye match. Ananya aur Sanya `ya` par khatam hote hain, aur Anand `nd` par. Option A aur C ka trap `%an` ko 'kahin bhi an' padhna hai; woh pattern `'%an%'` hota.",
+          "difficulty": "easy",
+          "id": "dbms-w2-q8"
+        },
+        {
+          "question": "SQL condition `dept = 'CS' OR dept = 'EE' AND salary > 60000` kaise evaluate hoti hai?",
+          "options": [
+            "(dept = 'CS' OR dept = 'EE') AND salary > 60000",
+            "dept = 'CS' OR (dept = 'EE' AND salary > 60000)",
+            "Error aata hai, kyunki AND aur OR ke saath brackets zaroori hain",
+            "Left se right: pehle OR, phir uske result par AND"
+          ],
+          "answer": 1,
+          "explanation": "SQL mein `AND` ki precedence `OR` se zyada hai, isliye `dept = 'EE' AND salary > 60000` pehle judta hai, phir uska `OR` `dept = 'CS'` ke saath. Matlab saare CS log aate hain (salary kuch bhi), aur EE se sirf 60000 se zyada wale. Option A wahi hai jo aksar likhne wala chahta hai, par uske liye brackets likhne padte hain. Option D ka trap arithmetic jaisa left-to-right padhna hai.",
+          "difficulty": "easy",
+          "id": "dbms-w2-q9"
+        },
+        {
+          "question": "`emp.dept_id` par `REFERENCES dept(dept_id) ON DELETE CASCADE` laga hai. Data neeche hai. `DELETE FROM dept WHERE dept_id = 'D1';` chalne par dono tables mein milakar kitni rows delete hongi?",
+          "code": "dept: ('D1','Sales'), ('D2','Ops')\nemp : (1,'Asha','D1'), (2,'Ravi','D2'), (3,'Neha','D1'),\n       (4,'Omar','D1'), (5,'Lina',NULL)",
+          "options": [
+            "1",
+            "3",
+            "4",
+            "Delete reject ho jaayega"
+          ],
+          "answer": 2,
+          "explanation": "`ON DELETE CASCADE` ka matlab: parent row hatao to use refer karne wali child rows bhi hat jaayengi. D1 ki dept row (1) ke saath Asha, Neha aur Omar (3) bhi delete hote hain: kul 4. Lina ka `dept_id` NULL hai, woh kisi ko refer nahi karti, isliye bachti hai; Ravi D2 mein hai. Option D ka trap default (NO ACTION) behaviour yaad rakhna hai; CASCADE ke saath reject nahi hota. Option B sirf child rows ginta hai aur dept wali row bhool jaata hai.",
+          "difficulty": "medium",
+          "id": "dbms-w2-q10"
+        },
+        {
+          "question": "`customer` table ka abhi ka instance neeche hai. Sirf is instance ko dekh kar kaunse attribute set ke baare mein pakka kaha ja sakta hai ki woh candidate key **nahi** hai?",
+          "code": "customer\nid | email   | name | city\n1  | a@x.com | Ira  | Pune\n2  | b@x.com | Dev  | Pune\n3  | c@x.com | Ira  | Agra",
+          "options": [
+            "{name}",
+            "{id}",
+            "{email}",
+            "{name, city}"
+          ],
+          "answer": 0,
+          "explanation": "Instance se key sirf **disprove** ho sakti hai. {name} mein 'Ira' do baar aaya, isliye woh superkey bhi nahi, candidate key to bilkul nahi. {id}, {email} aur {name, city} is instance mein unique hain: ho sakta hai woh keys hon, ho sakta hai na hon; ye business rule batayega, data nahi. Option D ka trap: 'city repeat hoti hai' dekh kar {name, city} ko bhi khaarij kar dena; pair ke roop mein (Ira, Pune), (Dev, Pune), (Ira, Agra) teeno alag hain.",
+          "difficulty": "medium",
+          "id": "dbms-w2-q11"
+        },
+        {
+          "question": "R(A, B) = {(1, x), (2, y), (3, x), (2, z)} aur S(A, B) = {(2, y), (4, x)}. Expressions E1 = π_A(R − S) aur E2 = π_A(R) − π_A(S) mein kitne-kitne tuples hain?",
+          "options": [
+            "E1: 2, E2: 2",
+            "E1: 3, E2: 2",
+            "E1: 3, E2: 3",
+            "E1: 2, E2: 3"
+          ],
+          "answer": 1,
+          "explanation": "E1: R − S se sirf (2, y) hat-ta hai, bachte hain (1, x), (3, x), (2, z); π_A = {1, 3, 2} = 3 tuples. E2: π_A(R) = {1, 2, 3}, π_A(S) = {2, 4}; difference = {1, 3} = 2 tuples. Farak isliye hai ki (2, z) poore tuple ke roop mein S mein nahi hai, par uska A = 2 S mein hai. Option C ka trap ye maanna hai ki projection aur difference ka order badalne se kuch nahi badalta; π difference ke upar distribute nahi hota. Option A E1 mein bhi 2 ko hata deta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w2-q12"
+        },
+        {
+          "question": "Relation R(A, B, C, D) ki candidate keys sirf {A, B} aur {B, C} hain. R ke kitne superkeys hain?",
+          "options": [
+            "8",
+            "4",
+            "7",
+            "6"
+          ],
+          "answer": 3,
+          "explanation": "{A, B} wale superkeys: A, B ke saath C, D ka koi bhi subset = 2² = 4. {B, C} wale: B, C ke saath A, D ka koi bhi subset = 2² = 4. Dono mein common (jinme A, B, C teeno hain): {A, B, C} aur {A, B, C, D} = 2. Inclusion–exclusion: 4 + 4 − 2 = 6. Option A ka trap common sets ko do baar ginna hai. Option B sirf ek key ke superkeys ginta hai, aur option C {B} ko bhi superkey maan leta hai, jabki B akela kisi key ko contain nahi karta.",
+          "difficulty": "hard",
+          "id": "dbms-w2-q13"
+        },
+        {
+          "question": "`emp` table par ye query kaunse naam lautayegi?",
+          "code": "emp\nid | name | dept | salary\n1  | Asha | CS   | 72000\n2  | Ravi | EE   | 50000\n3  | Neha | CS   | 58000\n4  | Omar | ME   | 65000\n5  | Lina | EE   | 61000\n6  | Arun | CS   | 45000\n\nSELECT name FROM emp\nWHERE dept = 'CS' OR dept = 'EE' AND salary BETWEEN 50000 AND 60000;",
+          "options": [
+            "Ravi, Neha",
+            "Asha, Neha, Arun",
+            "Asha, Ravi, Neha, Arun",
+            "Asha, Ravi, Neha, Lina, Arun"
+          ],
+          "answer": 2,
+          "explanation": "`AND` pehle judta hai: condition hai dept = 'CS' OR (dept = 'EE' AND salary BETWEEN 50000 AND 60000). Saare CS: Asha, Neha, Arun (salary dekhi hi nahi jaati). EE mein range ke andar: Ravi (50000, BETWEEN dono ends include karta hai); Lina 61000 bahar. Result: Asha, Ravi, Neha, Arun. Option A ka trap condition ko (CS OR EE) AND range padhna hai. Option B Ravi ko chhod deta hai, yaani BETWEEN ko exclusive maanta hai, aur option D Lina ko range mein maan leta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w2-q14"
+        },
+        {
+          "question": "Tables neeche hain. Har INSERT ko alag se, isi shuruaati data par chalao. Kaunse INSERT accept honge?",
+          "code": "CREATE TABLE member (member_id VARCHAR(5) PRIMARY KEY, name VARCHAR(40));\nCREATE TABLE loan (\n    member_id  VARCHAR(5) REFERENCES member(member_id),\n    isbn       CHAR(3),\n    loan_date  DATE,\n    PRIMARY KEY (member_id, isbn, loan_date)\n);\n-- member: ('M01','Ira'), ('M02','Dev')\n-- loan  : ('M02','111','2026-07-01')\n\n(i)   INSERT INTO loan VALUES ('M02', '111', '2026-07-05');\n(ii)  INSERT INTO loan VALUES ('M03', '222', '2026-07-05');\n(iii) INSERT INTO loan VALUES ('M01', '111', '2026-07-01');\n(iv)  INSERT INTO loan VALUES ('M02', '111', '2026-07-01');\n(v)   INSERT INTO loan VALUES (NULL, '333', '2026-07-02');",
+          "options": [
+            "Sirf (i) aur (iii)",
+            "(i), (iii) aur (v)",
+            "(i), (ii) aur (iii)",
+            "Sirf (i)"
+          ],
+          "answer": 0,
+          "explanation": "(i) naya date, isliye poori key (M02, 111, 2026-07-05) nayi hai: accept. (ii) M03 `member` mein nahi hai: foreign key toota, reject. (iii) key (M01, 111, 2026-07-01) existing row se alag hai (member alag), aur M01 maujood hai: accept. (iv) poori key existing row jaisi: primary key toota, reject. (v) `member_id` primary key ka hissa hai, isliye NOT NULL hai: reject. Option B ka trap ye yaad rakhna hai ki foreign key column mein NULL chalta hai; yahan wahi column primary key mein bhi hai. Option D ka trap (iii) ko duplicate maanna hai, jabki composite key mein teeno columns milkar unique hone chahiye.",
+          "difficulty": "hard",
+          "id": "dbms-w2-q15"
         }
       ]
     },
@@ -374,6 +613,128 @@
           "explanation": "`roll NOT IN (101, NULL)` ka matlab hai `roll <> 101 AND roll <> NULL`. `roll <> NULL` hamesha UNKNOWN hai. Roll 101 ke liye pehla hissa FALSE hai, to poora FALSE; baaki sab ke liye TRUE AND UNKNOWN = UNKNOWN. WHERE sirf TRUE rakhta hai, isliye koi row nahi aati. Option A tempting hai kyunki yahi intended answer tha; woh `NOT EXISTS` (ya subquery mein `WHERE roll IS NOT NULL`) se milta. NULL se koi error nahi aata, isliye option D galat hai.",
           "difficulty": "hard",
           "id": "dbms-w3-q6"
+        },
+        {
+          "question": "Ek `SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ...` query ke clauses logically kis order mein evaluate hote hain?",
+          "options": [
+            "SELECT → FROM → WHERE → GROUP BY → HAVING",
+            "FROM → GROUP BY → WHERE → HAVING → SELECT",
+            "FROM → WHERE → GROUP BY → HAVING → SELECT",
+            "FROM → WHERE → HAVING → GROUP BY → SELECT"
+          ],
+          "answer": 2,
+          "explanation": "Pehle `FROM` tables laata hai, `WHERE` individual rows chhaantta hai, `GROUP BY` bachi rows ke groups banata hai, `HAVING` poore groups filter karta hai, aur aakhir mein `SELECT` columns/aggregates nikaalta hai. Option A likhne ka order hai, chalne ka nahi. Option B ka trap `GROUP BY` ko `WHERE` se pehle rakhna hai; isi wajah se aggregate `WHERE` mein nahi chal sakta. Option D mein groups bane bina `HAVING` chal raha hai, jo namumkin hai.",
+          "difficulty": "easy",
+          "id": "dbms-w3-q7"
+        },
+        {
+          "question": "Ek row mein `salary = 60000` hai aur `bonus` NULL hai. Kya ye row `WHERE salary > 50000 OR bonus > 1000` se output mein aayegi?",
+          "options": [
+            "Haan, kyunki TRUE OR UNKNOWN = TRUE",
+            "Nahi, kyunki NULL wali koi bhi condition row hata deti hai",
+            "Nahi, kyunki TRUE OR UNKNOWN = UNKNOWN",
+            "Error aayega, kyunki `bonus` NULL hai"
+          ],
+          "answer": 0,
+          "explanation": "`salary > 50000` TRUE hai, aur `bonus > 1000` NULL ki wajah se UNKNOWN. Three-valued logic mein TRUE OR UNKNOWN = TRUE, kyunki OR ke liye ek TRUE kaafi hai, chahe doosra kuch bhi ho. WHERE TRUE rows rakhta hai, isliye row aati hai. Option B ka trap ye maanna hai ki NULL har condition ko zeher bana deta hai; ye sirf AND jaise cases mein hota hai. Option C OR ka rule galat yaad rakhta hai; FALSE OR UNKNOWN zaroor UNKNOWN hota hai.",
+          "difficulty": "easy",
+          "id": "dbms-w3-q8"
+        },
+        {
+          "question": "`emp` table ke `dept` column mein ye values hain: CS, EE, CS, NULL, ME, NULL. `SELECT COUNT(DISTINCT dept) FROM emp;` kya lautayega?",
+          "options": [
+            "6",
+            "4",
+            "5",
+            "3"
+          ],
+          "answer": 3,
+          "explanation": "`COUNT(DISTINCT dept)` NULL ko ignore karta hai aur bachi values mein se alag-alag ginta hai: CS, EE, ME = 3. Option A `COUNT(*)` hai (saari rows). Option B ka trap NULL ko ek aur 'distinct value' gin lena hai (ya `COUNT(dept)` = 4 se mila dena). Aggregates NULL ko value nahi maante.",
+          "difficulty": "easy",
+          "id": "dbms-w3-q9"
+        },
+        {
+          "question": "`emp` table par ye query kya output degi?",
+          "code": "emp\nid | name | dept | salary\n1  | Asha | CS   | 60000\n2  | Ravi | CS   | 40000\n3  | Neha | EE   | 55000\n4  | Omar | EE   | 45000\n5  | Lina | EE   | 50000\n6  | Vik  | ME   | 90000\n\nSELECT dept, COUNT(*) FROM emp\nWHERE salary >= 45000\nGROUP BY dept\nHAVING COUNT(*) >= 2;",
+          "options": [
+            "(CS, 2), (EE, 3)",
+            "(EE, 3)",
+            "(EE, 2)",
+            "(CS, 1), (EE, 3), (ME, 1)"
+          ],
+          "answer": 1,
+          "explanation": "`WHERE` pehle chalta hai aur Ravi (40000) ko hata deta hai; Omar (45000) `>=` ki wajah se bachta hai. Groups: CS = 1 (Asha), EE = 3 (Neha, Omar, Lina), ME = 1 (Vik). `HAVING COUNT(*) >= 2` sirf EE rakhta hai: (EE, 3). Option A ka trap groups ko WHERE se pehle ginna hai (CS ke 2). Option C Omar ko `>` jaisa hata deta hai, aur option D HAVING ko bhool jaata hai.",
+          "difficulty": "medium",
+          "id": "dbms-w3-q10"
+        },
+        {
+          "question": "Ye LEFT JOIN query kitni rows lautayegi?",
+          "code": "dept: (D1,'Sales'), (D2,'Ops'), (D3,'Legal'), (D4,'R&D')\nemp : (1,'Asha','D1',60000), (2,'Ravi','D2',30000),\n       (3,'Neha','D1',45000)\n\nSELECT d.dname, e.name\nFROM dept d LEFT JOIN emp e ON d.dept_id = e.dept_id\nWHERE e.salary > 40000;",
+          "options": [
+            "5",
+            "4",
+            "2",
+            "3"
+          ],
+          "answer": 2,
+          "explanation": "LEFT JOIN pehle 5 rows banata hai: D1–Asha, D1–Neha, D2–Ravi, D3–NULL, D4–NULL. Phir `WHERE e.salary > 40000`: Ravi (30000) FALSE, aur D3/D4 ke liye NULL > 40000 UNKNOWN, isliye woh bhi hat jaate hain. Bachti hain Asha aur Neha: 2 rows. Outer join chupke se inner join ban gaya. Option A ka trap: 5 tab aata jab condition `ON` mein hoti (`ON d.dept_id = e.dept_id AND e.salary > 40000`), kyunki tab unmatched depts NULL ke saath bachte.",
+          "difficulty": "medium",
+          "id": "dbms-w3-q11"
+        },
+        {
+          "question": "Ye correlated subquery kaunse naam lautayegi?",
+          "code": "emp\nname  | dept | salary\nAsha  | CS   | 60000\nRavi  | CS   | 40000\nKiran | CS   | 50000\nNeha  | EE   | 55000\nOmar  | EE   | 45000\nVik   | ME   | 90000\n\nSELECT e.name FROM emp e\nWHERE e.salary > (SELECT AVG(x.salary) FROM emp x\n                  WHERE x.dept = e.dept);",
+          "options": [
+            "Asha, Neha",
+            "Asha, Kiran, Neha, Vik",
+            "Asha, Vik",
+            "Asha, Neha, Vik"
+          ],
+          "answer": 0,
+          "explanation": "Subquery har outer row ke liye uske apne dept ka average nikaalti hai. CS avg = (60000 + 40000 + 50000) / 3 = 50000: sirf Asha upar; Kiran barabar hai, `>` nahi. EE avg = 50000: Neha. ME avg = 90000 (sirf Vik): Vik apne hi average se bada nahi. Result: Asha, Neha. Option B `>=` ka result hai. Option C ka trap subquery ko correlated na maan kar poori company ka average (lagbhag 56667) lena hai. Option D Vik ko isliye jod deta hai ki woh sabse zyada kamaata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w3-q12"
+        },
+        {
+          "question": "Placement cell un students ke naam chahta hai jo placed nahi hain, aur is baar query `NOT EXISTS` se likhi gayi hai. Ye kya lautayegi?",
+          "code": "student\nroll | name\n101  | Ira\n102  | Dev\n103  | Sam\n104  | Mia\n\nplaced\nroll\n101\nNULL\n103\n\nSELECT s.name FROM student s\nWHERE NOT EXISTS (SELECT * FROM placed p WHERE p.roll = s.roll);",
+          "options": [
+            "Koi row nahi (empty result)",
+            "Ira, Sam",
+            "Dev, Sam, Mia",
+            "Dev, Mia"
+          ],
+          "answer": 3,
+          "explanation": "Har student ke liye subquery `placed` mein uska matching roll dhoondhti hai. 101 aur 103 ka match milta hai, isliye `NOT EXISTS` FALSE: Ira, Sam bahar. 102 aur 104 ke liye `p.roll = s.roll` har row par FALSE ya (NULL wali row par) UNKNOWN hai, koi row TRUE nahi, subquery khaali, `NOT EXISTS` TRUE: Dev, Mia. Option A ka trap `NOT IN` wala behaviour yahan lagana hai; `NOT EXISTS` sirf ye dekhta hai ki koi row aayi ya nahi, NULL se nahi tootta. Option B placed students hain, aur option C Sam ko galti se rakhta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w3-q13"
+        },
+        {
+          "question": "`orders` table par ye query kya output degi?",
+          "code": "orders\ncust | amount\nA    | 100\nA    | NULL\nB    | NULL\nB    | NULL\nC    | 300\nC    | 100\n\nSELECT cust, COUNT(amount), AVG(COALESCE(amount, 0))\nFROM orders GROUP BY cust;",
+          "options": [
+            "A (1, 100), B (0, NULL), C (2, 200)",
+            "A (2, 50), B (2, 0), C (2, 200)",
+            "A (1, 50), B (0, 0), C (2, 200)",
+            "A (1, 50), C (2, 200)"
+          ],
+          "answer": 2,
+          "explanation": "`COUNT(amount)` NULL ignore karta hai: A = 1, B = 0, C = 2. `COALESCE(amount, 0)` NULL ko 0 banata hai, isliye AVG ab NULL rows ko bhi ginta hai: A = (100 + 0) / 2 = 50, B = (0 + 0) / 2 = 0, C = (300 + 100) / 2 = 200. Option A ka trap COALESCE ko ignore karke plain `AVG(amount)` nikaalna hai. Option B `COUNT(amount)` ko `COUNT(*)` jaisa ginta hai. Option D ka trap ye sochna hai ki saare-NULL group ka output hi nahi aata; group B ki rows maujood hain, isliye uski output row banti hai.",
+          "difficulty": "hard",
+          "id": "dbms-w3-q14"
+        },
+        {
+          "question": "Table `a(k)` mein values 1, 2, 2, 3 hain aur `b(k)` mein 2, 3, 3, 4. `SELECT * FROM a FULL OUTER JOIN b ON a.k = b.k;` kitni rows lautayega?",
+          "options": [
+            "4",
+            "6",
+            "8",
+            "5"
+          ],
+          "answer": 1,
+          "explanation": "Matching pairs: k = 2 par a ki 2 rows × b ki 1 row = 2; k = 3 par a ki 1 × b ki 2 = 2. Inner join = 4. FULL OUTER JOIN unmatched rows bhi rakhta hai: a ka 1 (b NULL ke saath) aur b ka 4 (a NULL ke saath) = 2 aur. Kul 6. Option A ka trap inner join par ruk jaana hai. Option D b ki duplicate 3 ko ek hi baar ginta hai (2 + 1 + 2), aur option C ka trap FULL OUTER JOIN ko UNION ALL jaisa maan kar dono tables ki rows jod dena (4 + 4) hai.",
+          "difficulty": "hard",
+          "id": "dbms-w3-q15"
         }
       ]
     },
@@ -498,6 +859,125 @@
           "explanation": "π_sid(R) × S har student ke saath har required course ka pair banata hai, yaani 'kya hona chahiye'. Usme se R ghatao to sirf missing pairs bachte hain; unke sid woh students hain jinka koi required course chhoota. Saare students mein se unhe hatao to R ÷ S. Option C sirf woh 'missing' students deta hai, yaani ulta answer. Option B ka trap set difference ko ulta likhna hai: R − (π_sid(R) × S) extra courses wale pairs deta hai, missing wale nahi. Option D 'kam se kam ek required course' hai. (Code wale data par: A = {S1, S3}, B = {S2, S3}, C = {S2, S4}, D = {S1, S2, S3}.)",
           "difficulty": "hard",
           "id": "dbms-w4-q6"
+        },
+        {
+          "question": "R(A, B) aur S(C, D) mein koi bhi common attribute nahi hai. Natural join R ⋈ S kya deta hai?",
+          "options": [
+            "Hamesha khaali relation",
+            "R ∪ S",
+            "Error, kyunki join ke liye common attribute chahiye",
+            "R × S (Cartesian product)"
+          ],
+          "answer": 3,
+          "explanation": "Natural join saare common attributes par barabari maangta hai. Common attribute hai hi nahi, to condition khaali hai (hamesha sach), aur har pair rakha jaata hai: R ⋈ S = R × S. Option A ka trap ye sochna hai ki 'match karne ko kuch nahi, to kuch nahi milega'. Option B galat hai kyunki union ke liye relations union-compatible hone chahiye, aur option C galat hai kyunki RA mein ye ek valid expression hai.",
+          "difficulty": "easy",
+          "id": "dbms-w4-q7"
+        },
+        {
+          "question": "ER diagram mein `customer` entity ke paas `date_of_birth` stored hai, aur `age` us se calculate hoti hai. `age` kis type ka attribute hai?",
+          "options": [
+            "Multivalued attribute",
+            "Derived attribute",
+            "Composite attribute",
+            "Key attribute"
+          ],
+          "answer": 1,
+          "explanation": "Jo attribute kisi doosre stored attribute se nikaala ja sake, woh **derived** hai (diagram mein dashed oval); `age` ko `date_of_birth` aur aaj ki date se nikaalte hain, isliye ise table mein store nahi karte. Option A ka trap: multivalued ka matlab ek entity ki kai values (jaise kai phones), age ki ek hi value hoti hai. Composite (option C) woh hai jo chhote parts mein toote, jaise address = city + pin.",
+          "difficulty": "easy",
+          "id": "dbms-w4-q8"
+        },
+        {
+          "question": "Fictional food app mein `menu_item(item_no, name, price)` ek weak entity hai jiska owner `restaurant` (PK `rest_id`) hai; `item_no` sirf ek restaurant ke andar unique hai. `menu_item` table ki primary key kya hogi?",
+          "options": [
+            "(`rest_id`, `item_no`)",
+            "Sirf `item_no`",
+            "Sirf `rest_id`",
+            "(`item_no`, `name`)"
+          ],
+          "answer": 0,
+          "explanation": "Weak entity ki pehchaan owner ki primary key + discriminator (partial key) se hoti hai: (`rest_id`, `item_no`). Option B ka trap discriminator ko poori key samajhna hai; do restaurants dono ke paas item 1 ho sakta hai. Option C se ek restaurant ka sirf ek item ho paata. Option D mein owner ki key hi nahi hai, isliye alag restaurants ke same naam wale items takra sakte hain.",
+          "difficulty": "easy",
+          "id": "dbms-w4-q9"
+        },
+        {
+          "question": "R(A, B) = {(1, x), (2, y), (3, x)} aur S(B, C) = {(x, p), (x, q), (y, r), (z, s)}. R ⋈ S (natural join) mein kitne tuples hain aur uski degree kya hai?",
+          "options": [
+            "3 tuples, degree 4",
+            "12 tuples, degree 4",
+            "5 tuples, degree 3",
+            "5 tuples, degree 4"
+          ],
+          "answer": 2,
+          "explanation": "Common attribute B hai. (1, x) S ke do x-tuples se judta hai: 2; (2, y) ek y se: 1; (3, x) do se: 2. Kul 5 tuples. Natural join common attribute ki ek hi copy rakhta hai, isliye schema (A, B, C): degree 3. Option D ka trap B ko do baar ginna hai (wo theta join/× jaisa hota). Option B Cartesian product hai (3 × 4), aur option A har R tuple ka sirf ek match maanta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w4-q10"
+        },
+        {
+          "question": "R aur S union-compatible relations hain. Inmein se kaunsa expression hamesha R ∩ S ke barabar hai?",
+          "options": [
+            "R − (S − R)",
+            "(R ∪ S) − R",
+            "R − S",
+            "R − (R − S)"
+          ],
+          "answer": 3,
+          "explanation": "R − S woh tuples hain jo R mein hain par S mein nahi; unhe R se hata do to wahi bachte hain jo R aur S dono mein hain: R − (R − S) = R ∩ S. Option A ka trap: S − R ke tuples R mein hain hi nahi, isliye unhe hatane se R poora bachta hai. Option B sirf S − R deta hai, aur option C ulta hai: woh S wale tuples hata deta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w4-q11"
+        },
+        {
+          "question": "Fictional hospital ka ER: `doctor` (PK doc_id, multivalued attribute `qualification`), `patient` (PK pid, composite attribute `address` = city + pin, derived attribute `age`), `ward` (PK ward_no). `treats` doctor aur patient ke beech M:N hai jiska attribute `visit_date` hai. `admitted_in` patient se ward N:1 hai (har patient zyada se zyada ek ward mein). Standard rules se kam se kam kitni tables banengi?",
+          "options": [
+            "5",
+            "6",
+            "4",
+            "7"
+          ],
+          "answer": 0,
+          "explanation": "Strong entities: `doctor`, `patient`, `ward` = 3. Multivalued `qualification` ki alag table `doctor_qualification(doc_id, qualification)` = 4. M:N `treats` ki table `treats(doc_id, pid, visit_date)` = 5. N:1 `admitted_in` ke liye alag table nahi; `patient` mein `ward_no` foreign key. Composite address do columns ban jaata hai aur derived `age` store nahi hota. Kul 5. Option B ka trap N:1 ke liye bhi table banana hai; option D composite/derived ke liye bhi tables bana deta hai; option C multivalued attribute ki table bhool jaata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w4-q12"
+        },
+        {
+          "question": "`takes` ÷ `req` ka result kya hai?",
+          "code": "takes\nsid | cid\nS1  | C1\nS1  | C2\nS1  | C3\nS2  | C1\nS2  | C3\nS3  | C2\nS3  | C3\nS4  | C1\nS4  | C2\nS4  | C3\nS4  | C4\n\nreq\ncid\nC1\nC3",
+          "options": [
+            "S2",
+            "S1, S2, S4",
+            "S1, S2, S3, S4",
+            "S1, S4"
+          ],
+          "answer": 1,
+          "explanation": "Division un sid ko deta hai jinke paas `req` ki **har** cid hai: C1 aur C3 dono. S1 (C1, C2, C3): haan. S2 (C1, C3): haan. S3 (C2, C3): C1 missing, nahi. S4 (C1–C4): haan. Result S1, S2, S4. Option A ka trap division ko 'exactly wahi courses' samajhna hai; extra courses (S1 ka C2, S4 ka C2, C4) kisi ko bahar nahi karte. Option C S3 ko bhi rakhta hai jaise ek required course kaafi ho, aur option D S2 ko bhool jaata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w4-q13"
+        },
+        {
+          "question": "Is data par TRC query (code ke aakhir mein) kaunse naam lautati hai?",
+          "code": "student(roll, name): (1, Ira), (2, Dev), (3, Sam)\ncourse(code): DB, OS\nenrol(roll, code): (1, DB), (1, OS), (2, DB), (3, OS), (3, DB), (3, AI)\n\n{ t | ∃s ∈ student ( t[name] = s[name] ∧\n      ∀c ∈ course ( ∃e ∈ enrol ( e[roll] = s[roll] ∧ e[code] = c[code] ) ) ) }",
+          "options": [
+            "Ira",
+            "Ira, Dev, Sam",
+            "Dev",
+            "Ira, Sam"
+          ],
+          "answer": 3,
+          "explanation": "Query padho: 'woh student jiske liye **har** course c ke liye ek enrol row hai'. Ye division jaisa hai. Ira: DB aur OS dono, haan. Dev: sirf DB, OS missing, nahi. Sam: DB, OS dono (AI extra hai), haan. Result: Ira, Sam. Option A ka trap ∀ ko 'exactly in courses' samajh kar Sam ko AI ki wajah se hata dena hai. Option B ∀ ko ∃ ki tarah padhta hai (koi bhi ek course), aur option C ¬ ke bina 'jo saare courses mein nahi hai' jaisa ulta padhta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w4-q14"
+        },
+        {
+          "question": "Fictional office mein `employee` (PK emp_id) aur `parking_slot` (PK slot_no) ke beech 1:1 relationship `assigned` hai. Har slot kisi ek employee ko diya gaya hai (slot ki participation total), par har employee ke paas slot ho zaroori nahi (partial). Bina extra table aur bina NULLs ke sabse achha mapping kya hai?",
+          "options": [
+            "`employee` table mein `slot_no` column jodo, NOT NULL",
+            "Alag table `assigned(emp_id, slot_no)`, jiski primary key sirf `emp_id` ho",
+            "`parking_slot` table mein `emp_id` column jodo, NOT NULL aur UNIQUE",
+            "`parking_slot` table mein `emp_id` column jodo, NOT NULL par UNIQUE nahi"
+          ],
+          "answer": 2,
+          "explanation": "1:1 mein FK kisi bhi side ja sakta hai, par total participation wali side (`parking_slot`) par rakho to har slot ke paas hamesha value hogi: NOT NULL. UNIQUE lagane se ek employee ko do slots nahi mil sakte, yaani 1:1 bacha rehta hai. Option A ka trap: jin employees ke paas slot nahi unke liye NOT NULL namumkin hai (partial side). Option D bina UNIQUE ke relationship ko 1:N bana deta hai. Option B extra table hai, aur PK sirf `emp_id` ho to ek slot kai employees ko diya ja sakta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w4-q15"
         }
       ]
     },
@@ -619,6 +1099,124 @@
           "explanation": "A⁺: B, C, phir B → D, CD → E = sab, to {A} key. E⁺: A, phir sab, to {E} key. Ab A ya E ke bina do-attribute sets: BC⁺: D (B → D), phir CD → E, E → A = sab, to {B, C} key. CD⁺: E, A, B = sab, to {C, D} key. BD⁺ = {B, D} hi rehta hai, aur {B, C, D} mein {B, C} pehle se hai, isliye woh minimal nahi. Keys: {A}, {E}, {B, C}, {C, D} = 4. Option A ka trap sirf single-attribute keys ginna hai; option B CD → E se shuru hone wali key {C, D} miss kar deta hai.",
           "difficulty": "hard",
           "id": "dbms-w5-q6"
+        },
+        {
+          "question": "Fictional store ki ek hi table `order_line(order_id, product, cust_name, cust_city)` hai. Naya customer Zoya register hua, par jab tak woh koi order na de, uski city kahin store nahi ho sakti. Ye kaunsi anomaly hai?",
+          "options": [
+            "Update anomaly",
+            "Insertion anomaly",
+            "Deletion anomaly",
+            "Lost update"
+          ],
+          "answer": 1,
+          "explanation": "Customer ki jaankari tabhi daal sakte ho jab ek order row bane: ek fact (customer) ko doosre fact (order) ke bina insert nahi kar paana **insertion anomaly** hai. Option A tab hota jab city badalne par kai rows badalni padtin. Option C ka trap: deletion anomaly ulta case hai, aakhri order hatane par customer ki city bhi gayab ho jaana. Lost update concurrency ki problem hai, design ki nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w5-q7"
+        },
+        {
+          "question": "A → B diya hai. Isse AC → BC kis Armstrong's axiom se seedha milta hai?",
+          "options": [
+            "Augmentation",
+            "Transitivity",
+            "Reflexivity",
+            "Decomposition"
+          ],
+          "answer": 0,
+          "explanation": "**Augmentation**: X → Y ho to kisi bhi Z ke liye XZ → YZ. Yahan X = A, Y = B, Z = C. Option B ka trap: transitivity ke liye do FDs ki chain (X → Y, Y → Z) chahiye, yahan ek hi FD hai. Reflexivity sirf trivial FDs (Y ⊆ X) deti hai, aur decomposition RHS ko todti hai, kuch jodti nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w5-q8"
+        },
+        {
+          "question": "Inmein se kaunsi relation 1NF todti hai?",
+          "options": [
+            "student(roll, name, city)",
+            "enrol(roll, course, grade)",
+            "student(roll, name, phones), jahan ek cell mein phones = '98100, 98200'",
+            "course(code, title, credits)"
+          ],
+          "answer": 2,
+          "explanation": "1NF ka niyam hai ki har cell mein ek **atomic** value ho. Ek cell mein comma se jude do phone numbers ek list hain, isliye option C 1NF todta hai; sahi design alag table `student_phone(roll, phone)` hai. Baaki teeno mein har column ek hi value rakhta hai. Option B ka trap: ek student ke kai courses hon to bhi har row mein ek hi course hai, isliye woh 1NF mein hai.",
+          "difficulty": "easy",
+          "id": "dbms-w5-q9"
+        },
+        {
+          "question": "R(A, B, C, D, E, G) par F = { AB → C, C → D, BD → E, E → G, G → A }. {B, C}⁺ kya hai?",
+          "options": [
+            "{B, C, D}",
+            "{B, C, D, E}",
+            "{B, C, D, E, G}",
+            "{A, B, C, D, E, G}"
+          ],
+          "answer": 3,
+          "explanation": "Shuru {B, C}. C → D: {B, C, D}. Ab BD poora hai, BD → E: {B, C, D, E}. E → G: G juda. G → A: A juda. Result {A, B, C, D, E, G}, yaani BC superkey hai. AB → C lagane ki zaroorat hi nahi padi. Option A, B aur C ka trap beech mein ruk jaana hai: har naya attribute kisi aur FD ka LHS poora kar sakta hai, isliye tab tak chalo jab tak kuch naya na jude.",
+          "difficulty": "medium",
+          "id": "dbms-w5-q10"
+        },
+        {
+          "question": "R(A, B, C, D) par F = { AB → C, B → D }. R ka highest normal form kya hai?",
+          "options": [
+            "1NF",
+            "2NF",
+            "3NF",
+            "BCNF"
+          ],
+          "answer": 0,
+          "explanation": "Key: B kisi RHS par nahi, A bhi nahi, isliye har key mein A aur B; {A, B}⁺ = {A, B, C, D}, to akeli key AB hai. Prime: A, B; non-prime: C, D. B → D mein non-prime D key ke proper subset B par depend karta hai: **partial dependency**, 2NF toota. Isliye highest 1NF. Option B ka trap B → D ko transitive maan kar sirf 3NF ki problem samajhna hai; LHS key ka hissa hai, isliye ye partial hai. 2NF hi nahi to 3NF aur BCNF bhi nahi.",
+          "difficulty": "medium",
+          "id": "dbms-w5-q11"
+        },
+        {
+          "question": "R(A, B, C, D, E, F) par FDs hain { A → B, B → C, C → A, D → E }. R ki saari candidate keys kaunsi hain?",
+          "options": [
+            "Sirf {A, D, F}",
+            "{D, F}",
+            "{A, D, F}, {B, D, F}, {C, D, F}",
+            "{A, D}, {B, D}, {C, D}"
+          ],
+          "answer": 2,
+          "explanation": "D aur F kisi RHS par nahi aate (F to kisi FD mein hai hi nahi), isliye har key mein D aur F. {D, F}⁺ = {D, E, F}: A, B, C nahi aaye, to akela DF key nahi. A, B, C ek cycle mein hain (A → B → C → A), isliye inmein se koi bhi ek baaki do de deta hai: {A, D, F}⁺ = sab. Isi tarah {B, D, F} aur {C, D, F}. Teeno minimal hain. Option D ka trap F ko bhool jaana hai: jo attribute kisi FD mein nahi, woh bhi har key mein hona chahiye. Option A ek key par ruk jaata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w5-q12"
+        },
+        {
+          "question": "R(A, B, C, D) par F = { AB → C, C → D, D → A }. R ke baare mein kya sahi hai?",
+          "options": [
+            "3NF mein hai, par BCNF mein nahi",
+            "Sirf 2NF mein hai, kyunki C → D transitive dependency hai",
+            "BCNF mein hai",
+            "Sirf 1NF mein hai, kyunki D → A partial dependency hai"
+          ],
+          "answer": 0,
+          "explanation": "B kisi RHS par nahi, isliye har key mein B. {A, B}⁺ = ABCD, {B, C}⁺ = BC → D → A = ABCD, {B, D}⁺ = BD → A, AB → C = ABCD. Keys: AB, BC, BD; isliye A, B, C, D **saare prime** hain. 3NF ki shart (LHS superkey ya RHS prime) har FD par poori hoti hai, to 3NF. Par C → D aur D → A mein LHS superkey nahi, isliye BCNF nahi. Option B ka trap D ko non-prime maan lena hai; keys poori dhoondhe bina NF test galat ho jaata hai. Option D bhi isi galti se aata hai: A prime hai, prime attribute ki partial dependency 2NF nahi todti.",
+          "difficulty": "hard",
+          "id": "dbms-w5-q13"
+        },
+        {
+          "question": "F = { A → B, B → C, CD → E }. Neeche ki paanch FDs mein se kitni F se infer hoti hain?",
+          "code": "(i)   AD → E\n(ii)  A → E\n(iii) BD → CE\n(iv)  CD → B\n(v)   AB → C",
+          "options": [
+            "2",
+            "3",
+            "4",
+            "5"
+          ],
+          "answer": 1,
+          "explanation": "Har ek ka LHS closure nikaalo. (i) {A, D}⁺ = A → B → C, phir CD → E: E mila, haan. (ii) {A}⁺ = {A, B, C}: E nahi (D chahiye), nahi. (iii) {B, D}⁺ = B → C, CD → E: C aur E dono, haan. (iv) {C, D}⁺ = {C, D, E}: B nahi, nahi. (v) {A, B}⁺ mein C hai, haan. Kul 3. Option C ka trap (ii) ko maan lena hai, jaise A → C aur CD → E se seedha A → E mil jaaye; D ke bina CD → E lag hi nahi sakti. Option D (iv) ko bhi maanta hai, yaani FDs ko ulta chala deta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w5-q14"
+        },
+        {
+          "question": "Fictional store ki relation R(order_id, product_id, qty, cust_id, cust_city) par FDs hain: (order_id, product_id) → qty, order_id → cust_id, cust_id → cust_city. R ke baare mein kya sahi hai?",
+          "options": [
+            "3NF mein hai, kyunki key se baaki sab determine hota hai",
+            "2NF mein hai par 3NF mein nahi, kyunki problem sirf cust_id → cust_city hai",
+            "BCNF mein hai",
+            "2NF mein nahi hai, kyunki non-prime cust_id key ke ek hisse order_id par depend karta hai"
+          ],
+          "answer": 3,
+          "explanation": "order_id aur product_id kisi RHS par nahi, aur {order_id, product_id}⁺ = sab, to akeli key yahi hai. order_id → cust_id mein non-prime cust_id key ke proper subset par depend karta hai: **partial dependency**, isliye 2NF hi toot gaya (aur order_id → cust_city bhi partial hai). cust_id → cust_city transitive hai, jo 3NF bhi todta. Option B ka trap sirf transitive wali FD dekhna aur partial wali chhod dena hai. Option A ka trap: 'key se sab milta hai' to har relation mein sach hai, NF ke liye har FD ka LHS dekhna padta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w5-q15"
         }
       ]
     },
@@ -741,6 +1339,123 @@
           "explanation": "Common attribute C hai, aur C → B se C⁺ ⊇ {B, C} = R1, isliye lossless. R1(B, C) mein C → B (C key), R2(A, C) mein koi non-trivial FD nahi: dono BCNF. Par AB → C ke liye A, B, C ek saath kisi table mein nahi hain; projected FDs (C → B) se AB⁺ = {A, B}, to ye FD preserve nahi hoti. Option A ka trap ye maanna hai ki BCNF algorithm dependencies bhi bachata hai. Option B C → B ko bhool jaata hai, jo C ko R1 ki key banati hai.",
           "difficulty": "hard",
           "id": "dbms-w6-q6"
+        },
+        {
+          "question": "Koi bhi relation jisme sirf do attributes hon, jaise R(A, B), kis normal form mein hamesha hoti hai (FDs kuch bhi hon)?",
+          "options": [
+            "BCNF",
+            "Sirf 2NF",
+            "Sirf 3NF",
+            "Kisi normal form ki guarantee nahi"
+          ],
+          "answer": 0,
+          "explanation": "Do attributes mein non-trivial FD sirf A → B ya B → A ho sakti hai. Agar A → B hai to A ka closure {A, B} = poori relation, yaani A superkey; B → A ke liye bhi yahi. Har non-trivial FD ka LHS superkey hai, isliye R hamesha **BCNF** mein hai (aur isliye 3NF, 2NF mein bhi). Option B aur C ka trap 'sirf' hai: BCNF ke saath neeche wale saare forms apne aap aate hain.",
+          "difficulty": "easy",
+          "id": "dbms-w6-q7"
+        },
+        {
+          "question": "R ko R1 aur R2 mein toda gaya, par decomposition lossy hai. R1 ⋈ R2 karne par kya hota hai?",
+          "options": [
+            "Join R se kam rows deta hai, kuch rows kho jaati hain",
+            "Join error deta hai, kyunki common attribute key nahi hai",
+            "Join theek R ki rows deta hai",
+            "Join mein R ki saari rows ke saath extra spurious (nakli) tuples bhi aate hain"
+          ],
+          "answer": 3,
+          "explanation": "Projection ke baad join karne par R ki har asli row wapas aati hai, par saath mein aise combinations bhi bante hain jo R mein kabhi the hi nahi: **spurious tuples**. Information ka nuksaan isi mein hai, kyunki ab pata nahi kaunsi row asli hai. Option A sabse aam trap hai: 'lossy' sun kar kam rows soch lena. Option C lossless ka definition hai, aur join kabhi error nahi deta.",
+          "difficulty": "easy",
+          "id": "dbms-w6-q8"
+        },
+        {
+          "question": "Fictional training institute ki table T(trainer, skill, language) mein trainer ↠ skill aur trainer ↠ language hain. Trainer Kavya 3 skills sikhati hai aur 2 languages mein padhati hai. Is ek table mein Kavya ki kitni rows hongi?",
+          "options": [
+            "5",
+            "3",
+            "6",
+            "2"
+          ],
+          "answer": 2,
+          "explanation": "MVD ka matlab hai Kavya ki skills aur languages ek doosre se independent hain, isliye table ko har skill ke saath har language likhni padti hai: 3 × 2 = 6 rows. Yahi redundancy 4NF hatata hai, T ko (trainer, skill) aur (trainer, language) mein tod kar, jahan Kavya ki 3 + 2 = 5 rows hoti. Option A ka trap ye 4NF wali ginti ek hi table par laga dena hai.",
+          "difficulty": "easy",
+          "id": "dbms-w6-q9"
+        },
+        {
+          "question": "F = { A → B, AB → C }. AB → C mein extraneous attribute ke baare mein kya sahi hai?",
+          "options": [
+            "A extraneous hai; FD ban jaati hai B → C",
+            "B extraneous hai; FD ban jaati hai A → C",
+            "Koi attribute extraneous nahi hai",
+            "Dono extraneous hain; AB → C poori hat jaati hai"
+          ],
+          "answer": 1,
+          "explanation": "B ko hata kar dekho: kya A⁺ mein C hai? A → B se A⁺ = {A, B}, phir AB → C se C bhi. Haan, isliye B extraneous hai aur FD A → C ban jaati hai. A ko hata kar dekho: B⁺ = {B}, C nahi aata, isliye A zaroori hai. Option A ka trap ulta attribute hatana hai. Option D galat hai kyunki A → C kisi aur FD se nahi milti; poori FD hatane se F badal jaata.",
+          "difficulty": "medium",
+          "id": "dbms-w6-q10"
+        },
+        {
+          "question": "R(A, B, C, D) par F = { A → B, C → D }. Inmein se kaunsa decomposition lossless-join hai?",
+          "options": [
+            "R1(A, B), R2(C, D)",
+            "R1(A, C), R2(B, D)",
+            "R1(A, B), R2(B, C, D)",
+            "R1(A, B), R2(A, C, D)"
+          ],
+          "answer": 3,
+          "explanation": "Binary test: common attributes kam se kam ek hisse ki superkey hone chahiye. Option D: common A, aur A → B se A⁺ ⊇ {A, B} = R1, to A R1 ki key: lossless. Option C: common B, B⁺ = {B}, kisi hisse ki key nahi: lossy. Options A aur B mein koi common attribute hi nahi, isliye join Cartesian product ban jaata hai: lossy. Option C ka trap 'common attribute hai to lossless' maan lena hai; common attribute key bhi hona chahiye.",
+          "difficulty": "medium",
+          "id": "dbms-w6-q11"
+        },
+        {
+          "question": "F = { A → B, B → A, A → C, B → C }. Inmein se kaunsa F ka ek minimal cover hai?",
+          "options": [
+            "{ A → B, B → A }",
+            "{ A → B, A → C, B → C }",
+            "{ A → B, B → A, B → C }",
+            "{ A → BC, B → AC }"
+          ],
+          "answer": 2,
+          "explanation": "RHS pehle se single hain. A → C redundant hai: baaki se A → B → C. Use hata do to { A → B, B → A, B → C } bachta hai; ab koi aur redundant nahi (B → C hatao to C kahin se nahi aata). Isi tarah B → C hata kar { A → B, B → A, A → C } bhi minimal cover hai: minimal cover **unique nahi** hota. Option A mein C kabhi determine nahi hota. Option B ka trap B → A hata dena hai; tab B⁺ = {B, C}, aur F barabar nahi rehta. Option D mein RHS single nahi aur redundant FDs bhi hain.",
+          "difficulty": "hard",
+          "id": "dbms-w6-q12"
+        },
+        {
+          "question": "R(A, B, C, D, E) ka minimal cover { A → B, C → D } hai. 3NF synthesis algorithm kaunsa decomposition dega?",
+          "options": [
+            "R1(A, B), R2(C, D), R3(A, C, E)",
+            "R1(A, B), R2(C, D)",
+            "R1(A, B), R2(C, D), R3(E)",
+            "R1(A, B, C, D), R2(E)"
+          ],
+          "answer": 0,
+          "explanation": "Har FD se ek relation: R1(A, B), R2(C, D). Ab key dekho: A, C, E kisi RHS par nahi, aur {A, C, E}⁺ = sab, to key ACE hai. Kisi relation mein ACE nahi, isliye key relation R3(A, C, E) jodo. Ye decomposition lossless aur dependency-preserving hai. Option B ka trap key relation bhool jaana hai: E to kahin bacha hi nahi, aur A–C ka link bhi kho gaya. Option C mein E akela hai, key nahi, isliye join lossy rehta hai. Option D synthesis nahi hai: R1 mein A → B ka LHS superkey nahi.",
+          "difficulty": "hard",
+          "id": "dbms-w6-q13"
+        },
+        {
+          "question": "R(A, B, C, D) par F = { A → B, B → C, C → D, D → A }. R ko R1(A, B), R2(B, C), R3(C, D) mein toda gaya. Ye decomposition kaisa hai?",
+          "options": [
+            "Lossy, kyunki D aur A kisi ek table mein saath nahi hain",
+            "Lossless, par D → A preserve nahi hoti",
+            "Lossy, aur D → A bhi preserve nahi hoti",
+            "Lossless aur dependency-preserving, kyunki projected FDs se D → C → B → A mil jaata hai"
+          ],
+          "answer": 3,
+          "explanation": "Cycle ki wajah se har attribute key hai. Lossless: R1 ∩ R2 = B, jo R1 ki key hai (B → A), to R1 ⋈ R2 lossless; phir (A, B, C) ∩ R3 = C, jo R3 ki key hai: lossless. Preservation: projections mein R1 par A → B aur B → A, R2 par B → C aur C → B, R3 par C → D aur D → C aate hain (kyunki F⁺ mein ye sab hain). Inse D → C → B → A: D → A preserve hai. Option B ka trap sirf given FDs ko tables mein dhoondhna hai; projection F⁺ se hota hai, sirf F se nahi. Option A aur C ka trap ye sochna hai ki 'jo pair kisi table mein nahi, woh lossy banata hai'.",
+          "difficulty": "hard",
+          "id": "dbms-w6-q14"
+        },
+        {
+          "question": "R(A, B, C, D) par F = { A → B, B → C }. BCNF decomposition algorithm pehle B → C par todta hai. Algorithm khatam hone par final decomposition kya hoga?",
+          "options": [
+            "R1(B, C), R2(A, B, D)",
+            "R1(B, C), R2(A, B), R3(A, D)",
+            "R1(A, B, C), R2(A, D)",
+            "R1(B, C), R2(A, D)"
+          ],
+          "answer": 1,
+          "explanation": "Key: A aur D kisi RHS par nahi, {A, D}⁺ = sab, to key AD. B → C violation hai (B superkey nahi): R1(B, C) aur R2 = R − {C} = (A, B, D). R1 do attributes ka hai, BCNF. R2 mein A → B bachi hai aur R2 ki key AD hai, to A superkey nahi: phir todo, (A, B) aur (A, D). Final: R1(B, C), R2(A, B), R3(A, D). Option A ka trap pehle split ke baad ruk jaana hai. Option C wahi hai jo A → B se shuru karne par beech mein milta, par (A, B, C) mein B → C abhi bhi violation hai. Option D lossy hai: A aur B ka link hi kho gaya.",
+          "difficulty": "hard",
+          "id": "dbms-w6-q15"
         }
       ]
     },
@@ -868,6 +1583,128 @@
           "explanation": "Row-level trigger har affected row ke liye ek baar chalta hai: 3 + 0 = 3. Statement-level trigger har statement ke liye ek baar chalta hai, chahe koi row na badle: 1 + 1 = 2. Option B ka trap ye maanna hai ki 0 rows wale UPDATE par statement trigger nahi chalta; chalta hai, kyunki woh statement ke event par juda hai, rows par nahi. Option D row trigger ko bhi statement ki tarah ginta hai.",
           "difficulty": "hard",
           "id": "dbms-w7-q6"
+        },
+        {
+          "question": "PostgreSQL ke Python driver psycopg2 mein parameterised query ka placeholder kya hota hai?",
+          "options": [
+            "`?`",
+            "`%s`",
+            "Hamesha `:name`",
+            "`{}`"
+          ],
+          "answer": 1,
+          "explanation": "psycopg2 `%s` placeholder use karta hai, jaise `cur.execute(\"... WHERE id = %s\", (uid,))`. Ye Python ka `%` string formatting nahi hai: value driver alag se bhejta hai. Option A ka trap sqlite3 ka style yaad rakhna hai; har driver ka style alag hota hai. Option D Python ki `.format()` / f-string wali soch hai, jo injection ka raasta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w7-q7"
+        },
+        {
+          "question": "Fictional food-delivery app 3-tier architecture mein bana hai: mobile app → application server → database. Database ka username aur password kahan rakhna chahiye?",
+          "options": [
+            "Mobile app ke JavaScript/Kotlin code ke andar",
+            "Mobile app ke saath ship hone wali config file mein",
+            "Sirf application server par",
+            "Database ki ek public table mein"
+          ],
+          "answer": 2,
+          "explanation": "3-tier ka ek bada fayda yahi hai ki sirf application server database se baat karta hai, isliye credentials sirf server par rehte hain. App sirf server ki API call karta hai. Option A aur B ka trap: jo bhi user ke device par ship hota hai, use koi bhi nikaal sakta hai, aur phir seedha database se khel sakta hai. Option D to credentials sabko dikha deta hai.",
+          "difficulty": "easy",
+          "id": "dbms-w7-q8"
+        },
+        {
+          "question": "Python DB-API connection par `con.rollback()` kya karta hai?",
+          "options": [
+            "Pichhle `commit()` ke baad ke saare uncommitted changes undo karta hai",
+            "Sirf aakhri chala hua statement undo karta hai",
+            "Committed changes ko bhi undo kar deta hai",
+            "Sirf connection band karta hai, data par koi asar nahi"
+          ],
+          "answer": 0,
+          "explanation": "`rollback()` current transaction khatam karta hai aur pichhle commit ke baad ka **sab kuch** undo karta hai, chahe kitne bhi statements chale hon. Option B ka trap ise 'undo button' jaisa ek step maanna hai. Option C galat hai kyunki commit hua data durable hai; rollback use chhoo nahi sakta. Connection band karna `close()` ka kaam hai.",
+          "difficulty": "easy",
+          "id": "dbms-w7-q9"
+        },
+        {
+          "question": "Login code query ko string jod kar banata hai (code dekho). Attacker username mein `admin' --` daalta hai aur password mein kuch bhi. `users` table mein `admin` naam ka user hai. Kya hoga?",
+          "code": "sql = \"SELECT * FROM users WHERE uname = '\" + u + \"' AND pwd = '\" + p + \"'\"\ncur.execute(sql)\nrow = cur.fetchone()   # row mila to login successful",
+          "options": [
+            "Syntax error aata hai aur login fail ho jaata hai",
+            "Koi row nahi milti, kyunki password galat hai",
+            "Saari users ki rows aati hain, par login fail hota hai",
+            "`admin` ki row milti hai aur attacker bina password login ho jaata hai"
+          ],
+          "answer": 3,
+          "explanation": "Jod kar query banti hai `... WHERE uname = 'admin' --' AND pwd = '...'`. `'` username wali string band kar deta hai, aur `--` SQL comment shuru karta hai, isliye password wala poora check comment ban jaata hai. Bachti hai `WHERE uname = 'admin'`: admin ki row milti hai. Option A ka trap ye sochna hai ki bachi hui `'` error degi; woh to comment ke andar hai. Option B maanta hai ki password check abhi bhi chal raha hai. Fix: placeholders, jahan `admin' --` sirf ek ajeeb username string rehta.",
+          "difficulty": "medium",
+          "id": "dbms-w7-q10"
+        },
+        {
+          "question": "Ek ORM code 50 orders load karta hai, phir loop mein har order ka `order.customer.name` print karta hai; customer lazily load hota hai (pehli baar access par alag query). Is code mein kul kitni SQL queries chalengi, aur agar orders ko customer ke saath JOIN (eager loading) se laaya jaaye to kitni?",
+          "options": [
+            "50 aur 1",
+            "51 aur 51",
+            "51 aur 1",
+            "2 aur 1"
+          ],
+          "answer": 2,
+          "explanation": "1 query orders laati hai, phir har order ke customer ke liye ek alag query: 1 + 50 = 51. Ye classic **N+1 problem** hai. JOIN ya eager loading ek hi query mein orders aur unke customers dono le aata hai: 1. Option A orders wali pehli query bhool jaata hai. Option B ka trap ye maanna hai ki eager loading bhi wahi queries chalata hai. Option D (2) ORM ki ek aur strategy (do queries: orders, phir saare customers `IN` se) jaisi hai, par yahan lazy loading hai.",
+          "difficulty": "medium",
+          "id": "dbms-w7-q11"
+        },
+        {
+          "question": "Is Python code ka output kya hoga?",
+          "code": "import sqlite3\ncon = sqlite3.connect(\":memory:\")\ncur = con.cursor()\ncur.execute(\"CREATE TABLE acc (id INTEGER PRIMARY KEY, bal INTEGER CHECK (bal >= 0))\")\ncur.execute(\"INSERT INTO acc VALUES (1, 100), (2, 50)\")\ncon.commit()\ntry:\n    cur.execute(\"UPDATE acc SET bal = bal + 80 WHERE id = 2\")\n    cur.execute(\"UPDATE acc SET bal = bal - 80 WHERE id = 1\")\n    cur.execute(\"UPDATE acc SET bal = bal - 80 WHERE id = 1\")\n    con.commit()\nexcept sqlite3.IntegrityError:\n    con.rollback()\nprint(cur.execute(\"SELECT bal FROM acc ORDER BY id\").fetchall())",
+          "options": [
+            "[(100,), (50,)]",
+            "[(20,), (130,)]",
+            "[(-60,), (130,)]",
+            "[(100,), (130,)]"
+          ],
+          "answer": 0,
+          "explanation": "Commit ke baad pehla UPDATE naya transaction shuru karta hai: id 2 = 130. Doosra: id 1 = 20. Teesra 20 − 80 = −60 banata, jo `CHECK (bal >= 0)` todta hai: `IntegrityError`, aur `commit()` tak pahunchte hi nahi. `except` mein `rollback()` pichhle commit ke baad ka sab undo karta hai, dono successful UPDATEs samet: [(100,), (50,)]. Option B ka trap ye maanna hai ki sirf fail hua statement hata aur baaki bache rahe; woh rollback ke bina hota. Option C CHECK ko ignore karta hai, aur option D rollback ko adhoora maanta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w7-q12"
+        },
+        {
+          "question": "PostgreSQL mein `item` table par teen triggers hain (code dekho). Phir chaar statements chalte hain. Sab ke baad kaunsa trigger kitni baar chala?",
+          "code": "CREATE TRIGGER t_row  BEFORE INSERT ON item FOR EACH ROW       EXECUTE FUNCTION f_row();\nCREATE TRIGGER t_stmt AFTER INSERT  ON item FOR EACH STATEMENT EXECUTE FUNCTION f_stmt();\nCREATE TRIGGER t_del  AFTER DELETE  ON item FOR EACH ROW       EXECUTE FUNCTION f_del();\n\n-- (1) INSERT jo 4 rows daalta hai\n-- (2) INSERT INTO item SELECT ... jiska SELECT 0 rows deta hai\n-- (3) DELETE jo 3 rows hatata hai\n-- (4) DELETE jo 0 rows hatata hai",
+          "options": [
+            "t_row 4, t_stmt 1, t_del 3",
+            "t_row 4, t_stmt 2, t_del 4",
+            "t_row 4, t_stmt 2, t_del 3",
+            "t_row 5, t_stmt 2, t_del 3"
+          ],
+          "answer": 2,
+          "explanation": "Row-level trigger har affected row par chalta hai: t_row (1) mein 4 baar, (2) mein 0 baar = 4; t_del (3) mein 3, (4) mein 0 = 3. Statement-level trigger har matching statement par ek baar chalta hai, chahe 0 rows badlein: t_stmt dono INSERTs par = 2. Option A ka trap ye maanna hai ki 0-row statement par statement trigger nahi chalta. Option B DELETE (4) ko bhi row trigger ke liye gin leta hai, aur option D 0-row INSERT par bhi ek row trigger maan leta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w7-q13"
+        },
+        {
+          "question": "Python `sqlite3` mein `name = \"Asha\"`, `dept = \"CS\"` aur `tbl = \"emp\"` hain. Chaar lines mein se kaunsi line bina error ke chalegi aur sahi tarah parameterised bhi hai?",
+          "code": "(A) cur.execute(\"SELECT * FROM ? WHERE name = ?\", (tbl, name))\n(B) cur.execute(\"SELECT * FROM emp WHERE name = ? AND dept = ?\", (name, dept))\n(C) cur.execute(\"SELECT * FROM emp WHERE name = '?'\", (name,))\n(D) cur.execute(\"SELECT * FROM emp WHERE name = ?\", name)",
+          "options": [
+            "(A)",
+            "(B)",
+            "(C)",
+            "(D)"
+          ],
+          "answer": 1,
+          "explanation": "(B) mein do placeholders aur do values ka tuple: sahi. (A): table ka naam parameter nahi ban sakta, kyunki placeholder sirf values ke liye hai; `FROM ?` par syntax error aata hai. (C) ka trap: quotes ke andar `'?'` ek literal string hai, placeholder nahi; query mein 0 placeholders hain par 1 value di gayi, isliye `ProgrammingError`. (D) ka trap: string khud ek sequence hai, to `\"Asha\"` 4 values ban jaata hai jabki placeholder 1 hai: phir error. Likho `(name,)`.",
+          "difficulty": "hard",
+          "id": "dbms-w7-q14"
+        },
+        {
+          "question": "Do alag connections A aur B ek hi PostgreSQL database se jude hain (default READ COMMITTED isolation). `ticket` table mein shuru mein 10 rows hain. Steps kramashah chalte hain. B ko x aur y kya dikhega?",
+          "code": "A: INSERT 3 rows into ticket      -- abhi commit nahi\nB: SELECT COUNT(*) FROM ticket    -- x\nA: COMMIT\nA: INSERT 2 rows into ticket\nA: ROLLBACK\nB: SELECT COUNT(*) FROM ticket    -- y",
+          "options": [
+            "x = 13, y = 15",
+            "x = 10, y = 15",
+            "x = 13, y = 13",
+            "x = 10, y = 13"
+          ],
+          "answer": 3,
+          "explanation": "Jab B ne pehli baar padha, A ke 3 rows commit nahi hue the, isliye B ko sirf committed data dikha: x = 10. Phir A ne commit kiya: ab 13 rows durable hain. Agle 2 rows rollback ho gaye, woh kabhi exist hi nahi kiye. READ COMMITTED mein B ka har statement taaza committed data dekhta hai: y = 13. Option C ka trap ye maanna hai ki uncommitted inserts doosre connection ko dikhte hain (dirty read). Option B rollback ko ignore karta hai, aur option A dono galtiyan karta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w7-q15"
         }
       ]
     },
@@ -988,6 +1825,124 @@
           "explanation": "LRU: 1, 2, 3 miss; 4 par LRU = 1 nikla; phir 1 maanga to woh abhi-abhi nikla tha, miss, aur 2 nikla; isi tarah har request miss: 8. MRU: 1, 2, 3 miss; 4 par MRU = 3 nikla → {1, 2, 4}; 1 hit, 2 hit; 3 miss, MRU = 2 nikla → {1, 4, 3}; 4 hit. Misses = 5. Option B dono ko ulta karta hai; option C ka trap ye sochna hai ki 4 blocks 3 frames mein fit hi nahi hote to policy se fark nahi padta. Sequential scan buffer se bada ho to LRU sabse bura kaam karta hai.",
           "difficulty": "hard",
           "id": "dbms-w8-q6"
+        },
+        {
+          "question": "Inmein se kaunsa storage **volatile** hai, yaani power jaate hi uska data mit jaata hai?",
+          "options": [
+            "SSD (flash)",
+            "Magnetic disk (HDD)",
+            "Main memory (RAM)",
+            "Magnetic tape"
+          ],
+          "answer": 2,
+          "explanation": "Main memory (aur cache) volatile hain: power gayi to data gaya. Isiliye database ka asli data non-volatile storage (SSD/HDD) par rehta hai aur commit ke liye log bhi wahin likha jaata hai. Option A ka trap SSD ko 'memory jaisa tez' sun kar volatile maan lena hai; flash non-volatile hai. HDD aur tape bhi non-volatile hain.",
+          "difficulty": "easy",
+          "id": "dbms-w8-q7"
+        },
+        {
+          "question": "RAID 1 kya karta hai?",
+          "options": [
+            "Mirroring: har block ki ek copy doosri disk par",
+            "Striping: blocks disks mein baante jaate hain, koi redundancy nahi",
+            "Block striping ke saath distributed parity",
+            "Ek disk par data ko compress karna"
+          ],
+          "answer": 0,
+          "explanation": "RAID 1 **mirroring** hai: har block do disks par likha jaata hai, ek disk fail ho to doosri par poora data hai. Option B RAID 0 hai (sirf speed), aur option C RAID 5 hai (parity se ek disk ka data wapas banta hai). Trap: RAID ke numbers ko 'level jitna bada, utna safe' samajhna; RAID 0 mein redundancy bilkul nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w8-q8"
+        },
+        {
+          "question": "Slotted page structure mein bahar ke pointers (jaise index entries) record ke seedhe byte offset ki jagah page ke slot number ko kyun point karte hain?",
+          "options": [
+            "Taaki page ke records hamesha sorted rahein",
+            "Taaki page ka size zaroorat ke hisaab se badh sake",
+            "Taaki har record fixed-length ban jaaye",
+            "Taaki page ke andar record khiskaane par bhi bahar ke pointers theek rahein"
+          ],
+          "answer": 3,
+          "explanation": "Variable-length records delete/update hone par page ke andar compact karne ke liye khiskaaye jaate hain. Slot array mein har record ka offset hota hai; record khiska to sirf slot ka offset badla, bahar ka pointer (page, slot) wahi raha. Option A ka trap: slotted page sorting nahi karta. Page ka size fixed block size hai (option B), aur slotted page variable-length records ke liye hi bana hai (option C ulta hai).",
+          "difficulty": "easy",
+          "id": "dbms-w8-q9"
+        },
+        {
+          "question": "Ek file mein 5000 fixed-length records hain, har record 120 bytes. Block size 1024 bytes hai aur storage unspanned hai. Blocking factor aur file ke blocks kitne hain?",
+          "options": [
+            "bfr 9, 556 blocks",
+            "bfr 8, 625 blocks",
+            "bfr 8.53, 586 blocks",
+            "bfr 8, 586 blocks"
+          ],
+          "answer": 1,
+          "explanation": "bfr = ⌊1024 / 120⌋ = ⌊8.53⌋ = 8 (8 × 120 = 960 bytes, baaki 64 bytes waste). Blocks = ⌈5000 / 8⌉ = 625. Option A ka trap bfr ko upar round karna hai: 9 records (1080 bytes) ek block mein aate hi nahi. Option C fractional bfr leta hai, jo unspanned mein namumkin hai. Option D ka trap sahi bfr ke baad bhi blocks ko seedha 5000 × 120 / 1024 se nikaalna hai, waste ko ignore karke.",
+          "difficulty": "medium",
+          "id": "dbms-w8-q10"
+        },
+        {
+          "question": "Ek HDD 15,000 rpm par ghoomti hai, average seek time 3 ms hai, aur ek block ka transfer time 0.1 ms. Ek random block padhne ka average access time kya hai?",
+          "options": [
+            "7.1 ms",
+            "3.1 ms",
+            "8.1 ms",
+            "5.1 ms"
+          ],
+          "answer": 3,
+          "explanation": "Ek rotation = 60000 / 15000 = 4 ms, average rotational latency = aadhi = 2 ms. Access time = seek + latency + transfer = 3 + 2 + 0.1 = 5.1 ms. Option A ka trap poori rotation (4 ms) lena hai. Option B rotational latency ko bhool jaata hai. Option C seek ko do baar jod deta hai (3 + 3 + 2 + 0.1).",
+          "difficulty": "medium",
+          "id": "dbms-w8-q11"
+        },
+        {
+          "question": "Buffer pool mein 3 frames hain, shuru mein khaali, aur LRU replacement hai. R = block padhna, W = block mein likhna (block pehle buffer mein laana padta hai, phir woh dirty ho jaata hai). Dirty block evict hone se pehle disk par likha jaata hai. Neeche ki requests ke liye kitne disk reads aur kitne write-backs honge? (Aakhir mein buffer flush mat gino.)",
+          "code": "R1, W2, R3, R1, R4, W3, R5, R2",
+          "options": [
+            "Reads 6, write-backs 1",
+            "Reads 6, write-backs 0",
+            "Reads 5, write-backs 2",
+            "Reads 8, write-backs 1"
+          ],
+          "answer": 0,
+          "explanation": "R1, W2, R3: teeno miss (reads 3), 2 dirty. R1: hit; LRU order (purana pehle) 2, 3, 1. R4: miss (reads 4), LRU victim 2, jo dirty hai: write-back 1. Order 3, 1, 4. W3: hit, 3 dirty; order 1, 4, 3. R5: miss (reads 5), victim 1 (clean). Order 4, 3, 5. R2: miss (reads 6), victim 4 (clean). Total: reads 6, write-backs 1. Option B ka trap dirty block ka write-back bhool jaana hai. Option D har request ko disk read gin leta hai, hits ko ignore karke. Option C 3 ko bhi evict maanta hai, jabki W3 ke baad woh recently used hai.",
+          "difficulty": "hard",
+          "id": "dbms-w8-q12"
+        },
+        {
+          "question": "Ek file 1000 blocks ki hai (20,000 records, 20 per block). Query hai `WHERE price BETWEEN 500 AND 800`, jo 300 records lautati hai. (i) Heap file par kitne blocks padhne padenge? (ii) Agar file `price` par sorted ho: binary search ⌈log₂ b⌉ block reads mein pehla matching block deta hai, aur matching records lagaatar 15 blocks mein hain jinme se pehla binary search mein padh liya gaya. Kul kitne?",
+          "options": [
+            "Heap 500, sorted 24",
+            "Heap 1000, sorted 10",
+            "Heap 1000, sorted 24",
+            "Heap 1000, sorted 310"
+          ],
+          "answer": 2,
+          "explanation": "(i) Heap file unordered hai: range ke records kahin bhi ho sakte hain, isliye poori file scan karni padti hai: 1000. (ii) Binary search ⌈log₂ 1000⌉ = 10 reads, phir baaki 14 matching blocks aage sequentially: 10 + 14 = 24. Option A ka trap b/2 wala average lagana hai; woh sirf unique key par equality ke liye hai jahan record milte hi ruk jaate ho. Option B sirf pehla record dhoondhne ki cost hai. Option D har record ke liye alag block padhta hai, jabki sorted file mein woh blocks mein saath-saath hain.",
+          "difficulty": "hard",
+          "id": "dbms-w8-q13"
+        },
+        {
+          "question": "Fictional analytics table mein 1,000,000 rows aur 50 columns hain, har column 8 bytes ka. Query sirf 2 columns ka `SUM` nikaalti hai. Row-oriented storage poori rows padhti hai, column-oriented storage sirf zaroori columns. Column store kitna kam data padhega? (Compression aur headers ignore karo.)",
+          "options": [
+            "2 guna kam",
+            "Barabar, kyunki rows ki ginti wahi hai",
+            "50 guna kam",
+            "25 guna kam"
+          ],
+          "answer": 3,
+          "explanation": "Row store: har row 50 × 8 = 400 bytes, kul 1,000,000 × 400 = 400 MB padhna padega, kyunki ek block mein poori rows hain. Column store: sirf 2 columns, 1,000,000 × 2 × 8 = 16 MB. 400 / 16 = 25 guna kam. Option C ka trap 50 columns mein se 1 column jaisa sochna hai; query 2 columns padhti hai. Option B ka trap rows ki ginti ko I/O ka paimana maanna hai; I/O bytes/blocks se hota hai. Upar se compression column store ko aur fayda deta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w8-q14"
+        },
+        {
+          "question": "4 disks hain, har ek 2 TB ki. Inhe RAID 0, RAID 1 (do mirrored pairs) aur RAID 5 mein lagane par usable capacity kitni hogi, aur kaunse setups ek disk fail hone par data bacha lete hain?",
+          "options": [
+            "RAID 0 / 1 / 5 = 8 / 4 / 6 TB; sirf RAID 1 bachata hai",
+            "RAID 0 / 1 / 5 = 8 / 4 / 6 TB; RAID 1 aur RAID 5 dono bachate hain",
+            "RAID 0 / 1 / 5 = 8 / 8 / 6 TB; RAID 1 aur RAID 5 dono bachate hain",
+            "RAID 0 / 1 / 5 = 6 / 4 / 8 TB; teeno bachate hain"
+          ],
+          "answer": 1,
+          "explanation": "RAID 0 sirf striping hai: 4 × 2 = 8 TB, par koi redundancy nahi, ek disk gayi to data gaya. RAID 1 mein har block ki copy: aadhi capacity, 4 TB; mirror se data bachta hai. RAID 5 mein ek disk jitni jagah parity mein jaati hai (har disk par thodi-thodi): (4 − 1) × 2 = 6 TB; parity se ek fail disk ka data wapas ban jaata hai. Option A ka trap ye sochna hai ki sirf mirroring bachati hai; parity bhi bachati hai. Option C mirror ki copies ko usable capacity mein gin leta hai. Option D RAID 0 aur 5 ko ulta kar deta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w8-q15"
         }
       ]
     },
@@ -1108,6 +2063,123 @@
           "explanation": "10, 20, 30 ek leaf. 40 aate hi [10, 20] | [30, 40], root [30]. 50 → [30, 40, 50]; 60 par split [30, 40] | [50, 60], root [30, 50]. 70 → [50, 60, 70]; 80 par split [50, 60] | [70, 80], root [30, 50, 70]. 90 → [70, 80, 90], abhi 3 keys hain, split nahi. Isliye 4 leaves aur root [30, 50, 70] (root mein 4 pointers, full par overflow nahi). Option D ka trap left leaf ki aakhri key ko separator banana hai; option B mein root ke paas 4 keys hain, jo order 4 mein possible hi nahi (max 3); option A 3 : 1 split karta hai. (Dhyaan do: ascending inserts se leaves sirf aadhi bharti hain.)",
           "difficulty": "hard",
           "id": "dbms-w9-q6"
+        },
+        {
+          "question": "`price` column par sirf ek hash index hai. Inmein se kis query mein ye index madad **nahi** karega?",
+          "options": [
+            "`WHERE price BETWEEN 100 AND 200`",
+            "`WHERE price = 150`",
+            "`WHERE price = 99`",
+            "`WHERE price = 150 OR price = 99`"
+          ],
+          "answer": 0,
+          "explanation": "Hash function keys ka order tod deta hai: 100 aur 101 bilkul alag buckets mein ja sakte hain. Isliye range (`BETWEEN`) ke liye hash index se pata nahi chalta kahan dekhein, poora scan karna padta hai. Baaki teeno equality lookups hain, jinme h(value) seedha bucket batata hai (option D do lookups hai). Trap: 'index hai to har query tez' maan lena; range ke liye ordered (B+ tree) index chahiye.",
+          "difficulty": "easy",
+          "id": "dbms-w9-q7"
+        },
+        {
+          "question": "`orders` par composite index `(cust_id, order_date)` bana hai. Inmein se kis WHERE condition mein ye index seedha use ho sakta hai?",
+          "options": [
+            "`WHERE order_date = '2026-08-01'`",
+            "`WHERE cust_id = 42`",
+            "`WHERE amount > 500`",
+            "`WHERE order_date > '2026-08-01'`"
+          ],
+          "answer": 1,
+          "explanation": "Composite index pehle `cust_id` par sorted hai, phir har `cust_id` ke andar `order_date` par. Isliye woh **leftmost prefix** (`cust_id`, ya `cust_id` + `order_date`) wali queries mein kaam aata hai. Option A aur D ka trap: akela `order_date` index ka doosra column hai, alag-alag customers mein bikhra hua, isliye seedha search nahi hota. `amount` (option C) index mein hai hi nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w9-q8"
+        },
+        {
+          "question": "Ek table par kitne clustering (primary) indexes ho sakte hain?",
+          "options": [
+            "Har column par ek",
+            "Do: ek ascending order ke liye, ek descending ke liye",
+            "Jitne chaho, bas space ho",
+            "Sirf ek"
+          ],
+          "answer": 3,
+          "explanation": "Clustering index ki search key wahi hai jis order mein file disk par sorted rakhi hai. File ek hi order mein sorted ho sakti hai, isliye clustering index sirf **ek**. Baaki saare indexes secondary hote hain. Option C ka trap secondary aur clustering ko mila dena hai: secondary indexes jitne chaho bana sakte ho. Option B galat hai kyunki ascending order ko ulta padhne ke liye alag sorting nahi chahiye.",
+          "difficulty": "easy",
+          "id": "dbms-w9-q9"
+        },
+        {
+          "question": "Order n = 6 ka B+ tree hai (node mein max 6 pointers, max 5 keys). Root ke alawa ek internal node mein kam se kam kitne children, aur ek leaf mein kam se kam kitni keys honi chahiye?",
+          "options": [
+            "Internal: 2 children, leaf: 2 keys",
+            "Internal: 3 children, leaf: 2 keys",
+            "Internal: 3 children, leaf: 3 keys",
+            "Internal: 6 children, leaf: 5 keys"
+          ],
+          "answer": 2,
+          "explanation": "Non-root internal node: kam se kam ⌈n/2⌉ = ⌈6/2⌉ = 3 children. Leaf: kam se kam ⌈(n − 1)/2⌉ = ⌈5/2⌉ = 3 keys. Option A root ka rule (kam se kam 2 children) har node par laga deta hai. Option B ka trap leaf ke liye ⌊5/2⌋ = 2 lena hai, yaani neeche round karna. Option D maximum hai, minimum nahi.",
+          "difficulty": "medium",
+          "id": "dbms-w9-q10"
+        },
+        {
+          "question": "`customer` file 500 blocks ki hai aur `id` par sorted hai. `city` par ek secondary B+ tree index hai (height 3). Query `WHERE city = 'Pune'` 2000 records lautati hai, jo file mein bikhre hue hain. Kaunsa plan sasta hoga?",
+          "options": [
+            "Linear scan (lagbhag 500 block reads), kyunki index se har record ke liye alag block padhna pad sakta hai",
+            "Index, kyunki index scan hamesha file scan se sasta hota hai",
+            "Dono barabar, kyunki dono ko 2000 records lautane hain",
+            "Index, kyunki tree ki height sirf 3 hai"
+          ],
+          "answer": 0,
+          "explanation": "Secondary index file ke order se alag hai: 2000 matching records alag-alag blocks mein ho sakte hain, to index se 3 + (leaf entries) + lagbhag 2000 random block reads. Linear scan sirf 500 blocks padhta hai, aur woh bhi sequentially. Isliye bahut saare matches par scan sasta hai. Option D ka trap sirf tree ki height dekhna hai; asli kharcha data blocks ka hai. Option B wahi aam galatfehmi hai ki index hamesha jeet-ta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w9-q11"
+        },
+        {
+          "question": "Extendible hashing mein bucket capacity 2 records hai aur directory key ke **aakhri** d bits (binary) dekhti hai. Shuru mein global depth 1 hai aur do khaali buckets hain (local depth 1 each). Keys 4, 6, 8, 12 is order mein insert hoti hain. Aakhir mein global depth kya hai aur alag-alag buckets kitne hain?",
+          "options": [
+            "Global depth 2, 3 buckets",
+            "Global depth 3, 8 buckets",
+            "Global depth 2, 4 buckets",
+            "Global depth 3, 4 buckets"
+          ],
+          "answer": 3,
+          "explanation": "Binary: 4 = 100, 6 = 110, 8 = 1000, 12 = 1100; sab even hain, aakhri bit 0. 4, 6 bucket '0' mein. 8 par overflow, local = global = 1: directory double (d = 2), bucket split: '00' = {4, 8}, '10' = {6}. 12 (aakhri do bits 00) par '00' phir full, local = global = 2: directory phir double (d = 3), split: '000' = {8}, '100' = {4, 12}. Buckets: '000', '100', '10' (local 2), aur odd wala '1' (local 1) = 4. Option B ka trap directory entries (2³ = 8) ko buckets gin lena hai; kai entries ek hi bucket ko point karti hain. Option A aur C doosra doubling chhod dete hain.",
+          "difficulty": "hard",
+          "id": "dbms-w9-q12"
+        },
+        {
+          "question": "Block size 4096 bytes, search key 16 bytes aur pointer 8 bytes hai. B+ tree ka order n nikaalo (node ek block mein fit ho). Phir 10,000,000 keys ke liye, saare nodes poore bhare maan kar (leaf mein n − 1 keys, internal node mein n children), tree mein kitne levels honge aur ek point lookup mein kitne block reads (data block samet)?",
+          "options": [
+            "Order 170; 3 levels, 4 reads",
+            "Order 171; 4 levels, 5 reads",
+            "Order 171; 3 levels, 4 reads",
+            "Order 256; 3 levels, 4 reads"
+          ],
+          "answer": 1,
+          "explanation": "8n + 16(n − 1) ≤ 4096 ⇒ 24n ≤ 4112 ⇒ n = 171. Leaves: ⌈10,000,000 / 170⌉ = 58,824. Upar: ⌈58,824 / 171⌉ = 344, phir ⌈344 / 171⌉ = 3, phir root = 1. Levels = 4, lookup = 4 node reads + 1 data block = 5. Option C ka trap: 3 levels mein zyada se zyada 171 × 171 × 170 ≈ 4,970,000 keys aati hain, 10,000,000 nahi. Option D pointers ko ignore karke 4096 / 16 leta hai, aur option A inequality mein keys ko pointers ke barabar gin leta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w9-q13"
+        },
+        {
+          "question": "Order n = 3 ka khaali B+ tree hai (har node mein max 3 pointers, leaf mein max 2 keys). Leaf overflow par pehli 2 keys left leaf mein, baaki right leaf mein, aur right leaf ki pehli key parent mein copy hoti hai. Internal node overflow par beech ki key upar push hoti hai. Keys 10, 20, 30, 40, 50, 60, 70 is order mein insert karo. Final tree kaisa hai?",
+          "options": [
+            "Root [50]; 4 leaves; 3 levels",
+            "Root [30, 50, 70]; 4 leaves; 2 levels",
+            "Root [40]; 4 leaves; 3 levels",
+            "Root [50]; 7 leaves; 3 levels"
+          ],
+          "answer": 0,
+          "explanation": "30 par leaf split: [10, 20] [30], root [30]. 50 par: [30, 40] [50], root [30, 50]. 70 par: [50, 60] [70], 70 parent mein copy: root [30, 50, 70] ke 4 children ho gaye, jo max 3 se zyada hai: internal split. Beech ki key 50 upar push hoti hai: naya root [50], neeche [30] aur [70]. Leaves: [10, 20], [30, 40], [50, 60], [70] = 4; levels 3. Option B ka trap internal overflow ko ignore karna hai. Option C galat key (40) upar bhejta hai, aur option D har key ko alag leaf maanta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w9-q14"
+        },
+        {
+          "question": "Static hash file mein 5 buckets hain, h(k) = k mod 5. Har bucket ka primary block 2 records rakhta hai, aur full hone par 2-record overflow blocks ki chain judti hai. Keys 5, 10, 15, 20, 25, 3, 8, 13 is order mein insert hoti hain. Kul kitne overflow blocks banenge, aur key 25 dhoondhne mein (chain ko order mein padhte hue) kitne block reads lagenge?",
+          "options": [
+            "2 overflow blocks; 3 reads",
+            "3 overflow blocks; 1 read",
+            "3 overflow blocks; 3 reads",
+            "5 overflow blocks; 5 reads"
+          ],
+          "answer": 2,
+          "explanation": "Bucket 0: 5, 10, 15, 20, 25 (paanchon mod 5 = 0): primary [5, 10], overflow [15, 20], overflow [25] = 2 overflow blocks. Bucket 3: 3, 8, 13: primary [3, 8], overflow [13] = 1. Kul 3 overflow blocks. 25 bucket 0 ki chain ke teesre block mein hai: 3 reads. Ye **skew** ka asar hai: keys ek bucket mein jama ho gayi aur equality lookup 1 block ka nahi raha. Option B ka trap hashing ko hamesha '1 read' maan lena hai. Option A bucket 3 ka overflow bhool jaata hai, aur option D har extra key ke liye alag block banata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w9-q15"
         }
       ]
     },
@@ -1230,6 +2302,123 @@
           "explanation": "Conflicts: R1(A) … W2(A) se T1 → T2, aur W2(A) … W1(A) se T2 → T1: cycle, isliye conflict serializable nahi. View check serial T1 → T2 → T3 se: dono mein A ka initial read T1 karta hai, koi aur read nahi, aur final write T3 ka hai. Teeno shartein milti hain, to view serializable. Yahan W2(A) aur W3(A) blind writes hain jinka likha koi nahi padhta. Option C ka trap cycle dekhte hi 'serializable nahi' bolna hai. Option D possible hi nahi, kyunki har conflict-serializable schedule view-serializable hota hai.",
           "difficulty": "hard",
           "id": "dbms-w10-q6"
+        },
+        {
+          "question": "Fictional train-booking app ne screen par 'Booking confirmed' dikhaya (transaction COMMIT ho chuka tha). Agle hi second data centre ki power chali gayi. Restart ke baad booking database mein maujood hai. Ye kaunsi ACID property ki guarantee hai?",
+          "options": [
+            "Atomicity",
+            "Consistency",
+            "Isolation",
+            "Durability"
+          ],
+          "answer": 3,
+          "explanation": "Commit ho chuke transaction ke changes crash ke baad bhi rehne chahiye: ye **durability** hai, jo commit ke waqt log ko stable storage par likh kar milti hai. Option A ka trap: atomicity 'sab ya kuch nahi' ki baat hai, yaani adhoore transaction ka undo; yahan transaction poora commit ho chuka tha. Isolation saath chal rahe transactions ke baare mein hai, crash ke nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w10-q7"
+        },
+        {
+          "question": "Inmein se kaunsa schedule **serial** hai?",
+          "options": [
+            "R1(A), W1(A), R2(A), W2(A)",
+            "R1(A), R2(A), W1(A), W2(A)",
+            "R2(A), R1(A), W2(A), W1(A)",
+            "R1(A), R2(B), W1(A), W2(B)"
+          ],
+          "answer": 0,
+          "explanation": "Serial schedule mein ek transaction ke saare operations doosre ke shuru hone se pehle khatam ho jaate hain. Option A mein T1 poora (R1, W1), phir T2 poora: serial. Baaki teeno mein operations interleaved hain. Option D ka trap: alag items (A, B) par hone se woh serializable ho sakta hai, par serial nahi; serial ka matlab hai bilkul interleaving nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w10-q8"
+        },
+        {
+          "question": "T1 ne A = 500 likha (abhi commit nahi kiya). T2 ne A padha aur 500 ke hisaab se ek report bana di. Phir T1 abort ho gaya aur A wapas purani value par aa gaya. T2 ke saath kya hua?",
+          "options": [
+            "Lost update",
+            "Unrepeatable read",
+            "Dirty read",
+            "Blind write"
+          ],
+          "answer": 2,
+          "explanation": "Uncommitted data padhna **dirty read** hai: T2 ne aisi value use ki jo kabhi commit hi nahi hui. Option B ka trap: unrepeatable read tab hota jab T2 ek hi item do baar padhe aur beech mein kisi ke commit se value badal jaaye. Lost update mein do writes mein se ek ka asar mit jaata hai, aur blind write bina padhe likhna hai.",
+          "difficulty": "easy",
+          "id": "dbms-w10-q9"
+        },
+        {
+          "question": "Schedule S: R2(A), R1(B), W2(A), R3(A), W1(B), W3(B). S kin serial orders ke conflict-equivalent hai?",
+          "options": [
+            "Sirf T2 → T1 → T3",
+            "T1 → T2 → T3 aur T2 → T1 → T3 dono",
+            "Sirf T3 → T1 → T2",
+            "Kisi ke nahi; precedence graph mein cycle hai"
+          ],
+          "answer": 1,
+          "explanation": "Conflicts dhoondho. A par: W2(A) phir R3(A): T2 → T3. B par: R1(B) phir W3(B), aur W1(B) phir W3(B): T1 → T3. T1 aur T2 ke beech koi conflict nahi (alag items). Graph: T1 → T3, T2 → T3, acyclic. Topological sorts: T1, T2, T3 aur T2, T1, T3, dono valid. Option A ka trap ek hi topological order dhoondh kar ruk jaana hai. Option C edges ki direction ulti padhta hai, aur option D bina cycle ke cycle maan leta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w10-q10"
+        },
+        {
+          "question": "Schedule S: W1(A), R2(A), C2, C1 (C = commit). S ke baare mein kya sahi hai?",
+          "options": [
+            "Strict hai",
+            "Cascadeless hai, par strict nahi",
+            "Recoverable hai, par cascadeless nahi",
+            "Recoverable nahi hai"
+          ],
+          "answer": 3,
+          "explanation": "T2 ne T1 ka likha A padha, isliye recoverable hone ke liye T1 ko T2 se pehle commit karna chahiye tha. Yahan C2 pehle aaya: agar ab T1 abort ho to T2 commit ho chuka hai aur use undo karna namumkin hai. Isliye **recoverable nahi**. Option C ka trap sirf dirty read dekh kar 'cascadeless nahi' bolna aur commit order check na karna hai. Option A aur B galat hain kyunki uncommitted data padha gaya hai.",
+          "difficulty": "medium",
+          "id": "dbms-w10-q11"
+        },
+        {
+          "question": "Schedule S: R1(X), R2(Y), W2(X), R3(X), W1(Y), W3(Y). S ke baare mein kya sahi hai?",
+          "options": [
+            "Conflict serializable nahi: T1 → T2 aur T2 → T1 ka cycle hai",
+            "Conflict serializable hai, T1 → T2 → T3 ke equivalent",
+            "Conflict serializable hai, T2 → T1 → T3 ke equivalent",
+            "Conflict serializable nahi: T2 → T3 aur T3 → T2 ka cycle hai"
+          ],
+          "answer": 0,
+          "explanation": "X par: R1(X) phir W2(X): T1 → T2; W2(X) phir R3(X): T2 → T3. Y par: R2(Y) phir W1(Y): T2 → T1; W1(Y) phir W3(Y): T1 → T3; R2(Y) phir W3(Y): T2 → T3. Edges T1 → T2 aur T2 → T1 dono hain: cycle, conflict serializable nahi. Option B ka trap sirf X wale conflicts dekhna hai; Y par ulti edge cycle bana deti hai. Option C T1 → T2 wali edge bhool jaata hai. Option D galat edge maanta hai: T3 ka koi operation T2 ke kisi conflicting operation se pehle nahi aata.",
+          "difficulty": "hard",
+          "id": "dbms-w10-q12"
+        },
+        {
+          "question": "Schedule S: R1(A), R2(B), W3(A), W3(B), R4(A). S kitne alag serial schedules ke conflict-equivalent hai?",
+          "options": [
+            "1",
+            "4",
+            "2",
+            "6"
+          ],
+          "answer": 2,
+          "explanation": "Conflicts: R1(A) phir W3(A): T1 → T3. R2(B) phir W3(B): T2 → T3. W3(A) phir R4(A): T3 → T4. T1 aur T2 ke beech koi conflict nahi, aur T1 ya T2 ka T4 se bhi nahi. Graph acyclic hai; T3 ko T1 aur T2 dono ke baad aur T4 se pehle aana hai, to orders hain T1, T2, T3, T4 aur T2, T1, T3, T4: kul 2. Option A ka trap ek topological sort par ruk jaana hai. Option B ye maanta hai ki T4 bhi T1/T2 ke saath aage-peeche ho sakta hai; T1 → T3 → T4 ki chain T4 ko aakhir mein baandh deti hai.",
+          "difficulty": "hard",
+          "id": "dbms-w10-q13"
+        },
+        {
+          "question": "Schedule S: R2(A), W1(A), W2(A), W3(A). S ke baare mein kya sahi hai?",
+          "options": [
+            "View-equivalent to T1 → T2 → T3, aur conflict serializable bhi",
+            "Na view serializable, na conflict serializable",
+            "View-equivalent to T3 → T2 → T1, aur conflict serializable bhi",
+            "View-equivalent to T2 → T1 → T3, par conflict serializable nahi"
+          ],
+          "answer": 3,
+          "explanation": "Conflicts: R2(A) phir W1(A): T2 → T1; W1(A) phir W2(A): T1 → T2: cycle, conflict serializable nahi. View check: S mein A ka initial read T2 karta hai aur final write T3. Serial T2 → T1 → T3 mein bhi T2 shuru mein A padhta hai (initial value) aur T3 aakhir mein likhta hai; aur koi read nahi. Teeno conditions match. Option A ka trap: T1 → T2 → T3 mein T2 ka read T1 ki write se padhta, initial value se nahi. Option B cycle dekhte hi ruk jaata hai; W1(A) aur W2(A) blind/overwritten writes hain jinhe koi nahi padhta. Option C mein final write T1 karta, T3 nahi.",
+          "difficulty": "hard",
+          "id": "dbms-w10-q14"
+        },
+        {
+          "question": "Shuru mein A = 100. T1: read(A), A = A + 50, write(A). T2: read(A), A = A − 30, write(A). Schedule hai R1(A), R2(A), W1(A), W2(A). Final A kya hai, aur kya ye kisi serial schedule ke result jaisa hai?",
+          "options": [
+            "120; haan, T1 → T2 jaisa",
+            "70; nahi, T1 ka update kho gaya (lost update)",
+            "150; nahi, T2 ka update kho gaya (lost update)",
+            "100; haan, dono updates ek doosre ko cancel kar dete hain"
+          ],
+          "answer": 1,
+          "explanation": "Dono ne A = 100 padha. T1 likhta hai 150, phir T2 apni purani padhi value se 100 − 30 = 70 likhta hai aur T1 ki write overwrite ho jaati hai. Final 70. Dono serial orders ka result 100 + 50 − 30 = 120 hai, isliye ye galat hai: T1 ka **lost update**. Option A serial result hai, is schedule ka nahi. Option C ka trap ye sochna hai ki pehle likhne wala jeet-ta hai; aakhri write (W2) bachti hai. Option D +50 aur −30 ko barabar maan leta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w10-q15"
         }
       ]
     },
@@ -1354,6 +2543,126 @@
           "explanation": "T1 aur T2 committed hain: redo, yaani X = 20, Y = 15, Z = 9. T3 ka commit nahi: undo, peeche ki taraf: Y wapas 15, X wapas 20 (T3 ke records ki old values). Final X = 20, Y = 15, Z = 9; disk par crash ke waqt kuch bhi ho, log se yahi banta hai. Option B ka trap T3 ko undo na karna hai. Option D ka trap X ko log ke pehle record ki old value 10 par le jaana hai; undo T3 ki old value (20) use karta hai. Option C committed transactions ko bhi undo kar deta hai.",
           "difficulty": "hard",
           "id": "dbms-w11-q6"
+        },
+        {
+          "question": "Write-ahead logging (WAL) ka basic niyam kya hai?",
+          "options": [
+            "Data page pehle disk par likho, uska log record baad mein",
+            "Log records sirf transaction commit hone ke baad likho",
+            "Kisi data page ko disk par likhne se pehle uske log records stable storage par hone chahiye",
+            "Log sirf memory mein rakho, disk par sirf data jaata hai"
+          ],
+          "answer": 2,
+          "explanation": "WAL kehta hai: pehle log, phir data. Agar data page disk par pahunch gaya aur crash ho gaya, to log mein old value honi chahiye taaki undo ho sake. Isi wajah se commit par sirf log force karna kaafi hai. Option A ulta order hai, jisme crash ke baad undo ki jaankari hi nahi milti. Option B ka trap: uncommitted changes ka log bhi zaroori hai, warna unhe undo kaise karoge. Option D mein crash par log hi gayab.",
+          "difficulty": "easy",
+          "id": "dbms-w11-q7"
+        },
+        {
+          "question": "T1 ke paas item A par exclusive (X) lock hai. Ab T2 A par shared (S) lock maangta hai. Kya hoga?",
+          "options": [
+            "T2 ko turant S lock mil jaata hai, kyunki woh sirf padhna chahta hai",
+            "T2 ko wait karna padta hai jab tak T1 apna X lock na chhode",
+            "T1 ka X lock apne aap S mein downgrade ho jaata hai",
+            "T2 hamesha turant abort ho jaata hai"
+          ],
+          "answer": 1,
+          "explanation": "X lock kisi bhi doosre lock ke saath compatible nahi hai, S ke saath bhi nahi, kyunki T1 A ko badal raha hai aur T2 adhoori value padh leta. Isliye T2 queue mein wait karta hai. Option A ka trap ye sochna hai ki 'sirf padhna' hamesha safe hai; S sirf S ke saath chalta hai. Downgrade (option C) transaction khud shrinking phase mein karta hai, lock manager zabardasti nahi. Abort sirf deadlock-prevention schemes mein hota hai, har request par nahi.",
+          "difficulty": "easy",
+          "id": "dbms-w11-q8"
+        },
+        {
+          "question": "Deferred modification scheme mein koi bhi change commit se pehle database (disk) par nahi likha jaata. Crash ke baad recovery ko kya karna padta hai?",
+          "options": [
+            "Sirf redo (committed transactions ka)",
+            "Sirf undo (uncommitted transactions ka)",
+            "Undo aur redo dono",
+            "Na undo, na redo"
+          ],
+          "answer": 0,
+          "explanation": "Uncommitted transaction ne disk par kuch likha hi nahi, isliye undo karne ko kuch nahi. Committed transaction ke changes shayad abhi disk tak na pahunche hon, isliye log se unhe **redo** karna padta hai. Option C immediate modification ka jawab hai. Option D ka trap ye maanna hai ki commit hote hi sab disk par aa gaya; commit par sirf log force hota hai.",
+          "difficulty": "easy",
+          "id": "dbms-w11-q9"
+        },
+        {
+          "question": "T1 ka timestamp 5 hai aur T2 ka 10 (chhota = purana). T2 ek item ka lock maangta hai jo T1 ke paas hai. Wait-die aur wound-wait schemes mein kya hoga?",
+          "options": [
+            "Wait-die: T2 wait karta hai; wound-wait: T1 rollback hota hai",
+            "Wait-die: T1 rollback hota hai; wound-wait: T2 wait karta hai",
+            "Dono schemes mein T2 wait karta hai",
+            "Wait-die: T2 rollback hota hai; wound-wait: T2 wait karta hai"
+          ],
+          "answer": 3,
+          "explanation": "Requester T2 naya hai (10 > 5). Wait-die mein sirf purana requester wait karta hai; naya requester **die** hota hai: T2 rollback. Wound-wait mein purana requester holder ko wound karta hai, par naya requester **wait** karta hai: T2 wait. Option A ka trap: purana transaction (T1) kabhi naye ki wajah se rollback nahi hota jab naya requester ho. Option C wait-die ka rule ulta yaad rakhta hai.",
+          "difficulty": "medium",
+          "id": "dbms-w11-q10"
+        },
+        {
+          "question": "T1 basic 2PL follow karta hai: lock-X(A), lock-X(B), write(A), write(B), unlock(A), unlock(B), phir kuch der baad commit. unlock(A) ke baad aur T1 ke commit se pehle, T2 lock-S(A) lekar A padh leta hai. Phir T1 abort ho jaata hai. Kya problem aati hai?",
+          "options": [
+            "Deadlock",
+            "Schedule non-serializable ho jaata hai",
+            "Cascading rollback: T2 ne uncommitted A padha, use bhi rollback karna padega",
+            "Koi problem nahi, kyunki T1 ne 2PL follow kiya"
+          ],
+          "answer": 2,
+          "explanation": "Basic 2PL serializability deta hai, par shrinking phase commit se pehle shuru ho sakta hai. T2 ne T1 ka uncommitted A padha (dirty read); T1 abort hua to T2 ka kaam bhi galat value par tika hai, isliye **cascading rollback**. Strict 2PL X locks commit tak pakad kar ise rokta hai. Option D ka trap ye maanna hai ki 2PL sab kuch rokta hai. Option B galat hai kyunki 2PL schedule conflict serializable hi rehta hai, aur yahan koi circular wait nahi (option A).",
+          "difficulty": "medium",
+          "id": "dbms-w11-q11"
+        },
+        {
+          "question": "Immediate-modification log neeche hai (`<T, item, old, new>`). Crash ke baad classic undo/redo recovery aakhri checkpoint tak peeche scan karti hai. Kaunse transactions redo aur undo honge, aur recovery ke baad A ki value kya hogi?",
+          "code": "<T1 start>\n<T1, A, 10, 20>\n<T1 commit>\n<T2 start>\n<T2, B, 30, 40>\n<checkpoint {T2}>\n<T3 start>\n<T2, C, 50, 60>\n<T2 commit>\n<T3, A, 20, 25>\n--- crash ---",
+          "options": [
+            "Redo: T1, T2; undo: T3; A = 20",
+            "Redo: T2; undo: T3; A = 20",
+            "Redo: T2; undo: T3; A = 25",
+            "Redo: T2, T3; undo: koi nahi; A = 25"
+          ],
+          "answer": 1,
+          "explanation": "T1 checkpoint se pehle commit ho chuka; checkpoint par uske pages disk par flush ho gaye, isliye T1 ko kuch nahi karna. T2 checkpoint list mein hai aur commit ho gaya: redo. T3 ka sirf start hai: undo, yaani A wapas old value 20 par. Option A ka trap checkpoint ko ignore karke T1 ko bhi redo karna hai (galat nahi, par zaroori nahi, aur checkpoint ka matlab hi yahi hai). Option C undo karna bhool jaata hai, aur option D T3 ko committed maan leta hai.",
+          "difficulty": "hard",
+          "id": "dbms-w11-q12"
+        },
+        {
+          "question": "Lock requests is order mein aati hain (har request tab tak ruki rehti hai jab tak lock na mile). Kya deadlock hai?",
+          "code": "1. T1: lock-X(A)   -- milta hai\n2. T2: lock-X(B)   -- milta hai\n3. T3: lock-S(C)   -- milta hai\n4. T1: lock-S(B)\n5. T2: lock-X(C)\n6. T3: lock-X(A)",
+          "options": [
+            "Haan: wait-for graph mein T1 → T2 → T3 → T1 cycle hai",
+            "Nahi, kyunki T3 ke paas sirf S lock hai, jo kisi ko nahi rokta",
+            "Haan, par cycle sirf T1 aur T2 ke beech hai",
+            "Nahi, kyunki har transaction sirf ek item ka wait kar raha hai"
+          ],
+          "answer": 0,
+          "explanation": "Step 4: B par T2 ka X lock hai, S compatible nahi: T1 → T2. Step 5: C par T3 ka S lock hai, X compatible nahi: T2 → T3. Step 6: A par T1 ka X lock: T3 → T1. Wait-for graph mein T1 → T2 → T3 → T1 cycle: deadlock, ek victim rollback hoga. Option B ka trap ye sochna hai ki S lock harmless hai; S, X request ko rokta hai. Option C cycle ka sirf hissa dekhta hai (T2 T1 ka wait nahi kar raha). Option D ka trap: deadlock ke liye har transaction ka ek hi wait kaafi hai, agar waits ek cycle banayein.",
+          "difficulty": "hard",
+          "id": "dbms-w11-q13"
+        },
+        {
+          "question": "Timestamps: T1 = 10, T2 = 20, T3 = 30 (chhota = purana). Item A par T2 ka lock hai. Pehle T1 A maangta hai, phir T3 A maangta hai. Wait-die aur wound-wait mein kramashah kaunse transactions rollback honge?",
+          "options": [
+            "Wait-die: T1; wound-wait: T3",
+            "Wait-die: T2; wound-wait: T3",
+            "Wait-die: T3; wound-wait: T2",
+            "Wait-die: T3; wound-wait: koi nahi"
+          ],
+          "answer": 2,
+          "explanation": "Wait-die: T1 (10) holder T2 (20) se purana hai, to wait karta hai. T3 (30) naya hai, to die: rollback T3. Wound-wait: T1 purana requester hai, to T2 ko wound karta hai: T2 rollback, A T1 ko milta hai. Ab T3 A maangta hai jo T1 ke paas hai; T3 naya hai, to wait karta hai. Rollback: T2. (Rollback hua transaction apne purane timestamp ke saath restart hota hai, taaki starve na ho.) Option D ka trap ye maanna hai ki wound-wait mein koi nahi marta; purana requester holder ko hata deta hai. Option A aur B schemes ke rules ulte kar dete hain.",
+          "difficulty": "hard",
+          "id": "dbms-w11-q14"
+        },
+        {
+          "question": "Neeche immediate-modification log hai (`<T, item, old, new>`) aur iske baad crash hua. Recovery poori hone ke baad X, Y, Z aur W ki values kya hongi? (Crash ke waqt disk par in items ki koi bhi purani ya nayi value ho sakti hai.)",
+          "code": "<T1 start>\n<T1, X, 5, 10>\n<T2 start>\n<T2, Y, 7, 14>\n<T1, Z, 1, 2>\n<T1 commit>\n<T3 start>\n<T3, X, 10, 30>\n<T2, W, 3, 6>\n<T3 commit>\n<T2, Z, 2, 4>\n--- crash ---",
+          "options": [
+            "X = 30, Y = 14, Z = 4, W = 6",
+            "X = 30, Y = 7, Z = 1, W = 3",
+            "X = 10, Y = 7, Z = 2, W = 3",
+            "X = 30, Y = 7, Z = 2, W = 3"
+          ],
+          "answer": 3,
+          "explanation": "T1 aur T3 commit hue: redo. T2 ka commit nahi: undo. Redo forward: X = 10, Z = 2 (T1), phir X = 30 (T3). Undo T2 backward, har record ki old value se: Z = 2, W = 3, Y = 7. Final: X = 30, Y = 7, Z = 2, W = 3. Option A ka trap sab kuch redo karke undo bhool jaana hai. Option B ka trap Z ko bilkul shuruaati value (1) par le jaana hai; undo T2 ke record ki old value (2) likhta hai, jo T1 ki committed value hai. Option C T3 ka redo bhool jaata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w11-q15"
         }
       ]
     },
@@ -1475,6 +2784,123 @@
           "explanation": "Outer ke liye M − 2 = 10 blocks. r outer: ⌈100 / 10⌉ × 400 + 100 = 10 × 400 + 100 = 4,100. s outer: ⌈400 / 10⌉ × 100 + 400 = 40 × 100 + 400 = 4,400. Isliye chhoti relation r outer, 4,100. Option D ka trap M − 2 ki jagah poore 12 blocks outer ko de dena hai (⌈100 / 12⌉ = 9, 9 × 400 + 100 = 3,700). Option B buffer ko ignore karke worst-case formula lagata hai, aur option A badi relation ko outer rakhta hai.",
           "difficulty": "hard",
           "id": "dbms-w12-q6"
+        },
+        {
+          "question": "PostgreSQL mein kisi query ke liye optimiser ka chuna hua evaluation plan dekhne ke liye kaunsa command likhte hain?",
+          "options": [
+            "`DESCRIBE`",
+            "`EXPLAIN`",
+            "`ANALYZE TABLE`",
+            "`SHOW PLAN`"
+          ],
+          "answer": 1,
+          "explanation": "`EXPLAIN SELECT ...` optimiser ka chuna hua plan dikhata hai: kaunsa scan, kaunsa join algorithm, aur estimated cost/rows. Option A ka trap: `DESCRIBE` (MySQL) table ka structure dikhata hai, plan nahi. Option C statistics ikattha karne wala command hai (MySQL style); PostgreSQL mein `ANALYZE` stats update karta hai, jinka optimiser use karta hai, par plan khud nahi dikhata. `SHOW PLAN` PostgreSQL ka command nahi hai.",
+          "difficulty": "easy",
+          "id": "dbms-w12-q7"
+        },
+        {
+          "question": "Inmein se kaunse join algorithms sirf equi-joins (jaise `r.A = s.A`) ke liye kaam karte hain, `r.A < s.B` jaisi condition ke liye nahi?",
+          "options": [
+            "Sirf tuple nested-loop join",
+            "Sirf block nested-loop join",
+            "Nested-loop aur block nested-loop dono",
+            "Merge join aur hash join"
+          ],
+          "answer": 3,
+          "explanation": "Merge join dono inputs ko join attribute par sorted maan kar barabar values ke groups milata hai, aur hash join barabar values ko ek hi bucket mein bhejta hai; dono 'barabari' par hi tike hain. Nested-loop aur block nested-loop har pair par koi bhi condition check kar sakte hain, isliye woh theta joins bhi kar lete hain. Option C ka trap ulta yaad rakhna hai: sabse simple algorithm sabse general bhi hai.",
+          "difficulty": "easy",
+          "id": "dbms-w12-q8"
+        },
+        {
+          "question": "Heuristic query optimisation ka kaunsa niyam sahi hai?",
+          "options": [
+            "Selections ko jitna jaldi ho sake (tree mein neeche) lagao",
+            "Cartesian products pehle karo, filter baad mein",
+            "Projections sabse aakhir mein lagao, taaki koi column na chhoote",
+            "Sabse badi relations ko sabse pehle join karo"
+          ],
+          "answer": 0,
+          "explanation": "Selection jaldi lagane se intermediate results chhote hote hain, aur har agla operation sasta ho jaata hai. Option B bilkul ulta hai: Cartesian product sabse bada intermediate banata hai, heuristics usse bachne ko kehte hain. Option C ka trap: projections bhi jaldi lagate hain, bas join ke liye zaroori attributes bachaye rakhte hain. Option D bhi ulta hai: sabse restrictive (chhota result dene wale) joins pehle.",
+          "difficulty": "easy",
+          "id": "dbms-w12-q9"
+        },
+        {
+          "question": "Relation r ke 800 blocks hain aur koi index nahi hai. Linear scan se (i) unique key par equality (record maujood hai) aur (ii) non-key attribute par equality mein average kitne block transfers lagenge?",
+          "options": [
+            "(i) 800, (ii) 800",
+            "(i) 400, (ii) 400",
+            "(i) 400, (ii) 800",
+            "(i) 1, (ii) 800"
+          ],
+          "answer": 2,
+          "explanation": "(i) Key unique hai, to record milte hi scan ruk jaata hai; average aadhi file: 800 / 2 = 400. (ii) Non-key value kai records mein ho sakti hai, isliye poori file padhni padti hai: 800. Option B ka trap non-key par bhi 'mil gaya to ruk jao' lagana hai. Option A unique key ka fayda bhool jaata hai, aur option D index jaisa 1 block maan leta hai, jabki index hai hi nahi.",
+          "difficulty": "medium",
+          "id": "dbms-w12-q10"
+        },
+        {
+          "question": "`emp` mein 8,000 tuples hain aur `dept` mein 500. `dept_id`, `dept` ki primary key hai aur `emp` mein NOT NULL foreign key. emp ⋈ dept (on `dept_id`) ka size kitna hoga?",
+          "options": [
+            "500",
+            "4,000,000",
+            "16",
+            "8,000"
+          ],
+          "answer": 3,
+          "explanation": "Har emp tuple ka `dept_id` NOT NULL hai aur `dept` mein theek ek matching tuple hai (key + foreign key), isliye har emp row join mein ek hi baar aati hai: size = n_emp = 8,000. Option B Cartesian product (8,000 × 500) hai. Option A ka trap result ko chhoti relation ke size jitna maanna hai. Option C 8,000 / 500 hai, jo average 'har dept ke employees' hai, join size nahi.",
+          "difficulty": "medium",
+          "id": "dbms-w12-q11"
+        },
+        {
+          "question": "r ⋈ s: r ke 200 blocks aur 4,000 tuples hain (r outer); s ke 1,000 blocks hain aur join attribute par s ka B+ tree index hai, jisse ek lookup ki cost c = 3 block transfers hai. Worst case memory mein (har relation ka ek block) block nested-loop aur indexed nested-loop mein se kaunsa sasta hai, aur uski cost kya hai?",
+          "options": [
+            "Block nested-loop: 200,200 transfers",
+            "Indexed nested-loop: 12,200 transfers",
+            "Indexed nested-loop: 800 transfers",
+            "Indexed nested-loop: 4,200 transfers"
+          ],
+          "answer": 1,
+          "explanation": "Block nested-loop: b_r × b_s + b_r = 200 × 1,000 + 200 = 200,200. Indexed nested-loop: b_r + n_r × c = 200 + 4,000 × 3 = 12,200. Indexed sasta hai. Option C ka trap index lookup ko har block ke liye ek baar ginna hai (200 + 200 × 3 = 800); lookup har outer **tuple** ke liye hota hai. Option D lookup cost c ko 1 maan leta hai (200 + 4,000).",
+          "difficulty": "hard",
+          "id": "dbms-w12-q12"
+        },
+        {
+          "question": "r ke 300 blocks aur s ke 700 blocks hain, aur equi-join r ⋈ s karna hai. Hash join (recursive partitioning nahi) ki estimated cost kya hai, aur agar dono relations pehle se join attribute par sorted hon to merge join ki?",
+          "options": [
+            "Hash join 3,000; merge join 1,000",
+            "Hash join 1,000; merge join 3,000",
+            "Hash join 3,000; merge join 210,300",
+            "Hash join 2,000; merge join 1,000"
+          ],
+          "answer": 0,
+          "explanation": "Hash join: partitioning mein dono relations ek baar padhi aur ek baar likhi jaati hain, phir build/probe mein ek baar aur padhi jaati hain: lagbhag 3(b_r + b_s) = 3 × 1,000 = 3,000. Merge join, dono pehle se sorted: har relation ek baar padho, b_r + b_s = 1,000. Option B dono formule ulte kar deta hai. Option C ka trap merge join ki jagah block nested-loop (300 × 700 + 300) laga dena hai. Option D partitioning ka likhna (write) bhool jaata hai.",
+          "difficulty": "hard",
+          "id": "dbms-w12-q13"
+        },
+        {
+          "question": "`emp` mein 20,000 tuples hain aur V(dept_id, emp) = 40. `department` mein 40 tuples hain, `dept_id` uski key hai, aur V(city, department) = 8. Uniform distribution maan kar σ_city='Pune'(department) ⋈ emp (on `dept_id`) ka estimated size kya hai?",
+          "options": [
+            "5",
+            "20,000",
+            "100,000",
+            "2,500"
+          ],
+          "answer": 3,
+          "explanation": "Pehle selection: 40 / 8 = 5 departments Pune mein. Phir join: n_r × n_s / max(V) = 20,000 × 5 / max(40, 5) = 2,500. Seedhe socho to bhi: 40 mein se 5 departments, to 20,000 ka 5/40 hissa = 2,500 employees. Option A sirf selection ka size hai. Option B ka trap ye maanna hai ki FK join hamesha n_emp deta hai; yahan department pehle filter ho chuka hai, isliye zyaadatar emp rows ka partner hi nahi bacha. Option C × jaisa 20,000 × 5 hai.",
+          "difficulty": "hard",
+          "id": "dbms-w12-q14"
+        },
+        {
+          "question": "Chaar relations r1 ⋈ r2 ⋈ r3 ⋈ r4 ko join karne ke kul kitne join orders hain (koi bhi tree shape, commutativity samet), aur unmein se kitne left-deep hain?",
+          "options": [
+            "24 aur 24",
+            "120 aur 12",
+            "120 aur 24",
+            "720 aur 24"
+          ],
+          "answer": 2,
+          "explanation": "Kul orders = (2(n − 1))! / (n − 1)! = 6! / 3! = 720 / 6 = 120. Left-deep tree mein har join ka right input ek base relation hai, isliye sirf relations ka order chunna hai: 4! = 24. Option A ka trap sirf permutations ginna hai aur bushy trees bhool jaana. Option D (2(n − 1))! ko divide karna bhool jaata hai. Option B left-deep ko 4! / 2 maanta hai, jaise pehle do relations ka order matter na kare; formula mein commutativity gini jaati hai.",
+          "difficulty": "hard",
+          "id": "dbms-w12-q15"
         }
       ]
     }

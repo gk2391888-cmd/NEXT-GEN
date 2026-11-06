@@ -61,6 +61,96 @@
       ],
       "explanation": "An index and a file organisation both only describe how data is laid out and found on disk, so (i) and (ii) are physical changes. Adding a column (iii) and splitting a table (iv) change the design of the relations, i.e. the logical schema. Trap in option C: calling the new column physical because 'it does not break old queries'; old queries surviving is logical data independence, but the change itself is still logical. Option A counts the index but forgets the file organisation."
     },
+    "dbms-w1-q7": {
+      "question": "Which of these statements belongs to DDL (Data Definition Language)?",
+      "options": [
+        "`SELECT name FROM student;`",
+        "`UPDATE student SET cgpa = 9;`",
+        "`ALTER TABLE student ADD phone VARCHAR(15);`",
+        "`DELETE FROM student WHERE roll = 7;`"
+      ],
+      "explanation": "DDL defines or changes the schema: `CREATE`, `ALTER`, `DROP`. `ALTER TABLE ... ADD` adds a new column and changes the table's structure, so it is DDL. `SELECT`, `UPDATE` and `DELETE` are all DML: they read or change data, not structure. The trap in option D is hearing 'remove' and treating `DELETE` like `DROP`; `DELETE` only removes rows, the table stays."
+    },
+    "dbms-w1-q8": {
+      "question": "A fictional startup says: 'All our customer data is in PostgreSQL.' In this sentence, what is PostgreSQL?",
+      "options": [
+        "A database, that is, a collection of stored data",
+        "A DBMS, that is, the software that stores, queries and protects data",
+        "A data model, that is, the concepts used to describe data",
+        "A schema, that is, the design of tables and columns"
+      ],
+      "explanation": "PostgreSQL is a **DBMS**: the software that stores data, runs queries, and handles transactions and recovery. The startup's customer data is itself the database, which lives inside this DBMS. The trap in option A is calling the database and the DBMS the same thing. Option C is wrong because PostgreSQL implements the relational data model rather than being the model itself; and the schema (option D) is the design of the startup's own tables."
+    },
+    "dbms-w1-q9": {
+      "question": "In a fictional shopping app's product catalog, every product has different fields: a phone has `battery` and `ram`, a shirt has `size` and `fabric`. The data is to be stored as JSON documents. Which data model fits best?",
+      "options": [
+        "Semi-structured model",
+        "Network model",
+        "Hierarchical model",
+        "Physical storage model"
+      ],
+      "explanation": "When every record can have different fields and the data looks like JSON/XML, that is the **semi-structured** data model. The network and hierarchical models are old (historical) models that tie records into fixed links or a tree; they were not built for varying fields. The trap in option D is hearing 'physical' and taking it for a data model; the physical level says how data sits on disk, it is not a model for describing data."
+    },
+    "dbms-w1-q10": {
+      "question": "In a fictional college, apps run queries on a `student_info` view. The DBA splits the `student(roll, name, phone, city)` table into `student_core(roll, name)` and `student_contact(roll, phone, city)`, and redefines the view as a join of the two tables. Not a single app query changed. What is this an example of?",
+      "options": [
+        "Physical data independence",
+        "Data isolation",
+        "Atomicity",
+        "Logical data independence"
+      ],
+      "explanation": "Splitting a table is a change to the logical (conceptual) schema. The apps worked at the view (external) level, and only the view→logical mapping (the view's definition) changed, so the apps did not break: this is **logical data independence**, and views make it possible. The trap in option A is saying physical data independence just because 'the apps did not change'; that would be the case if only storage or an index changed. Data isolation (option B) is a file-processing problem, not a guarantee."
+    },
+    "dbms-w1-q11": {
+      "question": "A fictional bank has the rule 'a balance is never negative'. This check is written inside three separate Python programs (ATM, net banking, branch), and the data is in CSV files. A new UPI program was built that forgot this check, and some balances went negative. Which problem of a file-processing system shows up here?",
+      "options": [
+        "Concurrent-access anomaly",
+        "Lack of atomicity",
+        "Data isolation",
+        "Integrity problem: the rule is buried in each program's code"
+      ],
+      "explanation": "The integrity rule (balance ≥ 0) is not kept in one place with the data but written separately in each program; the new program forgot it, so the rule broke. This is an **integrity problem**. In a DBMS, `CHECK (balance >= 0)` is written in the schema and applies to every program automatically. The trap in option A: no two users are updating at the same time here, a check is simply missing from one program. Option B is wrong because there was no half-done work or crash."
+    },
+    "dbms-w1-q12": {
+      "question": "Four statements run one after another. Which of them change the metadata stored in the **data dictionary** (system catalog)?",
+      "options": [
+        "Only (iii)",
+        "(i) and (iii)",
+        "(ii) and (iv)",
+        "(i), (ii), (iii) and (iv)"
+      ],
+      "explanation": "The data dictionary holds the schema's metadata: which tables, columns, types, constraints and indexes exist. (i) creates a new index, whose entry goes into the catalog; (iii) adds a new column to the table. Both are DDL. (ii) and (iv) are DML: they change only the instance (rows), not the metadata. The trap in option A is treating an index as 'just a physical thing' that stays out of the catalog; the metadata of physical structures also lives in the catalog. Option D mistakes changing rows for a schema change."
+    },
+    "dbms-w1-q13": {
+      "question": "A fictional HR app runs queries only on the view `hr_view`, defined as `SELECT name, salary FROM employee`. Now the DBA renames the column `salary` of `employee` to `monthly_pay` in the logical schema. At minimum, what must change so that the HR app's queries keep working unchanged?",
+      "options": [
+        "Only the view's definition, that is, the view→logical mapping",
+        "All HR app queries that use `salary`",
+        "The logical→physical mapping and the files stored on disk",
+        "Nothing; physical data independence handles it on its own"
+      ],
+      "explanation": "The app works at the view (external) level and the view's column must stay `salary`. So redefine the view as `SELECT name, monthly_pay AS salary FROM employee`: only the view→logical mapping changed, the app stayed the same. This is logical data independence. The trap in option B is assuming a logical change always breaks the app; views absorb exactly this shock. Option C is wrong because a rename does not change the data on disk, and the trap in option D is mixing up physical and logical data independence: the change happened at the logical level."
+    },
+    "dbms-w1-q14": {
+      "question": "During a query, three things happen: (i) user Neel has no permission to read the `salary` column, so the query is rejected; (ii) a crash hit in the middle of another user's transfer, and on restart its half-done work is undone; (iii) a block the plan needs is not in memory, so it is brought in from disk. Which parts of the storage manager do these, in order?",
+      "options": [
+        "Query optimizer, file manager, DDL interpreter",
+        "Authorization and integrity manager, buffer manager, transaction manager",
+        "Authorization and integrity manager, transaction manager, buffer manager",
+        "DML compiler, transaction manager, buffer manager"
+      ],
+      "explanation": "(i) Who may read what is checked by the **authorization and integrity manager**. (ii) Undoing a half-done transaction after a crash is atomicity, handled by the **transaction manager** (together with recovery). (iii) Bringing a block from disk into memory is the job of the **buffer manager**. Option B has (ii) and (iii) swapped: the buffer manager does not undo anything. The trap in option D: the DML compiler turns the query into a plan, it does not check permissions. The components in option A are either part of the query processor or do a different job."
+    },
+    "dbms-w1-q15": {
+      "question": "In a fictional wallet app (backed by a DBMS), Riya starts with ₹2000, Kabir with ₹1000 and Meera with ₹500. Transaction T1: Riya → Kabir ₹300, committed. Then T2: Kabir → Meera ₹400; the UPDATE on Kabir ran, but the server crashed before the UPDATE on Meera and the COMMIT. What are the balances after recovery?",
+      "options": [
+        "Riya 1700, Kabir 900, Meera 500",
+        "Riya 2000, Kabir 1000, Meera 500",
+        "Riya 1700, Kabir 900, Meera 900",
+        "Riya 1700, Kabir 1300, Meera 500"
+      ],
+      "explanation": "T1 had committed, so by **durability** its changes stay: Riya 1700, Kabir 1300. T2 did not commit, so by **atomicity** its half-done work (Kabir −400) is undone: Kabir is back to 1300, Meera 500. The total is 3500, as at the start. Option A is the half-done state at the moment of the crash (₹400 missing): exactly the file-system mistake. Option B undoes the committed T1 too, which breaks durability. Option C assumes T2 completed."
+    },
     "dbms-w2-q1": {
       "question": "What are the degree and cardinality of the `course` relation below?",
       "options": [
@@ -120,6 +210,96 @@
         "2"
       ],
       "explanation": "Superkeys containing A: A with any subset of B, C, D, 2³ = 8. Superkeys containing {B, C}: B, C with any subset of A, D, 2² = 4. Sets counted in both (those containing A, B and C) are {A,B,C} and {A,B,C,D} = 2. Inclusion–exclusion: 8 + 4 − 2 = 10. The trap in option B is counting the common sets twice; option A counts only the superkeys with A, and option D mistakes candidate keys for all superkeys."
+    },
+    "dbms-w2-q7": {
+      "question": "In SQL, what does putting `PRIMARY KEY` on a column mean?",
+      "options": [
+        "Values must be unique and NULL is not allowed",
+        "Values must be unique, but one row may hold NULL",
+        "Only NULL is forbidden; duplicate values are allowed",
+        "The column has been made a foreign key to another table"
+      ],
+      "explanation": "A primary key is the candidate key the designer chose, and SQL enforces it like `UNIQUE` + `NOT NULL`: every row is identified separately, and the identity is never 'unknown'. The trap in option B is mixing up `UNIQUE` and `PRIMARY KEY`; plain `UNIQUE` allows NULL, a primary key does not. Option D is about a foreign key (`REFERENCES`), which is a completely different constraint."
+    },
+    "dbms-w2-q8": {
+      "question": "Which of these names does the condition `WHERE name LIKE '%an'` match? (All names are compared exactly as written, case-sensitively.)",
+      "options": [
+        "Ananya",
+        "Sanya",
+        "Anand",
+        "Karan"
+      ],
+      "explanation": "`'%an'` means: anything at the start (zero or more characters), and the last two characters exactly `an`. Karan ends in `an`, so it matches. Ananya and Sanya end in `ya`, and Anand ends in `nd`. The trap in options A and C is reading `%an` as 'an anywhere'; that pattern would be `'%an%'`."
+    },
+    "dbms-w2-q9": {
+      "question": "How is the SQL condition `dept = 'CS' OR dept = 'EE' AND salary > 60000` evaluated?",
+      "options": [
+        "(dept = 'CS' OR dept = 'EE') AND salary > 60000",
+        "dept = 'CS' OR (dept = 'EE' AND salary > 60000)",
+        "It gives an error, because brackets are required with AND and OR",
+        "Left to right: first the OR, then AND on its result"
+      ],
+      "explanation": "In SQL, `AND` has higher precedence than `OR`, so `dept = 'EE' AND salary > 60000` binds first, and then it is `OR`-ed with `dept = 'CS'`. That means every CS employee comes through (any salary), and from EE only those above 60000. Option A is what the writer often intends, but it needs explicit brackets. The trap in option D is reading it left to right like arithmetic."
+    },
+    "dbms-w2-q10": {
+      "question": "`emp.dept_id` has `REFERENCES dept(dept_id) ON DELETE CASCADE`. The data is below. When `DELETE FROM dept WHERE dept_id = 'D1';` runs, how many rows are deleted across both tables together?",
+      "options": [
+        "1",
+        "3",
+        "4",
+        "The delete is rejected"
+      ],
+      "explanation": "`ON DELETE CASCADE` means: remove the parent row and the child rows that refer to it are removed too. Along with the D1 dept row (1), Asha, Neha and Omar (3) are deleted: 4 in total. Lina's `dept_id` is NULL, so she refers to nothing and stays; Ravi is in D2. The trap in option D is remembering the default (NO ACTION) behaviour; with CASCADE there is no rejection. Option B counts only the child rows and forgets the dept row."
+    },
+    "dbms-w2-q11": {
+      "question": "The current instance of the `customer` table is below. Looking only at this instance, about which attribute set can you say for certain that it is **not** a candidate key?",
+      "options": [
+        "{name}",
+        "{id}",
+        "{email}",
+        "{name, city}"
+      ],
+      "explanation": "An instance can only **disprove** a key. In {name}, 'Ira' appears twice, so it is not even a superkey, let alone a candidate key. {id}, {email} and {name, city} are unique in this instance: they may or may not be keys; the business rule decides that, not the data. The trap in option D is rejecting {name, city} because 'city repeats'; as pairs, (Ira, Pune), (Dev, Pune), (Ira, Agra) are all different."
+    },
+    "dbms-w2-q12": {
+      "question": "R(A, B) = {(1, x), (2, y), (3, x), (2, z)} and S(A, B) = {(2, y), (4, x)}. How many tuples are in E1 = π_A(R − S) and in E2 = π_A(R) − π_A(S)?",
+      "options": [
+        "E1: 2, E2: 2",
+        "E1: 3, E2: 2",
+        "E1: 3, E2: 3",
+        "E1: 2, E2: 3"
+      ],
+      "explanation": "E1: R − S removes only (2, y), leaving (1, x), (3, x), (2, z); π_A = {1, 3, 2} = 3 tuples. E2: π_A(R) = {1, 2, 3}, π_A(S) = {2, 4}; the difference is {1, 3} = 2 tuples. The gap appears because (2, z) as a whole tuple is not in S, but its A = 2 is. The trap in option C is assuming that swapping the order of projection and difference changes nothing; π does not distribute over difference. Option A removes 2 from E1 as well."
+    },
+    "dbms-w2-q13": {
+      "question": "The only candidate keys of relation R(A, B, C, D) are {A, B} and {B, C}. How many superkeys does R have?",
+      "options": [
+        "8",
+        "4",
+        "7",
+        "6"
+      ],
+      "explanation": "Superkeys containing {A, B}: A, B plus any subset of C, D = 2² = 4. Those containing {B, C}: B, C plus any subset of A, D = 2² = 4. Common to both (containing all of A, B, C): {A, B, C} and {A, B, C, D} = 2. Inclusion–exclusion: 4 + 4 − 2 = 6. The trap in option A is counting the common sets twice. Option B counts the superkeys of only one key, and option C also treats {B} as a superkey, although B alone contains no key."
+    },
+    "dbms-w2-q14": {
+      "question": "Which names does this query on the `emp` table return?",
+      "options": [
+        "Ravi, Neha",
+        "Asha, Neha, Arun",
+        "Asha, Ravi, Neha, Arun",
+        "Asha, Ravi, Neha, Lina, Arun"
+      ],
+      "explanation": "`AND` binds first: the condition is dept = 'CS' OR (dept = 'EE' AND salary BETWEEN 50000 AND 60000). All of CS: Asha, Neha, Arun (their salary is not even checked). From EE within the range: Ravi (50000, since BETWEEN includes both ends); Lina at 61000 is outside. Result: Asha, Ravi, Neha, Arun. The trap in option A is reading the condition as (CS OR EE) AND range. Option B drops Ravi, treating BETWEEN as exclusive, and option D puts Lina inside the range."
+    },
+    "dbms-w2-q15": {
+      "question": "The tables are below. Run each INSERT separately, on this same starting data. Which INSERTs are accepted?",
+      "options": [
+        "Only (i) and (iii)",
+        "(i), (iii) and (v)",
+        "(i), (ii) and (iii)",
+        "Only (i)"
+      ],
+      "explanation": "(i) A new date, so the whole key (M02, 111, 2026-07-05) is new: accepted. (ii) M03 is not in `member`: the foreign key is violated, rejected. (iii) The key (M01, 111, 2026-07-01) differs from the existing row (different member), and M01 exists: accepted. (iv) The whole key equals the existing row's: primary key violated, rejected. (v) `member_id` is part of the primary key, so it is NOT NULL: rejected. The trap in option B is remembering that a foreign key column allows NULL; here the same column is also in the primary key. The trap in option D is treating (iii) as a duplicate, while in a composite key it is all three columns together that must be unique."
     },
     "dbms-w3-q1": {
       "question": "What does this query return on the `orders` table?",
@@ -181,6 +361,96 @@
       ],
       "explanation": "`roll NOT IN (101, NULL)` means `roll <> 101 AND roll <> NULL`. `roll <> NULL` is always UNKNOWN. For roll 101 the first part is FALSE, so the whole thing is FALSE; for everyone else it is TRUE AND UNKNOWN = UNKNOWN. WHERE keeps only TRUE, so no row comes back. Option A is tempting because it is the intended answer; you would get it with `NOT EXISTS` (or `WHERE roll IS NOT NULL` in the subquery). NULL does not cause an error, so option D is wrong."
     },
+    "dbms-w3-q7": {
+      "question": "In what logical order are the clauses of a `SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ...` query evaluated?",
+      "options": [
+        "SELECT → FROM → WHERE → GROUP BY → HAVING",
+        "FROM → GROUP BY → WHERE → HAVING → SELECT",
+        "FROM → WHERE → GROUP BY → HAVING → SELECT",
+        "FROM → WHERE → HAVING → GROUP BY → SELECT"
+      ],
+      "explanation": "First `FROM` brings in the tables, `WHERE` filters individual rows, `GROUP BY` forms groups of the remaining rows, `HAVING` filters whole groups, and finally `SELECT` produces the columns/aggregates. Option A is the writing order, not the running order. The trap in option B is putting `GROUP BY` before `WHERE`; precisely because it comes after, an aggregate cannot be used in `WHERE`. Option D runs `HAVING` before any groups exist, which is impossible."
+    },
+    "dbms-w3-q8": {
+      "question": "A row has `salary = 60000` and `bonus` is NULL. Does this row appear in the output of `WHERE salary > 50000 OR bonus > 1000`?",
+      "options": [
+        "Yes, because TRUE OR UNKNOWN = TRUE",
+        "No, because any condition involving NULL removes the row",
+        "No, because TRUE OR UNKNOWN = UNKNOWN",
+        "It gives an error, because `bonus` is NULL"
+      ],
+      "explanation": "`salary > 50000` is TRUE, and `bonus > 1000` is UNKNOWN because of the NULL. In three-valued logic TRUE OR UNKNOWN = TRUE, because one TRUE is enough for OR whatever the other side is. WHERE keeps TRUE rows, so the row appears. The trap in option B is believing NULL poisons every condition; that happens only in cases like AND. Option C misremembers the OR rule; it is FALSE OR UNKNOWN that is UNKNOWN."
+    },
+    "dbms-w3-q9": {
+      "question": "The `dept` column of the `emp` table holds these values: CS, EE, CS, NULL, ME, NULL. What does `SELECT COUNT(DISTINCT dept) FROM emp;` return?",
+      "options": [
+        "6",
+        "4",
+        "5",
+        "3"
+      ],
+      "explanation": "`COUNT(DISTINCT dept)` ignores NULL and counts the different values among the rest: CS, EE, ME = 3. Option A is `COUNT(*)` (all rows). The trap in option B is counting NULL as one more 'distinct value' (or confusing it with `COUNT(dept)` = 4). Aggregates do not treat NULL as a value."
+    },
+    "dbms-w3-q10": {
+      "question": "What output does this query on the `emp` table give?",
+      "options": [
+        "(CS, 2), (EE, 3)",
+        "(EE, 3)",
+        "(EE, 2)",
+        "(CS, 1), (EE, 3), (ME, 1)"
+      ],
+      "explanation": "`WHERE` runs first and removes Ravi (40000); Omar (45000) stays because of `>=`. Groups: CS = 1 (Asha), EE = 3 (Neha, Omar, Lina), ME = 1 (Vik). `HAVING COUNT(*) >= 2` keeps only EE: (EE, 3). The trap in option A is counting groups before the WHERE (CS with 2). Option C drops Omar as if it were `>`, and option D forgets the HAVING."
+    },
+    "dbms-w3-q11": {
+      "question": "How many rows does this LEFT JOIN query return?",
+      "options": [
+        "5",
+        "4",
+        "2",
+        "3"
+      ],
+      "explanation": "The LEFT JOIN first builds 5 rows: D1–Asha, D1–Neha, D2–Ravi, D3–NULL, D4–NULL. Then `WHERE e.salary > 40000`: Ravi (30000) is FALSE, and for D3/D4 NULL > 40000 is UNKNOWN, so they are removed too. Asha and Neha remain: 2 rows. The outer join has silently become an inner join. The trap in option A: 5 would be the answer if the condition were in `ON` (`ON d.dept_id = e.dept_id AND e.salary > 40000`), because then the unmatched depts would survive with NULLs."
+    },
+    "dbms-w3-q12": {
+      "question": "Which names does this correlated subquery return?",
+      "options": [
+        "Asha, Neha",
+        "Asha, Kiran, Neha, Vik",
+        "Asha, Vik",
+        "Asha, Neha, Vik"
+      ],
+      "explanation": "For each outer row the subquery computes the average of that row's own dept. CS avg = (60000 + 40000 + 50000) / 3 = 50000: only Asha is above it; Kiran is equal, not `>`. EE avg = 50000: Neha. ME avg = 90000 (Vik alone): Vik is not above his own average. Result: Asha, Neha. Option B is the result for `>=`. The trap in option C is ignoring the correlation and using the whole company's average (about 56667). Option D adds Vik because he earns the most."
+    },
+    "dbms-w3-q13": {
+      "question": "The placement cell wants the names of students who are not placed, and this time the query is written with `NOT EXISTS`. What does it return?",
+      "options": [
+        "No rows (empty result)",
+        "Ira, Sam",
+        "Dev, Sam, Mia",
+        "Dev, Mia"
+      ],
+      "explanation": "For each student the subquery looks for a matching roll in `placed`. 101 and 103 have a match, so `NOT EXISTS` is FALSE: Ira and Sam are out. For 102 and 104, `p.roll = s.roll` is FALSE on every row or UNKNOWN (on the NULL row), no row is TRUE, the subquery is empty, and `NOT EXISTS` is TRUE: Dev, Mia. The trap in option A is applying the `NOT IN` behaviour here; `NOT EXISTS` only checks whether any row came back, so NULL does not break it. Option B lists the placed students, and option C wrongly keeps Sam."
+    },
+    "dbms-w3-q14": {
+      "question": "What output does this query on the `orders` table give?",
+      "options": [
+        "A (1, 100), B (0, NULL), C (2, 200)",
+        "A (2, 50), B (2, 0), C (2, 200)",
+        "A (1, 50), B (0, 0), C (2, 200)",
+        "A (1, 50), C (2, 200)"
+      ],
+      "explanation": "`COUNT(amount)` ignores NULL: A = 1, B = 0, C = 2. `COALESCE(amount, 0)` turns NULL into 0, so AVG now counts the NULL rows too: A = (100 + 0) / 2 = 50, B = (0 + 0) / 2 = 0, C = (300 + 100) / 2 = 200. The trap in option A is ignoring COALESCE and computing plain `AVG(amount)`. Option B counts `COUNT(amount)` like `COUNT(*)`. The trap in option D is thinking an all-NULL group produces no output; group B's rows exist, so it gets an output row."
+    },
+    "dbms-w3-q15": {
+      "question": "Table `a(k)` holds the values 1, 2, 2, 3 and `b(k)` holds 2, 3, 3, 4. How many rows does `SELECT * FROM a FULL OUTER JOIN b ON a.k = b.k;` return?",
+      "options": [
+        "4",
+        "6",
+        "8",
+        "5"
+      ],
+      "explanation": "Matching pairs: at k = 2, a's 2 rows × b's 1 row = 2; at k = 3, a's 1 × b's 2 = 2. The inner join gives 4. FULL OUTER JOIN also keeps unmatched rows: a's 1 (with NULL for b) and b's 4 (with NULL for a) = 2 more. Total 6. The trap in option A is stopping at the inner join. Option D counts b's duplicate 3 only once (2 + 1 + 2), and the trap in option C is treating FULL OUTER JOIN like UNION ALL and adding up the rows of both tables (4 + 4)."
+    },
     "dbms-w4-q1": {
       "question": "R(A, B, C) has 4 tuples and S(D, E) has 5 tuples. How many tuples does R × S have and what is its degree?",
       "options": [
@@ -240,6 +510,96 @@
         "π_sid(R ⋈ S)"
       ],
       "explanation": "π_sid(R) × S pairs every student with every required course, i.e. 'what should be there'. Subtracting R leaves only the missing pairs; their sids are the students who skipped some required course. Removing those from all students gives R ÷ S. Option C returns just those 'missing' students, the opposite answer. The trap in option B is writing the set difference the wrong way round: R − (π_sid(R) × S) gives the extra-course pairs, not the missing ones. Option D is 'at least one required course'. (On the sample data in the code: A = {S1, S3}, B = {S2, S3}, C = {S2, S4}, D = {S1, S2, S3}.)"
+    },
+    "dbms-w4-q7": {
+      "question": "R(A, B) and S(C, D) share no common attribute. What does the natural join R ⋈ S give?",
+      "options": [
+        "Always an empty relation",
+        "R ∪ S",
+        "An error, because a join needs a common attribute",
+        "R × S (Cartesian product)"
+      ],
+      "explanation": "A natural join requires equality on all common attributes. With no common attribute the condition is empty (always true), and every pair is kept: R ⋈ S = R × S. The trap in option A is thinking 'nothing to match, so nothing comes out'. Option B is wrong because union needs union-compatible relations, and option C is wrong because this is a valid expression in RA."
+    },
+    "dbms-w4-q8": {
+      "question": "In an ER diagram, the `customer` entity stores `date_of_birth`, and `age` is calculated from it. What type of attribute is `age`?",
+      "options": [
+        "Multivalued attribute",
+        "Derived attribute",
+        "Composite attribute",
+        "Key attribute"
+      ],
+      "explanation": "An attribute that can be computed from another stored attribute is **derived** (a dashed oval in the diagram); `age` comes from `date_of_birth` and today's date, so it is not stored in the table. The trap in option A: multivalued means one entity has several values (like several phones), while age has a single value. Composite (option C) is one that splits into smaller parts, like address = city + pin."
+    },
+    "dbms-w4-q9": {
+      "question": "In a fictional food app, `menu_item(item_no, name, price)` is a weak entity whose owner is `restaurant` (PK `rest_id`); `item_no` is unique only within one restaurant. What is the primary key of the `menu_item` table?",
+      "options": [
+        "(`rest_id`, `item_no`)",
+        "Only `item_no`",
+        "Only `rest_id`",
+        "(`item_no`, `name`)"
+      ],
+      "explanation": "A weak entity is identified by the owner's primary key + the discriminator (partial key): (`rest_id`, `item_no`). The trap in option B is treating the discriminator as the full key; two restaurants can both have an item 1. With option C a restaurant could have only one item. Option D lacks the owner's key, so same-named items in different restaurants could collide."
+    },
+    "dbms-w4-q10": {
+      "question": "R(A, B) = {(1, x), (2, y), (3, x)} and S(B, C) = {(x, p), (x, q), (y, r), (z, s)}. How many tuples are in R ⋈ S (natural join), and what is its degree?",
+      "options": [
+        "3 tuples, degree 4",
+        "12 tuples, degree 4",
+        "5 tuples, degree 3",
+        "5 tuples, degree 4"
+      ],
+      "explanation": "The common attribute is B. (1, x) joins with S's two x-tuples: 2; (2, y) with one y: 1; (3, x) with two: 2. Total 5 tuples. A natural join keeps only one copy of the common attribute, so the schema is (A, B, C): degree 3. The trap in option D is counting B twice (that would be like a theta join or ×). Option B is the Cartesian product (3 × 4), and option A assumes each R tuple has only one match."
+    },
+    "dbms-w4-q11": {
+      "question": "R and S are union-compatible relations. Which of these expressions always equals R ∩ S?",
+      "options": [
+        "R − (S − R)",
+        "(R ∪ S) − R",
+        "R − S",
+        "R − (R − S)"
+      ],
+      "explanation": "R − S is the tuples in R but not in S; remove them from R and what remains is exactly the tuples in both R and S: R − (R − S) = R ∩ S. The trap in option A: the tuples of S − R are not in R at all, so removing them leaves the whole of R. Option B gives only S − R, and option C is the opposite: it removes the tuples that are in S."
+    },
+    "dbms-w4-q12": {
+      "question": "A fictional hospital's ER: `doctor` (PK doc_id, multivalued attribute `qualification`), `patient` (PK pid, composite attribute `address` = city + pin, derived attribute `age`), `ward` (PK ward_no). `treats` is M:N between doctor and patient with the attribute `visit_date`. `admitted_in` is N:1 from patient to ward (each patient in at most one ward). Using the standard rules, what is the minimum number of tables?",
+      "options": [
+        "5",
+        "6",
+        "4",
+        "7"
+      ],
+      "explanation": "Strong entities: `doctor`, `patient`, `ward` = 3. The multivalued `qualification` gets its own table `doctor_qualification(doc_id, qualification)` = 4. The M:N `treats` gets `treats(doc_id, pid, visit_date)` = 5. The N:1 `admitted_in` needs no table; `ward_no` goes into `patient` as a foreign key. The composite address becomes two columns and the derived `age` is not stored. Total 5. The trap in option B is making a table for the N:1 as well; option D also makes tables for the composite/derived attributes; option C forgets the table for the multivalued attribute."
+    },
+    "dbms-w4-q13": {
+      "question": "What is the result of `takes` ÷ `req`?",
+      "options": [
+        "S2",
+        "S1, S2, S4",
+        "S1, S2, S3, S4",
+        "S1, S4"
+      ],
+      "explanation": "Division returns the sids that have **every** cid of `req`: both C1 and C3. S1 (C1, C2, C3): yes. S2 (C1, C3): yes. S3 (C2, C3): C1 missing, no. S4 (C1–C4): yes. Result S1, S2, S4. The trap in option A is reading division as 'exactly those courses'; extra courses (S1's C2, S4's C2 and C4) do not exclude anyone. Option C keeps S3 too, as if one required course were enough, and option D forgets S2."
+    },
+    "dbms-w4-q14": {
+      "question": "On this data, which names does the TRC query (at the end of the code) return?",
+      "options": [
+        "Ira",
+        "Ira, Dev, Sam",
+        "Dev",
+        "Ira, Sam"
+      ],
+      "explanation": "Read the query as: 'students for whom, for **every** course c, there is an enrol row'. This is like division. Ira: both DB and OS, yes. Dev: only DB, OS missing, no. Sam: both DB and OS (AI is extra), yes. Result: Ira, Sam. The trap in option A is reading ∀ as 'exactly those courses' and dropping Sam because of AI. Option B reads ∀ like ∃ (any one course), and option C reads it backwards, as 'not in all courses', without any ¬ in the query."
+    },
+    "dbms-w4-q15": {
+      "question": "In a fictional office there is a 1:1 relationship `assigned` between `employee` (PK emp_id) and `parking_slot` (PK slot_no). Every slot is given to one employee (the slot's participation is total), but not every employee has a slot (partial). What is the best mapping with no extra table and no NULLs?",
+      "options": [
+        "Add a `slot_no` column to the `employee` table, NOT NULL",
+        "A separate table `assigned(emp_id, slot_no)` whose primary key is only `emp_id`",
+        "Add an `emp_id` column to the `parking_slot` table, NOT NULL and UNIQUE",
+        "Add an `emp_id` column to the `parking_slot` table, NOT NULL but not UNIQUE"
+      ],
+      "explanation": "In a 1:1 the FK can go on either side, but on the total-participation side (`parking_slot`) every slot always has a value: NOT NULL. UNIQUE stops one employee from getting two slots, so the 1:1 is kept. The trap in option A: NOT NULL is impossible for employees without a slot (the partial side). Option D, without UNIQUE, turns the relationship into 1:N. Option B is an extra table, and with a primary key of only `emp_id` one slot could be given to several employees."
     },
     "dbms-w5-q1": {
       "question": "R(A, B, C, D, E, F) has F = { A → B, B → C, CD → E, E → F }. What is {A, D}⁺?",
@@ -301,6 +661,96 @@
       ],
       "explanation": "A⁺: B, C, then B → D, CD → E = everything, so {A} is a key. E⁺: A, then everything, so {E} is a key. Now two-attribute sets without A or E: BC⁺: D (B → D), then CD → E, E → A = everything, so {B, C} is a key. CD⁺: E, A, B = everything, so {C, D} is a key. BD⁺ stays {B, D}, and {B, C, D} already contains {B, C}, so it is not minimal. Keys: {A}, {E}, {B, C}, {C, D} = 4. The trap in option A is counting only single-attribute keys; option B misses the key {C, D} that starts from CD → E."
     },
+    "dbms-w5-q7": {
+      "question": "A fictional store has a single table `order_line(order_id, product, cust_name, cust_city)`. A new customer, Zoya, has registered, but until she places an order her city cannot be stored anywhere. Which anomaly is this?",
+      "options": [
+        "Update anomaly",
+        "Insertion anomaly",
+        "Deletion anomaly",
+        "Lost update"
+      ],
+      "explanation": "Customer details can be added only when an order row is created: being unable to insert one fact (the customer) without another fact (an order) is an **insertion anomaly**. Option A would be the case if changing the city meant changing many rows. The trap in option C: a deletion anomaly is the opposite case, where deleting the last order also loses the customer's city. A lost update is a concurrency problem, not a design one."
+    },
+    "dbms-w5-q8": {
+      "question": "Given A → B, which of Armstrong's axioms gives AC → BC directly?",
+      "options": [
+        "Augmentation",
+        "Transitivity",
+        "Reflexivity",
+        "Decomposition"
+      ],
+      "explanation": "**Augmentation**: if X → Y, then XZ → YZ for any Z. Here X = A, Y = B, Z = C. The trap in option B: transitivity needs a chain of two FDs (X → Y, Y → Z), and here there is only one. Reflexivity gives only trivial FDs (Y ⊆ X), and decomposition splits a RHS rather than adding to it."
+    },
+    "dbms-w5-q9": {
+      "question": "Which of these relations violates 1NF?",
+      "options": [
+        "student(roll, name, city)",
+        "enrol(roll, course, grade)",
+        "student(roll, name, phones), where one cell holds phones = '98100, 98200'",
+        "course(code, title, credits)"
+      ],
+      "explanation": "The 1NF rule is that every cell holds one **atomic** value. Two phone numbers joined by a comma in one cell form a list, so option C violates 1NF; the right design is a separate table `student_phone(roll, phone)`. In the other three, every column holds a single value. The trap in option B: even if a student has many courses, each row holds one course, so it is in 1NF."
+    },
+    "dbms-w5-q10": {
+      "question": "R(A, B, C, D, E, G) has F = { AB → C, C → D, BD → E, E → G, G → A }. What is {B, C}⁺?",
+      "options": [
+        "{B, C, D}",
+        "{B, C, D, E}",
+        "{B, C, D, E, G}",
+        "{A, B, C, D, E, G}"
+      ],
+      "explanation": "Start with {B, C}. C → D: {B, C, D}. Now BD is complete, BD → E: {B, C, D, E}. E → G: G added. G → A: A added. The result is {A, B, C, D, E, G}, so BC is a superkey. AB → C was never even needed. The trap in options A, B and C is stopping midway: each new attribute can complete the LHS of another FD, so keep going until nothing new is added."
+    },
+    "dbms-w5-q11": {
+      "question": "R(A, B, C, D) has F = { AB → C, B → D }. What is the highest normal form of R?",
+      "options": [
+        "1NF",
+        "2NF",
+        "3NF",
+        "BCNF"
+      ],
+      "explanation": "Key: B appears on no RHS, and neither does A, so every key contains A and B; {A, B}⁺ = {A, B, C, D}, so AB is the only key. Prime: A, B; non-prime: C, D. In B → D, the non-prime D depends on B, a proper subset of the key: a **partial dependency**, so 2NF fails. The highest form is therefore 1NF. The trap in option B is treating B → D as transitive and seeing only a 3NF problem; its LHS is part of the key, so it is partial. Not 2NF means not 3NF or BCNF either."
+    },
+    "dbms-w5-q12": {
+      "question": "R(A, B, C, D, E, F) has the FDs { A → B, B → C, C → A, D → E }. What are all the candidate keys of R?",
+      "options": [
+        "Only {A, D, F}",
+        "{D, F}",
+        "{A, D, F}, {B, D, F}, {C, D, F}",
+        "{A, D}, {B, D}, {C, D}"
+      ],
+      "explanation": "D and F appear on no RHS (F is not in any FD at all), so every key contains D and F. {D, F}⁺ = {D, E, F}: A, B, C are missing, so DF alone is not a key. A, B, C form a cycle (A → B → C → A), so any one of them gives the other two: {A, D, F}⁺ = everything. Likewise {B, D, F} and {C, D, F}. All three are minimal. The trap in option D is forgetting F: an attribute that appears in no FD must also be in every key. Option A stops at one key."
+    },
+    "dbms-w5-q13": {
+      "question": "R(A, B, C, D) has F = { AB → C, C → D, D → A }. What is true about R?",
+      "options": [
+        "It is in 3NF, but not in BCNF",
+        "It is only in 2NF, because C → D is a transitive dependency",
+        "It is in BCNF",
+        "It is only in 1NF, because D → A is a partial dependency"
+      ],
+      "explanation": "B appears on no RHS, so every key contains B. {A, B}⁺ = ABCD, {B, C}⁺ = BC → D → A = ABCD, {B, D}⁺ = BD → A, AB → C = ABCD. Keys: AB, BC, BD; so A, B, C, D are **all prime**. The 3NF condition (LHS superkey or RHS prime) holds for every FD, so it is in 3NF. But in C → D and D → A the LHS is not a superkey, so it is not in BCNF. The trap in option B is taking D as non-prime; testing a normal form without finding all keys goes wrong. Option D comes from the same mistake: A is prime, and a partial dependency of a prime attribute does not break 2NF."
+    },
+    "dbms-w5-q14": {
+      "question": "F = { A → B, B → C, CD → E }. How many of the five FDs below can be inferred from F?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "explanation": "Compute the LHS closure for each. (i) {A, D}⁺ = A → B → C, then CD → E: E is reached, yes. (ii) {A}⁺ = {A, B, C}: no E (D is needed), no. (iii) {B, D}⁺ = B → C, CD → E: both C and E, yes. (iv) {C, D}⁺ = {C, D, E}: no B, no. (v) {A, B}⁺ contains C, yes. Total 3. The trap in option C is accepting (ii), as if A → C and CD → E gave A → E directly; without D, CD → E cannot fire. Option D accepts (iv) as well, running the FDs backwards."
+    },
+    "dbms-w5-q15": {
+      "question": "A fictional store's relation R(order_id, product_id, qty, cust_id, cust_city) has the FDs: (order_id, product_id) → qty, order_id → cust_id, cust_id → cust_city. What is true about R?",
+      "options": [
+        "It is in 3NF, because the key determines everything else",
+        "It is in 2NF but not 3NF, because the only problem is cust_id → cust_city",
+        "It is in BCNF",
+        "It is not in 2NF, because the non-prime cust_id depends on order_id, a part of the key"
+      ],
+      "explanation": "order_id and product_id appear on no RHS, and {order_id, product_id}⁺ = everything, so this is the only key. In order_id → cust_id, the non-prime cust_id depends on a proper subset of the key: a **partial dependency**, so 2NF already fails (and order_id → cust_city is partial too). cust_id → cust_city is transitive, which would also break 3NF. The trap in option B is seeing only the transitive FD and missing the partial one. The trap in option A: 'the key determines everything' is true of every relation; for a normal form you have to check the LHS of every FD."
+    },
     "dbms-w6-q1": {
       "question": "R(A, B, C) has F = { A → B, B → C }. Is R in BCNF?",
       "options": [
@@ -360,6 +810,96 @@
         "Neither part is in BCNF, so it must be split further"
       ],
       "explanation": "The common attribute is C, and C → B gives C⁺ ⊇ {B, C} = R1, so it is lossless. In R1(B, C), C → B holds (C is the key); R2(A, C) has no non-trivial FD: both are BCNF. But for AB → C, A, B and C are never together in one table; with the projected FDs (C → B), AB⁺ = {A, B}, so this FD is not preserved. The trap in option A is assuming the BCNF algorithm also keeps dependencies. Option B forgets C → B, which makes C the key of R1."
+    },
+    "dbms-w6-q7": {
+      "question": "Any relation with only two attributes, such as R(A, B), is always in which normal form (whatever the FDs)?",
+      "options": [
+        "BCNF",
+        "Only 2NF",
+        "Only 3NF",
+        "No normal form is guaranteed"
+      ],
+      "explanation": "With two attributes, the only non-trivial FDs are A → B or B → A. If A → B holds, the closure of A is {A, B} = the whole relation, so A is a superkey; the same goes for B → A. Every non-trivial FD has a superkey on the left, so R is always in **BCNF** (and therefore also in 3NF and 2NF). The trap in options B and C is the word 'only': BCNF brings all the lower forms with it."
+    },
+    "dbms-w6-q8": {
+      "question": "R was split into R1 and R2, but the decomposition is lossy. What happens when you compute R1 ⋈ R2?",
+      "options": [
+        "The join gives fewer rows than R; some rows are lost",
+        "The join gives an error, because the common attribute is not a key",
+        "The join gives exactly the rows of R",
+        "The join gives all the rows of R plus extra spurious (fake) tuples"
+      ],
+      "explanation": "Joining after projection brings back every real row of R, but it also produces combinations that were never in R: **spurious tuples**. That is where the information is lost, because you can no longer tell which rows are real. Option A is the most common trap: hearing 'lossy' and thinking of fewer rows. Option C is the definition of lossless, and the join never gives an error."
+    },
+    "dbms-w6-q9": {
+      "question": "A fictional training institute's table T(trainer, skill, language) has trainer ↠ skill and trainer ↠ language. Trainer Kavya teaches 3 skills and teaches in 2 languages. How many rows does Kavya have in this single table?",
+      "options": [
+        "5",
+        "3",
+        "6",
+        "2"
+      ],
+      "explanation": "The MVDs mean Kavya's skills and languages are independent of each other, so the table must list every skill with every language: 3 × 2 = 6 rows. This is the redundancy 4NF removes by splitting T into (trainer, skill) and (trainer, language), where Kavya would have 3 + 2 = 5 rows. The trap in option A is applying that 4NF count to the single table."
+    },
+    "dbms-w6-q10": {
+      "question": "F = { A → B, AB → C }. What is true about extraneous attributes in AB → C?",
+      "options": [
+        "A is extraneous; the FD becomes B → C",
+        "B is extraneous; the FD becomes A → C",
+        "No attribute is extraneous",
+        "Both are extraneous; AB → C is removed entirely"
+      ],
+      "explanation": "Try removing B: is C in A⁺? A → B gives A⁺ = {A, B}, and then AB → C gives C too. Yes, so B is extraneous and the FD becomes A → C. Try removing A: B⁺ = {B}, C does not appear, so A is needed. The trap in option A is removing the wrong attribute. Option D is wrong because A → C does not follow from any other FD; removing the whole FD would change F."
+    },
+    "dbms-w6-q11": {
+      "question": "R(A, B, C, D) has F = { A → B, C → D }. Which of these decompositions is lossless-join?",
+      "options": [
+        "R1(A, B), R2(C, D)",
+        "R1(A, C), R2(B, D)",
+        "R1(A, B), R2(B, C, D)",
+        "R1(A, B), R2(A, C, D)"
+      ],
+      "explanation": "Binary test: the common attributes must be a superkey of at least one part. Option D: common A, and A → B gives A⁺ ⊇ {A, B} = R1, so A is a key of R1: lossless. Option C: common B, B⁺ = {B}, a key of neither part: lossy. Options A and B share no attribute at all, so the join becomes a Cartesian product: lossy. The trap in option C is assuming 'a common attribute exists, so it is lossless'; the common attribute must also be a key."
+    },
+    "dbms-w6-q12": {
+      "question": "F = { A → B, B → A, A → C, B → C }. Which of these is a minimal cover of F?",
+      "options": [
+        "{ A → B, B → A }",
+        "{ A → B, A → C, B → C }",
+        "{ A → B, B → A, B → C }",
+        "{ A → BC, B → AC }"
+      ],
+      "explanation": "The RHSs are already single. A → C is redundant: the rest give A → B → C. Remove it and { A → B, B → A, B → C } remains; now nothing else is redundant (remove B → C and C comes from nowhere). In the same way, removing B → C gives { A → B, B → A, A → C }, also a minimal cover: a minimal cover is **not unique**. In option A, C is never determined. The trap in option B is dropping B → A; then B⁺ = {B, C}, and the set is no longer equivalent to F. Option D does not have single RHSs and still contains redundant FDs."
+    },
+    "dbms-w6-q13": {
+      "question": "The minimal cover of R(A, B, C, D, E) is { A → B, C → D }. What decomposition does the 3NF synthesis algorithm give?",
+      "options": [
+        "R1(A, B), R2(C, D), R3(A, C, E)",
+        "R1(A, B), R2(C, D)",
+        "R1(A, B), R2(C, D), R3(E)",
+        "R1(A, B, C, D), R2(E)"
+      ],
+      "explanation": "One relation per FD: R1(A, B), R2(C, D). Now check the key: A, C, E appear on no RHS, and {A, C, E}⁺ = everything, so the key is ACE. No relation contains ACE, so add the key relation R3(A, C, E). This decomposition is lossless and dependency-preserving. The trap in option B is forgetting the key relation: E is not kept anywhere, and the link between A and C is lost too. In option C, E stands alone, which is not a key, so the join stays lossy. Option D is not synthesis: in R1, the LHS of A → B is not a superkey."
+    },
+    "dbms-w6-q14": {
+      "question": "R(A, B, C, D) has F = { A → B, B → C, C → D, D → A }. R is split into R1(A, B), R2(B, C), R3(C, D). What kind of decomposition is this?",
+      "options": [
+        "Lossy, because D and A are never together in one table",
+        "Lossless, but D → A is not preserved",
+        "Lossy, and D → A is not preserved either",
+        "Lossless and dependency-preserving, because the projected FDs give D → C → B → A"
+      ],
+      "explanation": "Because of the cycle, every attribute is a key. Lossless: R1 ∩ R2 = B, a key of R1 (B → A), so R1 ⋈ R2 is lossless; then (A, B, C) ∩ R3 = C, a key of R3: lossless. Preservation: the projections give A → B and B → A on R1, B → C and C → B on R2, C → D and D → C on R3 (since all of these are in F⁺). From these, D → C → B → A: D → A is preserved. The trap in option B is looking for only the given FDs inside the tables; projection is taken from F⁺, not just F. The trap in options A and C is thinking that 'a pair that is in no table makes it lossy'."
+    },
+    "dbms-w6-q15": {
+      "question": "R(A, B, C, D) has F = { A → B, B → C }. The BCNF decomposition algorithm splits on B → C first. What is the final decomposition when the algorithm finishes?",
+      "options": [
+        "R1(B, C), R2(A, B, D)",
+        "R1(B, C), R2(A, B), R3(A, D)",
+        "R1(A, B, C), R2(A, D)",
+        "R1(B, C), R2(A, D)"
+      ],
+      "explanation": "Key: A and D appear on no RHS, {A, D}⁺ = everything, so the key is AD. B → C is a violation (B is not a superkey): R1(B, C) and R2 = R − {C} = (A, B, D). R1 has two attributes, so it is in BCNF. In R2, A → B remains and R2's key is AD, so A is not a superkey: split again into (A, B) and (A, D). Final: R1(B, C), R2(A, B), R3(A, D). The trap in option A is stopping after the first split. Option C is what you would get midway if you started from A → B, but in (A, B, C) B → C is still a violation. Option D is lossy: the link between A and B is lost."
     },
     "dbms-w7-q1": {
       "question": "What is the output of this Python code?",
@@ -421,6 +961,96 @@
       ],
       "explanation": "A row-level trigger runs once per affected row: 3 + 0 = 3. A statement-level trigger runs once per statement, even if no row changes: 1 + 1 = 2. The trap in option B is assuming a statement trigger does not fire for an UPDATE that touches 0 rows; it does, because it is tied to the statement event, not to rows. Option D counts the row trigger like a statement trigger."
     },
+    "dbms-w7-q7": {
+      "question": "In psycopg2, the Python driver for PostgreSQL, what is the placeholder for a parameterised query?",
+      "options": [
+        "`?`",
+        "`%s`",
+        "Always `:name`",
+        "`{}`"
+      ],
+      "explanation": "psycopg2 uses the `%s` placeholder, as in `cur.execute(\"... WHERE id = %s\", (uid,))`. This is not Python's `%` string formatting: the driver sends the value separately. The trap in option A is remembering the sqlite3 style; each driver has its own style. Option D is the `.format()` / f-string way of thinking, which is the road to injection."
+    },
+    "dbms-w7-q8": {
+      "question": "A fictional food-delivery app uses a 3-tier architecture: mobile app → application server → database. Where should the database username and password be kept?",
+      "options": [
+        "Inside the mobile app's JavaScript/Kotlin code",
+        "In a config file shipped with the mobile app",
+        "Only on the application server",
+        "In a public table in the database"
+      ],
+      "explanation": "A big benefit of 3-tier is that only the application server talks to the database, so the credentials live only on the server. The app just calls the server's API. The trap in options A and B: anything shipped to the user's device can be extracted by anyone, who can then go straight at the database. Option D shows the credentials to everyone."
+    },
+    "dbms-w7-q9": {
+      "question": "What does `con.rollback()` do on a Python DB-API connection?",
+      "options": [
+        "Undoes all uncommitted changes since the last `commit()`",
+        "Undoes only the last statement that ran",
+        "Undoes committed changes as well",
+        "Only closes the connection, with no effect on data"
+      ],
+      "explanation": "`rollback()` ends the current transaction and undoes **everything** since the last commit, however many statements ran. The trap in option B is treating it as a one-step 'undo button'. Option C is wrong because committed data is durable; rollback cannot touch it. Closing the connection is the job of `close()`."
+    },
+    "dbms-w7-q10": {
+      "question": "Login code builds the query by joining strings (see the code). The attacker enters `admin' --` as the username and anything as the password. The `users` table has a user named `admin`. What happens?",
+      "options": [
+        "A syntax error occurs and the login fails",
+        "No row is found, because the password is wrong",
+        "The rows of all users come back, but the login fails",
+        "The `admin` row is found and the attacker logs in without a password"
+      ],
+      "explanation": "The joined query becomes `... WHERE uname = 'admin' --' AND pwd = '...'`. The `'` closes the username string, and `--` starts an SQL comment, so the whole password check becomes a comment. What remains is `WHERE uname = 'admin'`: the admin row is found. The trap in option A is thinking the leftover `'` causes an error; it is inside the comment. Option B assumes the password check still runs. Fix: placeholders, where `admin' --` would stay just an odd username string."
+    },
+    "dbms-w7-q11": {
+      "question": "ORM code loads 50 orders, then prints each order's `order.customer.name` in a loop; the customer is loaded lazily (a separate query on first access). How many SQL queries does this code run in total, and how many if the orders are fetched with a JOIN to customers (eager loading)?",
+      "options": [
+        "50 and 1",
+        "51 and 51",
+        "51 and 1",
+        "2 and 1"
+      ],
+      "explanation": "1 query fetches the orders, then one separate query for each order's customer: 1 + 50 = 51. This is the classic **N+1 problem**. A JOIN or eager loading brings the orders and their customers in a single query: 1. Option A forgets the first query for the orders. The trap in option B is assuming eager loading runs the same queries. Option D (2) resembles another ORM strategy (two queries: orders, then all customers via `IN`), but here the loading is lazy."
+    },
+    "dbms-w7-q12": {
+      "question": "What does this Python code print?",
+      "options": [
+        "[(100,), (50,)]",
+        "[(20,), (130,)]",
+        "[(-60,), (130,)]",
+        "[(100,), (130,)]"
+      ],
+      "explanation": "After the commit, the first UPDATE starts a new transaction: id 2 = 130. The second: id 1 = 20. The third would make 20 − 80 = −60, which violates `CHECK (bal >= 0)`: `IntegrityError`, and `commit()` is never reached. In `except`, `rollback()` undoes everything since the last commit, including both successful UPDATEs: [(100,), (50,)]. The trap in option B is assuming only the failed statement was removed and the rest stayed; that would happen without the rollback. Option C ignores the CHECK, and option D treats the rollback as partial."
+    },
+    "dbms-w7-q13": {
+      "question": "In PostgreSQL the `item` table has three triggers (see the code). Then four statements run. After all of them, how many times did each trigger fire?",
+      "options": [
+        "t_row 4, t_stmt 1, t_del 3",
+        "t_row 4, t_stmt 2, t_del 4",
+        "t_row 4, t_stmt 2, t_del 3",
+        "t_row 5, t_stmt 2, t_del 3"
+      ],
+      "explanation": "A row-level trigger fires for every affected row: t_row 4 times in (1) and 0 in (2) = 4; t_del 3 in (3) and 0 in (4) = 3. A statement-level trigger fires once per matching statement, even if 0 rows change: t_stmt on both INSERTs = 2. The trap in option A is assuming a statement trigger does not fire for a 0-row statement. Option B also counts DELETE (4) for the row trigger, and option D assumes one row trigger even for the 0-row INSERT."
+    },
+    "dbms-w7-q14": {
+      "question": "In Python `sqlite3`, `name = \"Asha\"`, `dept = \"CS\"` and `tbl = \"emp\"`. Of the four lines, which one runs without an error and is also correctly parameterised?",
+      "options": [
+        "(A)",
+        "(B)",
+        "(C)",
+        "(D)"
+      ],
+      "explanation": "(B) has two placeholders and a tuple of two values: correct. (A): a table name cannot be a parameter, because placeholders are only for values; `FROM ?` gives a syntax error. The trap in (C): `'?'` inside quotes is a literal string, not a placeholder; the query has 0 placeholders but 1 value is supplied, so `ProgrammingError`. The trap in (D): a string is itself a sequence, so `\"Asha\"` becomes 4 values while there is 1 placeholder: an error again. Write `(name,)`."
+    },
+    "dbms-w7-q15": {
+      "question": "Two separate connections A and B are connected to the same PostgreSQL database (default READ COMMITTED isolation). The `ticket` table starts with 10 rows. The steps run in order. What do x and y show for B?",
+      "options": [
+        "x = 13, y = 15",
+        "x = 10, y = 15",
+        "x = 13, y = 13",
+        "x = 10, y = 13"
+      ],
+      "explanation": "When B first reads, A's 3 rows are not committed, so B sees only committed data: x = 10. Then A commits: now 13 rows are durable. The next 2 rows are rolled back, so they never existed. Under READ COMMITTED each of B's statements sees fresh committed data: y = 13. The trap in option C is believing uncommitted inserts are visible to another connection (a dirty read). Option B ignores the rollback, and option A makes both mistakes."
+    },
     "dbms-w8-q1": {
       "question": "A disk spins at 7200 rpm. What is the average rotational latency?",
       "options": [
@@ -480,6 +1110,96 @@
         "LRU 6, MRU 5"
       ],
       "explanation": "LRU: 1, 2, 3 miss; at 4, LRU = 1 is evicted; then 1 is requested right after being evicted, a miss, and 2 is evicted; every request misses this way: 8. MRU: 1, 2, 3 miss; at 4, MRU = 3 is evicted → {1, 2, 4}; 1 hit, 2 hit; 3 miss, MRU = 2 evicted → {1, 4, 3}; 4 hit. Misses = 5. Option B swaps the two; the trap in option C is thinking that since 4 blocks do not fit in 3 frames the policy makes no difference. When a sequential scan is larger than the buffer, LRU does worst."
+    },
+    "dbms-w8-q7": {
+      "question": "Which of these storage types is **volatile**, meaning its data is wiped as soon as the power goes?",
+      "options": [
+        "SSD (flash)",
+        "Magnetic disk (HDD)",
+        "Main memory (RAM)",
+        "Magnetic tape"
+      ],
+      "explanation": "Main memory (and cache) is volatile: lose the power and the data is gone. That is why a database's real data lives on non-volatile storage (SSD/HDD) and the log is written there for a commit. The trap in option A is hearing that an SSD is 'fast like memory' and assuming it is volatile; flash is non-volatile. HDDs and tape are non-volatile too."
+    },
+    "dbms-w8-q8": {
+      "question": "What does RAID 1 do?",
+      "options": [
+        "Mirroring: a copy of every block on another disk",
+        "Striping: blocks are spread across disks, with no redundancy",
+        "Block striping with distributed parity",
+        "Compressing data on a single disk"
+      ],
+      "explanation": "RAID 1 is **mirroring**: every block is written to two disks, so if one disk fails the other has all the data. Option B is RAID 0 (speed only), and option C is RAID 5 (parity rebuilds one disk's data). The trap: reading RAID numbers as 'higher level means safer'; RAID 0 has no redundancy at all."
+    },
+    "dbms-w8-q9": {
+      "question": "In a slotted page structure, why do outside pointers (such as index entries) point to the page's slot number instead of the record's direct byte offset?",
+      "options": [
+        "So that the page's records always stay sorted",
+        "So that the page can grow in size as needed",
+        "So that every record becomes fixed-length",
+        "So that outside pointers stay valid even when a record moves within the page"
+      ],
+      "explanation": "When variable-length records are deleted or updated, they are moved within the page to compact it. The slot array holds each record's offset; if a record moves, only the slot's offset changes and the outside pointer (page, slot) stays the same. The trap in option A: a slotted page does no sorting. The page size is the fixed block size (option B), and slotted pages exist precisely for variable-length records (option C is backwards)."
+    },
+    "dbms-w8-q10": {
+      "question": "A file has 5000 fixed-length records of 120 bytes each. The block size is 1024 bytes and storage is unspanned. What are the blocking factor and the number of blocks in the file?",
+      "options": [
+        "bfr 9, 556 blocks",
+        "bfr 8, 625 blocks",
+        "bfr 8.53, 586 blocks",
+        "bfr 8, 586 blocks"
+      ],
+      "explanation": "bfr = ⌊1024 / 120⌋ = ⌊8.53⌋ = 8 (8 × 120 = 960 bytes, the other 64 bytes wasted). Blocks = ⌈5000 / 8⌉ = 625. The trap in option A is rounding bfr up: 9 records (1080 bytes) do not fit in a block. Option C uses a fractional bfr, which is impossible when unspanned. The trap in option D is, even with the right bfr, computing blocks directly as 5000 × 120 / 1024 and ignoring the waste."
+    },
+    "dbms-w8-q11": {
+      "question": "An HDD spins at 15,000 rpm, its average seek time is 3 ms, and one block takes 0.1 ms to transfer. What is the average access time to read one random block?",
+      "options": [
+        "7.1 ms",
+        "3.1 ms",
+        "8.1 ms",
+        "5.1 ms"
+      ],
+      "explanation": "One rotation = 60000 / 15000 = 4 ms, so the average rotational latency = half = 2 ms. Access time = seek + latency + transfer = 3 + 2 + 0.1 = 5.1 ms. The trap in option A is using the full rotation (4 ms). Option B forgets the rotational latency. Option C adds the seek twice (3 + 3 + 2 + 0.1)."
+    },
+    "dbms-w8-q12": {
+      "question": "The buffer pool has 3 frames, empty at the start, with LRU replacement. R = read a block, W = write to a block (the block must first be brought into the buffer, and then it becomes dirty). A dirty block is written to disk before it is evicted. For the requests below, how many disk reads and how many write-backs happen? (Do not count a final buffer flush.)",
+      "options": [
+        "Reads 6, write-backs 1",
+        "Reads 6, write-backs 0",
+        "Reads 5, write-backs 2",
+        "Reads 8, write-backs 1"
+      ],
+      "explanation": "R1, W2, R3: all three miss (reads 3), 2 is dirty. R1: hit; LRU order (oldest first) 2, 3, 1. R4: miss (reads 4), the LRU victim is 2, which is dirty: write-back 1. Order 3, 1, 4. W3: hit, 3 is dirty; order 1, 4, 3. R5: miss (reads 5), victim 1 (clean). Order 4, 3, 5. R2: miss (reads 6), victim 4 (clean). Total: reads 6, write-backs 1. The trap in option B is forgetting the dirty block's write-back. Option D counts every request as a disk read, ignoring hits. Option C evicts 3 as well, although it was recently used after W3."
+    },
+    "dbms-w8-q13": {
+      "question": "A file has 1000 blocks (20,000 records, 20 per block). The query is `WHERE price BETWEEN 500 AND 800`, returning 300 records. (i) How many blocks must be read on a heap file? (ii) If the file is sorted on `price`: binary search finds the first matching block in ⌈log₂ b⌉ block reads, and the matching records lie in 15 consecutive blocks, the first of which was already read by the binary search. How many in total?",
+      "options": [
+        "Heap 500, sorted 24",
+        "Heap 1000, sorted 10",
+        "Heap 1000, sorted 24",
+        "Heap 1000, sorted 310"
+      ],
+      "explanation": "(i) A heap file is unordered: records in the range can be anywhere, so the whole file must be scanned: 1000. (ii) Binary search takes ⌈log₂ 1000⌉ = 10 reads, then the remaining 14 matching blocks follow sequentially: 10 + 14 = 24. The trap in option A is using the b/2 average; that applies only to equality on a unique key, where you stop as soon as the record is found. Option B is only the cost of finding the first record. Option D reads a separate block per record, although in a sorted file they sit together in blocks."
+    },
+    "dbms-w8-q14": {
+      "question": "A fictional analytics table has 1,000,000 rows and 50 columns, each column 8 bytes. A query computes the `SUM` of only 2 columns. Row-oriented storage reads whole rows, column-oriented storage reads only the needed columns. How much less data does the column store read? (Ignore compression and headers.)",
+      "options": [
+        "2 times less",
+        "The same, because the number of rows is the same",
+        "50 times less",
+        "25 times less"
+      ],
+      "explanation": "Row store: each row is 50 × 8 = 400 bytes, so 1,000,000 × 400 = 400 MB must be read, because a block holds whole rows. Column store: only 2 columns, 1,000,000 × 2 × 8 = 16 MB. 400 / 16 = 25 times less. The trap in option C is thinking of 1 column out of 50; the query reads 2 columns. The trap in option B is using the row count as the measure of I/O; I/O is measured in bytes/blocks. On top of this, compression gives the column store even more benefit."
+    },
+    "dbms-w8-q15": {
+      "question": "There are 4 disks, each of 2 TB. Set up as RAID 0, RAID 1 (two mirrored pairs) and RAID 5, what is the usable capacity, and which setups keep the data when one disk fails?",
+      "options": [
+        "RAID 0 / 1 / 5 = 8 / 4 / 6 TB; only RAID 1 survives",
+        "RAID 0 / 1 / 5 = 8 / 4 / 6 TB; both RAID 1 and RAID 5 survive",
+        "RAID 0 / 1 / 5 = 8 / 8 / 6 TB; both RAID 1 and RAID 5 survive",
+        "RAID 0 / 1 / 5 = 6 / 4 / 8 TB; all three survive"
+      ],
+      "explanation": "RAID 0 is striping only: 4 × 2 = 8 TB, but no redundancy, so losing one disk loses the data. RAID 1 copies every block: half the capacity, 4 TB; the mirror keeps the data safe. RAID 5 spends one disk's worth of space on parity (a little on each disk): (4 − 1) × 2 = 6 TB; parity rebuilds the data of one failed disk. The trap in option A is thinking only mirroring survives; parity does too. Option C counts the mirror copies as usable capacity. Option D swaps RAID 0 and RAID 5."
     },
     "dbms-w9-q1": {
       "question": "Under what condition can a sparse index be used?",
@@ -541,6 +1261,96 @@
       ],
       "explanation": "10, 20, 30 form one leaf. When 40 arrives: [10, 20] | [30, 40], root [30]. 50 → [30, 40, 50]; 60 splits it into [30, 40] | [50, 60], root [30, 50]. 70 → [50, 60, 70]; 80 splits it into [50, 60] | [70, 80], root [30, 50, 70]. 90 → [70, 80, 90], only 3 keys, no split. So 4 leaves and root [30, 50, 70] (the root has 4 pointers, full but not overflowing). The trap in option D is using the left leaf's last key as the separator; option B gives the root 4 keys, which is impossible at order 4 (max 3); option A splits 3 : 1. (Note: ascending inserts leave the leaves only half full.)"
     },
+    "dbms-w9-q7": {
+      "question": "There is only a hash index on the `price` column. For which of these queries will the index **not** help?",
+      "options": [
+        "`WHERE price BETWEEN 100 AND 200`",
+        "`WHERE price = 150`",
+        "`WHERE price = 99`",
+        "`WHERE price = 150 OR price = 99`"
+      ],
+      "explanation": "A hash function destroys the order of keys: 100 and 101 can land in completely different buckets. So for a range (`BETWEEN`) the hash index cannot tell where to look, and a full scan is needed. The other three are equality lookups, where h(value) points straight to the bucket (option D is two lookups). The trap: assuming 'there is an index, so every query is fast'; ranges need an ordered (B+ tree) index."
+    },
+    "dbms-w9-q8": {
+      "question": "A composite index `(cust_id, order_date)` exists on `orders`. In which of these WHERE conditions can the index be used directly?",
+      "options": [
+        "`WHERE order_date = '2026-08-01'`",
+        "`WHERE cust_id = 42`",
+        "`WHERE amount > 500`",
+        "`WHERE order_date > '2026-08-01'`"
+      ],
+      "explanation": "A composite index is sorted first on `cust_id`, then on `order_date` within each `cust_id`. So it serves queries on the **leftmost prefix** (`cust_id`, or `cust_id` + `order_date`). The trap in options A and D: `order_date` alone is the index's second column, scattered across different customers, so it cannot be searched directly. `amount` (option C) is not in the index at all."
+    },
+    "dbms-w9-q9": {
+      "question": "How many clustering (primary) indexes can a table have?",
+      "options": [
+        "One on every column",
+        "Two: one for ascending order, one for descending",
+        "As many as you like, given the space",
+        "Only one"
+      ],
+      "explanation": "A clustering index's search key is the order in which the file is stored sorted on disk. A file can be sorted in only one order, so there is only **one** clustering index. All other indexes are secondary. The trap in option C is mixing up secondary and clustering: you can build as many secondary indexes as you like. Option B is wrong because reading an ascending order backwards needs no separate sorting."
+    },
+    "dbms-w9-q10": {
+      "question": "A B+ tree has order n = 6 (at most 6 pointers and at most 5 keys per node). What is the minimum number of children of a non-root internal node, and the minimum number of keys in a leaf?",
+      "options": [
+        "Internal: 2 children, leaf: 2 keys",
+        "Internal: 3 children, leaf: 2 keys",
+        "Internal: 3 children, leaf: 3 keys",
+        "Internal: 6 children, leaf: 5 keys"
+      ],
+      "explanation": "Non-root internal node: at least ⌈n/2⌉ = ⌈6/2⌉ = 3 children. Leaf: at least ⌈(n − 1)/2⌉ = ⌈5/2⌉ = 3 keys. Option A applies the root's rule (at least 2 children) to every node. The trap in option B is taking ⌊5/2⌋ = 2 for the leaf, i.e. rounding down. Option D is the maximum, not the minimum."
+    },
+    "dbms-w9-q11": {
+      "question": "The `customer` file has 500 blocks and is sorted on `id`. There is a secondary B+ tree index on `city` (height 3). The query `WHERE city = 'Pune'` returns 2000 records scattered across the file. Which plan is cheaper?",
+      "options": [
+        "A linear scan (about 500 block reads), because the index may need a separate block read for every record",
+        "The index, because an index scan is always cheaper than a file scan",
+        "Both are the same, because both must return 2000 records",
+        "The index, because the tree's height is only 3"
+      ],
+      "explanation": "A secondary index does not follow the file's order: the 2000 matching records can sit in different blocks, so the index costs 3 + (leaf entries) + about 2000 random block reads. A linear scan reads only 500 blocks, and sequentially at that. So with many matches the scan is cheaper. The trap in option D is looking only at the tree's height; the real cost is the data blocks. Option B is the common misconception that an index always wins."
+    },
+    "dbms-w9-q12": {
+      "question": "In extendible hashing, bucket capacity is 2 records and the directory uses the **last** d bits of the key (in binary). Initially the global depth is 1 with two empty buckets (local depth 1 each). The keys 4, 6, 8, 12 are inserted in that order. At the end, what is the global depth and how many distinct buckets are there?",
+      "options": [
+        "Global depth 2, 3 buckets",
+        "Global depth 3, 8 buckets",
+        "Global depth 2, 4 buckets",
+        "Global depth 3, 4 buckets"
+      ],
+      "explanation": "In binary: 4 = 100, 6 = 110, 8 = 1000, 12 = 1100; all are even, last bit 0. 4 and 6 go into bucket '0'. 8 overflows it, with local = global = 1: the directory doubles (d = 2) and the bucket splits: '00' = {4, 8}, '10' = {6}. For 12 (last two bits 00), '00' is full again with local = global = 2: the directory doubles again (d = 3) and splits: '000' = {8}, '100' = {4, 12}. Buckets: '000', '100', '10' (local 2), and the odd one '1' (local 1) = 4. The trap in option B is counting the directory entries (2³ = 8) as buckets; several entries point to the same bucket. Options A and C miss the second doubling."
+    },
+    "dbms-w9-q13": {
+      "question": "The block size is 4096 bytes, the search key 16 bytes and a pointer 8 bytes. Find the B+ tree order n (a node fits in one block). Then for 10,000,000 keys, assuming all nodes are completely full (n − 1 keys per leaf, n children per internal node), how many levels does the tree have, and how many block reads does a point lookup take (including the data block)?",
+      "options": [
+        "Order 170; 3 levels, 4 reads",
+        "Order 171; 4 levels, 5 reads",
+        "Order 171; 3 levels, 4 reads",
+        "Order 256; 3 levels, 4 reads"
+      ],
+      "explanation": "8n + 16(n − 1) ≤ 4096 ⇒ 24n ≤ 4112 ⇒ n = 171. Leaves: ⌈10,000,000 / 170⌉ = 58,824. Above them: ⌈58,824 / 171⌉ = 344, then ⌈344 / 171⌉ = 3, then the root = 1. Levels = 4, and a lookup = 4 node reads + 1 data block = 5. The trap in option C: 3 levels hold at most 171 × 171 × 170 ≈ 4,970,000 keys, not 10,000,000. Option D ignores the pointers and takes 4096 / 16, and option A counts as many keys as pointers in the inequality."
+    },
+    "dbms-w9-q14": {
+      "question": "An empty B+ tree has order n = 3 (at most 3 pointers per node, at most 2 keys per leaf). On leaf overflow, the first 2 keys go to the left leaf and the rest to the right leaf, and the right leaf's first key is copied into the parent. On internal-node overflow, the middle key is pushed up. Insert the keys 10, 20, 30, 40, 50, 60, 70 in that order. What does the final tree look like?",
+      "options": [
+        "Root [50]; 4 leaves; 3 levels",
+        "Root [30, 50, 70]; 4 leaves; 2 levels",
+        "Root [40]; 4 leaves; 3 levels",
+        "Root [50]; 7 leaves; 3 levels"
+      ],
+      "explanation": "At 30 the leaf splits: [10, 20] [30], root [30]. At 50: [30, 40] [50], root [30, 50]. At 70: [50, 60] [70], and 70 is copied into the parent: root [30, 50, 70] now has 4 children, more than the maximum of 3: an internal split. The middle key 50 is pushed up: a new root [50], with [30] and [70] below it. Leaves: [10, 20], [30, 40], [50, 60], [70] = 4; levels 3. The trap in option B is ignoring the internal overflow. Option C pushes the wrong key (40) up, and option D treats every key as a separate leaf."
+    },
+    "dbms-w9-q15": {
+      "question": "A static hash file has 5 buckets, h(k) = k mod 5. Each bucket's primary block holds 2 records, and once it is full a chain of 2-record overflow blocks is attached. The keys 5, 10, 15, 20, 25, 3, 8, 13 are inserted in that order. How many overflow blocks are created in total, and how many block reads does finding key 25 take (reading the chain in order)?",
+      "options": [
+        "2 overflow blocks; 3 reads",
+        "3 overflow blocks; 1 read",
+        "3 overflow blocks; 3 reads",
+        "5 overflow blocks; 5 reads"
+      ],
+      "explanation": "Bucket 0: 5, 10, 15, 20, 25 (all five have mod 5 = 0): primary [5, 10], overflow [15, 20], overflow [25] = 2 overflow blocks. Bucket 3: 3, 8, 13: primary [3, 8], overflow [13] = 1. Total 3 overflow blocks. 25 is in the third block of bucket 0's chain: 3 reads. This is the effect of **skew**: the keys piled into one bucket and an equality lookup is no longer 1 block. The trap in option B is assuming hashing always takes '1 read'. Option A forgets bucket 3's overflow, and option D makes a separate block for every extra key."
+    },
     "dbms-w10-q1": {
       "question": "In a fictional bank, during a transfer ₹500 was debited from account A, but the server crashed before crediting B. On restart the DBMS undid A's debit. Which ACID property does this guarantee?",
       "options": [
@@ -600,6 +1410,96 @@
         "It is conflict serializable, but not view serializable"
       ],
       "explanation": "Conflicts: R1(A) … W2(A) gives T1 → T2, and W2(A) … W1(A) gives T2 → T1: a cycle, so not conflict serializable. View check against serial T1 → T2 → T3: in both, T1 does the initial read of A, there are no other reads, and T3 does the final write. All three conditions match, so it is view serializable. Here W2(A) and W3(A) are blind writes whose values nobody reads. The trap in option C is declaring it non-serializable as soon as you see the cycle. Option D is impossible, because every conflict-serializable schedule is view serializable."
+    },
+    "dbms-w10-q7": {
+      "question": "A fictional train-booking app showed 'Booking confirmed' on screen (the transaction had committed). The very next second the data centre lost power. After restart, the booking is in the database. Which ACID property guarantees this?",
+      "options": [
+        "Atomicity",
+        "Consistency",
+        "Isolation",
+        "Durability"
+      ],
+      "explanation": "The changes of a committed transaction must survive a crash: this is **durability**, achieved by writing the log to stable storage at commit. The trap in option A: atomicity is about 'all or nothing', i.e. undoing a half-done transaction; here the transaction had fully committed. Isolation is about concurrently running transactions, not crashes."
+    },
+    "dbms-w10-q8": {
+      "question": "Which of these schedules is **serial**?",
+      "options": [
+        "R1(A), W1(A), R2(A), W2(A)",
+        "R1(A), R2(A), W1(A), W2(A)",
+        "R2(A), R1(A), W2(A), W1(A)",
+        "R1(A), R2(B), W1(A), W2(B)"
+      ],
+      "explanation": "In a serial schedule, all operations of one transaction finish before the next one starts. In option A, T1 runs completely (R1, W1), then T2 completely: serial. The other three are interleaved. The trap in option D: because it works on different items (A, B) it may be serializable, but it is not serial; serial means no interleaving at all."
+    },
+    "dbms-w10-q9": {
+      "question": "T1 wrote A = 500 (not yet committed). T2 read A and built a report based on 500. Then T1 aborted and A went back to its old value. What happened to T2?",
+      "options": [
+        "Lost update",
+        "Unrepeatable read",
+        "Dirty read",
+        "Blind write"
+      ],
+      "explanation": "Reading uncommitted data is a **dirty read**: T2 used a value that was never committed. The trap in option B: an unrepeatable read happens when T2 reads the same item twice and someone's commit in between changes the value. In a lost update the effect of one of two writes vanishes, and a blind write is writing without reading."
+    },
+    "dbms-w10-q10": {
+      "question": "Schedule S: R2(A), R1(B), W2(A), R3(A), W1(B), W3(B). Which serial orders is S conflict-equivalent to?",
+      "options": [
+        "Only T2 → T1 → T3",
+        "Both T1 → T2 → T3 and T2 → T1 → T3",
+        "Only T3 → T1 → T2",
+        "None; the precedence graph has a cycle"
+      ],
+      "explanation": "Find the conflicts. On A: W2(A) then R3(A): T2 → T3. On B: R1(B) then W3(B), and W1(B) then W3(B): T1 → T3. There is no conflict between T1 and T2 (different items). Graph: T1 → T3, T2 → T3, acyclic. Topological sorts: T1, T2, T3 and T2, T1, T3, both valid. The trap in option A is stopping after finding one topological order. Option C reads the edges backwards, and option D sees a cycle where there is none."
+    },
+    "dbms-w10-q11": {
+      "question": "Schedule S: W1(A), R2(A), C2, C1 (C = commit). What is true about S?",
+      "options": [
+        "It is strict",
+        "It is cascadeless, but not strict",
+        "It is recoverable, but not cascadeless",
+        "It is not recoverable"
+      ],
+      "explanation": "T2 read the A written by T1, so for recoverability T1 should have committed before T2. Here C2 comes first: if T1 now aborts, T2 has already committed and cannot be undone. So it is **not recoverable**. The trap in option C is seeing only the dirty read, saying 'not cascadeless', and not checking the commit order. Options A and B are wrong because uncommitted data was read."
+    },
+    "dbms-w10-q12": {
+      "question": "Schedule S: R1(X), R2(Y), W2(X), R3(X), W1(Y), W3(Y). What is true about S?",
+      "options": [
+        "Not conflict serializable: there is a cycle T1 → T2 and T2 → T1",
+        "Conflict serializable, equivalent to T1 → T2 → T3",
+        "Conflict serializable, equivalent to T2 → T1 → T3",
+        "Not conflict serializable: there is a cycle T2 → T3 and T3 → T2"
+      ],
+      "explanation": "On X: R1(X) then W2(X): T1 → T2; W2(X) then R3(X): T2 → T3. On Y: R2(Y) then W1(Y): T2 → T1; W1(Y) then W3(Y): T1 → T3; R2(Y) then W3(Y): T2 → T3. Both T1 → T2 and T2 → T1 are present: a cycle, so not conflict serializable. The trap in option B is looking only at the conflicts on X; the reverse edge on Y creates the cycle. Option C forgets the T1 → T2 edge. Option D assumes a wrong edge: no operation of T3 comes before a conflicting operation of T2."
+    },
+    "dbms-w10-q13": {
+      "question": "Schedule S: R1(A), R2(B), W3(A), W3(B), R4(A). How many different serial schedules is S conflict-equivalent to?",
+      "options": [
+        "1",
+        "4",
+        "2",
+        "6"
+      ],
+      "explanation": "Conflicts: R1(A) then W3(A): T1 → T3. R2(B) then W3(B): T2 → T3. W3(A) then R4(A): T3 → T4. There is no conflict between T1 and T2, nor between T1 or T2 and T4. The graph is acyclic; T3 must come after both T1 and T2 and before T4, so the orders are T1, T2, T3, T4 and T2, T1, T3, T4: 2 in total. The trap in option A is stopping at one topological sort. Option B assumes T4 can also move around T1/T2; the chain T1 → T3 → T4 pins T4 to the end."
+    },
+    "dbms-w10-q14": {
+      "question": "Schedule S: R2(A), W1(A), W2(A), W3(A). What is true about S?",
+      "options": [
+        "View-equivalent to T1 → T2 → T3, and conflict serializable too",
+        "Neither view serializable nor conflict serializable",
+        "View-equivalent to T3 → T2 → T1, and conflict serializable too",
+        "View-equivalent to T2 → T1 → T3, but not conflict serializable"
+      ],
+      "explanation": "Conflicts: R2(A) then W1(A): T2 → T1; W1(A) then W2(A): T1 → T2: a cycle, so not conflict serializable. View check: in S, T2 does the initial read of A and T3 does the final write. In serial T2 → T1 → T3, T2 also reads A first (the initial value) and T3 writes last; there are no other reads. All three conditions match. The trap in option A: in T1 → T2 → T3, T2 would read T1's write, not the initial value. Option B stops as soon as it sees the cycle; W1(A) and W2(A) are blind/overwritten writes that nobody reads. In option C, T1 would do the final write, not T3."
+    },
+    "dbms-w10-q15": {
+      "question": "Initially A = 100. T1: read(A), A = A + 50, write(A). T2: read(A), A = A − 30, write(A). The schedule is R1(A), R2(A), W1(A), W2(A). What is the final A, and does it match the result of any serial schedule?",
+      "options": [
+        "120; yes, like T1 → T2",
+        "70; no, T1's update was lost (lost update)",
+        "150; no, T2's update was lost (lost update)",
+        "100; yes, the two updates cancel each other out"
+      ],
+      "explanation": "Both read A = 100. T1 writes 150, then T2 writes 100 − 30 = 70 from its old read, overwriting T1's write. Final 70. Both serial orders give 100 + 50 − 30 = 120, so this is wrong: T1's **lost update**. Option A is the serial result, not this schedule's. The trap in option C is thinking the first writer wins; the last write (W2) survives. Option D treats +50 and −30 as equal."
     },
     "dbms-w11-q1": {
       "question": "T1 holds a shared (S) lock on item A. Now T2 requests an S lock on A and T3 requests an exclusive (X) lock on A. What does the lock manager do?",
@@ -661,6 +1561,96 @@
       ],
       "explanation": "T1 and T2 committed: redo, i.e. X = 20, Y = 15, Z = 9. T3 did not commit: undo, going backwards: Y back to 15, X back to 20 (the old values in T3's records). Final X = 20, Y = 15, Z = 9; whatever the disk held at the crash, the log rebuilds this. The trap in option B is not undoing T3. The trap in option D is taking X back to 10, the old value in the log's first record; undo uses T3's old value (20). Option C undoes the committed transactions too."
     },
+    "dbms-w11-q7": {
+      "question": "What is the basic rule of write-ahead logging (WAL)?",
+      "options": [
+        "Write the data page to disk first, its log record later",
+        "Write log records only after the transaction commits",
+        "Before a data page is written to disk, its log records must be on stable storage",
+        "Keep the log only in memory; only data goes to disk"
+      ],
+      "explanation": "WAL says: log first, then data. If a data page reached disk and then a crash hit, the log must hold the old value so the change can be undone. That is also why forcing only the log at commit is enough. Option A is the reverse order, which leaves no undo information after a crash. The trap in option B: uncommitted changes need log records too, otherwise how would you undo them? In option D the log itself vanishes in a crash."
+    },
+    "dbms-w11-q8": {
+      "question": "T1 holds an exclusive (X) lock on item A. Now T2 requests a shared (S) lock on A. What happens?",
+      "options": [
+        "T2 gets the S lock immediately, because it only wants to read",
+        "T2 must wait until T1 releases its X lock",
+        "T1's X lock is automatically downgraded to S",
+        "T2 is always aborted immediately"
+      ],
+      "explanation": "An X lock is compatible with no other lock, not even S, because T1 is changing A and T2 would read a half-finished value. So T2 waits in the queue. The trap in option A is thinking 'only reading' is always safe; S is compatible only with S. A downgrade (option C) is done by the transaction itself in its shrinking phase, not forced by the lock manager. Aborts happen only under deadlock-prevention schemes, not on every request."
+    },
+    "dbms-w11-q9": {
+      "question": "In the deferred modification scheme, no change is written to the database (disk) before commit. What must recovery do after a crash?",
+      "options": [
+        "Only redo (of committed transactions)",
+        "Only undo (of uncommitted transactions)",
+        "Both undo and redo",
+        "Neither undo nor redo"
+      ],
+      "explanation": "An uncommitted transaction wrote nothing to disk, so there is nothing to undo. A committed transaction's changes may not yet have reached disk, so they must be **redone** from the log. Option C is the answer for immediate modification. The trap in option D is assuming everything reached disk at commit; at commit only the log is forced."
+    },
+    "dbms-w11-q10": {
+      "question": "T1 has timestamp 5 and T2 has 10 (smaller = older). T2 requests a lock on an item held by T1. What happens under wait-die and under wound-wait?",
+      "options": [
+        "Wait-die: T2 waits; wound-wait: T1 is rolled back",
+        "Wait-die: T1 is rolled back; wound-wait: T2 waits",
+        "T2 waits under both schemes",
+        "Wait-die: T2 is rolled back; wound-wait: T2 waits"
+      ],
+      "explanation": "The requester T2 is younger (10 > 5). In wait-die only an older requester waits; a younger requester **dies**: T2 is rolled back. In wound-wait an older requester wounds the holder, but a younger requester **waits**: T2 waits. The trap in option A: the older transaction (T1) is never rolled back when the requester is the younger one. Option C remembers the wait-die rule backwards."
+    },
+    "dbms-w11-q11": {
+      "question": "T1 follows basic 2PL: lock-X(A), lock-X(B), write(A), write(B), unlock(A), unlock(B), and commits some time later. After unlock(A) and before T1 commits, T2 takes lock-S(A) and reads A. Then T1 aborts. What problem arises?",
+      "options": [
+        "Deadlock",
+        "The schedule becomes non-serializable",
+        "Cascading rollback: T2 read an uncommitted A and must also be rolled back",
+        "No problem, because T1 followed 2PL"
+      ],
+      "explanation": "Basic 2PL guarantees serializability, but the shrinking phase can begin before commit. T2 read T1's uncommitted A (a dirty read); when T1 aborts, T2's work rests on a wrong value, so there is a **cascading rollback**. Strict 2PL prevents this by holding X locks until commit. The trap in option D is believing 2PL prevents everything. Option B is wrong because a 2PL schedule stays conflict serializable, and there is no circular wait here (option A)."
+    },
+    "dbms-w11-q12": {
+      "question": "The immediate-modification log is below (`<T, item, old, new>`). After the crash, classic undo/redo recovery scans back to the last checkpoint. Which transactions are redone and undone, and what is the value of A after recovery?",
+      "options": [
+        "Redo: T1, T2; undo: T3; A = 20",
+        "Redo: T2; undo: T3; A = 20",
+        "Redo: T2; undo: T3; A = 25",
+        "Redo: T2, T3; undo: none; A = 25"
+      ],
+      "explanation": "T1 committed before the checkpoint; its pages were flushed to disk at the checkpoint, so T1 needs nothing. T2 is in the checkpoint list and committed: redo. T3 has only a start: undo, so A goes back to its old value 20. The trap in option A is ignoring the checkpoint and redoing T1 too (not harmful, but unnecessary, and avoiding it is the whole point of a checkpoint). Option C forgets to undo, and option D treats T3 as committed."
+    },
+    "dbms-w11-q13": {
+      "question": "Lock requests arrive in this order (each request blocks until the lock is granted). Is there a deadlock?",
+      "options": [
+        "Yes: the wait-for graph has the cycle T1 → T2 → T3 → T1",
+        "No, because T3 holds only an S lock, which blocks nobody",
+        "Yes, but the cycle is only between T1 and T2",
+        "No, because each transaction is waiting for only one item"
+      ],
+      "explanation": "Step 4: T2 holds an X lock on B, and S is not compatible: T1 → T2. Step 5: T3 holds an S lock on C, and X is not compatible: T2 → T3. Step 6: T1 holds an X lock on A: T3 → T1. The wait-for graph has the cycle T1 → T2 → T3 → T1: a deadlock, and one victim will be rolled back. The trap in option B is thinking an S lock is harmless; S blocks an X request. Option C sees only part of the cycle (T2 is not waiting for T1). The trap in option D: one wait per transaction is enough for a deadlock if the waits form a cycle."
+    },
+    "dbms-w11-q14": {
+      "question": "Timestamps: T1 = 10, T2 = 20, T3 = 30 (smaller = older). T2 holds a lock on item A. First T1 requests A, then T3 requests A. Under wait-die and wound-wait respectively, which transactions are rolled back?",
+      "options": [
+        "Wait-die: T1; wound-wait: T3",
+        "Wait-die: T2; wound-wait: T3",
+        "Wait-die: T3; wound-wait: T2",
+        "Wait-die: T3; wound-wait: none"
+      ],
+      "explanation": "Wait-die: T1 (10) is older than the holder T2 (20), so it waits. T3 (30) is younger, so it dies: T3 is rolled back. Wound-wait: T1 is an older requester, so it wounds T2: T2 is rolled back and A goes to T1. Now T3 requests A, held by T1; T3 is younger, so it waits. Rolled back: T2. (A rolled-back transaction restarts with its original timestamp so it does not starve.) The trap in option D is assuming nobody dies under wound-wait; an older requester removes the holder. Options A and B swap the rules of the schemes."
+    },
+    "dbms-w11-q15": {
+      "question": "Below is an immediate-modification log (`<T, item, old, new>`), after which a crash occurred. After recovery completes, what are the values of X, Y, Z and W? (At the moment of the crash, the disk may hold either the old or the new value of any of these items.)",
+      "options": [
+        "X = 30, Y = 14, Z = 4, W = 6",
+        "X = 30, Y = 7, Z = 1, W = 3",
+        "X = 10, Y = 7, Z = 2, W = 3",
+        "X = 30, Y = 7, Z = 2, W = 3"
+      ],
+      "explanation": "T1 and T3 committed: redo. T2 has no commit: undo. Redo forward: X = 10, Z = 2 (T1), then X = 30 (T3). Undo T2 backward, using each record's old value: Z = 2, W = 3, Y = 7. Final: X = 30, Y = 7, Z = 2, W = 3. The trap in option A is redoing everything and forgetting the undo. The trap in option B is taking Z back to the very first value (1); undo writes the old value in T2's record (2), which is T1's committed value. Option C forgets to redo T3."
+    },
     "dbms-w12-q1": {
       "question": "The query is σ_dept='CS'(student ⋈ enrol), and the `dept` attribute is only in `student`. Into which equivalent expression will a heuristic optimiser rewrite it?",
       "options": [
@@ -720,6 +1710,96 @@
         "r outer: 3,700 transfers"
       ],
       "explanation": "The outer gets M − 2 = 10 blocks. r outer: ⌈100 / 10⌉ × 400 + 100 = 10 × 400 + 100 = 4,100. s outer: ⌈400 / 10⌉ × 100 + 400 = 40 × 100 + 400 = 4,400. So the smaller relation r goes outside, 4,100. The trap in option D is giving all 12 blocks to the outer instead of M − 2 (⌈100 / 12⌉ = 9, 9 × 400 + 100 = 3,700). Option B ignores the buffer and uses the worst-case formula, and option A puts the larger relation outside."
+    },
+    "dbms-w12-q7": {
+      "question": "In PostgreSQL, which command shows the evaluation plan the optimiser chose for a query?",
+      "options": [
+        "`DESCRIBE`",
+        "`EXPLAIN`",
+        "`ANALYZE TABLE`",
+        "`SHOW PLAN`"
+      ],
+      "explanation": "`EXPLAIN SELECT ...` shows the plan the optimiser chose: which scan, which join algorithm, and the estimated cost/rows. The trap in option A: `DESCRIBE` (MySQL) shows a table's structure, not a plan. Option C is a statistics-gathering command (MySQL style); in PostgreSQL `ANALYZE` updates the stats the optimiser uses, but does not show the plan itself. `SHOW PLAN` is not a PostgreSQL command."
+    },
+    "dbms-w12-q8": {
+      "question": "Which of these join algorithms work only for equi-joins (such as `r.A = s.A`), not for a condition like `r.A < s.B`?",
+      "options": [
+        "Only tuple nested-loop join",
+        "Only block nested-loop join",
+        "Both nested-loop and block nested-loop",
+        "Merge join and hash join"
+      ],
+      "explanation": "Merge join assumes both inputs are sorted on the join attribute and matches groups of equal values, and hash join sends equal values to the same bucket; both rely on 'equality'. Nested-loop and block nested-loop can check any condition on every pair, so they handle theta joins too. The trap in option C is remembering it backwards: the simplest algorithm is also the most general."
+    },
+    "dbms-w12-q9": {
+      "question": "Which rule of heuristic query optimisation is correct?",
+      "options": [
+        "Apply selections as early as possible (low in the tree)",
+        "Do Cartesian products first and filter later",
+        "Apply projections at the very end, so no column is lost",
+        "Join the largest relations first"
+      ],
+      "explanation": "Applying selections early makes intermediate results smaller, so every later operation gets cheaper. Option B is exactly backwards: a Cartesian product creates the biggest intermediate result, and the heuristics say to avoid it. The trap in option C: projections are also applied early, just keeping the attributes needed for joins. Option D is backwards too: the most restrictive joins (those giving small results) go first."
+    },
+    "dbms-w12-q10": {
+      "question": "Relation r has 800 blocks and no index. With a linear scan, how many block transfers on average for (i) equality on a unique key (the record exists) and (ii) equality on a non-key attribute?",
+      "options": [
+        "(i) 800, (ii) 800",
+        "(i) 400, (ii) 400",
+        "(i) 400, (ii) 800",
+        "(i) 1, (ii) 800"
+      ],
+      "explanation": "(i) The key is unique, so the scan stops as soon as the record is found; on average half the file: 800 / 2 = 400. (ii) A non-key value can appear in many records, so the whole file must be read: 800. The trap in option B is applying 'stop once found' to the non-key case too. Option A forgets the benefit of a unique key, and option D assumes 1 block as with an index, although there is no index."
+    },
+    "dbms-w12-q11": {
+      "question": "`emp` has 8,000 tuples and `dept` has 500. `dept_id` is the primary key of `dept` and a NOT NULL foreign key in `emp`. What is the size of emp ⋈ dept (on `dept_id`)?",
+      "options": [
+        "500",
+        "4,000,000",
+        "16",
+        "8,000"
+      ],
+      "explanation": "Every emp tuple has a NOT NULL `dept_id` with exactly one matching tuple in `dept` (key + foreign key), so each emp row appears in the join exactly once: size = n_emp = 8,000. Option B is the Cartesian product (8,000 × 500). The trap in option A is taking the result to be the size of the smaller relation. Option C is 8,000 / 500, the average 'employees per dept', not the join size."
+    },
+    "dbms-w12-q12": {
+      "question": "r ⋈ s: r has 200 blocks and 4,000 tuples (r is outer); s has 1,000 blocks and a B+ tree index on the join attribute, with one lookup costing c = 3 block transfers. With worst-case memory (one block per relation), which is cheaper, block nested-loop or indexed nested-loop, and what is its cost?",
+      "options": [
+        "Block nested-loop: 200,200 transfers",
+        "Indexed nested-loop: 12,200 transfers",
+        "Indexed nested-loop: 800 transfers",
+        "Indexed nested-loop: 4,200 transfers"
+      ],
+      "explanation": "Block nested-loop: b_r × b_s + b_r = 200 × 1,000 + 200 = 200,200. Indexed nested-loop: b_r + n_r × c = 200 + 4,000 × 3 = 12,200. Indexed is cheaper. The trap in option C is counting one index lookup per block (200 + 200 × 3 = 800); the lookup happens for every outer **tuple**. Option D takes the lookup cost c as 1 (200 + 4,000)."
+    },
+    "dbms-w12-q13": {
+      "question": "r has 300 blocks and s has 700 blocks, and an equi-join r ⋈ s is needed. What is the estimated cost of a hash join (no recursive partitioning), and of a merge join if both relations are already sorted on the join attribute?",
+      "options": [
+        "Hash join 3,000; merge join 1,000",
+        "Hash join 1,000; merge join 3,000",
+        "Hash join 3,000; merge join 210,300",
+        "Hash join 2,000; merge join 1,000"
+      ],
+      "explanation": "Hash join: partitioning reads both relations once and writes them once, then build/probe reads them once more: about 3(b_r + b_s) = 3 × 1,000 = 3,000. Merge join with both already sorted: read each relation once, b_r + b_s = 1,000. Option B swaps the two formulas. The trap in option C is using block nested-loop (300 × 700 + 300) instead of merge join. Option D forgets the writes of the partitioning phase."
+    },
+    "dbms-w12-q14": {
+      "question": "`emp` has 20,000 tuples and V(dept_id, emp) = 40. `department` has 40 tuples, `dept_id` is its key, and V(city, department) = 8. Assuming uniform distribution, what is the estimated size of σ_city='Pune'(department) ⋈ emp (on `dept_id`)?",
+      "options": [
+        "5",
+        "20,000",
+        "100,000",
+        "2,500"
+      ],
+      "explanation": "First the selection: 40 / 8 = 5 departments in Pune. Then the join: n_r × n_s / max(V) = 20,000 × 5 / max(40, 5) = 2,500. Thinking directly: 5 of the 40 departments, so 5/40 of 20,000 = 2,500 employees. Option A is only the size of the selection. The trap in option B is assuming an FK join always gives n_emp; here department was filtered first, so most emp rows have no partner left. Option C is 20,000 × 5, like a ×."
+    },
+    "dbms-w12-q15": {
+      "question": "For joining four relations r1 ⋈ r2 ⋈ r3 ⋈ r4, how many join orders are there in total (any tree shape, counting commutativity), and how many of them are left-deep?",
+      "options": [
+        "24 and 24",
+        "120 and 12",
+        "120 and 24",
+        "720 and 24"
+      ],
+      "explanation": "Total orders = (2(n − 1))! / (n − 1)! = 6! / 3! = 720 / 6 = 120. In a left-deep tree the right input of every join is a base relation, so only the order of relations is chosen: 4! = 24. The trap in option A is counting only permutations and forgetting bushy trees. Option D forgets to divide (2(n − 1))!. Option B takes left-deep as 4! / 2, as if the order of the first two relations did not matter; the formula counts commutativity."
     }
   }
 }
