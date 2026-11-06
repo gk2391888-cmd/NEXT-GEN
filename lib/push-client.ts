@@ -92,6 +92,20 @@ export async function saveReminders(prefs: ReminderPrefs): Promise<ReminderResul
   }
 }
 
+/** Asks the server to send one notification to this device now. Returns an error message, or '' when sent. */
+export async function sendTestReminder(): Promise<string> {
+  try {
+    const registration = await navigator.serviceWorker?.getRegistration();
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) return 'Turn on reminders on this device first.';
+    const res = await authedFetch('/api/reminders/test', { method: 'POST', body: JSON.stringify({ endpoint: subscription.endpoint }) });
+    if (res.ok) return '';
+    return ((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? 'Could not send the test. Please try again.';
+  } catch {
+    return 'Check your internet connection and try again.';
+  }
+}
+
 export async function turnOffReminders(prefs: ReminderPrefs) {
   remember({ on: false, prefs });
   try {

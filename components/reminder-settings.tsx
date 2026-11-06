@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { hourLabel, MISTAKES_THRESHOLD, type ReminderPrefs } from '@/lib/reminders';
-import { isIos, isStandalone, pushSupported, reminderKey, saveReminders, savedReminders, turnOffReminders, type ReminderResult } from '@/lib/push-client';
+import { isIos, isStandalone, pushSupported, reminderKey, saveReminders, savedReminders, sendTestReminder, turnOffReminders, type ReminderResult } from '@/lib/push-client';
 
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 6 AM to 10 PM
 
@@ -21,6 +21,7 @@ export function ReminderSettings() {
   const [note, setNote] = useState('');
   const [setUp, setSetUp] = useState(true);
   const [iosTab, setIosTab] = useState(false);
+  const [test, setTest] = useState<'idle' | 'sending' | 'sent'>('idle');
 
   useEffect(() => {
     const saved = savedReminders();
@@ -44,6 +45,15 @@ export function ReminderSettings() {
       if (result !== 'on') setNote(PROBLEM[result] ?? '');
     }
     setBusy(false);
+  }
+
+  async function sendTest() {
+    setNote('');
+    setTest('sending');
+    const error = await sendTestReminder();
+    setTest(error ? 'idle' : 'sent');
+    if (error) setNote(error);
+    else window.setTimeout(() => setTest('idle'), 5000);
   }
 
   const change = (patch: Partial<ReminderPrefs>) => {
@@ -95,7 +105,14 @@ export function ReminderSettings() {
           <Switch label="Mistakes due for revision" checked={prefs.mistakes} disabled={busy} onChange={(v) => change({ mistakes: v })} />
         </div>
       </div>
-      <p className="muted text-small mt-md">All reminders come at the time you pick (India time).</p>
+      <div className="flex-between mt-md">
+        <p className="muted text-small">All reminders come at the time you pick (India time).</p>
+        {on && (
+          <button type="button" className="btn btn-secondary" onClick={sendTest} disabled={test === 'sending'}>
+            {test === 'sending' ? 'Sending…' : test === 'sent' ? 'Sent ✓ Check your notifications' : 'Send a test notification'}
+          </button>
+        )}
+      </div>
     </section>
   );
 }
