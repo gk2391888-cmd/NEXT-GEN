@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEXT GEN | Student Learning Hub</title>
+  <meta name="description" content="NEXT GEN: week-wise notes, practice questions and mock tests for IITM BS students." />
+  <meta name="robots" content="noindex" />
+  <style>
+    :root { color-scheme: light dark; --bg: #f6f7fb; --fg: #18213a; --muted: #5b6478; --accent: #4f46e5; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #0f1424; --fg: #eef1f8; --muted: #a3abc0; --accent: #8b85ff; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 420px; text-align: center; }
+    .logo { width: 56px; height: 56px; border-radius: 14px; display: inline-grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 26px; }
+    h1 { font-size: 20px; margin: 16px 0 4px; }
+    p { color: var(--muted); margin: 0 0 16px; }
+    a { color: var(--accent); font-weight: 600; }
+    .links a { display: block; margin: 8px 0; }
+    [hidden] { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="logo" aria-hidden="true">N</div>
+    <h1>NEXT GEN</h1>
+    <p id="status" role="status">Opening the site…</p>
+    <div id="fallback" class="links" hidden>
+      <p>We couldn’t reach the site right now. Try one of these, or refresh in a minute:</p>
+    </div>
+  </main>
+  <script>
+    /*
+     * NEXT GEN runs on two hosts, built from the same commit. This page (on GitHub Pages, so it stays up
+     * when either host is down) checks which one answers and sends the student there, keeping the path:
+     * <gateway>/library/math1/2 → <host>/library/math1/2.
+     *
+     * The check loads a small static image from each host. A paused or broken host answers with an
+     * error page instead, so the image fails. No server code runs for the check.
+     * Order = preference: the first host that answers wins.
+     */
+    var HOSTS = [
+      'https://nextgen-iitm.netlify.app',
+      'https://nextgenvercelready.vercel.app',
+    ];
+    var PROBE = '/icon.svg';
+    var TIMEOUT_MS = 5000;
+    /* The repository name GitHub Pages serves this page under, e.g. /NEXT-GEN/. */
+    var BASE = '/NEXT-GEN/';
+
+    function rest() {
+      var path = location.pathname;
+      if (path.indexOf(BASE) === 0) path = '/' + path.slice(BASE.length);
+      if (path === '/index.html' || path === '/404.html') path = '/';
+      return path + location.search + location.hash;
+    }
+
+    function probe(host) {
+      return new Promise(function (resolve) {
+        var img = new Image();
+        var done = false;
+        var finish = function (ok) { if (!done) { done = true; resolve(ok); } };
+        img.onload = function () { finish(true); };
+        img.onerror = function () { finish(false); };
+        setTimeout(function () { finish(false); }, TIMEOUT_MS);
+        img.src = host + PROBE + '?probe=' + Date.now();
+      });
+    }
+
+    var target = rest();
+    Promise.all(HOSTS.map(probe)).then(function (ok) {
+      var i = ok.indexOf(true);
+      if (i >= 0) {
+        location.replace(HOSTS[i] + target);
+        return;
+      }
+      document.getElementById('status').textContent = 'The site is busy right now.';
+      var box = document.getElementById('fallback');
+      HOSTS.forEach(function (h) {
+        var a = document.createElement('a');
+        a.href = h + target;
+        a.textContent = h.replace('https://', '');
+        box.appendChild(a);
+      });
+      box.hidden = false;
+    });
+  </script>
+</body>
+</html>
