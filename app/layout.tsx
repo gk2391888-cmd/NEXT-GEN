@@ -38,9 +38,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <Shell>{children}</Shell>
         </AuthProvider>
-        {/* Vercel Web Analytics and Speed Insights: cookieless; they only report on the deployed site. */}
-        <Analytics />
-        <SpeedInsights />
+        {/* Vercel Web Analytics and Speed Insights: cookieless, and only on Vercel (on Netlify their scripts don't exist). */}
+        {process.env.VERCEL === '1' && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   );
