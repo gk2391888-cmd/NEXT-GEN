@@ -109,11 +109,13 @@ The Supabase URL and publishable key default to the production project (`lib/sup
 | `UPI_ID` | Pay by UPI QR, e.g. `yourname@okaxis`. A business/merchant UPI ID is safer than a personal one for many payments. |
 | `UPI_PAYEE_NAME` | Optional: the name shown in the UPI app, defaults to `NEXT GEN` |
 | `PRO_PRICE_INR` | Optional, defaults to 99 |
+| `REMINDERS_SECRET` | The secret migration 0014 creates (`select value from private.app_settings where name = 'reminders_secret';`). Once set, `/api/reminders/send` only runs for the hourly database call. |
+| `FORCE_DEPLOY` | Optional: `1` builds every commit on `main`, not just `[deploy]` ones (see **Deploy**). |
 | `NEXT_PUBLIC_SITE_URL` | Optional: the public address for link previews and the sitemap, e.g. `https://nextgen.in` once a custom domain is added. Defaults to the Vercel production domain. |
 
 Without these the site still works: the AI shows "being set up" and the Pro button shows "launching soon".
 
-Migrations: run `supabase/migrations/0001…0009` in order in the Supabase SQL Editor. `0007_coding_attempts.sql` adds the table that syncs timed OPPE attempts; until it's run, those attempts stay on the student's device and everything else keeps syncing. `0009_one_trial_per_person.sql` turns on one trial per person (see above); until it's run, every new account still gets 7 days from the column default.
+Migrations: run `supabase/migrations/0001…0014` in order in the Supabase SQL Editor. `0007_coding_attempts.sql` adds the table that syncs timed OPPE attempts; until it's run, those attempts stay on the student's device and everything else keeps syncing. `0009_one_trial_per_person.sql` turns on one trial per person (see above); until it's run, every new account still gets 7 days from the column default.
 
 ## AI features
 
@@ -269,4 +271,19 @@ The site is a Next.js app, so Vercel needs it from Git (Vercel Drop only works f
 
 1. Push this folder to a GitHub repo.
 2. In the Vercel project, click **Connect Git** and pick that repo. Framework preset: Next.js.
-3. Every push to `main` then deploys automatically.
+3. Pushes to `main` build **only when the commit message contains `[deploy]`** (`scripts/should-deploy.mjs`, run by `vercel.json`'s `ignoreCommand` and `netlify.toml`'s `ignore`). Other branches never build.
+
+Why: every build renders ~1,500 pages, and every deploy writes them into a fresh cache. Building each of 87 commits in a month used up the Vercel Hobby limits (ISR writes) and paused the site. So batch work into ordinary commits, then release once:
+
+```
+git commit --allow-empty -m "release [deploy]"
+git push
+```
+
+Keeping usage low, for anyone changing the code:
+- Server code reads content through `lib/content.ts`, which parses each file once per server instance. Don't read content files directly in routes.
+- Don't add polling without a stop condition (see `useWar` in `components/war.tsx`), and don't fetch on every page from the shell.
+- Endpoints anyone can call without signing in go through `lib/server/rate-limit.ts`, and public GETs set `s-maxage` so the CDN answers them.
+- New dynamic routes with `generateStaticParams` set `dynamicParams = false`.
+
+Hosting note: Vercel's Hobby plan is for non-commercial use only, and taking payments counts as commercial. `netlify.toml` is ready for Netlify, whose free plan allows commercial sites (about 20 production deploys a month on its 300 credits).

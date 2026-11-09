@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { authedFetch } from '@/lib/supabase/client';
+import { DEMO, demoFetch } from '@/lib/supabase/demo';
 import {
   clearReferral,
   inviteLink,
@@ -32,7 +33,8 @@ export function useInviter(refParam: string | null) {
     const code = fromLink ?? pendingReferral();
     if (!code) return;
     let cancelled = false;
-    authedFetch(`/api/referrals/owner?code=${code}`)
+    // A plain request (no sign-in header), so the CDN can answer it from its cache.
+    (DEMO ? demoFetch : fetch)(`/api/referrals/owner?code=${code}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((body: { name: string | null } | null) => {
         if (cancelled || !body) return;

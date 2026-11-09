@@ -28,6 +28,8 @@ export const useAuth = () => useContext(AuthContext);
 
 /** Upload queued changes this long after the last one, so a quiz doesn't send a request per click. */
 const PUSH_DELAY_MS = 1500;
+/** Least time between two full downloads of a student's progress when they return to the tab. */
+const PULL_EVERY_MS = 10 * 60_000;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -99,7 +101,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       lastPending = pending;
     });
-    const catchUp = () => document.visibilityState === 'visible' && sync(userId);
+    // Coming back to the tab always uploads what's waiting, but downloads everything again at most every
+    // 10 minutes: on phones every app switch fires this, and a full download is every answer and test.
+    let lastPull = Date.now();
+    const catchUp = () => {
+      if (document.visibilityState !== 'visible') return;
+      const pull = Date.now() - lastPull > PULL_EVERY_MS;
+      if (pull) lastPull = Date.now();
+      sync(userId, { pull });
+    };
     window.addEventListener('online', catchUp);
     document.addEventListener('visibilitychange', catchUp);
     return () => {

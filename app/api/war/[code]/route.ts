@@ -1,6 +1,7 @@
 import { answerWar, joinWar, rematchWar, startWar, viewWar, WarFail } from '@/lib/server/war/engine';
 import { warError, warJson, warStore, warUser } from '@/lib/server/war/identity';
 import { parseCode } from '@/lib/war';
+import { allow, callerKey, tooMany } from '@/lib/server/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,9 @@ function failed(e: unknown) {
 
 /** The war as this player sees it right now (polled about once a second while playing). */
 export async function GET(req: Request, { params }: { params: Promise<{ code: string }> }) {
+  // A player polls ~30 times a minute; this leaves room for a hostel or college network sharing one
+  // address, while a runaway script gets turned away before any database work.
+  if (!allow('war-view', callerKey(req), 600, 60_000)) return tooMany();
   const code = parseCode((await params).code);
   const store = warStore();
   if (!code) return warError('That isn’t a war code.', 400, 'not_found');

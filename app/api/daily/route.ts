@@ -2,12 +2,19 @@ import { adminClient, getUserFromRequest } from '@/lib/server/supabase';
 import { pickDaily, publicDaily, withOverride } from '@/lib/server/daily';
 import { indiaClock } from '@/lib/reminders';
 import { MIN_ANSWERS_FOR_STATS, type DailyResult } from '@/lib/daily';
+import { allow, callerKey, tooMany } from '@/lib/server/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 const reply = (body: unknown, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } });
 
+/** "% got it right", kept per server instance for a minute so a burst of answers doesn't mean two counts each. */
+const percentMemo = new Map<string, { value: number | null; at: number }>();
+
 async function percentRight(day: string, questionId: string) {
+  const memoKey = `${day}:${questionId}`;
+  const hit = percentMemo.get(memoKey);
+  if (hit && Date.now() - hit.at < 60_000) return hit.value;
   const admin = adminClient();
   if (!admin) return null;
   const count = (correctOnly: boolean) => {
@@ -17,7 +24,10 @@ async function percentRight(day: string, questionId: string) {
   };
   const [all, right] = await Promise.all([count(false), count(true)]);
   const total = all.count ?? 0;
-  return total >= MIN_ANSWERS_FOR_STATS ? Math.round(((right.count ?? 0) / total) * 100) : null;
+  const value = total >= MIN_ANSWERS_FOR_STATS ? Math.round(((right.count ?? 0) / total) * 100) : null;
+  if (percentMemo.size > 1000) percentMemo.clear();
+  percentMemo.set(memoKey, { value, at: Date.now() });
+  return value;
 }
 
 function result(q: { answer: number; explanation: string; en?: { explanation: string } }, pick: number, percent: number | null): DailyResult {
@@ -31,7 +41,14 @@ function result(q: { answer: number; explanation: string; en?: { explanation: st
  */
 export async function GET(req: Request) {
   const { day } = indiaClock();
-  const picked = pickDaily(new URL(req.url).searchParams.get('choice') ?? '', day);
+  const params = new URL(req.url).searchParams;
+  // The CDN caches by the full URL, so URLs the app never asks for (extra parameters) are refused, and
+  // another day (a device with a wrong clock, or someone varying it to dodge the cache) is answered but
+  // rate-limited, since each such URL is a fresh, uncached function run.
+  if ([...params.keys()].some((k) => k !== 'choice' && k !== 'day')) return reply({ error: 'Not a valid request.' }, 400);
+  const asked = params.get('day');
+  if (asked !== null && asked !== day && !allow('daily-day', callerKey(req), 30, 60_000)) return tooMany();
+  const picked = pickDaily(params.get('choice') ?? '', day);
   if (!picked) return reply({ error: 'No question today.' }, 404);
   const q = await withOverride(adminClient(), picked);
   // The day is in the URL, so a cached copy never outlives its day.
@@ -40,6 +57,8 @@ export async function GET(req: Request) {
 
 /** Checks an answer ({ choice, pick }). A logged-in student's first answer of the day is the one recorded. */
 export async function POST(req: Request) {
+  // Anyone can answer without signing in, so one address gets a fair number of tries a minute.
+  if (!allow('daily', callerKey(req), 30, 60_000)) return tooMany();
   const body = await req.json().catch(() => null);
   const pick = Number(body?.pick);
   if (!Number.isInteger(pick) || pick < 0 || pick > 3) return reply({ error: 'Pick an option.' }, 400);

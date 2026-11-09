@@ -16,11 +16,14 @@ const HISTORY_DAYS = 120;
 const PARALLEL = 20;
 
 /**
- * Sends the reminders due this hour (India time): called every hour by pg_cron (migration 0012).
- * It has no secret, so the database hands out at most one run every 20 minutes, and every
- * device gets at most one reminder a day (last_sent_on).
+ * Sends the reminders due this hour (India time): called every hour by pg_cron (migrations 0012, 0014).
+ * The call carries the secret from migration 0014 in `x-cron-secret`; once REMINDERS_SECRET is set on
+ * the host, calls without it are refused before any work. Either way the database hands out at most
+ * one run every 20 minutes, and every device gets at most one reminder a day (last_sent_on).
  */
-export async function POST() {
+export async function POST(req: Request) {
+  const secret = process.env.REMINDERS_SECRET;
+  if (secret && req.headers.get('x-cron-secret') !== secret) return reply({ error: 'Not allowed.' }, 401);
   const admin = adminClient();
   const push = pushClient();
   if (!admin || !push) return reply({ error: 'Reminders are not set up.' }, 503);

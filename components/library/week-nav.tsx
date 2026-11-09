@@ -29,7 +29,8 @@ export function WeekNav({ subject, weeks: allWeeks, current }: { subject: Subjec
         const active = w.week === current;
         const done = isDone(w.week);
         return (
-          <Link key={w.week} href={`/library/${subject.id}/${w.week}`} className={`week-link${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
+          // No prefetch: a week page would otherwise fetch all 12 sibling weeks in the background.
+          <Link key={w.week} href={`/library/${subject.id}/${w.week}`} prefetch={false} className={`week-link${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
             <span className={`dot${active ? ' current' : done ? ' done' : ''}`}>{done && !active ? '✓' : w.week}</span>
             <span>Week {w.week} · {w.title}</span>
           </Link>

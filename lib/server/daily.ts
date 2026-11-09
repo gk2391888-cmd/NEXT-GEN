@@ -36,10 +36,22 @@ export function pickDaily(choiceId: string, day = indiaClock().day): Picked | un
 }
 
 /** The question with any admin correction applied (content_overrides, as the doubt solver does). */
+/**
+ * Admin corrections, kept per server instance for a minute: Quiz War asks for the same questions on
+ * every poll, and a fresh query each time was most of its database traffic. An admin's fix still shows
+ * within a minute.
+ */
+const OVERRIDE_TTL_MS = 60_000;
+const overrideMemo = new Map<string, { patch: QuestionPatch | undefined; at: number }>();
+
 export async function withOverride<T extends Question>(admin: SupabaseClient | null, q: T): Promise<T> {
   if (!admin) return q;
-  const { data } = await admin.from('content_overrides').select('data').eq('key', `q:${q.id}`).maybeSingle();
-  return applyPatch(q, data?.data as QuestionPatch | undefined);
+  const hit = overrideMemo.get(q.id);
+  if (hit && Date.now() - hit.at < OVERRIDE_TTL_MS) return applyPatch(q, hit.patch);
+  const { data, error } = await admin.from('content_overrides').select('data').eq('key', `q:${q.id}`).maybeSingle();
+  const patch = data?.data as QuestionPatch | undefined;
+  if (!error) overrideMemo.set(q.id, { patch, at: Date.now() });
+  return applyPatch(q, patch);
 }
 
 export function publicDaily(q: Picked, day: string): DailyQuestion {

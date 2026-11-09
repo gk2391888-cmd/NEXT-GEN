@@ -1,5 +1,5 @@
 import { getQuestion, getSubjects, getWeeks } from '@/lib/content';
-import { proJson, requirePro } from '@/lib/server/pro-access';
+import { proJson, requireAdmin, requirePro } from '@/lib/server/pro-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,8 @@ const cached = (body: unknown) => Response.json(body, { headers: { 'Cache-Contro
  * so pages ask only for what they show):
  * - `?ids=a,b,c`: just those questions (My Mistakes, the AI Doubt Solver).
  * - `?q=words&subjects=math1,stat1&weeks=4`: the best few matches, text only (Search).
- * - no parameters: every question (the admin panel's editor).
+ * - no parameters: every question (the admin panel's editor), for admins only: it's several MB
+ *   and the heaviest thing the server builds, so a trial account mustn't be able to loop it.
  */
 export async function GET(req: Request) {
   const denied = await requirePro(req);
@@ -55,6 +56,8 @@ export async function GET(req: Request) {
     return cached({ ok: true, hits });
   }
 
+  const notAdmin = await requireAdmin(req);
+  if (notAdmin) return notAdmin;
   const questions = getSubjects().flatMap((s) =>
     getWeeks(s.id).flatMap((w) => w.questions.map((q) => ({ ...q, subjectId: s.id, week: w.week, weekTitle: w.title }))),
   );

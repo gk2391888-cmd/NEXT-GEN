@@ -32,7 +32,7 @@ export function PricingPlans() {
   const { user } = useAuth();
   const plan = usePlan();
   const checkout = useProCheckout();
-  const { priceInr, fullPriceInr, offer, offerUsed } = useProPrice();
+  const { priceInr, fullPriceInr, offer, offerUsed } = useProPrice({ exact: true });
 
   const trialButton = (() => {
     if (!user) return <Link className="btn btn-secondary btn-block" href="/login?next=/pricing">Start {PRICING.trialDays}-day free trial</Link>;

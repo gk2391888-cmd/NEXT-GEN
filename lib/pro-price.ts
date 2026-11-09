@@ -51,12 +51,18 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-export function usePaymentConfig(): PaymentConfig | null {
+/**
+ * The payment config for the signed-in account. `load` fetches it; without it the hook only reads
+ * a copy some other part of the page already fetched. The shell (sidebar price, offer banner) is on
+ * every page, so it must not fetch: that put a server call (and for signed-in students three
+ * database queries) on every page load. Only the pricing page, the paywall and checkout load it.
+ */
+export function usePaymentConfig({ load: shouldLoad = true }: { load?: boolean } = {}): PaymentConfig | null {
   const { user, ready } = useAuth();
   const userId = user?.id ?? null;
   useEffect(() => {
-    if (ready) load(userId);
-  }, [ready, userId]);
+    if (shouldLoad && ready) load(userId);
+  }, [shouldLoad, ready, userId]);
   const current = useSyncExternalStore(subscribe, () => config, () => null);
   return loadedFor === userId ? current : null;
 }
@@ -72,11 +78,13 @@ export type ProPrice = {
 };
 
 /**
- * The Pro price to show. Until the server has answered it assumes an unused
- * offer, which is right for everyone except the few who've used it.
+ * The Pro price to show. Until the server has answered it assumes an unused offer, which is right
+ * for everyone except the few who've used it. `exact` asks the server (pricing page, paywall,
+ * checkout); elsewhere the price comes from lib/offers.ts alone, and checkout always charges the
+ * server's price.
  */
-export function useProPrice(): ProPrice {
-  const cfg = usePaymentConfig();
+export function useProPrice({ exact = false }: { exact?: boolean } = {}): ProPrice {
+  const cfg = usePaymentConfig({ load: exact });
   // Pages are prerendered, so the first render must not depend on the clock:
   // it uses the configured offer, and the deadline is checked once mounted.
   const mounted = useSyncExternalStore(noop, () => true, () => false);

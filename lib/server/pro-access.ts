@@ -16,8 +16,7 @@ const fail = (code: ProContentError['code'], message: string, status: number) =>
 /**
  * Lets the request through only for a signed-in trial or Pro student, or an admin. The plan
  * comes from `public.is_pro()` in the database (asked as the student), never from the browser.
- * Since migration 0009 is_pro() counts admins too; is_admin() is asked as well so admins keep
- * access on a database that hasn't run it yet.
+ * is_pro() counts admins too (migration 0009).
  * Returns an error response to send back, or null when the student has Pro.
  */
 export async function requirePro(req: Request): Promise<Response | null> {
@@ -26,13 +25,21 @@ export async function requirePro(req: Request): Promise<Response | null> {
   const auth = await getUserFromRequest(req);
   if (!auth) return fail('login_required', 'Log in to start your free trial of Pro.', 401);
 
-  const db = clientForToken(auth.token);
-  const { data, error } = await db.rpc('is_pro', { uid: auth.user.id });
+  // is_pro() counts admins too (migration 0009, which the live database has), so one call answers both.
+  const { data, error } = await clientForToken(auth.token).rpc('is_pro', { uid: auth.user.id });
   if (error) {
     console.error('[pro]', error);
     return fail('failed', 'Could not check your plan. Please try again.', 502);
   }
-  if (data === true) return null;
-  const { data: admin } = await db.rpc('is_admin');
-  return admin === true ? null : fail('not_in_plan', 'This needs an active free trial or Pro.', 403);
+  return data === true ? null : fail('not_in_plan', 'This needs an active free trial or Pro.', 403);
+}
+
+/** Like requirePro, but for admins only (e.g. the whole question bank for the admin editor). */
+export async function requireAdmin(req: Request): Promise<Response | null> {
+  if (DEMO && req.headers.get(DEMO_PRO_HEADER) === '1') return null;
+  const auth = await getUserFromRequest(req);
+  if (!auth) return fail('login_required', 'Log in first.', 401);
+  const { data, error } = await clientForToken(auth.token).rpc('is_admin');
+  if (error) return fail('failed', 'Could not check your account. Please try again.', 502);
+  return data === true ? null : fail('not_in_plan', 'Only admins can do this.', 403);
 }

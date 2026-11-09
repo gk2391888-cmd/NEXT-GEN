@@ -5,6 +5,9 @@ export function generateStaticParams() {
   return getSubjects().map((s) => ({ subject: s.id }));
 }
 
+// Only real subjects: any other path is a 404 instead of a page rendered (and cached) on demand.
+export const dynamicParams = false;
+
 export default async function SubjectPage({ params }: { params: Promise<{ subject: string }> }) {
   const { subject } = await params;
   if (!getSubject(subject)) notFound();

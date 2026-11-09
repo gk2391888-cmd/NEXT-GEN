@@ -485,7 +485,7 @@ npm run dev:demo          # dev server on :3001 with dummy logged-in data (see b
 - **Server env vars:** `GROQ_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (needed for AI limits and payments), `RAZORPAY_KEY_ID/SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `UPI_ID` (pay by UPI QR), and optionally `UPI_PAYEE_NAME`, `AI_MODEL_SMART` / `AI_MODEL_FAST` and `PRO_PRICE_INR`. They're listed in the README, along with "AI features".
 - **Database changes:** add a new `supabase/migrations/000N_*.sql` and run it by hand in the Supabase SQL editor. There's no migration CLI.
 - **Making yourself an admin:** `insert into public.admins (user_id) values ('<your auth uid>');`
-- **Deploy:** push to `main`; Vercel builds and deploys. The build runs the content validator first.
+- **Deploy:** only `main` commits whose message contains `[deploy]` are built (`scripts/should-deploy.mjs`; see README → Deploy for why). Batch commits, then push one with `[deploy]`. The build runs the content validator first.
 
 ## 9. Things worth knowing
 

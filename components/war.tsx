@@ -192,11 +192,20 @@ export function WarHome({ subjects: all, weeks }: { subjects: Subject[]; weeks: 
 
 /* ---------------- /war/<code> ---------------- */
 
-/** Polls the war about once a second, and keeps a clock in step with the server's. */
+/** Errors in a row after which polling stops until the student comes back to the tab. */
+const MAX_POLL_ERRORS = 5;
+/** A lobby nobody started, or results nobody is still playing towards, stop polling after this. */
+const LOBBY_POLL_LIMIT_MS = 30 * 60_000;
+const RESULTS_POLL_LIMIT_MS = 10 * 60_000;
+
+/** Polls the war every few seconds, and keeps a clock in step with the server's. */
 function useWar(code: string) {
   const [view, setView] = useState<WarView | null>(null);
   const [error, setError] = useState<WarError | null>(null);
+  const [failures, setFailures] = useState(0);
+  const { user, ready } = useAuth();
   const offset = useRef(0);
+  const doneSince = useRef<number | null>(null);
   const [, setTick] = useState(0);
 
   const refresh = useCallback(async () => {
@@ -205,8 +214,10 @@ function useWar(code: string) {
       offset.current = v.serverNow - Date.now();
       setView(v);
       setError(null);
+      setFailures(0);
     } catch (e) {
       setError(e as WarError);
+      setFailures((n) => n + 1);
     }
   }, [code]);
 
@@ -215,20 +226,33 @@ function useWar(code: string) {
   }, [refresh]);
 
   // Polling is what Quiz War costs to run, so it's kept modest: every 2 s while playing, slower in the
-  // lobby and on the results, and not at all while the tab is in the background.
+  // lobby and on the results, and not at all while the tab is in the background. It stops for good on
+  // a missing war or a logged-out student, after repeated errors (backing off in between), on a lobby
+  // nobody started, and on results nobody is still playing towards. Coming back to the tab checks once.
   const phase = view?.phase;
   const settled = phase === 'done' && Boolean(view?.players.every((p) => p.finished));
+  const myRunOver = phase === 'done' && (view?.players.find((p) => p.isMe)?.finished ?? true);
+  if (phase === 'done') doneSince.current ??= Date.now();
+  else doneSince.current = null;
+  const hardError = error?.code === 'not_found' || error?.code === 'login_required';
+  const staleLobby = phase === 'lobby' && view !== null && Date.now() + offset.current - view.createdAt > LOBBY_POLL_LIMIT_MS;
+  const staleResults = myRunOver && doneSince.current !== null && Date.now() - doneSince.current > RESULTS_POLL_LIMIT_MS;
+  // A logged-out visitor (an invite link before signing in) sees the war once, without polling.
+  const loggedOut = ready && !user;
+  const stopped = settled || hardError || loggedOut || failures >= MAX_POLL_ERRORS || staleLobby || staleResults;
   useEffect(() => {
-    if (settled) return;
-    const every = phase === 'lobby' ? 3000 : phase === 'done' ? 8000 : 2000;
-    const id = window.setInterval(() => document.visibilityState === 'visible' && refresh(), every);
     const onVisible = () => document.visibilityState === 'visible' && refresh();
     document.addEventListener('visibilitychange', onVisible);
+    if (stopped) return () => document.removeEventListener('visibilitychange', onVisible);
+    const every = failures
+      ? Math.min(60_000, 2000 * 2 ** failures)
+      : phase === 'lobby' ? 3000 : myRunOver ? 15_000 : phase === 'done' ? 8000 : 2000;
+    const id = window.setTimeout(() => (document.visibilityState === 'visible' ? refresh() : setTick((t) => t + 1)), every);
     return () => {
-      window.clearInterval(id);
+      window.clearTimeout(id);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [phase, settled, refresh]);
+  }, [phase, stopped, failures, myRunOver, view, refresh]);
 
   // Re-render a few times a second for the timers.
   useEffect(() => {
