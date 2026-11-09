@@ -286,4 +286,17 @@ Keeping usage low, for anyone changing the code:
 - Endpoints anyone can call without signing in go through `lib/server/rate-limit.ts`, and public GETs set `s-maxage` so the CDN answers them.
 - New dynamic routes with `generateStaticParams` set `dynamicParams = false`.
 
-Hosting note: Vercel's Hobby plan is for non-commercial use only, and taking payments counts as commercial. `netlify.toml` is ready for Netlify, whose free plan allows commercial sites (about 20 production deploys a month on its 300 credits).
+### Two hosts and a failover link
+
+The same `main` commit deploys to **both** hosts, each connected to this GitHub repo with the same `[deploy]` rule:
+
+| Host | Address | Notes |
+| --- | --- | --- |
+| Netlify | https://nextgen-iitm.netlify.app | Project `nextgen-iitm` (Gaurav kumar's team). Free plan allows commercial sites; ~20 production deploys a month on 300 credits. |
+| Vercel | https://nextgenvercelready.vercel.app | Project `next_gen_vercel_ready` (iitm-solutions). Hobby is non-commercial only, and taking payments counts as commercial. |
+
+**Share this link with students:** https://gk2391888-cmd.github.io/NEXT-GEN/ . It's `gateway/index.html`, served by GitHub Pages from the `gh-pages` branch, so it stays up when either host is down. It loads a small static image (`/icon.svg`) from each host (no server code runs) and sends the student to the first one that answers, keeping the path: `…/NEXT-GEN/library/math1/2` → `<host>/library/math1/2`. Order in `HOSTS` is preference (Netlify first).
+
+Changing the gateway: edit `gateway/index.html` on `main`, then copy it to `index.html` and `404.html` on the `gh-pages` branch and push that branch.
+
+Each host keeps its own environment variables (Netlify → Project configuration → Environment variables; Vercel → Settings → Environment Variables). Keep them the same on both, especially `VAPID_*` (push reminders) and `REMINDERS_SECRET`. Supabase → Authentication → URL Configuration must list both hosts as redirect URLs, or logging in on one sends the student to the other. A student's login lives in the browser per host, so moving between hosts means logging in again (their progress is on the account, so nothing is lost).
