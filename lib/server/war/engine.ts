@@ -99,11 +99,11 @@ export async function startWar(store: WarStore, user: WarUser, code: string) {
 }
 
 /** Moves a live war on when everyone answered or time ran out (lazily, on each request). */
-async function advanceLive(store: WarStore, war: WarRow, players: PlayerRow[], now: number) {
+async function advanceLive(store: WarStore, war: WarRow, players: PlayerRow[], now: number, answers?: AnswerRow[]): Promise<boolean> {
   const started = at(war.q_started_at);
-  if (war.status !== 'live' || started === null || now < started) return;
-  const answered = (await store.answers(war.code, war.current_q)).length;
-  if (!questionOver(started, now, answered >= players.length)) return;
+  if (war.status !== 'live' || started === null || now < started) return false;
+  const answered = (answers ?? (await store.answers(war.code, war.current_q))).filter((a) => a.q === war.current_q).length;
+  if (!questionOver(started, now, answered >= players.length)) return false;
   if (war.current_q + 1 >= war.question_ids.length) {
     if (await store.updateWar(war.code, { status: 'done' }, war.current_q)) {
       await Promise.all(players.map((p) => store.updatePlayer(war.code, p.user_id, { finished_at: iso(now) })));
@@ -111,18 +111,20 @@ async function advanceLive(store: WarStore, war: WarRow, players: PlayerRow[], n
   } else {
     await store.updateWar(war.code, { current_q: war.current_q + 1, q_started_at: iso(now + WAR.revealMs) }, war.current_q);
   }
+  return true;
 }
 
 /** The same for one player's own run through a challenge. */
-async function advanceRun(store: WarStore, war: WarRow, player: PlayerRow, now: number) {
+async function advanceRun(store: WarStore, war: WarRow, player: PlayerRow, now: number, answers?: AnswerRow[]): Promise<boolean> {
   const started = at(player.q_started_at);
-  if (player.finished_at || started === null || now < started) return;
-  const answered = (await store.answers(war.code, player.current_q)).some((a) => a.user_id === player.user_id);
-  if (!questionOver(started, now, answered)) return;
+  if (player.finished_at || started === null || now < started) return false;
+  const answered = (answers ?? (await store.answers(war.code, player.current_q))).some((a) => a.user_id === player.user_id && a.q === player.current_q);
+  if (!questionOver(started, now, answered)) return false;
   const patch = player.current_q + 1 >= war.question_ids.length
     ? { finished_at: iso(now) }
     : { current_q: player.current_q + 1, q_started_at: iso(now + WAR.revealMs) };
   await store.updatePlayer(war.code, player.user_id, patch, player.current_q);
+  return true;
 }
 
 const runOf = (war: WarRow, me: PlayerRow | undefined) =>
@@ -174,30 +176,36 @@ export async function viewWar(store: WarStore, user: WarUser | null, code: strin
     war = (await store.getWar(code))!;
   }
   let players = await store.players(code);
+  let answers = await store.answers(code);
   const now = Date.now();
+  // Each poll reads the war, its players and its answers once, and again only after it moved something.
+  let changed = false;
 
   if (war.mode === 'random' && war.status === 'lobby') {
-    if (players.length >= 2) await startLive(store, code);
-    else if (now - Date.parse(war.created_at) > WAR.matchWaitMs && players[0]) {
+    if (players.length >= 2) {
+      await startLive(store, code);
+      changed = true;
+    } else if (now - Date.parse(war.created_at) > WAR.matchWaitMs && players[0]) {
       // Nobody came: the host plays now, and the next student who searches takes on their score.
       await store.updateWar(code, { mode: 'challenge', open: true, status: 'live' });
       await store.updatePlayer(code, players[0].user_id, { q_started_at: iso(now + WAR.countdownMs) });
+      changed = true;
     }
+    if (changed) war = (await store.getWar(code))!;
   }
-  war = (await store.getWar(code))!;
   if (war.mode === 'challenge') {
-    const me = players.find((p) => p.user_id === user?.id);
-    if (me) await advanceRun(store, war, me, now);
-  } else {
-    await advanceLive(store, war, players, now);
+    const mine = players.find((p) => p.user_id === user?.id);
+    if (mine && (await advanceRun(store, war, mine, now, answers))) changed = true;
+  } else if (await advanceLive(store, war, players, now, answers)) {
+    changed = true;
   }
-  war = (await store.getWar(code))!;
-  players = await store.players(code);
+  if (changed) {
+    [war, players, answers] = await Promise.all([store.getWar(code).then((w) => w!), store.players(code), store.answers(code)]);
+  }
 
   const me = players.find((p) => p.user_id === user?.id);
   const run = runOf(war, me);
   const { phase, index } = phaseOf(run, now);
-  const answers = await store.answers(code);
   const subject = getSubject(war.subject_id)!;
   const total = war.question_ids.length;
   const finished = (p: PlayerRow) => Boolean(p.finished_at) || war.status === 'done';

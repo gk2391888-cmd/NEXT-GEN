@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getSupabase } from '@/lib/supabase/client';
-import { loadQuestionBank, type BankQuestion } from '@/lib/question-bank';
+import { loadQuestions, type BankQuestion } from '@/lib/question-bank';
 import { findQualifierQuestion } from '@/lib/qualifier-questions';
 import { accessOf, PRICING, usePlan } from '@/lib/plan';
 import { limitsFor, type AiUsage } from '@/lib/ai/features';
@@ -64,9 +64,10 @@ export function DoubtChat() {
     const questionId = id ?? (saved?.turns?.length ? saved.questionId : undefined);
     setRestored(true);
     if (!questionId) return;
-    loadQuestionBank()
+    // Just this one question (the whole bank is several MB).
+    loadQuestions([questionId])
       // Qualifier mock questions aren't in the course question bank.
-      .then(async (bank) => bank.find((x) => x.id === questionId) ?? (await findQualifierQuestion(questionId)))
+      .then(async ([found]) => found ?? (await findQualifierQuestion(questionId)))
       .then((q) => {
         if (!q) return;
         setAbout(q);

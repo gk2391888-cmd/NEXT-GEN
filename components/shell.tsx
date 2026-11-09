@@ -82,7 +82,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
             // A qualifier student goes straight to their own qualifier.
             const href = item.tool === 'qualifier' && choice.qualifier ? `${QUALIFIER_PATH}/${choice.qualifier}` : item.href;
             return (
-              <Link key={item.href} href={href} className={`nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
+              // No prefetch: the sidebar is on every page, and prefetching its dozen pages on every visit adds up on the hosting plan.
+              <Link key={item.href} href={href} prefetch={false} className={`nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
                 <span className="nav-icon" aria-hidden="true">{item.icon}</span>
                 {item.label}
                 {item.tag && <span className="nav-tag">{item.tag}</span>}
@@ -146,8 +147,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <footer className="footer">
           <span>© {new Date().getFullYear()} NEXT GEN · A THE TECH HUB initiative</span>
           <span className="footer-links">
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/terms">Terms</Link>
+            <Link href="/privacy" prefetch={false}>Privacy</Link>
+            <Link href="/terms" prefetch={false}>Terms</Link>
           </span>
           <span>Made for learning by <strong>GAURAV GUPTA</strong></span>
         </footer>

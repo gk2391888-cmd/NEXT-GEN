@@ -25,24 +25,17 @@ function result(q: { answer: number; explanation: string; en?: { explanation: st
 }
 
 /**
- * Today's Question of the Day for a programme choice (?choice=ds/foundation). Open to everyone,
- * free plan included: one question a day is a preview. A logged-in student who has already
- * answered today also gets the result back (`pick` is -1: only right or wrong is stored).
+ * Today's Question of the Day for a programme choice (?choice=ds/foundation&day=YYYY-MM-DD). Open to
+ * everyone, and the same for everyone with that choice, so the CDN serves it: no function runs for most
+ * visits. Whether this student already answered is kept on their device.
  */
 export async function GET(req: Request) {
   const { day } = indiaClock();
   const picked = pickDaily(new URL(req.url).searchParams.get('choice') ?? '', day);
   if (!picked) return reply({ error: 'No question today.' }, 404);
-  const admin = adminClient();
-  const q = await withOverride(admin, picked);
-
-  const auth = await getUserFromRequest(req);
-  let answered: DailyResult | null = null;
-  if (auth && admin) {
-    const { data } = await admin.from('daily_answers').select('question_id, correct').eq('user_id', auth.user.id).eq('day', day).maybeSingle();
-    if (data?.question_id === q.id) answered = result(q, data.correct ? q.answer : -1, await percentRight(day, q.id));
-  }
-  return reply({ question: publicDaily(q, day), answered });
+  const q = await withOverride(adminClient(), picked);
+  // The day is in the URL, so a cached copy never outlives its day.
+  return Response.json({ question: publicDaily(q, day), answered: null }, { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=1800' } });
 }
 
 /** Checks an answer ({ choice, pick }). A logged-in student's first answer of the day is the one recorded. */

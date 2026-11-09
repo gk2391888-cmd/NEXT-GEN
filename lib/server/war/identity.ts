@@ -29,8 +29,11 @@ export function shortName(fullName: string | null | undefined, email?: string | 
   return local ? local.charAt(0).toUpperCase() + local.slice(1, 12) : 'Player';
 }
 
-/** The player behind a request, or null when logged out. */
-export async function warUser(req: Request): Promise<WarUser | null> {
+/**
+ * The player behind a request, or null when logged out. Viewing a war (polled every couple of
+ * seconds) only needs the account id, so `idOnly` skips the name and plan lookups.
+ */
+export async function warUser(req: Request, idOnly = false): Promise<WarUser | null> {
   if (DEMO) {
     const header = req.headers.get(DEMO_WAR_USER_HEADER);
     if (!header) return null;
@@ -40,6 +43,7 @@ export async function warUser(req: Request): Promise<WarUser | null> {
   const auth = await getUserFromRequest(req);
   const admin = adminClient();
   if (!auth || !admin) return null;
+  if (idOnly) return { id: auth.user.id, name: '', pro: false };
   const [profile, pro] = await Promise.all([
     admin.from('profiles').select('full_name').eq('id', auth.user.id).maybeSingle(),
     admin.rpc('is_pro', { uid: auth.user.id }),

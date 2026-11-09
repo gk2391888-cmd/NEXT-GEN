@@ -15,5 +15,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ subject:
     const denied = await requirePro(req);
     if (denied) return denied;
   }
-  return proJson({ ok: true, week: { ...week, questions: week.questions.map((q) => ({ ...q, week: week.week })) } });
+  // Kept for an hour in the student's own browser (private: it's behind the plan check), so going back and forth between weeks doesn't fetch them again.
+  return Response.json({ ok: true, week: { ...week, questions: week.questions.map((q) => ({ ...q, week: week.week })) } }, { headers: { 'Cache-Control': 'private, max-age=3600' } });
 }

@@ -214,12 +214,21 @@ function useWar(code: string) {
     refresh();
   }, [refresh]);
 
+  // Polling is what Quiz War costs to run, so it's kept modest: every 2 s while playing, slower in the
+  // lobby and on the results, and not at all while the tab is in the background.
   const phase = view?.phase;
+  const settled = phase === 'done' && Boolean(view?.players.every((p) => p.finished));
   useEffect(() => {
-    if (phase === 'done' && view?.players.every((p) => p.finished)) return;
-    const id = window.setInterval(refresh, phase === 'lobby' || phase === 'done' ? 2000 : 1000);
-    return () => window.clearInterval(id);
-  }, [phase, refresh, view?.players]);
+    if (settled) return;
+    const every = phase === 'lobby' ? 3000 : phase === 'done' ? 8000 : 2000;
+    const id = window.setInterval(() => document.visibilityState === 'visible' && refresh(), every);
+    const onVisible = () => document.visibilityState === 'visible' && refresh();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [phase, settled, refresh]);
 
   // Re-render a few times a second for the timers.
   useEffect(() => {

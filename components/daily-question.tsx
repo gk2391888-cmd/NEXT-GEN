@@ -8,6 +8,7 @@ import { useQuestionLang } from '@/lib/question-lang';
 import { localize } from '@/lib/question-text';
 import { progress, useProgress } from '@/lib/progress/store';
 import { streakInfo } from '@/lib/progress/insights';
+import { indiaClock } from '@/lib/reminders';
 import { dailyAsQuestion, type DailyQuestion as Daily, type DailyResult } from '@/lib/daily';
 import { Explanation, QuestionView } from '@/components/quiz/question-view';
 
@@ -50,7 +51,8 @@ export function DailyQuestion() {
     setDaily(null);
     setResult(null);
     setSelected(null);
-    authedFetch(`/api/daily?choice=${encodeURIComponent(choice.id)}`)
+    // A plain (cacheable) request: the day in the URL keeps cached copies from crossing midnight.
+    fetch(`/api/daily?choice=${encodeURIComponent(choice.id)}&day=${indiaClock().day}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((body: { question: Daily; answered: DailyResult | null } | null) => {
         if (cancelled || !body) return;

@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
-import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
+import { useEffect, useMemo, useState } from 'react';
+import { searchQuestions, type QuestionHit } from '@/lib/question-bank';
+import { useChoice } from '@/lib/programme-choice';
 import { useQuestionLang } from '@/lib/question-lang';
-import { localize } from '@/lib/question-text';
 import { LanguageSwitch } from '@/components/quiz/language-switch';
 import { useInChoice } from '@/lib/programme-choice';
 import { LevelComingSoon } from '@/components/coming-soon';
@@ -32,13 +32,6 @@ function search(entries: SearchEntry[], query: string) {
     .map((r) => r.e);
 }
 
-/** Practice questions whose text (in either language) contains every search word. */
-function searchQuestions(bank: BankQuestion[], query: string) {
-  const words = query.toLowerCase().split(/\s+/).filter((w) => w.length > 1);
-  if (!words.length) return [];
-  const textOf = (q: BankQuestion) => [q.question, ...q.options, q.en?.question ?? '', ...(q.en?.options ?? [])].join(' ').toLowerCase();
-  return bank.filter((q) => words.every((w) => textOf(q).includes(w))).slice(0, 10);
-}
 
 function snippet(text: string, query: string) {
   const word = query.toLowerCase().split(/\s+/).find((w) => w.length > 1 && text.toLowerCase().includes(w));
@@ -49,7 +42,9 @@ function snippet(text: string, query: string) {
 }
 
 export function NotesSearch() {
-  const { data, error, retry } = useProContent<{ entries: SearchEntry[] }>('/api/pro/search');
+  // Only the programme's subjects are downloaded.
+  const choice = useChoice();
+  const { data, error, retry } = useProContent<{ entries: SearchEntry[] }>(`/api/pro/search?subjects=${choice.level.subjects.join(',')}`);
   if (!data) return <ProContentStatus error={error} onRetry={retry} />;
   return <SearchView allEntries={data.entries} />;
 }
@@ -92,12 +87,25 @@ function SearchView({ allEntries }: { allEntries: SearchEntry[] }) {
   );
 }
 
-/** Matching practice questions, shown in the student's chosen language. The question bank loads once a search starts. */
-function QuestionHits({ query, subjects, inChoice }: { query: string; subjects: Map<string, string>; inChoice: (subjectId: string, week?: number) => boolean }) {
-  const bank = useQuestionBank();
+/** Matching practice questions, shown in the student's chosen language, searched on the server a moment after typing stops. */
+function QuestionHits({ query, subjects }: { query: string; subjects: Map<string, string>; inChoice: (subjectId: string, week?: number) => boolean }) {
   const lang = useQuestionLang();
-  const hits = useMemo(() => (bank ? searchQuestions(bank.filter((q) => inChoice(q.subjectId, q.week)), query) : []), [bank, query, inChoice]);
-  if (!bank || hits.length === 0) return null;
+  const choice = useChoice();
+  const [hits, setHits] = useState<QuestionHit[]>([]);
+  const ids = [...subjects.keys()].join(',');
+  useEffect(() => {
+    let alive = true;
+    const timer = window.setTimeout(() => {
+      searchQuestions(query, ids.split(','), choice.weeks)
+        .then((h) => alive && setHits(h))
+        .catch(() => alive && setHits([]));
+    }, 400);
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+    };
+  }, [query, ids, choice.weeks]);
+  if (hits.length === 0) return null;
   return (
     <>
       <div className="flex-between mt-lg">
@@ -107,7 +115,7 @@ function QuestionHits({ query, subjects, inChoice }: { query: string; subjects: 
       {hits.map((q) => (
         <Link key={q.id} href={`/practice/${q.subjectId}/${q.week}`} className="search-hit">
           <span className="muted">{subjects.get(q.subjectId)} · Week {q.week} · {q.weekTitle}</span>
-          <strong>{localize(q, lang).question.replace(/[*`]/g, '')}</strong>
+          <strong>{(lang === 'en' && q.en ? q.en.question : q.question).replace(/[*`]/g, '')}</strong>
         </Link>
       ))}
     </>

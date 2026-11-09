@@ -17,7 +17,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ code: st
   if (!code) return warError('That isn’t a war code.', 400, 'not_found');
   if (!store) return warError('Quiz War is being set up.', 503);
   try {
-    return warJson(await viewWar(store, await warUser(req), code));
+    return warJson(await viewWar(store, await warUser(req, true), code));
   } catch (e) {
     return failed(e);
   }

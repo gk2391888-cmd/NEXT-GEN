@@ -8,7 +8,10 @@ export type BankQuestion = Question & { subjectId: string; week: number; weekTit
 
 let cache: Promise<BankQuestion[]> | null = null;
 
-/** All questions, fetched once from /api/pro/questions (trial, Pro and admins only) and shared. */
+/**
+ * Every question (several MB), fetched once from /api/pro/questions and shared. Only the admin
+ * panel's editor needs this; pages for students use loadQuestions or searchQuestions instead.
+ */
 export function loadQuestionBank(): Promise<BankQuestion[]> {
   cache ??= fetchProContent<{ questions: BankQuestion[] }>('/api/pro/questions')
     .then((d) => d.questions)
@@ -29,4 +32,28 @@ export function useQuestionBank(): BankQuestion[] | null {
     };
   }, []);
   return bank;
+}
+
+/** Questions already fetched on this page, by id. */
+const byId = new Map<string, BankQuestion>();
+
+/** Just these questions (trial, Pro and admins only), fetching only the ones this page hasn't got yet. */
+export async function loadQuestions(ids: string[]): Promise<BankQuestion[]> {
+  const missing = [...new Set(ids)].filter((id) => !byId.has(id));
+  for (let i = 0; i < missing.length; i += 300) {
+    const batch = missing.slice(i, i + 300);
+    const { questions } = await fetchProContent<{ questions: BankQuestion[] }>(`/api/pro/questions?ids=${batch.map(encodeURIComponent).join(',')}`);
+    questions.forEach((q) => byId.set(q.id, q));
+  }
+  return ids.map((id) => byId.get(id)).filter((q): q is BankQuestion => q !== undefined);
+}
+
+export type QuestionHit = Pick<BankQuestion, 'id' | 'subjectId' | 'week' | 'weekTitle' | 'question'> & { en?: { question: string } };
+
+/** The best few questions containing every search word, searched on the server. */
+export async function searchQuestions(query: string, subjects: string[], maxWeek?: number): Promise<QuestionHit[]> {
+  const params = new URLSearchParams({ q: query, subjects: subjects.join(',') });
+  if (maxWeek) params.set('weeks', String(maxWeek));
+  const { hits } = await fetchProContent<{ hits: QuestionHit[] }>(`/api/pro/questions?${params}`);
+  return hits;
 }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { progress, useProgress } from '@/lib/progress/store';
 import { computeMistakes, isDue, type Mistake } from '@/lib/progress/mistakes';
-import { useQuestionBank, type BankQuestion } from '@/lib/question-bank';
+import { loadQuestions, type BankQuestion } from '@/lib/question-bank';
 import { useCorrectedQuestions } from '@/lib/overrides';
 import { useInChoice } from '@/lib/programme-choice';
 import type { Subject, WeekRef } from '@/lib/types';
@@ -16,8 +16,9 @@ type Props = { subjects: Subject[]; catalog: Record<string, WeekRef[]> };
 
 export function MistakesView({ subjects, catalog }: Props) {
   const state = useProgress();
-  const bank = useQuestionBank();
   const [session, setSession] = useState<BankQuestion[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const inChoice = useInChoice();
   // Only the choice's subjects (and a qualifier's first weeks); the rest come back when the student switches back.
   const mistakes = useMemo(() => computeMistakes(state.answers).filter((m) => inChoice(m.subjectId, m.week)), [state.answers, inChoice]);
@@ -35,10 +36,16 @@ export function MistakesView({ subjects, catalog }: Props) {
     return [...map.values()].sort((a, b) => b.length - a.length);
   }, [due]);
 
-  function start(list: Mistake[]) {
-    if (!bank) return;
-    const ids = new Set(list.map((m) => m.questionId));
-    setSession(bank.filter((q) => ids.has(q.id)));
+  // Only the questions being revised are fetched, never the whole bank.
+  async function start(list: Mistake[]) {
+    setLoading(true);
+    setLoadError('');
+    try {
+      setSession(await loadQuestions(list.map((m) => m.questionId)));
+    } catch {
+      setLoadError('Could not load these questions. Check your connection and try again.');
+    }
+    setLoading(false);
   }
 
   if (session) return <RevisionSession questions={session} onDone={() => setSession(null)} />;
@@ -72,14 +79,15 @@ export function MistakesView({ subjects, catalog }: Props) {
                     <td><strong>{subjectName.get(list[0].subjectId)}</strong></td>
                     <td>Week {list[0].week} <span className="muted">· {titleOf(list[0])}</span></td>
                     <td data-label="Questions:">{list.length}</td>
-                    <td className="text-right"><button className="btn btn-secondary" onClick={() => start(list)} disabled={!bank}>Revise</button></td>
+                    <td className="text-right"><button className="btn btn-secondary" onClick={() => start(list)} disabled={loading}>Revise</button></td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <button className="btn btn-primary mt-lg" onClick={() => start(due)} disabled={!bank}>
-              {bank ? `Revise all ${due.length} →` : 'Loading questions…'}
+            <button className="btn btn-primary mt-lg" onClick={() => start(due)} disabled={loading}>
+              {loading ? 'Loading questions…' : `Revise all ${due.length} →`}
             </button>
+            {loadError && <p className="field-error mt-sm" role="alert">{loadError}</p>}
           </>
         )}
       </section>
